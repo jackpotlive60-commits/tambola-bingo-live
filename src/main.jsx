@@ -101,12 +101,10 @@ function Ticket({n,name=""}){
 }
 
 
-/* =========================
-   CREATE GAME
-========================= */
+/* CREATE GAME */
 
 function CreateGame({onCreated}){
- const[host,setHost]=useState("");
+
  const[name,setName]=useState("");
  const[limit,setLimit]=useState("100");
  const[price,setPrice]=useState("20");
@@ -124,12 +122,14 @@ function CreateGame({onCreated}){
  }
 
  async function createGame(e){
+
   e.preventDefault();
 
   setBusy(true);
   setError("");
 
   try{
+
    let gc=code6();
 
    while(
@@ -154,7 +154,6 @@ function CreateGame({onCreated}){
    const{data,error}=await supabase
     .from("games")
     .insert({
-     host_name:host.trim(),
      game_name:name.trim(),
      status:"upcoming",
      ticket_limit:Number(limit),
@@ -197,6 +196,7 @@ function CreateGame({onCreated}){
   }}>
 
    <h1>TAMBOLA BINGO LIVE</h1>
+
    <h2>Create Game</h2>
 
    {error&&(
@@ -204,14 +204,6 @@ function CreateGame({onCreated}){
    )}
 
    <form onSubmit={createGame}>
-
-    <input
-     style={inputStyle}
-     placeholder="Host name"
-     value={host}
-     onChange={e=>setHost(e.target.value)}
-     required
-    />
 
     <input
      style={inputStyle}
@@ -274,16 +266,24 @@ function CreateGame({onCreated}){
        marginBottom:8
       }}
      >
-      <label style={{flex:1}}>{p}</label>
+
+      <label style={{flex:1}}>
+       {p}
+      </label>
 
       <input
-       style={{...inputStyle,margin:0,width:120}}
+       style={{
+        ...inputStyle,
+        margin:0,
+        width:120
+       }}
        type="number"
        min="0"
        placeholder="Amount"
        value={amounts[p]||""}
        onChange={e=>setPrize(p,e.target.value)}
       />
+
      </div>
     ))}
 
@@ -301,9 +301,7 @@ function CreateGame({onCreated}){
 }
 
 
-/* =========================
-   BOOKINGS
-========================= */
+/* BOOKINGS */
 
 function Bookings({game,setGame}){
 
@@ -314,6 +312,7 @@ function Bookings({game,setGame}){
  );
 
  function update(id,status){
+
   setGame({
    ...game,
    bookingRequests:requests.map(x=>
@@ -327,11 +326,9 @@ function Bookings({game,setGame}){
  return(
   <section style={panelStyle}>
 
-   <h2>Ticket Bookings</h2>
-
-   <p>
-    Pending requests: <b>{pending.length}</b>
-   </p>
+   <h2>
+    Ticket Bookings ({pending.length})
+   </h2>
 
    {!requests.length&&(
     <p>No pending bookings yet.</p>
@@ -363,6 +360,7 @@ function Bookings({game,setGame}){
 
      {x.status==="pending"&&(
       <div>
+
        <button
         onClick={()=>update(x.id,"approved")}
        >
@@ -376,6 +374,7 @@ function Bookings({game,setGame}){
        >
         Reject
        </button>
+
       </div>
      )}
 
@@ -387,9 +386,7 @@ function Bookings({game,setGame}){
 }
 
 
-/* =========================
-   LIVE GAME
-========================= */
+/* LIVE GAME */
 
 function Live({game,setGame}){
 
@@ -403,7 +400,6 @@ function Live({game,setGame}){
  function callNext(){
 
   if(!game.gameStarted)return;
-
   if(!remaining.length)return;
 
   const n=
@@ -421,6 +417,7 @@ function Live({game,setGame}){
  }
 
  function start(){
+
   setGame({
    ...game,
    gameStarted:true,
@@ -430,6 +427,7 @@ function Live({game,setGame}){
  }
 
  function reset(){
+
   setGame({
    ...game,
    gameStarted:false,
@@ -488,9 +486,7 @@ function Live({game,setGame}){
 }
 
 
-/* =========================
-   HOST CONTROL CENTRE
-========================= */
+/* HOST CONTROL CENTRE */
 
 function HostControl({game,setGame,end}){
 
@@ -498,7 +494,9 @@ function HostControl({game,setGame,end}){
   `${location.origin}/?game=${game.game_code}`;
 
  const prizes=(game.prizes||[])
-  .filter(p=>String(p.amount||"").trim()!=="");
+  .filter(
+   p=>String(p.amount||"").trim()!==""
+  );
 
  return(
   <main style={{
@@ -513,6 +511,7 @@ function HostControl({game,setGame,end}){
     justifyContent:"space-between",
     alignItems:"center"
    }}>
+
     <div>
      <h1>TAMBOLA BINGO LIVE</h1>
      <h2>Host Control Centre</h2>
@@ -527,34 +526,37 @@ function HostControl({game,setGame,end}){
     >
      End Game
     </button>
+
    </div>
+
 
    <section style={panelStyle}>
 
     <h2>{game.game_name}</h2>
 
     <p>
-     <b>Game Code:</b> {game.game_code}
+     <b>Game Code:</b>{" "}
+     {game.game_code}
     </p>
 
     <p>
-     <b>Host:</b> {game.host_name}
+     <b>Date:</b>{" "}
+     {game.game_date}
     </p>
 
     <p>
-     <b>Date:</b> {game.game_date}
+     <b>Time:</b>{" "}
+     {game.game_time}
     </p>
 
     <p>
-     <b>Time:</b> {game.game_time}
+     <b>Ticket Price:</b>{" "}
+     ₹{game.ticket_price}
     </p>
 
     <p>
-     <b>Ticket Price:</b> ₹{game.ticket_price}
-    </p>
-
-    <p>
-     <b>Available Tickets:</b> {game.ticket_limit}
+     <b>Available Tickets:</b>{" "}
+     {game.ticket_limit}
     </p>
 
    </section>
@@ -603,8 +605,11 @@ function HostControl({game,setGame,end}){
        borderBottom:"1px solid #ddd"
       }}
      >
+
       <b>{p.name}</b>
+
       {" — "}
+
       ₹{p.amount}
 
       {" "}
@@ -613,16 +618,23 @@ function HostControl({game,setGame,end}){
        onClick={()=>{
         setGame({
          ...game,
-         prizes:game.prizes.map((x,j)=>
-          j===i
-           ?{...x,approved:!x.approved}
-           :x
+         prizes:game.prizes.map(
+          (x,j)=>
+           j===i
+            ?{
+             ...x,
+             approved:!x.approved
+            }
+            :x
          )
         });
        }}
       >
-       {p.approved?"Approved":"Approve"}
+       {p.approved
+        ?"Approved"
+        :"Approve"}
       </button>
+
      </div>
     ))}
 
@@ -644,14 +656,14 @@ function HostControl({game,setGame,end}){
 }
 
 
-/* =========================
-   INVITATION
-========================= */
+/* PLAYER INVITATION */
 
 function Invitation({game,accept}){
 
  const prizes=(game.prizes||[])
-  .filter(p=>String(p.amount||"").trim()!=="");
+  .filter(
+   p=>String(p.amount||"").trim()!==""
+  );
 
  return(
   <main style={{
@@ -662,10 +674,6 @@ function Invitation({game,accept}){
   }}>
 
    <h1>{game.game_name}</h1>
-
-   <p>
-    <b>Host:</b> {game.host_name}
-   </p>
 
    <h2>Prize List</h2>
 
@@ -707,9 +715,7 @@ function Invitation({game,accept}){
 }
 
 
-/* =========================
-   PLAYER BOOKING
-========================= */
+/* PLAYER BOOKING */
 
 function Booking({game}){
 
@@ -760,7 +766,6 @@ function Booking({game}){
   };
 
   const text=
-   `Hi ${game.host_name||"Host"}, `+
    `${player.trim()} wants to book `+
    `${request.ticketNumbers
     .map(n=>`#${n}`)
@@ -769,14 +774,17 @@ function Booking({game}){
    `Please approve my booking.`;
 
   localStorage.setItem(
-   "tambola_player_request_"+game.game_code,
+   "tambola_player_request_"+
+   game.game_code,
    JSON.stringify(request)
   );
 
   setSent(true);
 
   location.href=
-   `https://wa.me/?text=${encodeURIComponent(text)}`;
+   `https://wa.me/?text=${
+    encodeURIComponent(text)
+   }`;
  }
 
  return(
@@ -825,7 +833,9 @@ function Booking({game}){
          :"black"
       }}
      >
-      {selected.includes(n)?"✓ ":""}#{n}
+      {selected.includes(n)
+       ?"✓ "
+       :""}#{n}
      </button>
     ))}
 
@@ -872,9 +882,7 @@ function Booking({game}){
 }
 
 
-/* =========================
-   APP
-========================= */
+/* APP */
 
 function App(){
 
@@ -887,18 +895,11 @@ function App(){
 
   const gc=gameCode();
 
-  /*
-   If URL contains ?game=XXXXXX,
-   this is a PLAYER opening the invitation.
-  */
   if(gc){
    loadPlayer(gc);
    return;
   }
 
-  /*
-   Otherwise restore host game.
-  */
   const saved=load();
 
   if(saved){
@@ -924,14 +925,19 @@ function App(){
   }=await supabase
    .from("games")
    .select("*")
-   .eq("game_code",gc.toUpperCase())
+   .eq(
+    "game_code",
+    gc.toUpperCase()
+   )
    .maybeSingle();
 
   if(error||!data){
+
    setError(
     error?.message||
     "Game not found"
    );
+
    return;
   }
 
@@ -962,10 +968,6 @@ function App(){
   save(g);
   setPage("control");
 
-  /*
-   Remove ?game=... from host URL
-   if it happens to be present.
-  */
   history.replaceState(
    {},
    "",
@@ -996,9 +998,6 @@ function App(){
  }
 
 
- /*
-  PLAYER INVITATION
- */
  if(
   playerGame&&
   page==="invitation"
@@ -1013,9 +1012,6 @@ function App(){
  }
 
 
- /*
-  PLAYER BOOKING
- */
  if(
   playerGame&&
   page==="booking"
@@ -1029,11 +1025,6 @@ function App(){
  }
 
 
- /*
-  HOST:
-  CREATE GAME AND CONTROL CENTRE
-  ARE NOW THE SAME PAGE.
- */
  if(!game){
 
   return(
