@@ -11,28 +11,28 @@ const themes = [
     name: "Royal Purple",
     description: "Premium palace-inspired gaming style",
     className: "theme-royal",
-    icon: "👑",
+    icon: "ðŸ‘‘",
   },
   {
     id: "casino",
     name: "Casino Night",
     description: "Classic casino lounge experience",
     className: "theme-casino",
-    icon: "♠",
+    icon: "â™ ",
   },
   {
     id: "festival",
     name: "Festival",
     description: "Colourful Indian celebration style",
     className: "theme-festival",
-    icon: "🎉",
+    icon: "ðŸŽ‰",
   },
   {
     id: "luxury",
     name: "Luxury Gold",
     description: "Elegant black and gold experience",
     className: "theme-luxury",
-    icon: "✨",
+    icon: "âœ¨",
   },
 ];
 
@@ -280,7 +280,7 @@ function Header({
         type="button"
         onClick={onHome}
       >
-        <span className="crown">♛</span>
+        <span className="crown">â™›</span>
 
         <span className="logo">
           <strong>TAMBOLA</strong>
@@ -289,7 +289,7 @@ function Header({
       </button>
 
       <div className="online">
-        <span>●</span>
+        <span>â—</span>
 
         {playerMode
           ? "Game Invitation"
@@ -301,7 +301,7 @@ function Header({
         type="button"
         aria-label="Menu"
       >
-        ☰
+        â˜°
       </button>
     </header>
   );
@@ -313,7 +313,7 @@ function Home({ onCreateGame }) {
       <section className="hero">
         <div className="hero-copy">
           <span className="live-badge">
-            ● LIVE TAMBOLA PLATFORM
+            â— LIVE TAMBOLA PLATFORM
           </span>
 
           <h1>
@@ -332,15 +332,15 @@ function Home({ onCreateGame }) {
           </p>
 
           <div className="features">
-            <span>🛡 Secure & Fair</span>
-            <span>⚡ Real-time Games</span>
-            <span>🏆 Automatic Winners</span>
+            <span>ðŸ›¡ Secure & Fair</span>
+            <span>âš¡ Real-time Games</span>
+            <span>ðŸ† Automatic Winners</span>
           </div>
         </div>
 
         <div className="cage">
           <div className="cage-decoration">
-            ✦
+            âœ¦
           </div>
 
           <div className="ball ball-one">
@@ -352,7 +352,7 @@ function Home({ onCreateGame }) {
           </div>
 
           <div className="bingo-cage">
-            ◎
+            â—Ž
           </div>
 
           <div className="ball ball-three">
@@ -360,7 +360,7 @@ function Home({ onCreateGame }) {
           </div>
 
           <div className="live-now">
-            🔴 LIVE PLATFORM
+            ðŸ”´ LIVE PLATFORM
             <br />
             Ready for your game
           </div>
@@ -387,7 +387,7 @@ function Home({ onCreateGame }) {
             onClick={onCreateGame}
           >
             <div className="entry-icon">
-              🎮
+              ðŸŽ®
             </div>
 
             <div className="entry-content">
@@ -407,13 +407,13 @@ function Home({ onCreateGame }) {
             </div>
 
             <div className="entry-arrow">
-              →
+              â†’
             </div>
           </button>
 
           <div className="entry-card player">
             <div className="entry-icon">
-              🎟️
+              ðŸŽŸï¸
             </div>
 
             <div className="entry-content">
@@ -433,13 +433,13 @@ function Home({ onCreateGame }) {
             </div>
 
             <div className="entry-arrow">
-              →
+              â†’
             </div>
           </div>
         </div>
 
         <div className="invitation-note">
-          🔗 Players with a host invitation link
+          ðŸ”— Players with a host invitation link
           will be taken directly to their specific
           game invitation.
         </div>
@@ -449,7 +449,7 @@ function Home({ onCreateGame }) {
         <div className="section-title">
           <div>
             <h2>
-              📡 Live Game Preview
+              ðŸ“¡ Live Game Preview
             </h2>
 
             <span>
@@ -717,7 +717,7 @@ function CreateGame({
         type="button"
         onClick={onBack}
       >
-        ← Back to Home
+        â† Back to Home
       </button>
 
       <div className="create-header">
@@ -740,14 +740,14 @@ function CreateGame({
 
       {error && (
         <div className="error-message">
-          ⚠️ {error}
+          âš ï¸ {error}
         </div>
       )}
 
       <form onSubmit={createGame}>
         <div className="form-card">
           <div className="form-card-title">
-            <span>👤</span>
+            <span>ðŸ‘¤</span>
 
             <div>
               <h2>
@@ -780,7 +780,7 @@ function CreateGame({
 
         <div className="form-card">
           <div className="form-card-title">
-            <span>🎮</span>
+            <span>ðŸŽ®</span>
 
             <div>
               <h2>
@@ -836,7 +836,7 @@ function CreateGame({
               Ticket Price
 
               <div className="input-with-prefix">
-                <span>₹</span>
+                <span>â‚¹</span>
 
                 <input
                   type="number"
@@ -893,7 +893,7 @@ function CreateGame({
 
         <div className="form-card">
           <div className="form-card-title">
-            <span>🏆</span>
+            <span>ðŸ†</span>
 
             <div>
               <h2>
@@ -927,7 +927,7 @@ function CreateGame({
                   </div>
 
                   <div className="input-with-prefix">
-                    <span>₹</span>
+                    <span>â‚¹</span>
 
                     <input
                       type="number"
@@ -974,7 +974,7 @@ function CreateGame({
 
         <div className="form-card theme-selection-card">
           <div className="form-card-title">
-            <span>🎨</span>
+            <span>ðŸŽ¨</span>
 
             <div>
               <h2>
@@ -1012,14 +1012,14 @@ function CreateGame({
                   <div className="preview-decoration">
                     {theme.id ===
                     "casino"
-                      ? "♠ ♥ ♦ ♣"
+                      ? "â™  â™¥ â™¦ â™£"
                       : theme.id ===
                         "festival"
-                        ? "✦ ✧ ✦ ✧"
+                        ? "âœ¦ âœ§ âœ¦ âœ§"
                         : theme.id ===
                           "luxury"
-                          ? "◆"
-                          : "♛"}
+                          ? "â—†"
+                          : "â™›"}
                   </div>
 
                   <div className="preview-balls">
@@ -1054,7 +1054,7 @@ function CreateGame({
                 {selectedTheme ===
                   theme.id && (
                   <b className="theme-check">
-                    ✓
+                    âœ“
                   </b>
                 )}
               </button>
@@ -1117,7 +1117,7 @@ function CreateGame({
           </div>
 
           <div className="theme-info">
-            🎨{" "}
+            ðŸŽ¨{" "}
             <strong>
               Game-wide theme:
             </strong>{" "}
@@ -1145,7 +1145,7 @@ function CreateGame({
             </span>
 
             <strong>
-              ₹{ticketPrice || "0"}
+              â‚¹{ticketPrice || "0"}
             </strong>
           </div>
 
@@ -1166,8 +1166,8 @@ function CreateGame({
           disabled={creating}
         >
           {creating
-            ? "⏳ Creating Game..."
-            : "🎮 Create Game"}
+            ? "â³ Creating Game..."
+            : "ðŸŽ® Create Game"}
         </button>
       </form>
     </section>
@@ -1238,7 +1238,7 @@ function BookingPreviewCard({
 
         <div className="booking-empty">
           <div className="empty-icon">
-            🎟️
+            ðŸŽŸï¸
           </div>
 
           <strong>
@@ -1313,10 +1313,10 @@ function BookingPreviewCard({
                   <small>
                     {request.status ===
                     "approved"
-                      ? "✓ Approved"
+                      ? "âœ“ Approved"
                       : request.status ===
                         "rejected"
-                        ? "✕ Rejected"
+                        ? "âœ• Rejected"
                         : "Waiting for approval"}
                   </small>
                 </div>
@@ -1335,7 +1335,7 @@ function BookingPreviewCard({
                       )
                     }
                   >
-                    ✓ Approve
+                    âœ“ Approve
                   </button>
 
                   <button
@@ -1348,7 +1348,7 @@ function BookingPreviewCard({
                       )
                     }
                   >
-                    ✕ Reject
+                    âœ• Reject
                   </button>
                 </div>
               )}
@@ -1527,7 +1527,7 @@ function LiveGamePanel({
           </span>
 
           <strong>
-            {currentNumber || "—"}
+            {currentNumber || "â€”"}
           </strong>
 
           <b>
@@ -1556,7 +1556,7 @@ function LiveGamePanel({
             className="start-game-button"
             onClick={startGame}
           >
-            ▶ Start Game
+            â–¶ Start Game
           </button>
         ) : (
           <>
@@ -1570,7 +1570,7 @@ function LiveGamePanel({
                 !remainingNumbers.length
               }
             >
-              🔢 Call Next Number
+              ðŸ”¢ Call Next Number
             </button>
 
             <button
@@ -1588,8 +1588,8 @@ function LiveGamePanel({
               }
             >
               {autoCalling
-                ? "⏸ Pause Auto Call"
-                : "⚡ Auto Call"}
+                ? "â¸ Pause Auto Call"
+                : "âš¡ Auto Call"}
             </button>
 
             <button
@@ -1597,7 +1597,7 @@ function LiveGamePanel({
               className="reset-game-button"
               onClick={resetGame}
             >
-              ↻ Reset
+              â†» Reset
             </button>
           </>
         )}
@@ -1611,7 +1611,7 @@ function LiveGamePanel({
             </span>
 
             <h3>
-              1 — 90
+              1 â€” 90
             </h3>
           </div>
 
@@ -1786,7 +1786,7 @@ function PrizeControlPanel({
       <div className="prize-control-heading">
         <div>
           <span>
-            🏆 PRIZE MANAGEMENT
+            ðŸ† PRIZE MANAGEMENT
           </span>
 
           <h2>
@@ -1813,8 +1813,8 @@ function PrizeControlPanel({
             >
               <div className="prize-control-icon">
                 {prize.approved
-                  ? "✓"
-                  : "🏆"}
+                  ? "âœ“"
+                  : "ðŸ†"}
               </div>
 
               <div className="prize-control-info">
@@ -1823,7 +1823,7 @@ function PrizeControlPanel({
                 </strong>
 
                 <span>
-                  ₹
+                  â‚¹
                   {prize.amount ||
                     "0"}
                 </span>
@@ -1853,8 +1853,8 @@ function PrizeControlPanel({
                   }
                 >
                   {prize.approved
-                    ? "✓ Approved"
-                    : "✓ Approve Prize"}
+                    ? "âœ“ Approved"
+                    : "âœ“ Approve Prize"}
                 </button>
 
                 <button
@@ -1869,7 +1869,7 @@ function PrizeControlPanel({
                     !prize.approved
                   }
                 >
-                  🏆 Confirm Winner
+                  ðŸ† Confirm Winner
                 </button>
               </div>
             </div>
@@ -1937,11 +1937,11 @@ function HostControlCentre({
       <div className="control-top">
         <div className="control-top-left">
           <span className="host-lock">
-            🔒 HOST
+            ðŸ”’ HOST
           </span>
 
           <span className="status-pill">
-            ●{" "}
+            â—{" "}
             {String(
               game.status ||
                 "UPCOMING"
@@ -1954,7 +1954,7 @@ function HostControlCentre({
           type="button"
           onClick={onEndGame}
         >
-          ⛔ End Game
+          â›” End Game
         </button>
       </div>
 
@@ -1966,7 +1966,7 @@ function HostControlCentre({
         </div>
 
         <div className="control-hero-icon">
-          🎮
+          ðŸŽ®
         </div>
 
         <span className="live-badge">
@@ -1986,13 +1986,13 @@ function HostControlCentre({
 
         <div className="game-meta">
           <span>
-            📅{" "}
+            ðŸ“…{" "}
             {game.game_date ||
               "Date not set"}
           </span>
 
           <span>
-            🕐{" "}
+            ðŸ•{" "}
             {game.game_time ||
               "Time not set"}
           </span>
@@ -2026,7 +2026,7 @@ function HostControlCentre({
       <div className="control-card-section">
         <div className="section-card-heading">
           <div className="section-card-icon">
-            🔗
+            ðŸ”—
           </div>
 
           <div>
@@ -2055,7 +2055,7 @@ function HostControlCentre({
               copyInviteLink
             }
           >
-            📋 Copy Link
+            ðŸ“‹ Copy Link
           </button>
 
           <button
@@ -2065,7 +2065,7 @@ function HostControlCentre({
               shareInvite
             }
           >
-            📲 Share
+            ðŸ“² Share
           </button>
         </div>
       </div>
@@ -2073,7 +2073,7 @@ function HostControlCentre({
       <div className="control-card-section">
         <div className="section-card-heading">
           <div className="section-card-icon">
-            🎨
+            ðŸŽ¨
           </div>
 
           <div>
@@ -2141,7 +2141,7 @@ function HostControlCentre({
       <div className="control-card-section">
         <div className="section-card-heading">
           <div className="section-card-icon">
-            🎟️
+            ðŸŽŸï¸
           </div>
 
           <div>
@@ -2185,7 +2185,7 @@ function HostControlCentre({
       <div className="control-card-section">
         <div className="section-card-heading">
           <div className="section-card-icon">
-            ⚡
+            âš¡
           </div>
 
           <div>
@@ -2206,7 +2206,7 @@ function HostControlCentre({
             className="control-action-card"
           >
             <span>
-              🖼️
+              ðŸ–¼ï¸
             </span>
 
             <strong>
@@ -2223,7 +2223,7 @@ function HostControlCentre({
             className="control-action-card"
           >
             <span>
-              👥
+              ðŸ‘¥
             </span>
 
             <strong>
@@ -2250,7 +2250,7 @@ function HostControlCentre({
             }
           >
             <span>
-              🏆
+              ðŸ†
             </span>
 
             <strong>
@@ -2277,7 +2277,7 @@ function HostControlCentre({
             }
           >
             <span>
-              🔢
+              ðŸ”¢
             </span>
 
             <strong>
@@ -2294,7 +2294,7 @@ function HostControlCentre({
             className="control-action-card"
           >
             <span>
-              ⚙️
+              âš™ï¸
             </span>
 
             <strong>
@@ -2311,7 +2311,7 @@ function HostControlCentre({
             className="control-action-card"
           >
             <span>
-              📊
+              ðŸ“Š
             </span>
 
             <strong>
@@ -2327,7 +2327,7 @@ function HostControlCentre({
 
       <div className="control-footer-note">
         <span>
-          🛡
+          ðŸ›¡
         </span>
 
         <div>
@@ -2351,7 +2351,7 @@ function HostControlCentre({
           onEndGame
         }
       >
-        ⛔ End Game
+        â›” End Game
       </button>
     </section>
   );
@@ -2385,12 +2385,12 @@ function PlayerInvitationPage({
         className="player-back-button"
         onClick={onBack}
       >
-        ←
+        â†
       </button>
 
       <div className="player-invitation-brand">
         <span>
-          👑
+          ðŸ‘‘
         </span>
 
         <div>
@@ -2406,11 +2406,11 @@ function PlayerInvitationPage({
 
       <div className="player-invitation-card">
         <span className="player-invitation-pill">
-          ● GAME INVITATION
+          â— GAME INVITATION
         </span>
 
         <div className="player-invitation-icon">
-          🎟️
+          ðŸŽŸï¸
         </div>
 
         <h1>
@@ -2437,7 +2437,7 @@ function PlayerInvitationPage({
         <div className="player-game-details">
           <div>
             <span>
-              📅 DATE
+              ðŸ“… DATE
             </span>
 
             <strong>
@@ -2448,7 +2448,7 @@ function PlayerInvitationPage({
 
           <div>
             <span>
-              🕐 TIME
+              ðŸ• TIME
             </span>
 
             <strong>
@@ -2459,11 +2459,11 @@ function PlayerInvitationPage({
 
           <div>
             <span>
-              🎟️ PRICE
+              ðŸŽŸï¸ PRICE
             </span>
 
             <strong>
-              ₹
+              â‚¹
               {game?.ticket_price ||
                 0}
             </strong>
@@ -2473,7 +2473,7 @@ function PlayerInvitationPage({
         <div className="player-prize-preview">
           <div className="player-prize-preview-heading">
             <span>
-              🏆
+              ðŸ†
             </span>
 
             <div>
@@ -2498,7 +2498,7 @@ function PlayerInvitationPage({
                   </span>
 
                   <strong>
-                    ₹
+                    â‚¹
                     {prize.amount ||
                       0}
                   </strong>
@@ -2516,7 +2516,7 @@ function PlayerInvitationPage({
           }
         >
           <span>
-            ✓
+            âœ“
           </span>
 
           I ACCEPT
@@ -2535,66 +2535,63 @@ function PlayerInvitationPage({
    REAL TAMBOLA TICKET
    ============================================================ */
 
+function createTicketRows(ticketNumber) {
+  /*
+   * Deterministic, real 3 Ã— 9 Tambola ticket.
+   * Every ticket has exactly 15 numbers: 5 per row.
+   * Every column belongs to its normal Tambola number range.
+   */
+  const seedBase = Math.max(1, Number(ticketNumber) || 1);
+  const masks = [
+    [1, 0, 1, 0, 1, 0, 1, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1, 1],
+    [1, 0, 1, 0, 1, 1, 0, 0, 1],
+  ];
+
+  const rows = masks.map((mask) => [...mask]);
+  const valuesByColumn = Array.from({ length: 9 }, (_, column) => {
+    const min = column === 0 ? 1 : column * 10;
+    const max = column === 8 ? 90 : column * 10 + 9;
+    const values = [];
+
+    for (let value = min; value <= max; value += 1) {
+      values.push(value);
+    }
+
+    const shift = (seedBase * (column + 3) + column * 7) % values.length;
+    return values.slice(shift).concat(values.slice(0, shift));
+  });
+
+  const rowsWithNumbers = rows.map((row) => [...row]);
+
+  for (let column = 0; column < 9; column += 1) {
+    const activeRows = rowsWithNumbers
+      .map((row, rowIndex) => (row[column] ? rowIndex : -1))
+      .filter((rowIndex) => rowIndex >= 0);
+
+    activeRows.forEach((rowIndex, position) => {
+      const values = valuesByColumn[column];
+      const index = (seedBase + column * 3 + position * 5) % values.length;
+      rowsWithNumbers[rowIndex][column] = values[index];
+    });
+  }
+
+  return rowsWithNumbers;
+}
+
 function TambolaTicket({
   ticketNumber,
   playerName,
+  preview = false,
 }) {
-  /*
-   * This is a proper 3 × 9 Tambola layout.
-   *
-   * 3 rows
-   * 9 columns
-   * 15 numbers
-   * 12 blank cells
-   */
-
-  const rows = [
-    [
-      3,
-      "",
-      17,
-      "",
-      34,
-      "",
-      58,
-      71,
-      "",
-    ],
-    [
-      "",
-      11,
-      "",
-      29,
-      "",
-      46,
-      "",
-      76,
-      88,
-    ],
-    [
-      7,
-      "",
-      23,
-      "",
-      41,
-      52,
-      63,
-      "",
-      90,
-    ],
-  ];
+  const rows = createTicketRows(ticketNumber);
 
   return (
-    <div className="real-tambola-ticket">
+    <div className={`real-tambola-ticket ${preview ? "ticket-preview" : ""}`}>
       <div className="real-ticket-header">
         <div>
-          <span>
-            TAMBOLA
-          </span>
-
-          <strong>
-            BINGO LIVE
-          </strong>
+          <span>TAMBOLA</span>
+          <strong>BINGO LIVE</strong>
         </div>
 
         <div className="real-ticket-number">
@@ -2603,48 +2600,31 @@ function TambolaTicket({
       </div>
 
       <div className="real-ticket-player">
-        <span>
-          PLAYER
-        </span>
-
-        <strong>
-          {playerName ||
-            "YOUR NAME"}
-        </strong>
+        <span>PLAYER</span>
+        <strong>{playerName || "YOUR NAME"}</strong>
       </div>
 
-      <div className="real-ticket-grid">
-        {rows.map(
-          (row, rowIndex) =>
-            row.map(
-              (value, columnIndex) => (
-                <div
-                  key={`${rowIndex}-${columnIndex}`}
-                  className={
-                    value
-                      ? "real-ticket-cell filled"
-                      : "real-ticket-cell blank"
-                  }
-                >
-                  {value}
-                </div>
-              )
-            )
+      <div className="real-ticket-grid" aria-label={`Tambola ticket ${ticketNumber}`}>
+        {rows.map((row, rowIndex) =>
+          row.map((value, columnIndex) => (
+            <div
+              key={`${rowIndex}-${columnIndex}`}
+              className={
+                value
+                  ? "real-ticket-cell filled"
+                  : "real-ticket-cell blank"
+              }
+            >
+              {value || ""}
+            </div>
+          ))
         )}
       </div>
 
       <div className="real-ticket-footer">
-        <span>
-          3 ROWS
-        </span>
-
-        <span>
-          9 COLUMNS
-        </span>
-
-        <span>
-          15 NUMBERS
-        </span>
+        <span>3 ROWS</span>
+        <span>9 COLUMNS</span>
+        <span>15 NUMBERS</span>
       </div>
     </div>
   );
@@ -2799,7 +2779,7 @@ function PlayerBookingPage({
             onClick={onBack}
             className="player-back-button"
           >
-            ←
+            â†
           </button>
 
           <div>
@@ -2808,7 +2788,7 @@ function PlayerBookingPage({
             </span>
 
             <h1>
-              You're In! 🎉
+              You're In! ðŸŽ‰
             </h1>
 
             <p>
@@ -2865,7 +2845,7 @@ function PlayerBookingPage({
 
           <div className="waiting-game-card">
             <div>
-              🎮
+              ðŸŽ®
             </div>
 
             <section>
@@ -2901,12 +2881,12 @@ function PlayerBookingPage({
           onClick={onBack}
           className="player-back-button"
         >
-          ←
+          â†
         </button>
 
         <div>
           <span>
-            🎟️ TICKET BOOKING
+            ðŸŽŸï¸ TICKET BOOKING
           </span>
 
           <h1>
@@ -2924,7 +2904,7 @@ function PlayerBookingPage({
       {!accepted && (
         <section className="player-accept-reminder">
           <div>
-            🎟️
+            ðŸŽŸï¸
           </div>
 
           <div>
@@ -2953,7 +2933,7 @@ function PlayerBookingPage({
       <section className="player-booking-card">
         <div className="player-booking-game-card">
           <div className="player-booking-game-icon">
-            👑
+            ðŸ‘‘
           </div>
 
           <div>
@@ -3055,7 +3035,7 @@ function PlayerBookingPage({
 
                   {selected && (
                     <span>
-                      ✓
+                      âœ“
                     </span>
                   )}
                 </button>
@@ -3077,7 +3057,7 @@ function PlayerBookingPage({
           </span>
 
           <strong>
-            ₹{ticketPrice} each
+            â‚¹{ticketPrice} each
           </strong>
         </div>
       </section>
@@ -3090,7 +3070,7 @@ function PlayerBookingPage({
             </span>
 
             <h2>
-              3 × 9 Tambola Ticket
+              3 Ã— 9 Tambola Ticket
             </h2>
           </div>
 
@@ -3099,38 +3079,32 @@ function PlayerBookingPage({
           </span>
         </div>
 
-        {selectedTickets.length ? (
-          <div className="selected-ticket-previews">
-            {sortedTickets.map(
-              (number) => (
-                <TambolaTicket
-                  key={number}
-                  ticketNumber={
-                    number
-                  }
-                  playerName={
-                    playerName
-                  }
-                />
-              )
-            )}
-          </div>
-        ) : (
-          <div className="ticket-empty-state">
-            <div>
-              🎫
+        <div className="selected-ticket-previews">
+          {selectedTickets.length ? (
+            sortedTickets.map((number) => (
+              <TambolaTicket
+                key={number}
+                ticketNumber={number}
+                playerName={playerName}
+              />
+            ))
+          ) : (
+            <div className="ticket-preview-empty">
+              <TambolaTicket
+                ticketNumber={1}
+                playerName={playerName}
+                preview
+              />
+              <div className="ticket-preview-message">
+                <strong>Choose a ticket to book</strong>
+                <p>
+                  This is a real 3 Ã— 9 Tambola ticket preview.
+                  Select any ticket number above to add that ticket to your booking.
+                </p>
+              </div>
             </div>
-
-            <strong>
-              Select a ticket number above
-            </strong>
-
-            <p>
-              Your actual 3 × 9 Tambola
-              ticket will appear here.
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </section>
 
       <section className="player-booking-summary">
@@ -3157,7 +3131,7 @@ function PlayerBookingPage({
           </span>
 
           <strong>
-            ₹{total}
+            â‚¹{total}
           </strong>
         </div>
       </section>
@@ -3177,7 +3151,7 @@ function PlayerBookingPage({
             }
           >
             <span>
-              📲
+              ðŸ“²
             </span>
 
             <div>
@@ -3191,13 +3165,13 @@ function PlayerBookingPage({
             </div>
 
             <b>
-              →
+              â†’
             </b>
           </button>
 
           <div className="whatsapp-info">
             <span>
-              💬
+              ðŸ’¬
             </span>
 
             <p>
@@ -3226,7 +3200,7 @@ function PlayerBookingPage({
       ) : (
         <section className="booking-pending-card">
           <div className="pending-icon">
-            ⏳
+            â³
           </div>
 
           <span>
@@ -3272,7 +3246,7 @@ function PlayerBookingPage({
 
       <section className="player-waiting-card">
         <div className="waiting-icon">
-          🎮
+          ðŸŽ®
         </div>
 
         <div>
@@ -3296,15 +3270,15 @@ function PlayerBookingPage({
 
       <footer className="player-footer">
         <span>
-          🛡 Secure Booking
+          ðŸ›¡ Secure Booking
         </span>
 
         <span>
-          🎟️ Tambola Bingo Live
+          ðŸŽŸï¸ Tambola Bingo Live
         </span>
 
         <span>
-          🇮🇳 Made for India
+          ðŸ‡®ðŸ‡³ Made for India
         </span>
       </footer>
     </main>
@@ -3591,7 +3565,7 @@ function App() {
       <main className="app">
         <div className="player-loading">
           <div className="player-loading-logo">
-            👑
+            ðŸ‘‘
           </div>
 
           <h1>
@@ -3618,7 +3592,7 @@ function App() {
       <main className="app">
         <div className="player-loading">
           <div className="player-error-icon">
-            ⚠️
+            âš ï¸
           </div>
 
           <h1>
@@ -3648,7 +3622,7 @@ function App() {
               );
             }}
           >
-            ← Back to Home
+            â† Back to Home
           </button>
         </div>
       </main>
@@ -3771,15 +3745,15 @@ function App() {
 
       <footer>
         <span>
-          🛡 Secure Platform
+          ðŸ›¡ Secure Platform
         </span>
 
         <span>
-          🎧 Host Support
+          ðŸŽ§ Host Support
         </span>
 
         <span>
-          🇮🇳 Made for India
+          ðŸ‡®ðŸ‡³ Made for India
         </span>
       </footer>
 
@@ -3798,7 +3772,7 @@ function App() {
           }
         >
           <span>
-            ⌂
+            âŒ‚
           </span>
 
           <small>
@@ -3810,7 +3784,7 @@ function App() {
           type="button"
         >
           <span>
-            ℹ
+            â„¹
           </span>
 
           <small>
@@ -3825,14 +3799,14 @@ function App() {
             openCreateGame
           }
         >
-          ＋
+          ï¼‹
         </button>
 
         <button
           type="button"
         >
           <span>
-            🎟
+            ðŸŽŸ
           </span>
 
           <small>
@@ -3844,7 +3818,7 @@ function App() {
           type="button"
         >
           <span>
-            ♙
+            â™™
           </span>
 
           <small>
