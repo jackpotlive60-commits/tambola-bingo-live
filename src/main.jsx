@@ -9,26 +9,30 @@ const themes = [
   {
     id: "royal",
     name: "Royal Purple",
-    description: "Premium purple gaming style",
+    description: "Premium palace-inspired gaming style",
     className: "theme-royal",
+    icon: "👑",
   },
   {
     id: "casino",
     name: "Casino Night",
-    description: "Bold casino-inspired style",
+    description: "Classic casino lounge experience",
     className: "theme-casino",
+    icon: "♠",
   },
   {
     id: "festival",
     name: "Festival",
-    description: "Bright celebration style",
+    description: "Colourful Indian celebration style",
     className: "theme-festival",
+    icon: "🎉",
   },
   {
     id: "luxury",
     name: "Luxury Gold",
-    description: "Elegant premium style",
+    description: "Elegant black and gold experience",
     className: "theme-luxury",
+    icon: "✨",
   },
 ];
 
@@ -50,6 +54,13 @@ function generateGameCode() {
   }
 
   return code;
+}
+
+function getTheme(themeId) {
+  return (
+    themes.find((theme) => theme.id === themeId) ||
+    themes[0]
+  );
 }
 
 function Header({ onHome }) {
@@ -81,7 +92,9 @@ function Home({ onCreateGame }) {
     <>
       <section className="hero">
         <div className="hero-copy">
-          <span className="live-badge">● LIVE TAMBOLA PLATFORM</span>
+          <span className="live-badge">
+            ● LIVE TAMBOLA PLATFORM
+          </span>
 
           <h1>
             Play Tambola.
@@ -105,6 +118,8 @@ function Home({ onCreateGame }) {
         </div>
 
         <div className="cage">
+          <div className="cage-decoration">✦</div>
+
           <div className="ball ball-one">45</div>
           <div className="ball ball-two">29</div>
           <div className="bingo-cage">◎</div>
@@ -221,6 +236,8 @@ function CreateGame({ onBack, onCreated }) {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
 
+  const activeTheme = getTheme(selectedTheme);
+
   function updatePrize(index, value) {
     setPrizes((current) =>
       current.map((prize, i) =>
@@ -317,7 +334,11 @@ function CreateGame({ onBack, onCreated }) {
   }
 
   return (
-    <section className="page-shell create-page">
+    <section
+      className={`page-shell create-page ${activeTheme.className}`}
+    >
+      <div className="theme-atmosphere" />
+
       <button
         className="back-button"
         type="button"
@@ -528,15 +549,15 @@ function CreateGame({ onBack, onCreated }) {
           </div>
         </div>
 
-        <div className="form-card">
+        <div className="form-card theme-selection-card">
           <div className="form-card-title">
             <span>🎨</span>
 
             <div>
               <h2>Game Theme</h2>
               <p>
-                Players joining this game will eventually see
-                this same theme.
+                Choose the complete visual identity players
+                will eventually experience.
               </p>
             </div>
           </div>
@@ -556,12 +577,31 @@ function CreateGame({ onBack, onCreated }) {
                 }
               >
                 <div className="theme-preview">
-                  <span>45</span>
-                  <span>29</span>
-                  <span>7</span>
+                  <div className="preview-decoration">
+                    {theme.id === "casino"
+                      ? "♠ ♥ ♦ ♣"
+                      : theme.id === "festival"
+                        ? "✦ ✧ ✦ ✧"
+                        : theme.id === "luxury"
+                          ? "◆"
+                          : "♛"}
+                  </div>
+
+                  <div className="preview-balls">
+                    <span>45</span>
+                    <span>29</span>
+                    <span>7</span>
+                  </div>
                 </div>
 
-                <strong>{theme.name}</strong>
+                <div className="theme-name-row">
+                  <span className="theme-icon">
+                    {theme.icon}
+                  </span>
+
+                  <strong>{theme.name}</strong>
+                </div>
+
                 <small>{theme.description}</small>
 
                 {selectedTheme === theme.id && (
@@ -571,9 +611,44 @@ function CreateGame({ onBack, onCreated }) {
             ))}
           </div>
 
+          <div className="theme-live-preview">
+            <div className="theme-live-copy">
+              <span>SELECTED EXPERIENCE</span>
+              <strong>
+                {activeTheme.icon} {activeTheme.name}
+              </strong>
+              <small>{activeTheme.description}</small>
+            </div>
+
+            <div
+              className={`mini-game-preview ${activeTheme.className}`}
+            >
+              <div className="mini-top">
+                <span>LIVE</span>
+                <b>45</b>
+              </div>
+
+              <div className="mini-board">
+                {Array.from({ length: 15 }, (_, i) => (
+                  <span
+                    key={i}
+                    className={
+                      [3, 7, 11].includes(i)
+                        ? "active"
+                        : ""
+                    }
+                  >
+                    {i + 1}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="theme-info">
             🎨 <strong>Game-wide theme:</strong>{" "}
-            Your selected theme is saved with this game.
+            Your selected theme is saved with this game and
+            controls the visual style of the player experience.
           </div>
         </div>
 
@@ -582,12 +657,7 @@ function CreateGame({ onBack, onCreated }) {
             <span>THEME</span>
 
             <strong>
-              {
-                themes.find(
-                  (theme) =>
-                    theme.id === selectedTheme
-                )?.name
-              }
+              {activeTheme.name}
             </strong>
           </div>
 
@@ -622,7 +692,9 @@ function BookingPreviewCard() {
       <div className="booking-preview-top">
         <div>
           <span className="booking-status">PENDING</span>
+
           <h3>Ticket booking requests</h3>
+
           <p>
             Approved and rejected actions will be connected
             to your ticket booking database next.
@@ -678,10 +750,7 @@ function HostControlCentre({ game, onHome }) {
   const inviteUrl =
     `${window.location.origin}/?game=${game.game_code}`;
 
-  const selectedTheme =
-    themes.find(
-      (theme) => theme.id === game.theme
-    ) || themes[0];
+  const selectedTheme = getTheme(game.theme);
 
   function copyInviteLink() {
     if (navigator.clipboard) {
@@ -708,7 +777,11 @@ function HostControlCentre({ game, onHome }) {
   }
 
   return (
-    <section className="page-shell control-page">
+    <section
+      className={`page-shell control-page ${selectedTheme.className}`}
+    >
+      <div className="theme-atmosphere" />
+
       <div className="control-top">
         <button
           className="back-button"
@@ -724,9 +797,17 @@ function HostControlCentre({ game, onHome }) {
       </div>
 
       <div className="control-hero">
-        <div className="control-hero-icon">🎮</div>
+        <div className="control-hero-pattern">
+          {selectedTheme.icon}
+        </div>
 
-        <span className="live-badge">HOST CONTROL CENTRE</span>
+        <div className="control-hero-icon">
+          🎮
+        </div>
+
+        <span className="live-badge">
+          HOST CONTROL CENTRE
+        </span>
 
         <h1>{game.game_name}</h1>
 
@@ -741,6 +822,10 @@ function HostControlCentre({ game, onHome }) {
 
           <span>
             🕐 {game.game_time || "Time not set"}
+          </span>
+
+          <span>
+            {selectedTheme.icon} {selectedTheme.name}
           </span>
         </div>
       </div>
@@ -800,7 +885,8 @@ function HostControlCentre({ game, onHome }) {
           <div>
             <h2>Game Theme</h2>
             <p>
-              This is the theme selected for this game.
+              This is the complete visual identity selected
+              for this game.
             </p>
           </div>
         </div>
@@ -809,14 +895,29 @@ function HostControlCentre({ game, onHome }) {
           className={`selected-theme-card ${selectedTheme.className}`}
         >
           <div className="theme-preview large">
-            <span>45</span>
-            <span>29</span>
-            <span>7</span>
+            <div className="preview-decoration">
+              {selectedTheme.icon}
+            </div>
+
+            <div className="preview-balls">
+              <span>45</span>
+              <span>29</span>
+              <span>7</span>
+            </div>
           </div>
 
           <div className="selected-theme-info">
-            <strong>{selectedTheme.name}</strong>
-            <span>{selectedTheme.description}</span>
+            <strong>
+              {selectedTheme.icon} {selectedTheme.name}
+            </strong>
+
+            <span>
+              {selectedTheme.description}
+            </span>
+
+            <small>
+              Complete game-wide visual theme
+            </small>
           </div>
         </div>
       </div>
@@ -828,7 +929,9 @@ function HostControlCentre({ game, onHome }) {
           <div>
             <div className="heading-with-badge">
               <h2>Ticket Bookings</h2>
-              <span className="pending-badge">PENDING</span>
+              <span className="pending-badge">
+                PENDING
+              </span>
             </div>
 
             <p>
@@ -853,7 +956,10 @@ function HostControlCentre({ game, onHome }) {
         </div>
 
         <div className="control-grid">
-          <button type="button" className="control-action-card">
+          <button
+            type="button"
+            className="control-action-card"
+          >
             <span>🖼️</span>
             <strong>Generate Poster</strong>
             <small>
@@ -861,7 +967,10 @@ function HostControlCentre({ game, onHome }) {
             </small>
           </button>
 
-          <button type="button" className="control-action-card">
+          <button
+            type="button"
+            className="control-action-card"
+          >
             <span>👥</span>
             <strong>Players</strong>
             <small>
@@ -869,7 +978,10 @@ function HostControlCentre({ game, onHome }) {
             </small>
           </button>
 
-          <button type="button" className="control-action-card">
+          <button
+            type="button"
+            className="control-action-card"
+          >
             <span>🏆</span>
             <strong>Prizes</strong>
             <small>
@@ -877,7 +989,10 @@ function HostControlCentre({ game, onHome }) {
             </small>
           </button>
 
-          <button type="button" className="control-action-card live-action">
+          <button
+            type="button"
+            className="control-action-card live-action"
+          >
             <span>🔢</span>
             <strong>Live Game</strong>
             <small>
@@ -885,7 +1000,10 @@ function HostControlCentre({ game, onHome }) {
             </small>
           </button>
 
-          <button type="button" className="control-action-card">
+          <button
+            type="button"
+            className="control-action-card"
+          >
             <span>⚙️</span>
             <strong>Game Settings</strong>
             <small>
@@ -893,7 +1011,10 @@ function HostControlCentre({ game, onHome }) {
             </small>
           </button>
 
-          <button type="button" className="control-action-card">
+          <button
+            type="button"
+            className="control-action-card"
+          >
             <span>📊</span>
             <strong>Game Summary</strong>
             <small>
@@ -935,8 +1056,13 @@ function App() {
     setPage("control");
   }
 
+  const currentTheme =
+    createdGame?.theme
+      ? getTheme(createdGame.theme)
+      : themes[0];
+
   return (
-    <main className="app">
+    <main className={`app ${currentTheme.className}`}>
       <Header
         onHome={() => {
           setPage("home");
