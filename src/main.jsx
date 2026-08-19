@@ -4,11 +4,27 @@ import{supabase}from"./lib/supabase";
 
 const nums=Array.from({length:90},(_,i)=>i+1);
 const KEY="tambola_bingo_live_host_game";
-const prizes0=["First Five","Four Corners","Top Line","Middle Line","Bottom Line","Full House"].map(name=>({name,amount:"",approved:false,winner:null}));
+
+const prizes0=[
+  "First Five",
+  "Four Corners",
+  "Top Line",
+  "Middle Line",
+  "Bottom Line",
+  "Full House"
+].map(name=>({
+  name,
+  amount:"",
+  approved:false,
+  winner:null
+}));
 
 function code6(){
   const s="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({length:6},()=>s[Math.floor(Math.random()*s.length)]).join("")
+  return Array.from(
+    {length:6},
+    ()=>s[Math.floor(Math.random()*s.length)]
+  ).join("")
 }
 
 function gameCode(){
@@ -16,7 +32,9 @@ function gameCode(){
 }
 
 function save(g){
-  g?localStorage.setItem(KEY,JSON.stringify(g)):localStorage.removeItem(KEY)
+  g
+    ? localStorage.setItem(KEY,JSON.stringify(g))
+    : localStorage.removeItem(KEY)
 }
 
 function load(){
@@ -41,25 +59,41 @@ function Ticket({n,name=""}){
   for(let c=0;c<9;c++){
     const min=c?c*10:1;
     const max=c===8?90:c*10+9;
-    const vals=Array.from({length:max-min+1},(_,i)=>min+i);
+
+    const vals=Array.from(
+      {length:max-min+1},
+      (_,i)=>min+i
+    );
+
     const shift=(base*(c+3)+c*7)%vals.length;
     const v=vals.slice(shift).concat(vals.slice(0,shift));
 
     rows.forEach((r,ri)=>{
-      if(r[c])r[c]=v[(base+c*3+ri*5)%v.length]
-    })
+      if(r[c]){
+        r[c]=v[(base+c*3+ri*5)%v.length]
+      }
+    });
   }
 
   return(
-    <div style={{border:"1px solid #333",padding:6,margin:"8px 0",maxWidth:360}}>
+    <div
+      style={{
+        border:"1px solid #333",
+        padding:6,
+        margin:"8px 0",
+        maxWidth:360
+      }}
+    >
       <b>Ticket #{n}</b>
       {name&&<span> — {name}</span>}
 
-      <div style={{
-        display:"grid",
-        gridTemplateColumns:"repeat(9,1fr)",
-        marginTop:5
-      }}>
+      <div
+        style={{
+          display:"grid",
+          gridTemplateColumns:"repeat(9,1fr)",
+          marginTop:5
+        }}
+      >
         {rows.flat().map((v,i)=>(
           <div
             key={i}
@@ -78,16 +112,7 @@ function Ticket({n,name=""}){
   )
 }
 
-function Home({create}){
-  return(
-    <main>
-      <h1>TAMBOLA BINGO LIVE</h1>
-      <button onClick={create}>CREATE GAME</button>
-    </main>
-  )
-}
-
-function Create({back,done}){
+function Create({done}){
   const[h,setH]=useState("");
   const[name,setName]=useState("");
   const[limit,setLimit]=useState("100");
@@ -99,8 +124,13 @@ function Create({back,done}){
   const[busy,setBusy]=useState(false);
   const[err,setErr]=useState("");
 
-  const prize=(i,v)=>
-    setPs(p=>p.map((x,j)=>j===i?{...x,amount:v}:x));
+  const prize=(i,v)=>{
+    setPs(p=>
+      p.map((x,j)=>
+        j===i?{...x,amount:v}:x
+      )
+    )
+  };
 
   async function submit(e){
     e.preventDefault();
@@ -115,10 +145,9 @@ function Create({back,done}){
           .from("games")
           .select("id")
           .eq("game_code",gc)
-          .maybeSingle()
-        ).data
+          .maybeSingle()).data
       ){
-        gc=code6();
+        gc=code6()
       }
 
       const{data,error}=await supabase
@@ -158,12 +187,12 @@ function Create({back,done}){
 
   return(
     <main>
-      <button onClick={back}>← Back</button>
-      <h2>Create Game</h2>
+      <h1>Create Game</h1>
 
       {err&&<p>{err}</p>}
 
       <form onSubmit={submit}>
+
         <input
           placeholder="Host name"
           value={h}
@@ -257,6 +286,7 @@ function Create({back,done}){
         <button disabled={busy}>
           {busy?"Creating...":"Create Game"}
         </button>
+
       </form>
     </main>
   )
@@ -281,7 +311,7 @@ function Bookings({game,setGame}){
 
       {!r.length?
         <p>No pending bookings yet.</p>
-      :
+        :
         r.map(x=>(
           <div
             key={x.id}
@@ -309,8 +339,6 @@ function Bookings({game,setGame}){
                 >
                   Approve
                 </button>
-
-                {" "}
 
                 <button
                   onClick={()=>update(x.id,"rejected")}
@@ -346,7 +374,7 @@ function Live({game,setGame}){
       ...game,
       calledNumbers:[...called,n],
       status:"live"
-    })
+    });
   };
 
   return(
@@ -360,6 +388,7 @@ function Live({game,setGame}){
       </p>
 
       {!game.gameStarted?
+
         <button
           onClick={()=>
             setGame({
@@ -372,7 +401,9 @@ function Live({game,setGame}){
         >
           Start Game
         </button>
-      :
+
+        :
+
         <>
           <button onClick={call}>
             Call Next Number
@@ -406,6 +437,7 @@ function Host({game,setGame,end}){
 
   return(
     <main>
+
       <button
         onClick={()=>{
           if(confirm("End game?"))end()
@@ -416,7 +448,9 @@ function Host({game,setGame,end}){
 
       <h1>{game.game_name}</h1>
 
-      <p>Host: {game.host_name}</p>
+      <p>
+        Host: {game.host_name}
+      </p>
 
       <p>
         Date: {game.game_date}
@@ -462,6 +496,7 @@ function Host({game,setGame,end}){
 
         {(game.prizes||[]).map((p,i)=>(
           <div key={i}>
+
             {p.name}: ₹{p.amount||0}
 
             {" "}
@@ -481,9 +516,12 @@ function Host({game,setGame,end}){
             >
               {p.approved?"Approved":"Approve"}
             </button>
+
           </div>
         ))}
+
       </section>
+
     </main>
   )
 }
@@ -491,11 +529,16 @@ function Host({game,setGame,end}){
 function Invitation({game,accept,back}){
   return(
     <main>
-      <button onClick={back}>←</button>
+
+      <button onClick={back}>
+        ←
+      </button>
 
       <h1>{game.game_name}</h1>
 
-      <p>Host: {game.host_name}</p>
+      <p>
+        Host: {game.host_name}
+      </p>
 
       <p>Prize list:</p>
 
@@ -511,7 +554,9 @@ function Invitation({game,accept,back}){
         Available tickets: {game.ticket_limit}
       </p>
 
-      <p>Status: {game.status}</p>
+      <p>
+        Status: {game.status}
+      </p>
 
       <p>
         Game: {game.game_date} {game.game_time}
@@ -520,6 +565,7 @@ function Invitation({game,accept,back}){
       <button onClick={accept}>
         I ACCEPT
       </button>
+
     </main>
   )
 }
@@ -529,16 +575,15 @@ function Booking({game,back}){
   const[selected,setSelected]=useState([]);
   const[sent,setSent]=useState(false);
 
-  const tickets=
-    Array.from(
-      {
-        length:Math.max(
-          1,
-          Number(game.ticket_limit||100)
-        )
-      },
-      (_,i)=>i+1
-    );
+  const tickets=Array.from(
+    {
+      length:Math.max(
+        1,
+        Number(game.ticket_limit||100)
+      )
+    },
+    (_,i)=>i+1
+  );
 
   function toggle(n){
     if(sent)return;
@@ -570,14 +615,11 @@ function Booking({game,back}){
     const text=
       `Hi ${game.host_name||"Host"}, `+
       `${player.trim()} wants to book `+
-      `${request.ticketNumbers.map(n=>`#${n}`).join(", ")}`+
-      ` for ${game.game_name}. `+
+      `${request.ticketNumbers
+        .map(n=>`#${n}`)
+        .join(", ")} `+
+      `for ${game.game_name}. `+
       `Please approve my booking.`;
-
-    const requests=[
-      ...(game.bookingRequests||[]),
-      request
-    ];
 
     localStorage.setItem(
       "tambola_player_request_"+game.game_code,
@@ -595,7 +637,10 @@ function Booking({game,back}){
 
   return(
     <main>
-      <button onClick={back}>← Back</button>
+
+      <button onClick={back}>
+        ← Back
+      </button>
 
       <h1>Ticket Booking</h1>
 
@@ -648,6 +693,7 @@ function Booking({game,back}){
       }
 
       {!sent?
+
         <button
           onClick={send}
           disabled={
@@ -657,35 +703,42 @@ function Booking({game,back}){
         >
           BOOK TICKETS
         </button>
-      :
+
+        :
+
         <p>
           Booking request sent.
           Waiting for host approval.
         </p>
       }
+
     </main>
   )
 }
 
 function App(){
-  const[page,setPage]=useState("home");
+  const[page,setPage]=useState("create");
   const[game,setGame]=useState(null);
   const[playerGame,setPlayerGame]=useState(null);
   const[error,setError]=useState("");
 
   useEffect(()=>{
+    const gc=gameCode();
+
+    if(gc){
+      loadPlayer(gc);
+      return;
+    }
+
     const saved=load();
 
     if(saved){
       setGame(saved);
       setPage("control");
+    }else{
+      setPage("create");
     }
 
-    const gc=gameCode();
-
-    if(gc){
-      loadPlayer(gc);
-    }
   },[]);
 
   useEffect(()=>{
@@ -701,24 +754,28 @@ function App(){
 
     if(error||!data){
       setError(
-        error?.message||"Game not found"
+        error?.message||
+        "Game not found"
       );
       return
     }
 
     setPlayerGame({
       ...data,
-      prizes:Array.isArray(data.prizes)
-        ?data.prizes
-        :prizes0,
+      prizes:
+        Array.isArray(data.prizes)
+          ?data.prizes
+          :prizes0,
 
-      calledNumbers:Array.isArray(data.calledNumbers)
-        ?data.calledNumbers
-        :[],
+      calledNumbers:
+        Array.isArray(data.calledNumbers)
+          ?data.calledNumbers
+          :[],
 
-      bookingRequests:Array.isArray(data.bookingRequests)
-        ?data.bookingRequests
-        :[]
+      bookingRequests:
+        Array.isArray(data.bookingRequests)
+          ?data.bookingRequests
+          :[]
     });
 
     setPage("invitation");
@@ -749,7 +806,7 @@ function App(){
           );
 
           setPlayerGame(null);
-          setPage("home");
+          setPage("create");
         }}
       />
     )
@@ -770,11 +827,6 @@ function App(){
   if(page==="create"){
     return(
       <Create
-        back={()=>
-          setPage(
-            game?"control":"home"
-          )
-        }
         done={g=>{
           setGame(g);
           setPage("control");
@@ -794,19 +846,17 @@ function App(){
         end={()=>{
           setGame(null);
           save(null);
-          setPage("home");
+          setPage("create");
         }}
       />
     )
   }
 
-  return(
-    <Home
-      create={()=>setPage("create")}
-    />
-  )
+  return null;
 }
 
 createRoot(
   document.getElementById("root")
-).render(<App/>);
+).render(
+  <App/>
+);
