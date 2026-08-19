@@ -2926,10 +2926,16 @@ function App() {
 
     const urlGameCode = getGameCodeFromUrl();
     const playerSession = loadPlayerSession();
+    const params = new URLSearchParams(window.location.search);
+    const urlPage = params.get("page");
     const gameCode = urlGameCode?.trim() || playerSession?.gameCode;
 
     if (gameCode) {
-      loadPlayerGame(gameCode, Boolean(playerSession && !urlGameCode));
+      loadPlayerGame(
+        gameCode,
+        urlPage === "booking" ||
+          Boolean(playerSession && !urlGameCode)
+      );
     }
   }, []);
 
@@ -3003,10 +3009,23 @@ function App() {
       );
 
       const savedPlayerSession = loadPlayerSession();
+      const currentUrlParams = new URLSearchParams(
+        window.location.search
+      );
+      const urlRequestsBooking =
+        currentUrlParams.get("page") === "booking";
+      const savedGameCode =
+        String(savedPlayerSession?.gameCode || "").toUpperCase();
+      const loadedGameCode =
+        String(normalizedGame.game_code || "").toUpperCase();
+
       const shouldRestoreBooking =
         restoreBooking ||
-        savedPlayerSession?.gameCode === normalizedGame.game_code &&
-        savedPlayerSession?.page === "player-booking";
+        urlRequestsBooking ||
+        (
+          savedGameCode === loadedGameCode &&
+          savedPlayerSession?.page === "player-booking"
+        );
 
       setPlayerAccepted(shouldRestoreBooking);
       setPage(
@@ -3132,12 +3151,34 @@ function App() {
   function acceptPlayerInvitation() {
     setPlayerAccepted(true);
     savePlayerSession(playerGame?.game_code, "player-booking");
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", "booking");
+
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
+
     setPage("player-booking");
   }
 
   function returnToPlayerInvitation() {
     clearPlayerSession();
     setPlayerAccepted(false);
+
+    const params = new URLSearchParams(window.location.search);
+    params.delete("page");
+
+    const query = params.toString();
+
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}`
+    );
+
     setPage("player-invitation");
   }
 
@@ -3256,10 +3297,18 @@ function App() {
             onBack={() => {
               clearPlayerSession();
               setPlayerAccepted(false);
+
+              const params = new URLSearchParams(
+                window.location.search
+              );
+              params.delete("page");
+
+              const query = params.toString();
+
               window.history.replaceState(
                 {},
                 "",
-                window.location.pathname
+                `${window.location.pathname}${query ? `?${query}` : ""}`
               );
 
               setPlayerGame(
