@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { supabase } from "./lib/supabase";
 import "./styles.css";
@@ -37,13 +37,15 @@ const themes = [
 ];
 
 const defaultPrizes = [
-  { name: "First Five", amount: "" },
-  { name: "Four Corners", amount: "" },
-  { name: "Top Line", amount: "" },
-  { name: "Middle Line", amount: "" },
-  { name: "Bottom Line", amount: "" },
-  { name: "Full House", amount: "" },
+  { name: "First Five", amount: "", approved: false, winner: null },
+  { name: "Four Corners", amount: "", approved: false, winner: null },
+  { name: "Top Line", amount: "", approved: false, winner: null },
+  { name: "Middle Line", amount: "", approved: false, winner: null },
+  { name: "Bottom Line", amount: "", approved: false, winner: null },
+  { name: "Full House", amount: "", approved: false, winner: null },
 ];
+
+const STORAGE_KEY = "tambola_bingo_live_host_game";
 
 function generateGameCode() {
   const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -63,10 +65,164 @@ function getTheme(themeId) {
   );
 }
 
+function saveGameSession(game) {
+  if (!game) {
+    localStorage.removeItem(STORAGE_KEY);
+    return;
+  }
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(game)
+  );
+}
+
+function loadGameSession() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+
+    if (!stored) {
+      return null;
+    }
+
+    const parsed = JSON.parse(stored);
+
+    if (!parsed?.game_code) {
+      return null;
+    }
+
+    return {
+      ...parsed,
+      status: parsed.status || "upcoming",
+      calledNumbers: Array.isArray(parsed.calledNumbers)
+        ? parsed.calledNumbers
+        : [],
+      prizes: Array.isArray(parsed.prizes)
+        ? parsed.prizes
+        : defaultPrizes,
+      gameStarted: Boolean(parsed.gameStarted),
+    };
+  } catch (error) {
+    console.error(
+      "Unable to restore saved game session:",
+      error
+    );
+
+    localStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+}
+
+function numberName(number) {
+  if (!number) {
+    return "";
+  }
+
+  const names = [
+    "",
+    "ONE",
+    "TWO",
+    "THREE",
+    "FOUR",
+    "FIVE",
+    "SIX",
+    "SEVEN",
+    "EIGHT",
+    "NINE",
+    "TEN",
+    "ELEVEN",
+    "TWELVE",
+    "THIRTEEN",
+    "FOURTEEN",
+    "FIFTEEN",
+    "SIXTEEN",
+    "SEVENTEEN",
+    "EIGHTEEN",
+    "NINETEEN",
+    "TWENTY",
+    "TWENTY ONE",
+    "TWENTY TWO",
+    "TWENTY THREE",
+    "TWENTY FOUR",
+    "TWENTY FIVE",
+    "TWENTY SIX",
+    "TWENTY SEVEN",
+    "TWENTY EIGHT",
+    "TWENTY NINE",
+    "THIRTY",
+    "THIRTY ONE",
+    "THIRTY TWO",
+    "THIRTY THREE",
+    "THIRTY FOUR",
+    "THIRTY FIVE",
+    "THIRTY SIX",
+    "THIRTY SEVEN",
+    "THIRTY EIGHT",
+    "THIRTY NINE",
+    "FORTY",
+    "FORTY ONE",
+    "FORTY TWO",
+    "FORTY THREE",
+    "FORTY FOUR",
+    "FORTY FIVE",
+    "FORTY SIX",
+    "FORTY SEVEN",
+    "FORTY EIGHT",
+    "FORTY NINE",
+    "FIFTY",
+    "FIFTY ONE",
+    "FIFTY TWO",
+    "FIFTY THREE",
+    "FIFTY FOUR",
+    "FIFTY FIVE",
+    "FIFTY SIX",
+    "FIFTY SEVEN",
+    "FIFTY EIGHT",
+    "FIFTY NINE",
+    "SIXTY",
+    "SIXTY ONE",
+    "SIXTY TWO",
+    "SIXTY THREE",
+    "SIXTY FOUR",
+    "SIXTY FIVE",
+    "SIXTY SIX",
+    "SIXTY SEVEN",
+    "SIXTY EIGHT",
+    "SIXTY NINE",
+    "SEVENTY",
+    "SEVENTY ONE",
+    "SEVENTY TWO",
+    "SEVENTY THREE",
+    "SEVENTY FOUR",
+    "SEVENTY FIVE",
+    "SEVENTY SIX",
+    "SEVENTY SEVEN",
+    "SEVENTY EIGHT",
+    "SEVENTY NINE",
+    "EIGHTY",
+    "EIGHTY ONE",
+    "EIGHTY TWO",
+    "EIGHTY THREE",
+    "EIGHTY FOUR",
+    "EIGHTY FIVE",
+    "EIGHTY SIX",
+    "EIGHTY SEVEN",
+    "EIGHTY EIGHT",
+    "EIGHTY NINE",
+    "NINETY",
+  ];
+
+  return names[number] || "";
+}
+
 function Header({ onHome }) {
   return (
     <header className="topbar">
-      <button className="brand-button" onClick={onHome}>
+      <button
+        className="brand-button"
+        type="button"
+        onClick={onHome}
+      >
         <span className="crown">♛</span>
 
         <span className="logo">
@@ -80,7 +236,11 @@ function Header({ onHome }) {
         Live Platform
       </div>
 
-      <button className="menu-button" type="button">
+      <button
+        className="menu-button"
+        type="button"
+        aria-label="Menu"
+      >
         ☰
       </button>
     </header>
@@ -261,6 +421,8 @@ function CreateGame({ onBack, onCreated }) {
         name,
         amount: "",
         custom: true,
+        approved: false,
+        winner: null,
       },
     ]);
 
@@ -295,23 +457,24 @@ function CreateGame({ onBack, onCreated }) {
         }
       }
 
-      const { data: game, error: insertError } = await supabase
-        .from("games")
-        .insert({
-          host_name: hostName.trim(),
-          game_name: gameName.trim(),
-          status: "upcoming",
-          ticket_limit: Number(ticketLimit),
-          ticket_price: Number(ticketPrice),
-          call_interval_seconds: 5,
-          game_date: gameDate,
-          game_time: gameTime,
-          theme: selectedTheme,
-          game_code: gameCode,
-          invite_enabled: true,
-        })
-        .select()
-        .single();
+      const { data: game, error: insertError } =
+        await supabase
+          .from("games")
+          .insert({
+            host_name: hostName.trim(),
+            game_name: gameName.trim(),
+            status: "upcoming",
+            ticket_limit: Number(ticketLimit),
+            ticket_price: Number(ticketPrice),
+            call_interval_seconds: 5,
+            game_date: gameDate,
+            game_time: gameTime,
+            theme: selectedTheme,
+            game_code: gameCode,
+            invite_enabled: true,
+          })
+          .select()
+          .single();
 
       if (insertError) {
         throw insertError;
@@ -319,7 +482,14 @@ function CreateGame({ onBack, onCreated }) {
 
       onCreated({
         ...game,
-        prizes,
+        status: "upcoming",
+        gameStarted: false,
+        calledNumbers: [],
+        prizes: prizes.map((prize) => ({
+          ...prize,
+          approved: false,
+          winner: null,
+        })),
       });
     } catch (err) {
       console.error(err);
@@ -746,7 +916,415 @@ function BookingPreviewCard() {
   );
 }
 
-function HostControlCentre({ game, onHome }) {
+function LiveGamePanel({ game, onGameChange }) {
+  const [autoCalling, setAutoCalling] = useState(false);
+
+  const calledNumbers = game.calledNumbers || [];
+  const currentNumber =
+    calledNumbers[calledNumbers.length - 1] || null;
+
+  const remainingNumbers = useMemo(
+    () =>
+      numbers.filter(
+        (number) => !calledNumbers.includes(number)
+      ),
+    [calledNumbers]
+  );
+
+  function persist(nextGame) {
+    onGameChange(nextGame);
+  }
+
+  function callNextNumber() {
+    if (!game.gameStarted) {
+      return;
+    }
+
+    if (remainingNumbers.length === 0) {
+      setAutoCalling(false);
+
+      persist({
+        ...game,
+        status: "completed",
+        gameStarted: false,
+      });
+
+      return;
+    }
+
+    const randomIndex = Math.floor(
+      Math.random() * remainingNumbers.length
+    );
+
+    const nextNumber = remainingNumbers[randomIndex];
+
+    persist({
+      ...game,
+      status: "live",
+      calledNumbers: [
+        ...calledNumbers,
+        nextNumber,
+      ],
+    });
+  }
+
+  function startGame() {
+    persist({
+      ...game,
+      status: "live",
+      gameStarted: true,
+      calledNumbers: [],
+    });
+  }
+
+  function pauseGame() {
+    setAutoCalling(false);
+
+    persist({
+      ...game,
+      gameStarted: false,
+      status: "live",
+    });
+  }
+
+  function resetGame() {
+    setAutoCalling(false);
+
+    const confirmed = window.confirm(
+      "Reset all called numbers and restart this game?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    persist({
+      ...game,
+      status: "upcoming",
+      gameStarted: false,
+      calledNumbers: [],
+    });
+  }
+
+  useEffect(() => {
+    if (!autoCalling || !game.gameStarted) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(
+      callNextNumber,
+      Math.max(
+        1,
+        Number(game.call_interval_seconds || 5)
+      ) * 1000
+    );
+
+    return () => window.clearInterval(interval);
+  }, [
+    autoCalling,
+    game.gameStarted,
+    game.calledNumbers,
+    game.call_interval_seconds,
+  ]);
+
+  return (
+    <div className="live-game-panel">
+      <div className="live-game-header">
+        <div>
+          <span className="live-section-label">
+            LIVE GAME
+          </span>
+
+          <h2>Number Calling</h2>
+
+          <p>
+            Call numbers manually or start automatic calling.
+          </p>
+        </div>
+
+        <div className="live-status">
+          <span
+            className={
+              game.gameStarted
+                ? "status-dot active"
+                : "status-dot"
+            }
+          />
+
+          {game.gameStarted ? "GAME LIVE" : "NOT STARTED"}
+        </div>
+      </div>
+
+      <div className="current-number-card">
+        <div className="current-number-copy">
+          <span>CURRENT NUMBER CALLED</span>
+
+          <strong>
+            {currentNumber || "—"}
+          </strong>
+
+          <b>
+            {currentNumber
+              ? numberName(currentNumber)
+              : "WAITING TO START"}
+          </b>
+
+          <small>
+            {calledNumbers.length} of 90 numbers called
+          </small>
+        </div>
+
+        <div className="current-number-ball">
+          {currentNumber || "?"}
+        </div>
+      </div>
+
+      <div className="game-control-buttons">
+        {!game.gameStarted ? (
+          <button
+            type="button"
+            className="start-game-button"
+            onClick={startGame}
+          >
+            ▶ Start Game
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="call-number-button"
+              onClick={callNextNumber}
+              disabled={!remainingNumbers.length}
+            >
+              🔢 Call Next Number
+            </button>
+
+            <button
+              type="button"
+              className={
+                autoCalling
+                  ? "pause-game-button"
+                  : "auto-call-button"
+              }
+              onClick={() =>
+                setAutoCalling((current) => !current)
+              }
+            >
+              {autoCalling
+                ? "⏸ Pause Auto Call"
+                : "⚡ Auto Call"}
+            </button>
+
+            <button
+              type="button"
+              className="reset-game-button"
+              onClick={resetGame}
+            >
+              ↻ Reset
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="called-board-section">
+        <div className="board-section-heading">
+          <div>
+            <span>CALLED NUMBERS BOARD</span>
+            <h3>1 — 90</h3>
+          </div>
+
+          <strong>
+            {calledNumbers.length} CALLED
+          </strong>
+        </div>
+
+        <div className="called-number-board">
+          {numbers.map((number) => {
+            const isCalled =
+              calledNumbers.includes(number);
+
+            const isCurrent =
+              currentNumber === number;
+
+            return (
+              <div
+                key={number}
+                className={[
+                  "called-board-number",
+                  isCalled ? "called" : "",
+                  isCurrent ? "current" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {number}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="history-section">
+        <div className="board-section-heading">
+          <div>
+            <span>CALLED NUMBERS HISTORY</span>
+            <h3>Most recent first</h3>
+          </div>
+        </div>
+
+        {calledNumbers.length ? (
+          <div className="history-list">
+            {[...calledNumbers]
+              .reverse()
+              .map((number, index) => (
+                <div
+                  className={`history-chip ${
+                    index === 0 ? "latest" : ""
+                  }`}
+                  key={`${number}-${index}`}
+                >
+                  <small>
+                    {index === 0
+                      ? "CURRENT"
+                      : `#${calledNumbers.length - index}`}
+                  </small>
+
+                  <strong>{number}</strong>
+                </div>
+              ))}
+          </div>
+        ) : (
+          <div className="history-empty">
+            No numbers have been called yet.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PrizeControlPanel({ game, onGameChange }) {
+  const prizes = game.prizes || [];
+
+  function togglePrizeApproval(index) {
+    const updatedPrizes = prizes.map(
+      (prize, prizeIndex) =>
+        prizeIndex === index
+          ? {
+              ...prize,
+              approved: !prize.approved,
+            }
+          : prize
+    );
+
+    onGameChange({
+      ...game,
+      prizes: updatedPrizes,
+    });
+  }
+
+  function markWinner(index) {
+    const winnerName = window.prompt(
+      `Enter winner name for ${prizes[index].name}:`
+    );
+
+    if (!winnerName?.trim()) {
+      return;
+    }
+
+    const updatedPrizes = prizes.map(
+      (prize, prizeIndex) =>
+        prizeIndex === index
+          ? {
+              ...prize,
+              approved: true,
+              winner: winnerName.trim(),
+            }
+          : prize
+    );
+
+    onGameChange({
+      ...game,
+      prizes: updatedPrizes,
+    });
+  }
+
+  return (
+    <div className="prize-control-panel">
+      <div className="prize-control-heading">
+        <div>
+          <span>🏆 PRIZE MANAGEMENT</span>
+          <h2>Prizes & Approval</h2>
+          <p>
+            Approve each prize before confirming its winner.
+          </p>
+        </div>
+      </div>
+
+      <div className="prize-control-list">
+        {prizes.map((prize, index) => (
+          <div
+            className={`prize-control-row ${
+              prize.approved ? "approved" : ""
+            }`}
+            key={`${prize.name}-${index}`}
+          >
+            <div className="prize-control-icon">
+              {prize.approved ? "✓" : "🏆"}
+            </div>
+
+            <div className="prize-control-info">
+              <strong>{prize.name}</strong>
+
+              <span>
+                ₹{prize.amount || "0"}
+              </span>
+
+              {prize.winner && (
+                <small>
+                  Winner: {prize.winner}
+                </small>
+              )}
+            </div>
+
+            <div className="prize-control-actions">
+              <button
+                type="button"
+                className={
+                  prize.approved
+                    ? "approved-prize-button"
+                    : "approve-prize-button"
+                }
+                onClick={() =>
+                  togglePrizeApproval(index)
+                }
+              >
+                {prize.approved
+                  ? "✓ Approved"
+                  : "✓ Approve Prize"}
+              </button>
+
+              <button
+                type="button"
+                className="winner-button"
+                onClick={() => markWinner(index)}
+                disabled={!prize.approved}
+              >
+                🏆 Confirm Winner
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HostControlCentre({
+  game,
+  onGameChange,
+  onEndGame,
+}) {
   const inviteUrl =
     `${window.location.origin}/?game=${game.game_code}`;
 
@@ -783,17 +1361,23 @@ function HostControlCentre({ game, onHome }) {
       <div className="theme-atmosphere" />
 
       <div className="control-top">
-        <button
-          className="back-button"
-          type="button"
-          onClick={onHome}
-        >
-          ← Home
-        </button>
+        <div className="control-top-left">
+          <span className="host-lock">
+            🔒 HOST
+          </span>
 
-        <span className="status-pill">
-          ● {game.status || "UPCOMING"}
-        </span>
+          <span className="status-pill">
+            ● {String(game.status || "UPCOMING").toUpperCase()}
+          </span>
+        </div>
+
+        <button
+          className="end-game-button"
+          type="button"
+          onClick={onEndGame}
+        >
+          ⛔ End Game
+        </button>
       </div>
 
       <div className="control-hero">
@@ -922,18 +1506,12 @@ function HostControlCentre({ game, onHome }) {
         </div>
       </div>
 
-      <div className="control-card-section bookings-section">
+      <div className="control-card-section">
         <div className="section-card-heading">
           <div className="section-card-icon">🎟️</div>
 
           <div>
-            <div className="heading-with-badge">
-              <h2>Ticket Bookings</h2>
-              <span className="pending-badge">
-                PENDING
-              </span>
-            </div>
-
+            <h2>Ticket Bookings</h2>
             <p>
               Review player requests before approving tickets.
             </p>
@@ -941,6 +1519,20 @@ function HostControlCentre({ game, onHome }) {
         </div>
 
         <BookingPreviewCard />
+      </div>
+
+      <div className="control-card-section live-control-section">
+        <LiveGamePanel
+          game={game}
+          onGameChange={onGameChange}
+        />
+      </div>
+
+      <div className="control-card-section">
+        <PrizeControlPanel
+          game={game}
+          onGameChange={onGameChange}
+        />
       </div>
 
       <div className="control-card-section">
@@ -981,17 +1573,31 @@ function HostControlCentre({ game, onHome }) {
           <button
             type="button"
             className="control-action-card"
+            onClick={() =>
+              document
+                .querySelector(".prize-control-panel")
+                ?.scrollIntoView({
+                  behavior: "smooth",
+                })
+            }
           >
             <span>🏆</span>
             <strong>Prizes</strong>
             <small>
-              View and manage game prizes.
+              View and approve game prizes.
             </small>
           </button>
 
           <button
             type="button"
             className="control-action-card live-action"
+            onClick={() =>
+              document
+                .querySelector(".live-game-panel")
+                ?.scrollIntoView({
+                  behavior: "smooth",
+                })
+            }
           >
             <span>🔢</span>
             <strong>Live Game</strong>
@@ -1037,11 +1643,11 @@ function HostControlCentre({ game, onHome }) {
       </div>
 
       <button
-        className="return-home-button"
+        className="end-game-large-button"
         type="button"
-        onClick={onHome}
+        onClick={onEndGame}
       >
-        ← Return Home
+        ⛔ End Game
       </button>
     </section>
   );
@@ -1051,9 +1657,68 @@ function App() {
   const [page, setPage] = useState("home");
   const [createdGame, setCreatedGame] = useState(null);
 
+  useEffect(() => {
+    const restoredGame = loadGameSession();
+
+    if (restoredGame) {
+      setCreatedGame(restoredGame);
+      setPage("control");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (createdGame) {
+      saveGameSession(createdGame);
+    }
+  }, [createdGame]);
+
   function handleGameCreated(game) {
     setCreatedGame(game);
+    saveGameSession(game);
     setPage("control");
+  }
+
+  function handleGameChange(nextGame) {
+    setCreatedGame(nextGame);
+    saveGameSession(nextGame);
+  }
+
+  function handleEndGame() {
+    const confirmed = window.confirm(
+      "Are you sure you want to end this game? This will clear the saved Host Control Centre session."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const finishedGame = {
+      ...createdGame,
+      status: "ended",
+      gameStarted: false,
+    };
+
+    setCreatedGame(null);
+    setPage("home");
+    saveGameSession(null);
+
+    /*
+     * We intentionally don't require an extra Supabase column here.
+     * The local host session is cleared only after the host explicitly
+     * clicks End Game.
+     */
+    console.info("Game ended:", finishedGame?.game_code);
+  }
+
+  function goHomeWithoutEndingGame() {
+    /*
+     * Important:
+     * Do NOT clear createdGame here.
+     *
+     * The game must remain available after navigation/reload.
+     * Only End Game clears the saved session.
+     */
+    setPage("home");
   }
 
   const currentTheme =
@@ -1064,10 +1729,7 @@ function App() {
   return (
     <main className={`app ${currentTheme.className}`}>
       <Header
-        onHome={() => {
-          setPage("home");
-          setCreatedGame(null);
-        }}
+        onHome={goHomeWithoutEndingGame}
       />
 
       {page === "home" && (
@@ -1078,7 +1740,13 @@ function App() {
 
       {page === "create" && (
         <CreateGame
-          onBack={() => setPage("home")}
+          onBack={() => {
+            if (createdGame) {
+              setPage("control");
+            } else {
+              setPage("home");
+            }
+          }}
           onCreated={handleGameCreated}
         />
       )}
@@ -1086,10 +1754,8 @@ function App() {
       {page === "control" && createdGame && (
         <HostControlCentre
           game={createdGame}
-          onHome={() => {
-            setPage("home");
-            setCreatedGame(null);
-          }}
+          onGameChange={handleGameChange}
+          onEndGame={handleEndGame}
         />
       )}
 
