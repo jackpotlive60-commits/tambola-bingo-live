@@ -2705,50 +2705,54 @@ function PlayerBookingPage({
       <>
         <PlayerBookingPremiumStyles />
         <main className={`player-booking-page premium-booking-page ${selectedTheme.className}`}>
-        <div className="premium-booking-bg" />
-        <div className="premium-booking-shell">
-          <button type="button" onClick={onBack} className="premium-back-button">â†</button>
+          <div className="premium-booking-bg" />
+          <div className="premium-booking-shell">
+            <button type="button" onClick={onBack} className="premium-back-button">â†</button>
 
-          <header className="premium-booking-hero compact">
-            <div className="premium-brand-mark">â™›</div>
-            <div>
-              <span className="premium-eyebrow success">TICKET APPROVED</span>
-              <h1>Youâ€™re In! ðŸŽ‰</h1>
-              <p>Your tickets have been approved by the host.</p>
-            </div>
-          </header>
-
-          <section className="premium-card approved-state-card">
-            <div className="approved-player-row">
-              <div className="approved-avatar">
-                {playerName.charAt(0).toUpperCase()}
+            <header className="premium-booking-hero compact">
+              <div className="premium-brand-line">
+                <div className="premium-brand-mark">TB</div>
+                <div>
+                  <strong>TAMBOLA</strong>
+                  <small>BINGO LIVE</small>
+                </div>
               </div>
               <div>
-                <span>PLAYER</span>
-                <strong>{playerName}</strong>
+                <span className="premium-eyebrow success">BOOKING APPROVED</span>
+                <h1>Youâ€™re In!</h1>
+                <p>Your tickets have been approved by the host.</p>
               </div>
-            </div>
+            </header>
 
-            <div className="approved-ticket-pills">
-              {sortedTickets.map((number) => <span key={number}>Ticket #{number}</span>)}
-            </div>
-
-            <div className="approved-ticket-list">
-              {sortedTickets.map((number) => (
-                <TambolaTicket key={number} ticketNumber={number} playerName={playerName} />
-              ))}
-            </div>
-
-            <div className="premium-next-step">
-              <div className="next-step-icon">ðŸŽ®</div>
-              <div>
-                <span>NEXT STEP</span>
-                <strong>Wait for the host to start the game</strong>
-                <p>Your tickets are approved. Stay on this page while the host starts calling numbers.</p>
+            <section className="premium-card approved-state-card">
+              <div className="approved-player-row">
+                <div className="approved-avatar">{playerName.charAt(0).toUpperCase()}</div>
+                <div>
+                  <span>PLAYER</span>
+                  <strong>{playerName}</strong>
+                </div>
               </div>
-            </div>
-          </section>
-        </div>
+
+              <div className="approved-ticket-pills">
+                {sortedTickets.map((number) => <span key={number}>#{number}</span>)}
+              </div>
+
+              <div className="approved-ticket-list">
+                {sortedTickets.map((number) => (
+                  <TambolaTicket key={number} ticketNumber={number} playerName={playerName} />
+                ))}
+              </div>
+
+              <div className="premium-next-step">
+                <div className="next-step-icon">OK</div>
+                <div>
+                  <span>NEXT</span>
+                  <strong>Wait for the host to start the game</strong>
+                  <p>Your tickets are approved. Stay on this page while the host starts calling numbers.</p>
+                </div>
+              </div>
+            </section>
+          </div>
         </main>
       </>
     );
@@ -2758,219 +2762,154 @@ function PlayerBookingPage({
     <>
       <PlayerBookingPremiumStyles />
       <main className={`player-booking-page premium-booking-page ${selectedTheme.className}`}>
-      <div className="premium-booking-bg" />
+        <div className="premium-booking-bg" />
 
-      <div className="premium-booking-shell">
-        <button type="button" onClick={onBack} className="premium-back-button" aria-label="Back">
-          â†
-        </button>
+        <div className="premium-booking-shell">
+          <button type="button" onClick={onBack} className="premium-back-button" aria-label="Back">â†</button>
 
-        <header className="premium-booking-hero">
-          <div className="premium-brand-line">
-            <div className="premium-brand-mark">â™›</div>
-            <div>
-              <strong>TAMBOLA</strong>
-              <small>BINGO LIVE</small>
-            </div>
-          </div>
-
-          <div className="premium-invite-badge">â— TICKET BOOKING</div>
-          <h1>{game?.game_name || "Tambola Game"}</h1>
-          <p>Select your ticket, enter your name and send the booking request to the host.</p>
-
-          <div className="premium-game-meta">
-            <div>
-              <span>HOST</span>
-              <strong>{game?.host_name || "Game Host"}</strong>
-            </div>
-            <div>
-              <span>DATE</span>
-              <strong>{game?.game_date || "Not set"}</strong>
-            </div>
-            <div>
-              <span>TIME</span>
-              <strong>{game?.game_time || "Not set"}</strong>
-            </div>
-            <div>
-              <span>PRICE / TICKET</span>
-              <strong>â‚¹{ticketPrice}</strong>
-            </div>
-          </div>
-        </header>
-
-        {!accepted && (
-          <section className="premium-card accept-card">
-            <div className="accept-icon">ðŸŽŸï¸</div>
-            <div>
-              <span>INVITATION</span>
-              <strong>Accept the invitation to choose tickets</strong>
-              <p>You need to accept this game invitation before selecting tickets.</p>
-            </div>
-            <button type="button" onClick={() => setAccepted(true)}>I ACCEPT</button>
-          </section>
-        )}
-
-        <section className="premium-card player-details-card">
-          <div className="premium-section-heading">
-            <div className="section-number">01</div>
-            <div>
-              <span>PLAYER DETAILS</span>
-              <h2>Who is playing?</h2>
-              <p>Your name will be sent to the host with the ticket request.</p>
-            </div>
-          </div>
-
-          <label className="premium-name-field">
-            <span>PLAYER NAME</span>
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              value={playerName}
-              onChange={(event) => setPlayerName(event.target.value)}
-              disabled={bookingSent || !accepted}
-            />
-          </label>
-        </section>
-
-        <section className="premium-card ticket-choice-card">
-          <div className="premium-section-heading">
-            <div className="section-number">02</div>
-            <div>
-              <span>CHOOSE YOUR TICKET</span>
-              <h2>Select a ticket number</h2>
-              <p>Tap any ticket below to select it. The actual 3 Ã— 9 ticket is shown on every card.</p>
-            </div>
-            <div className="selection-counter">
-              <strong>{selectedTickets.length}</strong>
-              <span>selected</span>
-            </div>
-          </div>
-
-          <div className="ticket-picker-grid">
-            {Array.from({ length: ticketLimit }, (_, index) => {
-              const ticketNumber = index + 1;
-              const selected = selectedTickets.includes(ticketNumber);
-
-              return (
-                <button
-                  type="button"
-                  key={ticketNumber}
-                  className={`ticket-picker-card ${selected ? "selected" : ""}`}
-                  onClick={() => toggleTicket(ticketNumber)}
-                  disabled={bookingSent || !accepted}
-                >
-                  <div className="ticket-picker-topline">
-                    <span>TICKET</span>
-                    <strong>#{ticketNumber}</strong>
-                    {selected && <b>âœ“</b>}
-                  </div>
-                  <TambolaTicket ticketNumber={ticketNumber} playerName={playerName} preview />
-                  <div className="ticket-picker-action">
-                    {selected ? "Selected Â· Tap to remove" : "Tap to select"}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="premium-card chosen-ticket-card">
-          <div className="premium-section-heading">
-            <div className="section-number">03</div>
-            <div>
-              <span>YOUR ACTUAL TICKET</span>
-              <h2>3 Ã— 9 Tambola Ticket</h2>
-              <p>This is the ticket format you will play with during the live game.</p>
-            </div>
-            <span className="ticket-format-badge">15 NUMBERS</span>
-          </div>
-
-          <div className="chosen-ticket-stage">
-            {sortedTickets.length ? (
-              sortedTickets.map((number) => (
-                <div className="chosen-ticket-item" key={number}>
-                  <TambolaTicket ticketNumber={number} playerName={playerName} />
-                </div>
-              ))
-            ) : (
-              <div className="chosen-empty-state">
-                <div className="chosen-empty-ticket">
-                  <TambolaTicket ticketNumber={1} playerName={playerName} preview />
-                </div>
-                <div>
-                  <span>LIVE PREVIEW</span>
-                  <strong>Select a ticket number above</strong>
-                  <p>Your real 3 Ã— 9 Tambola ticket will appear here as soon as you select a ticket.</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section className="premium-booking-bar">
-          <div className="booking-total-block">
-            <span>SELECTED TICKETS</span>
-            <strong>
-              {sortedTickets.length ? sortedTickets.map((number) => `#${number}`).join("  ") : "None selected"}
-            </strong>
-          </div>
-          <div className="booking-total-price">
-            <span>TOTAL</span>
-            <strong>â‚¹{total}</strong>
-          </div>
-        </section>
-
-        {!bookingSent ? (
-          <section className="premium-submit-card">
-            <button
-              type="button"
-              className="premium-book-button"
-              onClick={sendBookingRequest}
-              disabled={!accepted || !playerName.trim() || !selectedTickets.length}
-            >
-              <span className="whatsapp-icon">â—‰</span>
+          <header className="premium-booking-hero">
+            <div className="premium-brand-line">
+              <div className="premium-brand-mark">TB</div>
               <div>
-                <strong>BOOK {selectedTickets.length || ""} TICKET{selectedTickets.length === 1 ? "" : "S"}</strong>
-                <small>Send booking request via WhatsApp</small>
+                <strong>TAMBOLA</strong>
+                <small>BINGO LIVE</small>
               </div>
-              <b>â†’</b>
-            </button>
-            <p className="premium-submit-note">
-              Your request will open WhatsApp with a ready-made message for <strong>{game?.host_name || "the host"}</strong>.
-            </p>
-          </section>
-        ) : (
-          <section className="premium-card pending-state-card">
-            <div className="pending-state-icon">â³</div>
-            <div>
-              <span>BOOKING REQUEST SENT</span>
-              <h2>Waiting for Host Approval</h2>
-              <p>Your request has been sent to the host through WhatsApp.</p>
             </div>
-            <div className="pending-details">
-              <span>{playerName}</span>
-              <strong>{sortedTickets.map((number) => `#${number}`).join("  ")}</strong>
-            </div>
-          </section>
-        )}
 
-        <footer className="premium-booking-footer">
-          <span>ðŸ›¡ Secure Booking</span>
-          <span>ðŸŽŸï¸ Tambola Bingo Live</span>
-          <span>ðŸ‡®ðŸ‡³ Made for India</span>
-        </footer>
-      </div>
-    </main>
+            <h1>{game?.game_name || "Tambola Game"}</h1>
+
+            <div className="premium-game-meta">
+              <div><span>HOST</span><strong>{game?.host_name || "Game Host"}</strong></div>
+              <div><span>DATE</span><strong>{game?.game_date || "Not set"}</strong></div>
+              <div><span>TIME</span><strong>{game?.game_time || "Not set"}</strong></div>
+              <div><span>PRICE</span><strong>â‚¹{ticketPrice}</strong></div>
+            </div>
+          </header>
+
+          {!accepted && (
+            <section className="premium-card accept-card">
+              <div>
+                <strong>Game invitation</strong>
+                <p>Accept to choose your tickets.</p>
+              </div>
+              <button type="button" onClick={() => setAccepted(true)}>I ACCEPT</button>
+            </section>
+          )}
+
+          <section className="premium-card player-details-card compact-card">
+            <label className="premium-name-field">
+              <span>YOUR NAME</span>
+              <input
+                type="text"
+                placeholder="Enter your name"
+                value={playerName}
+                onChange={(event) => setPlayerName(event.target.value)}
+                disabled={bookingSent || !accepted}
+              />
+            </label>
+          </section>
+
+          <section className="premium-card ticket-choice-card compact-card">
+            <div className="simple-section-title">
+              <h2>Choose your ticket</h2>
+              <span>{selectedTickets.length} selected</span>
+            </div>
+
+            <div className="ticket-number-grid">
+              {Array.from({ length: ticketLimit }, (_, index) => {
+                const ticketNumber = index + 1;
+                const selected = selectedTickets.includes(ticketNumber);
+
+                return (
+                  <button
+                    type="button"
+                    key={ticketNumber}
+                    className={`ticket-number-button ${selected ? "selected" : ""}`}
+                    onClick={() => toggleTicket(ticketNumber)}
+                    disabled={bookingSent || !accepted}
+                    aria-label={`Ticket ${ticketNumber}`}
+                  >
+                    #{ticketNumber}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="premium-card chosen-ticket-card compact-card">
+            <div className="simple-section-title">
+              <h2>Your Tambola ticket</h2>
+              <span>3 Ã— 9</span>
+            </div>
+
+            <div className="chosen-ticket-stage">
+              {sortedTickets.length ? (
+                sortedTickets.map((number) => (
+                  <div className="chosen-ticket-item" key={number}>
+                    <TambolaTicket ticketNumber={number} playerName={playerName} />
+                  </div>
+                ))
+              ) : (
+                <div className="chosen-empty-state clean-empty-state">
+                  <div className="chosen-empty-ticket">
+                    <TambolaTicket ticketNumber={1} playerName={playerName} preview />
+                  </div>
+                  <strong>Select a ticket number above</strong>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="premium-booking-bar">
+            <div className="booking-total-block">
+              <span>SELECTED</span>
+              <strong>{sortedTickets.length ? sortedTickets.map((number) => `#${number}`).join("  ") : "None"}</strong>
+            </div>
+            <div className="booking-total-price">
+              <span>TOTAL</span>
+              <strong>â‚¹{total}</strong>
+            </div>
+          </section>
+
+          {!bookingSent ? (
+            <section className="premium-submit-card">
+              <button
+                type="button"
+                className="premium-book-button"
+                onClick={sendBookingRequest}
+                disabled={!accepted || !playerName.trim() || !selectedTickets.length}
+              >
+                <div>
+                  <strong>BOOK {selectedTickets.length || ""} TICKET{selectedTickets.length === 1 ? "" : "S"}</strong>
+                  <small>Send request to host</small>
+                </div>
+                <b>â†’</b>
+              </button>
+            </section>
+          ) : (
+            <section className="premium-card pending-state-card">
+              <div className="pending-state-icon">...</div>
+              <div>
+                <span>REQUEST SENT</span>
+                <h2>Waiting for Host Approval</h2>
+                <p>Your request has been sent through WhatsApp.</p>
+              </div>
+              <div className="pending-details">
+                <span>{playerName}</span>
+                <strong>{sortedTickets.map((number) => `#${number}`).join("  ")}</strong>
+              </div>
+            </section>
+          )}
+        </div>
+      </main>
     </>
   );
 }
 
 /* ============================================================
    PLAYER BOOKING PREMIUM UI
-   Kept here so the booking page is visually complete even when
-   an older styles.css is still deployed.
    ============================================================ */
-function PlayerBookingPremiumStyles() {
+ {
   return (
     <style>{`
       .premium-booking-page{min-height:100vh;position:relative;overflow:hidden;background:#090710;color:#f8f4ff;padding:0 16px 120px;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -3003,6 +2942,7 @@ function PlayerBookingPremiumStyles() {
       .selection-counter{flex:none!important;text-align:right}.selection-counter strong{display:block;font-size:26px;color:#d8ad54;line-height:1}.selection-counter span{margin:4px 0 0!important}
       .premium-name-field{display:block}.premium-name-field>span{display:block;color:#b1a7b9;font-size:10px;font-weight:800;letter-spacing:1.5px;margin-bottom:8px}.premium-name-field input{width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,.11);background:#0d0a13;color:#fff;border-radius:14px;padding:15px 16px;font-size:16px;outline:none}.premium-name-field input:focus{border-color:rgba(216,173,84,.7);box-shadow:0 0 0 3px rgba(216,173,84,.08)}
       .ticket-picker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+      .compact-card{padding:20px}.simple-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.simple-section-title h2{margin:0;color:#fff;font-size:20px;letter-spacing:-.3px}.simple-section-title span{color:#d8ad54;font-size:10px;font-weight:900;letter-spacing:1px}.ticket-number-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}.ticket-number-button{min-height:48px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#0d0a13;color:#fff;font-size:15px;font-weight:900;cursor:pointer;transition:.16s ease}.ticket-number-button:hover{border-color:rgba(216,173,84,.5);transform:translateY(-1px)}.ticket-number-button.selected{background:#d8ad54;color:#171009;border-color:#d8ad54;box-shadow:0 8px 22px rgba(216,173,84,.18)}.ticket-number-button:disabled{opacity:.65;cursor:not-allowed;transform:none}.clean-empty-state{display:block;text-align:center}.clean-empty-state .chosen-empty-ticket{width:min(560px,100%);max-width:100%;margin:0 auto 14px}.clean-empty-state>strong{display:block;color:#b8afc0;font-size:13px}.chosen-ticket-stage .real-tambola-ticket{max-width:680px;margin-left:auto;margin-right:auto}
       .ticket-picker-card{position:relative;text-align:left;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:#0d0a13;color:#fff;cursor:pointer;transition:.18s ease;min-width:0}.ticket-picker-card:hover{transform:translateY(-2px);border-color:rgba(216,173,84,.45);background:#110d18}.ticket-picker-card.selected{border-color:#d8ad54;background:linear-gradient(145deg,rgba(85,59,22,.25),rgba(32,23,13,.45));box-shadow:0 0 0 1px rgba(216,173,84,.16),0 14px 34px rgba(0,0,0,.25)}.ticket-picker-card:disabled{opacity:.75;cursor:not-allowed;transform:none}
       .ticket-picker-topline{display:flex;align-items:center;gap:7px;margin-bottom:9px}.ticket-picker-topline span{font-size:8px;letter-spacing:1.6px;color:#8d8495;font-weight:900}.ticket-picker-topline strong{font-size:13px}.ticket-picker-topline b{margin-left:auto;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:#d8ad54;color:#17100a;font-size:12px}
       .real-tambola-ticket{width:100%;box-sizing:border-box;border-radius:13px;overflow:hidden;background:#fff;color:#161219;border:3px solid #b98a32;box-shadow:0 10px 25px rgba(0,0,0,.25);padding:0}.ticket-preview{transform:none}
@@ -3018,8 +2958,8 @@ function PlayerBookingPremiumStyles() {
       .premium-booking-footer{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;color:#746b7c;font-size:9px;letter-spacing:.5px;padding:26px 0 10px}
       .accept-card{display:flex;align-items:center;gap:15px}.accept-icon{font-size:25px}.accept-card>div:nth-child(2){flex:1}.accept-card strong{display:block;font-size:16px}.accept-card p{margin:4px 0 0;color:#8f8797;font-size:11px}.accept-card button{border:0;border-radius:12px;padding:11px 16px;background:#d8ad54;color:#171009;font-weight:900;cursor:pointer}
       .approved-player-row{display:flex;align-items:center;gap:12px}.approved-avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,#d8ad54,#7c4aa2);font-weight:900;font-size:20px}.approved-player-row span{display:block;color:#8f8798;font-size:8px;font-weight:900;letter-spacing:1.5px}.approved-player-row strong{display:block;font-size:17px;margin-top:3px}.approved-ticket-pills{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0}.approved-ticket-pills span{padding:7px 10px;border-radius:9px;background:rgba(216,173,84,.1);color:#d8ad54;font-size:10px;font-weight:900}.approved-ticket-list{display:grid;gap:16px}.premium-next-step{display:flex;gap:14px;align-items:flex-start;margin-top:20px;padding:16px;border:1px solid rgba(255,255,255,.07);border-radius:16px;background:#0d0a13}.next-step-icon{font-size:24px}.premium-next-step span{display:block;color:#d8ad54;font-size:8px;font-weight:900;letter-spacing:1.5px}.premium-next-step strong{display:block;font-size:14px;margin-top:4px}.premium-next-step p{margin:4px 0 0;color:#8e8596;font-size:11px;line-height:1.5}
-      @media(max-width:900px){.ticket-picker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-game-meta{grid-template-columns:repeat(2,1fr)}}
-      @media(max-width:600px){.premium-booking-page{padding:0 10px 100px}.premium-booking-shell{padding-top:14px}.premium-card{padding:16px;border-radius:19px}.premium-booking-hero h1{font-size:34px}.premium-booking-hero p{font-size:13px}.premium-game-meta{grid-template-columns:repeat(2,1fr);border-radius:14px}.premium-game-meta strong{font-size:11px}.ticket-picker-grid{grid-template-columns:1fr;gap:10px}.ticket-picker-card{padding:10px}.ticket-picker-card .real-tambola-ticket{max-width:420px;margin:0 auto}.chosen-empty-state{display:block}.chosen-empty-ticket{width:100%;max-width:420px;margin:0 auto 16px}.premium-booking-bar{padding:14px;gap:10px}.booking-total-block strong{font-size:11px}.booking-total-price strong{font-size:23px}.pending-state-card{display:block;text-align:center}.pending-state-icon{margin:0 auto 12px}.pending-details{text-align:center;margin-top:14px}.premium-booking-hero.compact{align-items:flex-start}.premium-brand-line{margin-bottom:12px}.premium-section-heading{align-items:flex-start}.selection-counter{margin-left:auto}.real-ticket-cell{font-size:13px}.real-ticket-player strong{max-width:66%}}
+      @media(max-width:900px){.ticket-number-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.premium-game-meta{grid-template-columns:repeat(2,1fr)}}
+      @media(max-width:600px){.premium-booking-page{padding:0 10px 100px}.premium-booking-shell{padding-top:14px}.premium-card{padding:16px;border-radius:19px}.premium-booking-hero h1{font-size:34px}.premium-booking-hero p{font-size:13px}.premium-game-meta{grid-template-columns:repeat(2,1fr);border-radius:14px}.premium-game-meta strong{font-size:11px}.ticket-number-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ticket-number-button{min-height:44px}.chosen-empty-state{display:block}.chosen-empty-ticket{width:100%;max-width:420px;margin:0 auto 16px}.premium-booking-bar{padding:14px;gap:10px}.booking-total-block strong{font-size:11px}.booking-total-price strong{font-size:23px}.pending-state-card{display:block;text-align:center}.pending-state-icon{margin:0 auto 12px}.pending-details{text-align:center;margin-top:14px}.premium-booking-hero.compact{align-items:flex-start}.premium-brand-line{margin-bottom:12px}.premium-section-heading{align-items:flex-start}.selection-counter{margin-left:auto}.real-ticket-cell{font-size:13px}.real-ticket-player strong{max-width:66%}}
     `}</style>
   );
 }
