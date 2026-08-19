@@ -17,7 +17,7 @@ function App() {
         </div>
 
         <div className="online">
-          <span>●</span> 812 Players Online
+          <span>●</span> Live Platform
         </div>
 
         <button className="menu">☰</button>
@@ -25,25 +25,26 @@ function App() {
 
       <section className="hero">
         <div className="hero-copy">
-          <span className="live-badge">● LIVE GAME PLATFORM</span>
+          <span className="live-badge">● LIVE TAMBOLA PLATFORM</span>
 
           <h1>
-            India's Most Trusted
+            Play Tambola.
             <br />
-            <strong>Live Tambola</strong>
+            <strong>Play Live.</strong>
             <br />
-            <em>Game Platform</em>
+            <em>Win Together.</em>
           </h1>
 
           <p>
-            Create a game, invite players, approve bookings,
-            and run your live Tambola game from one place.
+            A professional live Tambola platform for hosts and players.
+            Create exciting games, invite players, manage tickets,
+            and enjoy real-time gameplay.
           </p>
 
           <div className="features">
             <span>🛡 Secure & Fair</span>
-            <span>⚡ Real-time Sync</span>
-            <span>🏆 Auto Win Detection</span>
+            <span>⚡ Real-time Games</span>
+            <span>🏆 Automatic Winners</span>
           </div>
         </div>
 
@@ -52,34 +53,64 @@ function App() {
           <div className="ball ball-two">29</div>
           <div className="bingo-cage">◎</div>
           <div className="ball ball-three">7</div>
-          <div className="live-now">🔴 LIVE NOW<br />Game #TB7842</div>
+
+          <div className="live-now">
+            🔴 LIVE PLATFORM
+            <br />
+            Ready for your game
+          </div>
         </div>
       </section>
 
-      <section className="action-grid">
-        <button className="game-card create">
-          <span className="game-icon">🎮</span>
-          <div>
-            <h2>Create Game</h2>
-            <p>Create a new Tambola game and invite players</p>
-          </div>
-          <strong>Create Game →</strong>
-        </button>
+      <section className="entry-section">
+        <div className="section-heading">
+          <span>GET STARTED</span>
+          <h2>How are you joining?</h2>
+          <p>Choose the option that matches your role.</p>
+        </div>
 
-        <button className="game-card join">
-          <span className="game-icon">🎟️</span>
-          <div>
-            <h2>Join Game</h2>
-            <p>Enter game code and join a live game</p>
-          </div>
-          <strong>Join Game →</strong>
-        </button>
+        <div className="entry-grid">
+          <button className="entry-card host">
+            <div className="entry-icon">🎮</div>
+
+            <div className="entry-content">
+              <span className="role">HOST</span>
+              <h2>Host a Game</h2>
+              <p>
+                Create and manage your own Tambola game,
+                set tickets and prizes, and invite players.
+              </p>
+            </div>
+
+            <div className="entry-arrow">→</div>
+          </button>
+
+          <button className="entry-card player">
+            <div className="entry-icon">🎟️</div>
+
+            <div className="entry-content">
+              <span className="role">PLAYER</span>
+              <h2>Join an Invitation</h2>
+              <p>
+                Already received a game invitation?
+                Open your invitation and continue to ticket booking.
+              </p>
+            </div>
+
+            <div className="entry-arrow">→</div>
+          </button>
+        </div>
+
+        <div className="invitation-note">
+          🔗 Players with a host invitation link will be taken directly
+          to their specific game invitation page.
+        </div>
       </section>
 
       <section className="preview">
         <div className="section-title">
           <h2>📡 Live Game Preview</h2>
-          <span>● Real-time</span>
+          <span>Real-time gameplay</span>
         </div>
 
         <div className="number-layout">
@@ -121,39 +152,97 @@ function App() {
 
       <section className="prizes">
         <div className="section-title">
-          <h2>🎁 Exciting Prizes to Win</h2>
-          <span>View All Prizes →</span>
+          <h2>🎁 Popular Prize Types</h2>
+          <span>Host configurable</span>
         </div>
 
         <div className="prize-grid">
-          <div>FIRST FIVE<strong>₹500</strong></div>
-          <div>FOUR CORNERS<strong>₹800</strong></div>
-          <div>TOP LINE<strong>₹600</strong></div>
-          <div>MIDDLE LINE<strong>₹600</strong></div>
-          <div>BOTTOM LINE<strong>₹600</strong></div>
-          <div>FULL HOUSE<strong>₹5000</strong></div>
+          <div>
+            FIRST FIVE
+            <strong>Custom</strong>
+          </div>
+
+          <div>
+            FOUR CORNERS
+            <strong>Custom</strong>
+          </div>
+
+          <div>
+            TOP LINE
+            <strong>Custom</strong>
+          </div>
+
+          <div>
+            MIDDLE LINE
+            <strong>Custom</strong>
+          </div>
+
+          <div>
+            BOTTOM LINE
+            <strong>Custom</strong>
+          </div>
+
+          <div>
+            FULL HOUSE
+            <strong>Custom</strong>
+          </div>
         </div>
       </section>
 
       <section className="stats">
-        <div>👥 <strong>12,458+</strong><small>Games Played</small></div>
-        <div>👤 <strong>98,721+</strong><small>Happy Players</small></div>
-        <div>🏆 <strong>₹48.6L+</strong><small>Prizes Won</small></div>
-        <div>⚡ <strong>99.9%</strong><small>Uptime</small></div>
+        <div>
+          👥
+          <strong>Live</strong>
+          <small>Player Experience</small>
+        </div>
+
+        <div>
+          🎟️
+          <strong>Smart</strong>
+          <small>Ticket Management</small>
+        </div>
+
+        <div>
+          🏆
+          <strong>Auto</strong>
+          <small>Winner Detection</small>
+        </div>
+
+        <div>
+>📱
+          <strong>WhatsApp</strong>
+          <small>Booking Requests</small>
+        </div>
       </section>
 
       <footer>
-        <span>🛡 100% Secure</span>
-        <span>🎧 24/7 Support</span>
-        <span>🇮🇳 Made in India</span>
+        <span>🛡 Secure Platform</span>
+        <span>🎧 Host Support</span>
+        <span>🇮🇳 Made for India</span>
       </footer>
 
       <nav className="bottom-nav">
-        <span className="active">⌂<small>Home</small></span>
-        <span>▦<small>My Games</small></span>
+        <span className="active">
+          ⌂
+          <small>Home</small>
+        </span>
+
+        <span>
+          ℹ
+          <small>How It Works</small>
+        </span>
+
         <span className="plus">＋</span>
-        <span>▣<small>Wallet</small></span>
-        <span>♙<small>Profile</small></span>
+
+        <span>
+          🎟
+          <small>Invitations</small>
+        </span>
+
+        <span>
+          ♙
+          <small>Account</small>
+        </span>
       </nav>
     </main>
   );
