@@ -51,7 +51,8 @@ function loadGame(){
   }
 }
 
-function Ticket({n,name=""}){
+function Ticket({n,name="",selected=false,onClick}){
+
   const masks=[
     [1,0,1,0,1,0,1,1,0],
     [0,1,0,1,0,1,0,1,1],
@@ -62,45 +63,80 @@ function Ticket({n,name=""}){
   const base=Math.max(1,Number(n)||1);
 
   for(let c=0;c<9;c++){
+
     const min=c?c*10:1;
     const max=c===8?90:c*10+9;
-    const vals=Array.from({length:max-min+1},(_,i)=>min+i);
+
+    const vals=Array.from(
+      {length:max-min+1},
+      (_,i)=>min+i
+    );
+
     const shift=(base*(c+3)+c*7)%vals.length;
-    const v=vals.slice(shift).concat(vals.slice(0,shift));
+
+    const v=
+      vals.slice(shift).concat(
+        vals.slice(0,shift)
+      );
 
     rows.forEach((r,ri)=>{
-      if(r[c])r[c]=v[(base+c*3+ri*5)%v.length];
+      if(r[c]){
+        r[c]=v[
+          (base+c*3+ri*5)%v.length
+        ];
+      }
     });
   }
 
   return(
-    <div style={{
-      border:"1px solid #333",
-      padding:6,
-      margin:"8px 0",
-      maxWidth:360,
-      background:"#fff"
-    }}>
-      <b>Ticket #{n}</b>
-      {name&&<span> — {name}</span>}
+    <div
+      onClick={onClick}
+      style={{
+        border:selected
+          ?"3px solid #111"
+          :"1px solid #333",
+        padding:6,
+        margin:"8px 0",
+        maxWidth:360,
+        background:"#fff",
+        cursor:"pointer"
+      }}
+    >
 
-      <div style={{
-        display:"grid",
-        gridTemplateColumns:"repeat(9,1fr)",
-        marginTop:5
-      }}>
+      <b>
+        Ticket #{n}
+        {selected?" ✓":""}
+      </b>
+
+      {name&&
+        <span> — {name}</span>
+      }
+
+      <div
+        style={{
+          display:"grid",
+          gridTemplateColumns:"repeat(9,1fr)",
+          marginTop:5
+        }}
+      >
+
         {rows.flat().map((v,i)=>(
-          <div key={i} style={{
-            border:"1px solid #aaa",
-            height:30,
-            textAlign:"center",
-            lineHeight:"30px",
-            fontSize:14
-          }}>
+          <div
+            key={i}
+            style={{
+              border:"1px solid #aaa",
+              height:30,
+              textAlign:"center",
+              lineHeight:"30px",
+              fontSize:14
+            }}
+          >
             {v||""}
           </div>
         ))}
+
       </div>
+
     </div>
   );
 }
@@ -112,18 +148,34 @@ function HostPage({game,setGame}){
 
   const[creating,setCreating]=useState(!game);
 
-  const[name,setName]=useState(game?.game_name||"TambolaLive");
-  const[limit,setLimit]=useState(game?.ticket_limit||100);
-  const[price,setPrice]=useState(game?.ticket_price||20);
-  const[date,setDate]=useState(game?.game_date||"");
-  const[time,setTime]=useState(game?.game_time||"");
+  const[name,setName]=useState(
+    game?.game_name||"TambolaLive"
+  );
+
+  const[limit,setLimit]=useState(
+    game?.ticket_limit||100
+  );
+
+  const[price,setPrice]=useState(
+    game?.ticket_price||20
+  );
+
+  const[date,setDate]=useState(
+    game?.game_date||""
+  );
+
+  const[time,setTime]=useState(
+    game?.game_time||""
+  );
 
   const[theme,setTheme]=useState(
     game?.theme||"Classic"
   );
 
   const[prizes,setPrizes]=useState(
-    game?.prizes?.length?game.prizes:defaultPrizes
+    game?.prizes?.length
+      ?game.prizes
+      :defaultPrizes
   );
 
   const[custom,setCustom]=useState("");
@@ -133,12 +185,15 @@ function HostPage({game,setGame}){
   const prizeChange=(i,value)=>{
     setPrizes(p=>
       p.map((x,j)=>
-        j===i?{...x,amount:value}:x
+        j===i
+          ?{...x,amount:value}
+          :x
       )
     );
   };
 
   async function createGame(e){
+
     e.preventDefault();
 
     setBusy(true);
@@ -149,11 +204,13 @@ function HostPage({game,setGame}){
       let gc=code6();
 
       while(
-        (await supabase
-          .from("games")
-          .select("id")
-          .eq("game_code",gc)
-          .maybeSingle()).data
+        (
+          await supabase
+            .from("games")
+            .select("id")
+            .eq("game_code",gc)
+            .maybeSingle()
+        ).data
       ){
         gc=code6();
       }
@@ -189,7 +246,7 @@ function HostPage({game,setGame}){
         game_name:name.trim()||"TambolaLive",
         host_name:"Host",
         status:"upcoming",
-        theme:theme,
+        theme,
         gameStarted:false,
         calledNumbers:[],
         prizes:cleanPrizes,
@@ -201,14 +258,17 @@ function HostPage({game,setGame}){
       setCreating(false);
 
     }catch(e){
-      setErr(e.message||"Could not create game");
+
+      setErr(
+        e.message||
+        "Could not create game"
+      );
+
     }finally{
       setBusy(false);
     }
   }
 
-
-  /* ================= SHARE ================= */
 
   async function shareGame(){
 
@@ -233,7 +293,11 @@ function HostPage({game,setGame}){
       ctx.textAlign="center";
 
       ctx.font="bold 72px Arial";
-      ctx.fillText("TAMBOLA LIVE",540,105);
+      ctx.fillText(
+        "TAMBOLA LIVE",
+        540,
+        105
+      );
 
       ctx.font="bold 50px Arial";
       ctx.fillText(
@@ -246,33 +310,42 @@ function HostPage({game,setGame}){
       ctx.textAlign="left";
 
       ctx.font="bold 40px Arial";
-      ctx.fillText("GAME DETAILS",80,340);
+      ctx.fillText(
+        "GAME DETAILS",
+        80,
+        340
+      );
 
       ctx.font="34px Arial";
 
       ctx.fillText(
         `Theme: ${game.theme||"Classic"}`,
-        90,410
+        90,
+        410
       );
 
       ctx.fillText(
         `Date: ${game.game_date||"-"}`,
-        90,465
+        90,
+        465
       );
 
       ctx.fillText(
         `Time: ${game.game_time||"-"}`,
-        90,520
+        90,
+        520
       );
 
       ctx.fillText(
         `Ticket Price: ₹${game.ticket_price||0}`,
-        90,575
+        90,
+        575
       );
 
       ctx.fillText(
         `Tickets Available: ${game.ticket_limit||0}`,
-        90,630
+        90,
+        630
       );
 
       const realPrizes=(game.prizes||[]).filter(
@@ -285,7 +358,12 @@ function HostPage({game,setGame}){
       );
 
       ctx.font="bold 40px Arial";
-      ctx.fillText("PRIZES",80,720);
+
+      ctx.fillText(
+        "PRIZES",
+        80,
+        720
+      );
 
       ctx.font="32px Arial";
 
@@ -301,23 +379,43 @@ function HostPage({game,setGame}){
         `${location.origin}/?game=${game.game_code}`;
 
       ctx.textAlign="center";
+
       ctx.font="bold 42px Arial";
-      ctx.fillText("JOIN THE GAME",540,1100);
+
+      ctx.fillText(
+        "JOIN THE GAME",
+        540,
+        1100
+      );
 
       ctx.font="28px Arial";
+
       ctx.fillText(
         "Open the invitation link to book tickets",
-        540,1155
+        540,
+        1155
       );
 
       ctx.font="24px Arial";
-      ctx.fillText(url,540,1220);
 
-      const blob=await new Promise(resolve=>
-        canvas.toBlob(resolve,"image/png")
+      ctx.fillText(
+        url,
+        540,
+        1220
       );
 
-      if(!blob)throw new Error("Poster failed");
+      const blob=await new Promise(resolve=>
+        canvas.toBlob(
+          resolve,
+          "image/png"
+        )
+      );
+
+      if(!blob){
+        throw new Error(
+          "Poster failed"
+        );
+      }
 
       const file=new File(
         [blob],
@@ -336,26 +434,38 @@ function HostPage({game,setGame}){
       if(
         navigator.share&&
         navigator.canShare&&
-        navigator.canShare({files:[file]})
+        navigator.canShare({
+          files:[file]
+        })
       ){
+
         await navigator.share({
-          title:game.game_name||"TambolaLive",
+          title:
+            game.game_name||
+            "TambolaLive",
           text:message,
           files:[file]
         });
+
         return;
       }
 
       if(navigator.share){
+
         await navigator.share({
-          title:game.game_name||"TambolaLive",
+          title:
+            game.game_name||
+            "TambolaLive",
           text:message,
-          url:url
+          url
         });
+
         return;
       }
 
-      await navigator.clipboard?.writeText(message);
+      await navigator.clipboard?.writeText(
+        message
+      );
 
       alert("Game link copied.");
 
@@ -365,7 +475,9 @@ function HostPage({game,setGame}){
 
       console.error(e);
 
-      alert("Could not share the game.");
+      alert(
+        "Could not share the game."
+      );
     }
   }
 
@@ -376,26 +488,34 @@ function HostPage({game,setGame}){
       `${location.origin}/?game=${game.game_code}`;
 
     try{
+
       await navigator.clipboard.writeText(url);
+
       alert("Game link copied.");
+
     }catch{
-      prompt("Copy this game link:",url);
+
+      prompt(
+        "Copy this game link:",
+        url
+      );
     }
   }
 
 
-  /* ================= CREATE ================= */
-
   if(creating){
 
     return(
-      <main style={{
-        maxWidth:600,
-        margin:"20px auto",
-        padding:20
-      }}>
+      <main
+        style={{
+          maxWidth:600,
+          margin:"20px auto",
+          padding:20
+        }}
+      >
 
         <h1>TAMBOLA LIVE</h1>
+
         <h2>Create Game</h2>
 
         {err&&<p>{err}</p>}
@@ -407,7 +527,9 @@ function HostPage({game,setGame}){
 
           <input
             value={name}
-            onChange={e=>setName(e.target.value)}
+            onChange={e=>
+              setName(e.target.value)
+            }
             placeholder="TambolaLive"
           />
 
@@ -420,7 +542,9 @@ function HostPage({game,setGame}){
             type="number"
             min="1"
             value={limit}
-            onChange={e=>setLimit(e.target.value)}
+            onChange={e=>
+              setLimit(e.target.value)
+            }
             required
           />
 
@@ -433,7 +557,9 @@ function HostPage({game,setGame}){
             type="number"
             min="0"
             value={price}
-            onChange={e=>setPrice(e.target.value)}
+            onChange={e=>
+              setPrice(e.target.value)
+            }
             required
           />
 
@@ -445,7 +571,9 @@ function HostPage({game,setGame}){
           <input
             type="date"
             value={date}
-            onChange={e=>setDate(e.target.value)}
+            onChange={e=>
+              setDate(e.target.value)
+            }
             required
           />
 
@@ -457,7 +585,9 @@ function HostPage({game,setGame}){
           <input
             type="time"
             value={time}
-            onChange={e=>setTime(e.target.value)}
+            onChange={e=>
+              setTime(e.target.value)
+            }
             required
           />
 
@@ -468,13 +598,20 @@ function HostPage({game,setGame}){
 
           <select
             value={theme}
-            onChange={e=>setTheme(e.target.value)}
+            onChange={e=>
+              setTheme(e.target.value)
+            }
           >
+
             {themes.map(t=>(
-              <option key={t} value={t}>
+              <option
+                key={t}
+                value={t}
+              >
                 {t}
               </option>
             ))}
+
           </select>
 
           <h3>Prizes</h3>
@@ -482,19 +619,29 @@ function HostPage({game,setGame}){
           {prizes.map((p,i)=>(
             <div
               key={i}
-              style={{marginBottom:8}}
+              style={{
+                marginBottom:8
+              }}
             >
-              <label>{p.name}</label>
+
+              <label>
+                {p.name}
+              </label>
+
               <br/>
 
               <input
                 type="number"
                 value={p.amount}
                 onChange={e=>
-                  prizeChange(i,e.target.value)
+                  prizeChange(
+                    i,
+                    e.target.value
+                  )
                 }
                 placeholder="Amount"
               />
+
             </div>
           ))}
 
@@ -503,7 +650,9 @@ function HostPage({game,setGame}){
             <input
               placeholder="Custom prize"
               value={custom}
-              onChange={e=>setCustom(e.target.value)}
+              onChange={e=>
+                setCustom(e.target.value)
+              }
             />
 
             <button
@@ -535,7 +684,10 @@ function HostPage({game,setGame}){
             disabled={busy}
             type="submit"
           >
-            {busy?"Creating...":"Create Game"}
+            {busy
+              ?"Creating..."
+              :"Create Game"
+            }
           </button>
 
         </form>
@@ -544,8 +696,6 @@ function HostPage({game,setGame}){
     );
   }
 
-
-  /* ================= CONTROL CENTRE ================= */
 
   const inviteUrl=
     `${location.origin}/?game=${game.game_code}`;
@@ -564,10 +714,14 @@ function HostPage({game,setGame}){
   function approvePrize(i){
 
     const updatedPrizes=
-      (game.prizes||[]).map((p,j)=>
-        j===i
-          ?{...p,approved:!p.approved}
-          :p
+      (game.prizes||[]).map(
+        (p,j)=>
+          j===i
+            ?{
+              ...p,
+              approved:!p.approved
+            }
+            :p
       );
 
     const updated={
@@ -579,19 +733,22 @@ function HostPage({game,setGame}){
     saveGame(updated);
   }
 
-  const visiblePrizes=(game.prizes||[]).filter(
-    p=>
-      p.amount!==""&&
-      p.amount!==null&&
-      p.amount!==undefined
-  );
+  const visiblePrizes=
+    (game.prizes||[]).filter(
+      p=>
+        p.amount!==""&&
+        p.amount!==null&&
+        p.amount!==undefined
+    );
 
   return(
-    <main style={{
-      maxWidth:700,
-      margin:"20px auto",
-      padding:20
-    }}>
+    <main
+      style={{
+        maxWidth:700,
+        margin:"20px auto",
+        padding:20
+      }}
+    >
 
       <h1>{game.game_name}</h1>
 
@@ -623,17 +780,24 @@ function HostPage({game,setGame}){
           changeTheme(e.target.value)
         }
       >
+
         {themes.map(t=>(
-          <option key={t} value={t}>
+          <option
+            key={t}
+            value={t}
+          >
             {t}
           </option>
         ))}
+
       </select>
 
       <p>
         Selected Theme:
         {" "}
-        <b>{game.theme||"Classic"}</b>
+        <b>
+          {game.theme||"Classic"}
+        </b>
       </p>
 
       <hr/>
@@ -643,7 +807,9 @@ function HostPage({game,setGame}){
       <input
         readOnly
         value={inviteUrl}
-        style={{width:"70%"}}
+        style={{
+          width:"70%"
+        }}
       />
 
       <button onClick={copyLink}>
@@ -652,7 +818,9 @@ function HostPage({game,setGame}){
 
       <button
         onClick={shareGame}
-        style={{marginLeft:8}}
+        style={{
+          marginLeft:8
+        }}
       >
         Share Game
       </button>
@@ -667,7 +835,7 @@ function HostPage({game,setGame}){
         </p>
       )}
 
-      {visiblePrizes.map((p)=>{
+      {visiblePrizes.map(p=>{
 
         const originalIndex=
           (game.prizes||[]).indexOf(p);
@@ -701,7 +869,9 @@ function HostPage({game,setGame}){
 
             <button
               onClick={()=>
-                approvePrize(originalIndex)
+                approvePrize(
+                  originalIndex
+                )
               }
             >
               {p.approved
@@ -722,10 +892,12 @@ function HostPage({game,setGame}){
         Pending booking requests will appear here.
       </p>
 
-      <div style={{
-        border:"1px solid #ccc",
-        padding:15
-      }}>
+      <div
+        style={{
+          border:"1px solid #ccc",
+          padding:15
+        }}
+      >
         No pending bookings yet.
       </div>
 
@@ -743,8 +915,10 @@ function HostPage({game,setGame}){
       <button
         onClick={()=>{
           if(confirm("End this game?")){
+
             saveGame(null);
             setGame(null);
+
           }
         }}
       >
@@ -756,16 +930,20 @@ function HostPage({game,setGame}){
 }
 
 
-/* ================= LIVE GAME ================= */
+/* ================= LIVE ================= */
 
 function Live({game,setGame}){
 
-  const called=game.calledNumbers||[];
-  const last=called.at(-1);
+  const called=
+    game.calledNumbers||[];
 
-  const remaining=nums.filter(
-    n=>!called.includes(n)
-  );
+  const last=
+    called.at(-1);
+
+  const remaining=
+    nums.filter(
+      n=>!called.includes(n)
+    );
 
   function start(){
 
@@ -785,7 +963,8 @@ function Live({game,setGame}){
     const n=
       remaining[
         Math.floor(
-          Math.random()*remaining.length
+          Math.random()*
+          remaining.length
         )
       ];
 
@@ -815,11 +994,15 @@ function Live({game,setGame}){
       <p>
         Current Number:
         {" "}
-        <b>{last||"—"}</b>
+        <b>
+          {last||"—"}
+        </b>
       </p>
 
       <p>
-        Called: {called.length}/90
+        Called:
+        {" "}
+        {called.length}/90
       </p>
 
       {!game.gameStarted?
@@ -831,16 +1014,22 @@ function Live({game,setGame}){
         :
 
         <>
-          <button onClick={callNext}>
+
+          <button
+            onClick={callNext}
+          >
             Call Next Number
           </button>
 
           <button
             onClick={reset}
-            style={{marginLeft:8}}
+            style={{
+              marginLeft:8
+            }}
           >
             Reset
           </button>
+
         </>
       }
 
@@ -860,40 +1049,48 @@ function Live({game,setGame}){
 
 function Invitation({game,accept}){
 
-  const prizes=(game.prizes||[]).filter(
-    p=>
-      p.amount!==""&&
-      p.amount!==null&&
-      p.amount!==undefined
-  );
+  const prizes=
+    (game.prizes||[]).filter(
+      p=>
+        p.amount!==""&&
+        p.amount!==null&&
+        p.amount!==undefined
+    );
 
   return(
-    <main style={{
-      maxWidth:600,
-      margin:"20px auto",
-      padding:20
-    }}>
+    <main
+      style={{
+        maxWidth:600,
+        margin:"20px auto",
+        padding:20
+      }}
+    >
 
       <h1>{game.game_name}</h1>
 
       <p>
-        <b>Date:</b> {game.game_date}
+        <b>Date:</b>{" "}
+        {game.game_date}
       </p>
 
       <p>
-        <b>Time:</b> {game.game_time}
+        <b>Time:</b>{" "}
+        {game.game_time}
       </p>
 
       <p>
-        <b>Ticket Price:</b> ₹{game.ticket_price}
+        <b>Ticket Price:</b>{" "}
+        ₹{game.ticket_price}
       </p>
 
       <p>
-        <b>Available Tickets:</b> {game.ticket_limit}
+        <b>Available Tickets:</b>{" "}
+        {game.ticket_limit}
       </p>
 
       <p>
-        <b>Status:</b> {game.status}
+        <b>Status:</b>{" "}
+        {game.status}
       </p>
 
       <h3>Prize List</h3>
@@ -917,19 +1114,88 @@ function Invitation({game,accept}){
 
 function Booking({game}){
 
-  const[player,setPlayer]=useState("");
-  const[selected,setSelected]=useState([]);
-  const[sent,setSent]=useState(false);
+  const[
+    searchName,
+    setSearchName
+  ]=useState("");
+
+  const[
+    searchedPlayer,
+    setSearchedPlayer
+  ]=useState(null);
+
+  const[
+    selected,
+    setSelected
+  ]=useState([]);
+
+  const[
+    sent,
+    setSent
+  ]=useState(false);
 
   const tickets=Array.from(
     {
       length:Math.max(
         1,
-        Number(game.ticket_limit||100)
+        Number(
+          game.ticket_limit||100
+        )
       )
     },
     (_,i)=>i+1
   );
+
+
+  /* Search existing player names
+     available in bookingRequests */
+
+  function searchPlayer(){
+
+    const term=
+      searchName
+        .trim()
+        .toLowerCase();
+
+    if(!term){
+
+      setSearchedPlayer(null);
+
+      alert(
+        "Type a player name first."
+      );
+
+      return;
+    }
+
+    const requests=
+      game.bookingRequests||[];
+
+    const found=
+      requests.find(x=>
+        String(
+          x.playerName||""
+        )
+        .toLowerCase()
+        .includes(term)
+      );
+
+    if(found){
+
+      setSearchedPlayer(
+        found.playerName
+      );
+
+    }else{
+
+      setSearchedPlayer(null);
+
+      alert(
+        "No player found."
+      );
+    }
+  }
+
 
   function toggle(n){
 
@@ -942,12 +1208,13 @@ function Booking({game}){
     );
   }
 
+
   function send(){
 
-    if(!player.trim()||!selected.length){
+    if(!selected.length){
 
       alert(
-        "Enter your name and select tickets."
+        "Select at least one ticket."
       );
 
       return;
@@ -960,85 +1227,156 @@ function Booking({game}){
     const url=
       `${location.origin}/?game=${game.game_code}`;
 
+    const playerName=
+      searchedPlayer||
+      searchName.trim()||
+      "Player";
+
     const text=
       `Hi, I want to book tickets `+
-      `${sorted.map(n=>`#${n}`).join(", ")}`+
+      `${sorted
+        .map(n=>`#${n}`)
+        .join(", ")}`+
       ` for ${game.game_name}.\n\n`+
-      `Player: ${player.trim()}\n`+
+      `Player: ${playerName}\n`+
       `Game: ${url}`;
 
     setSent(true);
 
     location.href=
-      `https://wa.me/?text=${encodeURIComponent(text)}`;
+      `https://wa.me/?text=${
+        encodeURIComponent(text)
+      }`;
   }
 
+
   return(
-    <main style={{
-      maxWidth:700,
-      margin:"20px auto",
-      padding:20
-    }}>
+    <main
+      style={{
+        maxWidth:700,
+        margin:"20px auto",
+        padding:20
+      }}
+    >
 
       <h1>Ticket Booking</h1>
 
-      <p>{game.game_name}</p>
+      <p>
+        {game.game_name}
+      </p>
 
-      <input
-        placeholder="Player name"
-        value={player}
-        onChange={e=>setPlayer(e.target.value)}
-        disabled={sent}
-      />
 
-      <h3>Ticket Numbers</h3>
+      {/* PLAYER SEARCH */}
 
-      <div style={{
-        display:"flex",
-        flexWrap:"wrap",
-        gap:5
-      }}>
+      <h3>Search Player</h3>
+
+      <div>
+
+        <input
+          placeholder="Type player name"
+          value={searchName}
+          onChange={e=>{
+            setSearchName(
+              e.target.value
+            );
+            setSearchedPlayer(null);
+          }}
+          disabled={sent}
+        />
+
+        <button
+          type="button"
+          onClick={searchPlayer}
+          disabled={sent}
+        >
+          Search
+        </button>
+
+      </div>
+
+
+      {searchedPlayer&&(
+        <p>
+          Player found:
+          {" "}
+          <b>
+            {searchedPlayer}
+          </b>
+        </p>
+      )}
+
+
+      {/* TICKET NUMBERS */}
+
+      <h3>
+        Ticket Numbers
+      </h3>
+
+      <div
+        style={{
+          display:"flex",
+          flexWrap:"wrap",
+          gap:5
+        }}
+      >
 
         {tickets.map(n=>(
           <button
             key={n}
-            onClick={()=>toggle(n)}
+            onClick={()=>
+              toggle(n)
+            }
             disabled={sent}
           >
-            {selected.includes(n)?"✓ ":""}
+            {selected.includes(n)
+              ?"✓ "
+              :""
+            }
+
             #{n}
+
           </button>
         ))}
 
       </div>
 
+
+      {/* ALL ACTUAL TICKETS */}
+
       <h3>
-        Actual 3 × 9 Tickets
+        Actual 3 × 9 Tambola Tickets
       </h3>
 
-      {(selected.length?selected:[1])
-        .sort((a,b)=>a-b)
-        .map(n=>(
-          <div
-            key={n}
-            onClick={()=>
-              !sent&&toggle(n)
-            }
-          >
-            <Ticket
-              n={n}
-              name={player}
-            />
-          </div>
-        ))
-      }
+      <p>
+        Tap any ticket to select or
+        unselect it.
+      </p>
+
+      {tickets.map(n=>(
+        <Ticket
+          key={n}
+          n={n}
+          name={
+            searchedPlayer||
+            searchName.trim()
+          }
+          selected={
+            selected.includes(n)
+          }
+          onClick={()=>
+            toggle(n)
+          }
+        />
+      ))}
+
+
+      {/* BOOK */}
 
       {!sent?
 
         <button
           onClick={send}
           disabled={
-            !player.trim()||
             !selected.length
           }
         >
@@ -1062,35 +1400,60 @@ function Booking({game}){
 
 function App(){
 
-  const[game,setGame]=useState(null);
-  const[playerGame,setPlayerGame]=useState(null);
-  const[page,setPage]=useState("host");
-  const[error,setError]=useState("");
+  const[
+    game,
+    setGame
+  ]=useState(null);
+
+  const[
+    playerGame,
+    setPlayerGame
+  ]=useState(null);
+
+  const[
+    page,
+    setPage
+  ]=useState("host");
+
+  const[
+    error,
+    setError
+  ]=useState("");
 
   useEffect(()=>{
 
-    const saved=loadGame();
+    const saved=
+      loadGame();
 
     if(saved){
+
       setGame(saved);
       setPage("host");
+
     }
 
-    const gc=getGameCode();
+    const gc=
+      getGameCode();
 
     if(gc){
+
       loadPlayer(gc);
+
     }
 
   },[]);
 
+
   useEffect(()=>{
 
     if(game){
+
       saveGame(game);
+
     }
 
   },[game]);
+
 
   async function loadPlayer(gc){
 
@@ -1119,46 +1482,73 @@ function App(){
     const g={
       ...data,
 
-      prizes:Array.isArray(data.prizes)
-        ?data.prizes
-        :defaultPrizes,
+      prizes:
+        Array.isArray(data.prizes)
+          ?data.prizes
+          :defaultPrizes,
 
-      calledNumbers:Array.isArray(data.calledNumbers)
-        ?data.calledNumbers
-        :[],
+      calledNumbers:
+        Array.isArray(
+          data.calledNumbers
+        )
+          ?data.calledNumbers
+          :[],
 
-      bookingRequests:Array.isArray(data.bookingRequests)
-        ?data.bookingRequests
-        :[]
+      bookingRequests:
+        Array.isArray(
+          data.bookingRequests
+        )
+          ?data.bookingRequests
+          :[]
     };
 
     setPlayerGame(g);
     setPage("invitation");
   }
 
+
   if(error){
 
     return(
-      <main style={{padding:20}}>
-        <h2>Game Not Found</h2>
-        <p>{error}</p>
+      <main
+        style={{
+          padding:20
+        }}
+      >
+
+        <h2>
+          Game Not Found
+        </h2>
+
+        <p>
+          {error}
+        </p>
+
       </main>
     );
   }
 
-  if(playerGame&&page==="invitation"){
+
+  if(
+    playerGame&&
+    page==="invitation"
+  ){
 
     return(
       <Invitation
         game={playerGame}
-        accept={()=>{
-          setPage("booking");
-        }}
+        accept={()=>
+          setPage("booking")
+        }
       />
     );
   }
 
-  if(playerGame&&page==="booking"){
+
+  if(
+    playerGame&&
+    page==="booking"
+  ){
 
     return(
       <Booking
@@ -1167,6 +1557,7 @@ function App(){
     );
   }
 
+
   return(
     <HostPage
       game={game}
@@ -1174,6 +1565,7 @@ function App(){
     />
   );
 }
+
 
 createRoot(
   document.getElementById("root")
