@@ -76,6 +76,35 @@ const defaultPrizes = [
 ];
 
 const STORAGE_KEY = "tambola_bingo_live_host_game";
+const PLAYER_SESSION_KEY = "tambola_bingo_live_player_session";
+
+function savePlayerSession(gameCode, page = "player-booking") {
+  if (!gameCode) return;
+  localStorage.setItem(
+    PLAYER_SESSION_KEY,
+    JSON.stringify({
+      gameCode: String(gameCode).toUpperCase(),
+      page,
+    })
+  );
+}
+
+function loadPlayerSession() {
+  try {
+    const stored = localStorage.getItem(PLAYER_SESSION_KEY);
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    if (!parsed?.gameCode) return null;
+    return parsed;
+  } catch {
+    localStorage.removeItem(PLAYER_SESSION_KEY);
+    return null;
+  }
+}
+
+function clearPlayerSession() {
+  localStorage.removeItem(PLAYER_SESSION_KEY);
+}
 
 function generateGameCode() {
   const characters =
@@ -2388,96 +2417,82 @@ function PlayerInvitationPage({
   const ticketLimit = Math.max(1, Number(game?.ticket_limit || 0));
   const bookedTickets = getBookedTicketNumbers(game);
   const availableTickets = Math.max(0, ticketLimit - bookedTickets.size);
-  const status = String(game?.status || "upcoming")
-    .replace(/_/g, " ")
-    .toUpperCase();
+  const status = String(game?.status || "upcoming").replace(/_/g, " ").toUpperCase();
 
   return (
-    <>
-      <style>{`
-        .premium-invite-page{min-height:100vh;padding:24px 14px 48px;position:relative;overflow:hidden;background:#08060d;color:#fff}
-        .premium-invite-page:before{content:"";position:absolute;inset:-25%;background:radial-gradient(circle at 50% 5%,rgba(151,91,255,.22),transparent 35%),radial-gradient(circle at 85% 55%,rgba(216,173,84,.10),transparent 28%);pointer-events:none}
-        .premium-invite-shell{position:relative;z-index:1;width:min(680px,100%);margin:0 auto}
-        .premium-invite-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-        .premium-invite-brand{display:flex;align-items:center;gap:11px}
-        .premium-invite-logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#2a1748,#120c1e);border:1px solid rgba(216,173,84,.35);box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:21px}
-        .premium-invite-brand strong{display:block;font-size:15px;letter-spacing:2px}.premium-invite-brand small{display:block;color:#9a91a5;font-size:8px;letter-spacing:2.4px;margin-top:2px}
-        .premium-invite-back{width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#fff;font-size:20px}
-        .premium-invite-card{border:1px solid rgba(216,173,84,.2);border-radius:28px;background:linear-gradient(180deg,rgba(25,19,34,.98),rgba(11,8,16,.98));box-shadow:0 25px 80px rgba(0,0,0,.48);overflow:hidden}
-        .premium-invite-hero{padding:28px 24px 22px;text-align:center;background:linear-gradient(180deg,rgba(71,38,102,.35),transparent)}
-        .premium-invite-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(216,173,84,.10);border:1px solid rgba(216,173,84,.22);color:#e4bd68;font-size:9px;font-weight:900;letter-spacing:1.7px}
-        .premium-invite-icon{width:68px;height:68px;margin:18px auto 12px;border-radius:21px;display:grid;place-items:center;background:linear-gradient(145deg,#332052,#130d1e);border:1px solid rgba(216,173,84,.25);font-size:31px;box-shadow:0 15px 40px rgba(0,0,0,.35)}
-        .premium-invite-hero h1{margin:0;font-size:clamp(28px,7vw,42px);line-height:1.05;letter-spacing:-1px}.premium-invite-hero p{margin:9px 0 0;color:#9e96a8;font-size:12px}
-        .premium-invite-host{margin:18px 0 0;padding:12px 14px;border-radius:15px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);text-align:left;display:flex;justify-content:space-between;align-items:center}.premium-invite-host span{font-size:8px;color:#82798e;letter-spacing:1.5px;font-weight:900}.premium-invite-host strong{font-size:13px}
-        .premium-invite-body{padding:20px 20px 24px}.premium-invite-section-title{font-size:9px;letter-spacing:1.8px;color:#8f8798;font-weight:900;margin-bottom:10px}
-        .premium-invite-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.premium-invite-meta-item{padding:13px;border-radius:15px;background:#100c16;border:1px solid rgba(255,255,255,.065)}.premium-invite-meta-item span{display:block;font-size:8px;color:#81788d;letter-spacing:1.1px;font-weight:900}.premium-invite-meta-item strong{display:block;margin-top:6px;font-size:12px;color:#f3edf8;word-break:break-word}.premium-invite-meta-item.status strong{color:#d8ad54}
-        .premium-invite-prizes{margin-top:20px}.premium-invite-prize-list{display:grid;gap:7px}.premium-invite-prize{display:flex;justify-content:space-between;align-items:center;padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.055)}.premium-invite-prize span{font-size:11px}.premium-invite-prize strong{font-size:11px;color:#d8ad54}
-        .premium-invite-accept{width:100%;margin-top:20px;border:0;border-radius:16px;padding:15px 18px;background:linear-gradient(135deg,#d8ad54,#a97825);color:#120c08;font-size:13px;font-weight:1000;letter-spacing:1.2px;box-shadow:0 14px 32px rgba(216,173,84,.18)}.premium-invite-accept small{display:block;margin-top:3px;font-size:8px;letter-spacing:1px;opacity:.72}
-        .premium-invite-note{text-align:center;color:#756d80;font-size:9px;margin:11px 0 0}
-        @media(max-width:480px){.premium-invite-page{padding:14px 10px 30px}.premium-invite-hero{padding:23px 16px 18px}.premium-invite-body{padding:17px 14px 19px}.premium-invite-meta{gap:7px}.premium-invite-meta-item{padding:11px}.premium-invite-meta-item strong{font-size:11px}}
-      `}</style>
+    <main className={`player-invitation-page ${selectedTheme.className}`}>
+      <div className="player-invitation-glow" />
 
-      <main className={`premium-invite-page ${selectedTheme.className}`}>
-        <div className="premium-invite-shell">
-          <div className="premium-invite-top">
-            <div className="premium-invite-brand">
-              <div className="premium-invite-logo">♛</div>
-              <div>
-                <strong>TAMBOLA</strong>
-                <small>BINGO LIVE</small>
-              </div>
-            </div>
-            <button type="button" className="premium-invite-back" onClick={onBack} aria-label="Back">
-              ←
-            </button>
-          </div>
+      <button type="button" className="player-back-button" onClick={onBack}>
+        ←
+      </button>
 
-          <section className="premium-invite-card">
-            <div className="premium-invite-hero">
-              <span className="premium-invite-badge">● GAME INVITATION</span>
-              <div className="premium-invite-icon">🎟️</div>
-              <h1>{game?.game_name || "Tambola Game"}</h1>
-              <p>You have been invited to join this live Tambola game.</p>
-              <div className="premium-invite-host">
-                <span>HOSTED BY</span>
-                <strong>{game?.host_name || "Game Host"}</strong>
-              </div>
-            </div>
-
-            <div className="premium-invite-body">
-              <div className="premium-invite-section-title">GAME INFORMATION</div>
-              <div className="premium-invite-meta">
-                <div className="premium-invite-meta-item"><span>DATE</span><strong>{game?.game_date || "Not set"}</strong></div>
-                <div className="premium-invite-meta-item"><span>TIME</span><strong>{game?.game_time || "Not set"}</strong></div>
-                <div className="premium-invite-meta-item status"><span>STATUS</span><strong>{status}</strong></div>
-                <div className="premium-invite-meta-item"><span>AVAILABLE TICKETS</span><strong>{availableTickets} / {ticketLimit}</strong></div>
-                <div className="premium-invite-meta-item"><span>PRICE / TICKET</span><strong>₹{game?.ticket_price || 0}</strong></div>
-              </div>
-
-              <div className="premium-invite-prizes">
-                <div className="premium-invite-section-title">🏆 PRIZE LIST</div>
-                <div className="premium-invite-prize-list">
-                  {prizes.length ? prizes.map((prize, index) => (
-                    <div className="premium-invite-prize" key={`${prize.name}-${index}`}>
-                      <span>{prize.name}</span>
-                      <strong>₹{prize.amount || 0}</strong>
-                    </div>
-                  )) : (
-                    <div className="premium-invite-prize"><span>Prize details</span><strong>Coming soon</strong></div>
-                  )}
-                </div>
-              </div>
-
-              <button type="button" className="premium-invite-accept" onClick={onAccept}>
-                ✓ &nbsp; I ACCEPT
-                <small>Continue to ticket booking</small>
-              </button>
-              <div className="premium-invite-note">You can choose your tickets after accepting this invitation.</div>
-            </div>
-          </section>
+      <div className="player-invitation-brand">
+        <span>♛</span>
+        <div>
+          <strong>TAMBOLA</strong>
+          <small>BINGO LIVE</small>
         </div>
-      </main>
-    </>
+      </div>
+
+      <div className="player-invitation-card">
+        <span className="player-invitation-pill">● GAME INVITATION</span>
+
+        <h1>{game?.game_name || "Tambola Game"}</h1>
+        <p>Game details</p>
+
+        <div className="player-host-card">
+          <span>HOST</span>
+          <strong>{game?.host_name || "Game Host"}</strong>
+        </div>
+
+        <div className="player-game-details">
+          <div>
+            <span>DATE</span>
+            <strong>{game?.game_date || "Not set"}</strong>
+          </div>
+          <div>
+            <span>TIME</span>
+            <strong>{game?.game_time || "Not set"}</strong>
+          </div>
+          <div>
+            <span>STATUS</span>
+            <strong>{status}</strong>
+          </div>
+          <div>
+            <span>AVAILABLE TICKETS</span>
+            <strong>{availableTickets} / {ticketLimit}</strong>
+          </div>
+          <div>
+            <span>PRICE / TICKET</span>
+            <strong>₹{game?.ticket_price || 0}</strong>
+          </div>
+        </div>
+
+        <div className="player-prize-preview">
+          <div className="player-prize-preview-heading">
+            <span>🏆</span>
+            <div>
+              <strong>PRIZE LIST</strong>
+              <small>Game prizes</small>
+            </div>
+          </div>
+          <div className="player-prize-preview-list">
+            {prizes.map((prize, index) => (
+              <div key={`${prize.name}-${index}`}>
+                <span>{prize.name}</span>
+                <strong>₹{prize.amount || 0}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button type="button" className="player-accept-button" onClick={onAccept}>
+          <span>✓</span>
+          I ACCEPT
+        </button>
+      </div>
+    </main>
   );
 }
 
@@ -2867,37 +2882,6 @@ function PlayerBookingPremiumStyles() {
 }
 
 /* ============================================================
-   PLAYER SESSION PERSISTENCE
-   ============================================================ */
-
-function getPlayerSessionKey(gameCode) {
-  return `tambola_bingo_live_player_${String(gameCode || "").toUpperCase()}`;
-}
-
-function loadPlayerSession(gameCode) {
-  if (!gameCode) return null;
-  try {
-    const raw = window.localStorage.getItem(getPlayerSessionKey(gameCode));
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function savePlayerSession(gameCode, session) {
-  if (!gameCode) return;
-  try {
-    if (session) {
-      window.localStorage.setItem(getPlayerSessionKey(gameCode), JSON.stringify(session));
-    } else {
-      window.localStorage.removeItem(getPlayerSessionKey(gameCode));
-    }
-  } catch {
-    // Ignore storage failures; the live page still works for the current tab.
-  }
-}
-
-/* ============================================================
    APP
    ============================================================ */
 
@@ -2933,26 +2917,19 @@ function App() {
   ] = useState("");
 
   useEffect(() => {
-    const restoredGame =
-      loadGameSession();
+    const restoredGame = loadGameSession();
 
     if (restoredGame) {
-      setCreatedGame(
-        restoredGame
-      );
+      setCreatedGame(restoredGame);
       setPage("control");
     }
 
-    const gameCode =
-      getGameCodeFromUrl();
+    const urlGameCode = getGameCodeFromUrl();
+    const playerSession = loadPlayerSession();
+    const gameCode = urlGameCode?.trim() || playerSession?.gameCode;
 
-    if (
-      gameCode &&
-      gameCode.trim()
-    ) {
-      loadPlayerGame(
-        gameCode.trim()
-      );
+    if (gameCode) {
+      loadPlayerGame(gameCode, Boolean(playerSession && !urlGameCode));
     }
   }, []);
 
@@ -2965,7 +2942,8 @@ function App() {
   }, [createdGame]);
 
   async function loadPlayerGame(
-    gameCode
+    gameCode,
+    restoreBooking = false
   ) {
     setPlayerLoading(true);
     setPlayerError("");
@@ -3024,17 +3002,18 @@ function App() {
         normalizedGame
       );
 
-      const playerSession = loadPlayerSession(gameCode);
-      const urlParams = new URLSearchParams(window.location.search);
-      const requestedView = urlParams.get("view");
+      const savedPlayerSession = loadPlayerSession();
+      const shouldRestoreBooking =
+        restoreBooking ||
+        savedPlayerSession?.gameCode === normalizedGame.game_code &&
+        savedPlayerSession?.page === "player-booking";
 
-      if (requestedView === "booking" || playerSession?.view === "booking") {
-        setPlayerAccepted(true);
-        setPage("player-booking");
-      } else {
-        setPlayerAccepted(false);
-        setPage("player-invitation");
-      }
+      setPlayerAccepted(shouldRestoreBooking);
+      setPage(
+        shouldRestoreBooking
+          ? "player-booking"
+          : "player-invitation"
+      );
     } catch (error) {
       console.error(
         "Unable to load player game:",
@@ -3151,25 +3130,14 @@ function App() {
   }
 
   function acceptPlayerInvitation() {
-    const gameCode = getGameCodeFromUrl();
     setPlayerAccepted(true);
-    savePlayerSession(gameCode, { accepted: true, view: "booking" });
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("view", "booking");
-    window.history.replaceState({}, "", url.toString());
-
+    savePlayerSession(playerGame?.game_code, "player-booking");
     setPage("player-booking");
   }
 
   function returnToPlayerInvitation() {
-    const gameCode = getGameCodeFromUrl();
-    savePlayerSession(gameCode, { accepted: true, view: "invitation" });
-
-    const url = new URL(window.location.href);
-    url.searchParams.delete("view");
-    window.history.replaceState({}, "", url.toString());
-
+    clearPlayerSession();
+    setPlayerAccepted(false);
     setPage("player-invitation");
   }
 
@@ -3286,6 +3254,8 @@ function App() {
               acceptPlayerInvitation
             }
             onBack={() => {
+              clearPlayerSession();
+              setPlayerAccepted(false);
               window.history.replaceState(
                 {},
                 "",
