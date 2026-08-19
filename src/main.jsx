@@ -35,11 +35,13 @@ function Ticket({n,name=""}){
   [0,1,0,1,0,1,0,1,1],
   [1,0,1,0,1,1,0,0,1]
  ];
+
  const rows=masks.map(r=>[...r]);
  const base=Math.max(1,Number(n)||1);
 
  for(let c=0;c<9;c++){
-  const min=c?c*10:1,max=c===8?90:c*10+9;
+  const min=c?c*10:1;
+  const max=c===8?90:c*10+9;
   const vals=Array.from({length:max-min+1},(_,i)=>min+i);
   const shift=(base*(c+3)+c*7)%vals.length;
   const v=vals.slice(shift).concat(vals.slice(0,shift));
@@ -59,7 +61,9 @@ function Ticket({n,name=""}){
       height:30,
       textAlign:"center",
       lineHeight:"30px"
-     }}>{v||""}</div>
+     }}>
+      {v||""}
+     </div>
     )}
    </div>
   </div>
@@ -73,7 +77,9 @@ function Bookings({game,setGame}){
  function update(id,status){
   setGame({
    ...game,
-   bookingRequests:r.map(x=>x.id===id?{...x,status}:x)
+   bookingRequests:r.map(x=>
+    x.id===id?{...x,status}:x
+   )
   })
  }
 
@@ -84,14 +90,27 @@ function Bookings({game,setGame}){
    {!r.length&&<p>No pending bookings yet.</p>}
 
    {r.map(x=>
-    <div key={x.id} style={{border:"1px solid #ccc",padding:10,margin:8}}>
+    <div key={x.id} style={{
+     border:"1px solid #ccc",
+     padding:10,
+     margin:8
+    }}>
      <b>{x.playerName}</b>
-     <p>Tickets: {x.ticketNumbers.map(n=>`#${n}`).join(", ")}</p>
+
+     <p>
+      Tickets: {x.ticketNumbers.map(n=>`#${n}`).join(", ")}
+     </p>
+
      <p>Status: {x.status}</p>
 
      {x.status==="pending"&&<>
-      <button onClick={()=>update(x.id,"approved")}>Approve</button>
-      <button onClick={()=>update(x.id,"rejected")}>Reject</button>
+      <button onClick={()=>update(x.id,"approved")}>
+       Approve
+      </button>
+
+      <button onClick={()=>update(x.id,"rejected")}>
+       Reject
+      </button>
      </>}
     </div>
    )}
@@ -107,7 +126,9 @@ function Live({game,setGame}){
  function call(){
   if(!game.gameStarted||!remaining.length)return;
 
-  const n=remaining[Math.floor(Math.random()*remaining.length)];
+  const n=remaining[
+   Math.floor(Math.random()*remaining.length)
+  ];
 
   setGame({
    ...game,
@@ -137,7 +158,9 @@ function Live({game,setGame}){
     </button>
    :
     <>
-     <button onClick={call}>Call Next Number</button>
+     <button onClick={call}>
+      Call Next Number
+     </button>
 
      <button onClick={()=>
       setGame({
@@ -152,7 +175,9 @@ function Live({game,setGame}){
     </>
    }
 
-   <p>{called.join(", ")||"No numbers called."}</p>
+   <p>
+    {called.join(", ")||"No numbers called."}
+   </p>
   </section>
  )
 }
@@ -203,11 +228,17 @@ function HostControl({game,setGame,end}){
 
    <hr/>
 
-   <Bookings game={game} setGame={setGame}/>
+   <Bookings
+    game={game}
+    setGame={setGame}
+   />
 
    <hr/>
 
-   <Live game={game} setGame={setGame}/>
+   <Live
+    game={game}
+    setGame={setGame}
+   />
 
    <hr/>
 
@@ -253,41 +284,15 @@ function HostControl({game,setGame,end}){
 }
 
 function CreateGame({done}){
- const[
-  name,setName
- ]=useState("TambolaLive");
-
- const[
-  limit,setLimit
- ]=useState("100");
-
- const[
-  price,setPrice
- ]=useState("20");
-
- const[
-  date,setDate
- ]=useState("");
-
- const[
-  time,setTime
- ]=useState("");
-
- const[
-  ps,setPs
- ]=useState(prizes0);
-
- const[
-  custom,setCustom
- ]=useState("");
-
- const[
-  busy,setBusy
- ]=useState(false);
-
- const[
-  err,setErr
- ]=useState("");
+ const[name,setName]=useState("TambolaLive");
+ const[limit,setLimit]=useState("100");
+ const[price,setPrice]=useState("20");
+ const[date,setDate]=useState("");
+ const[time,setTime]=useState("");
+ const[ps,setPs]=useState(prizes0);
+ const[custom,setCustom]=useState("");
+ const[busy,setBusy]=useState(false);
+ const[err,setErr]=useState("");
 
  function prize(i,v){
   setPs(p=>p.map((x,j)=>
@@ -316,7 +321,6 @@ function CreateGame({done}){
     gc=code6();
    }
 
-   // Only prizes with an amount are saved.
    const finalPrizes=ps.filter(
     p=>String(p.amount||"").trim()!==""
    );
@@ -327,6 +331,11 @@ function CreateGame({done}){
    }=await supabase
     .from("games")
     .insert({
+
+     // Required by your Supabase table.
+     // It is NOT shown in the interface.
+     host_name:"Host",
+
      game_name:name.trim()||"TambolaLive",
      status:"upcoming",
      ticket_limit:Number(limit),
@@ -336,6 +345,7 @@ function CreateGame({done}){
      game_time:time,
      game_code:gc,
      invite_enabled:true
+
     })
     .select()
     .single();
@@ -353,7 +363,9 @@ function CreateGame({done}){
    });
 
   }catch(e){
-   setErr(e.message||"Could not create game");
+   setErr(
+    e.message||"Could not create game"
+   );
   }finally{
    setBusy(false);
   }
@@ -411,19 +423,24 @@ function CreateGame({done}){
 
     {ps.map((p,i)=>
      <div key={i}>
+
       <label>{p.name}</label>
 
       <input
        type="number"
        min="0"
        value={p.amount}
-       onChange={e=>prize(i,e.target.value)}
+       onChange={e=>
+        prize(i,e.target.value)
+       }
        placeholder="Amount"
       />
+
      </div>
     )}
 
     <div>
+
      <input
       placeholder="Custom prize"
       value={custom}
@@ -434,6 +451,7 @@ function CreateGame({done}){
       type="button"
       onClick={()=>{
        if(custom.trim()){
+
         setPs(p=>[
          ...p,
          {
@@ -450,6 +468,7 @@ function CreateGame({done}){
      >
       Add
      </button>
+
     </div>
 
     <button disabled={busy}>
@@ -523,21 +542,26 @@ function Booking({game}){
  function send(){
 
   if(!player.trim()||!selected.length){
-   alert("Enter your name and select tickets.");
+   alert(
+    "Enter your name and select tickets."
+   );
    return;
   }
 
   const request={
    id:Date.now(),
    playerName:player.trim(),
-   ticketNumbers:[...selected].sort((a,b)=>a-b),
+   ticketNumbers:[...selected]
+    .sort((a,b)=>a-b),
    status:"pending",
    createdAt:new Date().toISOString()
   };
 
   const text=
    `${player.trim()} wants to book `+
-   `${request.ticketNumbers.map(n=>`#${n}`).join(", ")}`+
+   `${request.ticketNumbers
+    .map(n=>`#${n}`)
+    .join(", ")}`+
    ` for ${game.game_name}.`;
 
   localStorage.setItem(
@@ -572,6 +596,7 @@ function Booking({game}){
     flexWrap:"wrap",
     gap:4
    }}>
+
     {tickets.map(n=>
      <button
       key={n}
@@ -581,6 +606,7 @@ function Booking({game}){
       {selected.includes(n)?"✓ ":""}#{n}
      </button>
     )}
+
    </div>
 
    <h3>Actual 3 × 9 Tickets</h3>
@@ -590,22 +616,31 @@ function Booking({game}){
     .map(n=>
      <div
       key={n}
-      onClick={()=>!sent&&toggle(n)}
+      onClick={()=>
+       !sent&&toggle(n)
+      }
      >
-      <Ticket n={n} name={player}/>
+      <Ticket
+       n={n}
+       name={player}
+      />
      </div>
     )}
 
    {!sent?
     <button
      onClick={send}
-     disabled={!player.trim()||!selected.length}
+     disabled={
+      !player.trim()||
+      !selected.length
+     }
     >
      BOOK TICKETS
     </button>
     :
     <p>
-     Booking request sent. Waiting for host approval.
+     Booking request sent.
+     Waiting for host approval.
     </p>
    }
 
@@ -647,20 +682,33 @@ function App(){
   }=await supabase
    .from("games")
    .select("*")
-   .eq("game_code",gc.toUpperCase())
+   .eq(
+    "game_code",
+    gc.toUpperCase()
+   )
    .maybeSingle();
 
   if(error||!data){
-   setError(error?.message||"Game not found");
+
+   setError(
+    error?.message||
+    "Game not found"
+   );
+
    return;
   }
 
   setPlayerGame({
    ...data,
-   game_name:data.game_name||"TambolaLive",
-   prizes:Array.isArray(data.prizes)
-    ?data.prizes
-    :prizes0,
+   game_name:
+    data.game_name||
+    "TambolaLive",
+
+   prizes:
+    Array.isArray(data.prizes)
+     ?data.prizes
+     :prizes0,
+
    calledNumbers:[],
    bookingRequests:[]
   });
@@ -676,20 +724,29 @@ function App(){
    </main>
   );
 
- if(playerGame&&page==="invitation")
+ if(
+  playerGame&&
+  page==="invitation"
+ )
   return(
    <Invitation
     game={playerGame}
-    accept={()=>setPage("booking")}
+    accept={()=>
+     setPage("booking")
+    }
    />
   );
 
- if(playerGame&&page==="booking")
+ if(
+  playerGame&&
+  page==="booking"
+ )
   return(
-   <Booking game={playerGame}/>
+   <Booking
+    game={playerGame}
+   />
   );
 
- // CREATE AND HOST CONTROL ARE NOW THE SAME PAGE.
  if(game)
   return(
    <HostControl
