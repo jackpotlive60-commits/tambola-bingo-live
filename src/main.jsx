@@ -58,17 +58,20 @@ function Header({ onHome }) {
       <button className="brand-button" onClick={onHome}>
         <span className="crown">♛</span>
 
-        <div className="logo">
+        <span className="logo">
           <strong>TAMBOLA</strong>
           <small>BINGO LIVE</small>
-        </div>
+        </span>
       </button>
 
       <div className="online">
-        <span>●</span> Live Platform
+        <span>●</span>
+        Live Platform
       </div>
 
-      <button className="menu">☰</button>
+      <button className="menu-button" type="button">
+        ☰
+      </button>
     </header>
   );
 }
@@ -89,9 +92,9 @@ function Home({ onCreateGame }) {
           </h1>
 
           <p>
-            A professional live Tambola platform for hosts and players.
-            Create exciting games, invite players, manage tickets,
-            and enjoy real-time gameplay.
+            A professional live Tambola platform for hosts and
+            players. Create games, invite players, manage tickets,
+            and run your game from one place.
           </p>
 
           <div className="features">
@@ -123,14 +126,18 @@ function Home({ onCreateGame }) {
         </div>
 
         <div className="entry-grid">
-          <button className="entry-card host" onClick={onCreateGame}>
+          <button
+            className="entry-card host"
+            type="button"
+            onClick={onCreateGame}
+          >
             <div className="entry-icon">🎮</div>
 
             <div className="entry-content">
               <span className="role">HOST</span>
               <h2>Host a Game</h2>
               <p>
-                Create and manage your own Tambola game,
+                Create and manage your Tambola game,
                 set tickets and prizes, and invite players.
               </p>
             </div>
@@ -138,32 +145,34 @@ function Home({ onCreateGame }) {
             <div className="entry-arrow">→</div>
           </button>
 
-          <button className="entry-card player">
+          <div className="entry-card player">
             <div className="entry-icon">🎟️</div>
 
             <div className="entry-content">
               <span className="role">PLAYER</span>
               <h2>Join an Invitation</h2>
               <p>
-                Already received a game invitation?
-                Open your invitation and continue to ticket booking.
+                Open the invitation link received from your host
+                to continue to the game.
               </p>
             </div>
 
             <div className="entry-arrow">→</div>
-          </button>
+          </div>
         </div>
 
         <div className="invitation-note">
-          🔗 Players with a host invitation link will be taken directly
-          to their specific game invitation page.
+          🔗 Players with a host invitation link will be taken
+          directly to their specific game invitation.
         </div>
       </section>
 
       <section className="preview">
         <div className="section-title">
-          <h2>📡 Live Game Preview</h2>
-          <span>Real-time gameplay</span>
+          <div>
+            <h2>📡 Live Game Preview</h2>
+            <span>Real-time gameplay</span>
+          </div>
         </div>
 
         <div className="number-layout">
@@ -183,9 +192,11 @@ function Home({ onCreateGame }) {
             {numbers.map((number) => (
               <span
                 key={number}
-                className={[7, 16, 29, 33, 45, 67].includes(number)
-                  ? "called"
-                  : ""}
+                className={
+                  [7, 16, 29, 33, 45, 67].includes(number)
+                    ? "called"
+                    : ""
+                }
               >
                 {number}
               </span>
@@ -223,7 +234,9 @@ function CreateGame({ onBack, onCreated }) {
   function addCustomPrize() {
     const name = customPrize.trim();
 
-    if (!name) return;
+    if (!name) {
+      return;
+    }
 
     setPrizes((current) => [
       ...current,
@@ -245,7 +258,6 @@ function CreateGame({ onBack, onCreated }) {
 
     try {
       let gameCode = generateGameCode();
-
       let codeExists = true;
 
       while (codeExists) {
@@ -305,8 +317,12 @@ function CreateGame({ onBack, onCreated }) {
   }
 
   return (
-    <section className="create-page">
-      <button className="back-button" onClick={onBack}>
+    <section className="page-shell create-page">
+      <button
+        className="back-button"
+        type="button"
+        onClick={onBack}
+      >
         ← Back to Home
       </button>
 
@@ -335,17 +351,20 @@ function CreateGame({ onBack, onCreated }) {
 
             <div>
               <h2>Host Details</h2>
-              <p>Tell players who is hosting this game</p>
+              <p>Tell players who is hosting this game.</p>
             </div>
           </div>
 
           <label>
             Host Name
+
             <input
               type="text"
               placeholder="Your name"
               value={hostName}
-              onChange={(event) => setHostName(event.target.value)}
+              onChange={(event) =>
+                setHostName(event.target.value)
+              }
               required
             />
           </label>
@@ -357,17 +376,20 @@ function CreateGame({ onBack, onCreated }) {
 
             <div>
               <h2>Game Details</h2>
-              <p>Basic information about your game</p>
+              <p>Basic information about your game.</p>
             </div>
           </div>
 
           <label>
             Game Name
+
             <input
               type="text"
               placeholder="Example: Friday Night Tambola"
               value={gameName}
-              onChange={(event) => setGameName(event.target.value)}
+              onChange={(event) =>
+                setGameName(event.target.value)
+              }
               required
             />
           </label>
@@ -387,7 +409,7 @@ function CreateGame({ onBack, onCreated }) {
                 required
               />
 
-              <small>Maximum tickets available</small>
+              <small>Maximum tickets available.</small>
             </label>
 
             <label>
@@ -408,7 +430,7 @@ function CreateGame({ onBack, onCreated }) {
                 />
               </div>
 
-              <small>Price per ticket</small>
+              <small>Price per ticket.</small>
             </label>
           </div>
 
@@ -448,7 +470,7 @@ function CreateGame({ onBack, onCreated }) {
             <div>
               <h2>Game Prizes</h2>
               <p>
-                Set the prize amount for each winning category
+                Set the prize amount for each winning category.
               </p>
             </div>
           </div>
@@ -513,7 +535,8 @@ function CreateGame({ onBack, onCreated }) {
             <div>
               <h2>Game Theme</h2>
               <p>
-                Every player joining this game will see this theme.
+                Players joining this game will eventually see
+                this same theme.
               </p>
             </div>
           </div>
@@ -539,7 +562,6 @@ function CreateGame({ onBack, onCreated }) {
                 </div>
 
                 <strong>{theme.name}</strong>
-
                 <small>{theme.description}</small>
 
                 {selectedTheme === theme.id && (
@@ -551,8 +573,7 @@ function CreateGame({ onBack, onCreated }) {
 
           <div className="theme-info">
             🎨 <strong>Game-wide theme:</strong>{" "}
-            Your selected theme is saved with this game and
-            will later be automatically shown to invited players.
+            Your selected theme is saved with this game.
           </div>
         </div>
 
@@ -572,18 +593,12 @@ function CreateGame({ onBack, onCreated }) {
 
           <div>
             <span>TICKET PRICE</span>
-
-            <strong>
-              ₹{ticketPrice || "0"}
-            </strong>
+            <strong>₹{ticketPrice || "0"}</strong>
           </div>
 
           <div>
             <span>TICKET LIMIT</span>
-
-            <strong>
-              {ticketLimit || "0"}
-            </strong>
+            <strong>{ticketLimit || "0"}</strong>
           </div>
         </div>
 
@@ -601,6 +616,64 @@ function CreateGame({ onBack, onCreated }) {
   );
 }
 
+function BookingPreviewCard() {
+  return (
+    <div className="booking-preview">
+      <div className="booking-preview-top">
+        <div>
+          <span className="booking-status">PENDING</span>
+          <h3>Ticket booking requests</h3>
+          <p>
+            Approved and rejected actions will be connected
+            to your ticket booking database next.
+          </p>
+        </div>
+
+        <div className="pending-count">0</div>
+      </div>
+
+      <div className="booking-empty">
+        <div className="empty-icon">🎟️</div>
+
+        <strong>No pending bookings yet</strong>
+
+        <p>
+          When players request tickets, their name,
+          requested tickets and booking details will appear here.
+        </p>
+      </div>
+
+      <div className="approval-preview">
+        <div className="approval-preview-label">
+          APPROVAL CONTROLS
+        </div>
+
+        <div className="approval-buttons">
+          <button
+            type="button"
+            className="approve-button"
+            disabled
+          >
+            ✓ Approve
+          </button>
+
+          <button
+            type="button"
+            className="reject-button"
+            disabled
+          >
+            ✕ Reject
+          </button>
+        </div>
+
+        <small>
+          These controls are ready for the booking workflow.
+        </small>
+      </div>
+    </div>
+  );
+}
+
 function HostControlCentre({ game, onHome }) {
   const inviteUrl =
     `${window.location.origin}/?game=${game.game_code}`;
@@ -611,69 +684,99 @@ function HostControlCentre({ game, onHome }) {
     ) || themes[0];
 
   function copyInviteLink() {
-    navigator.clipboard.writeText(inviteUrl);
-    alert("Invitation link copied!");
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(inviteUrl);
+      alert("Invitation link copied!");
+    }
   }
 
-  function shareInvite() {
+  async function shareInvite() {
     if (navigator.share) {
-      navigator.share({
-        title: game.game_name,
-        text:
-          `Join my Tambola game: ${game.game_name}`,
-        url: inviteUrl,
-      });
+      try {
+        await navigator.share({
+          title: game.game_name,
+          text:
+            `Join my Tambola game: ${game.game_name}`,
+          url: inviteUrl,
+        });
+      } catch {
+        // User closed the share sheet.
+      }
     } else {
       copyInviteLink();
     }
   }
 
   return (
-    <section className="create-page">
-      <div className="control-success">
-        <div className="success-icon">✓</div>
+    <section className="page-shell control-page">
+      <div className="control-top">
+        <button
+          className="back-button"
+          type="button"
+          onClick={onHome}
+        >
+          ← Home
+        </button>
 
-        <span>GAME CREATED</span>
-
-        <h1>
-          Your game is <strong>ready!</strong>
-        </h1>
-
-        <p>
-          Share the invitation with your players.
-        </p>
+        <span className="status-pill">
+          ● {game.status || "UPCOMING"}
+        </span>
       </div>
 
-      <div className="form-card">
-        <div className="game-code-card">
-          <small>GAME CODE</small>
+      <div className="control-hero">
+        <div className="control-hero-icon">🎮</div>
 
-          <strong>{game.game_code}</strong>
+        <span className="live-badge">HOST CONTROL CENTRE</span>
+
+        <h1>{game.game_name}</h1>
+
+        <p>
+          Hosted by <strong>{game.host_name}</strong>
+        </p>
+
+        <div className="game-meta">
+          <span>
+            📅 {game.game_date || "Date not set"}
+          </span>
 
           <span>
-            Players can use this code with your invitation.
+            🕐 {game.game_time || "Time not set"}
           </span>
         </div>
       </div>
 
-      <div className="form-card">
-        <div className="form-card-title">
-          <span>🔗</span>
+      <div className="code-card">
+        <div className="code-label">GAME CODE</div>
+
+        <div className="game-code">
+          {game.game_code}
+        </div>
+
+        <p>
+          Share this code or the invitation link with players.
+        </p>
+      </div>
+
+      <div className="control-card-section">
+        <div className="section-card-heading">
+          <div className="section-card-icon">🔗</div>
 
           <div>
             <h2>Player Invitation</h2>
             <p>
-              Share this link with everyone who wants to play.
+              Send this invitation to the players you want
+              to join.
             </p>
           </div>
         </div>
 
-        <div className="invite-link">
-          {inviteUrl}
+        <div className="invite-link-box">
+          <span>{inviteUrl}</span>
         </div>
 
-        <div className="control-actions">
+        <div className="invite-actions">
           <button
+            type="button"
             className="secondary-action"
             onClick={copyInviteLink}
           >
@@ -681,79 +784,142 @@ function HostControlCentre({ game, onHome }) {
           </button>
 
           <button
+            type="button"
             className="primary-action"
             onClick={shareInvite}
           >
-            📲 Share Invitation
+            📲 Share
           </button>
         </div>
       </div>
 
-      <div className="form-card">
-        <div className="form-card-title">
-          <span>🎨</span>
+      <div className="control-card-section">
+        <div className="section-card-heading">
+          <div className="section-card-icon">🎨</div>
 
           <div>
             <h2>Game Theme</h2>
-            <p>The theme selected for this game.</p>
+            <p>
+              This is the theme selected for this game.
+            </p>
           </div>
         </div>
 
         <div
           className={`selected-theme-card ${selectedTheme.className}`}
         >
-          <div className="theme-preview">
+          <div className="theme-preview large">
             <span>45</span>
             <span>29</span>
             <span>7</span>
           </div>
 
-          <div>
+          <div className="selected-theme-info">
             <strong>{selectedTheme.name}</strong>
-            <small>{selectedTheme.description}</small>
+            <span>{selectedTheme.description}</span>
           </div>
         </div>
       </div>
 
-      <div className="control-grid">
-        <button className="control-card">
-          <span>🖼️</span>
-          <strong>Generate Poster</strong>
-          <small>Create a shareable game poster</small>
-        </button>
+      <div className="control-card-section bookings-section">
+        <div className="section-card-heading">
+          <div className="section-card-icon">🎟️</div>
 
-        <button className="control-card">
-          <span>🎟️</span>
-          <strong>Ticket Bookings</strong>
-          <small>View and manage player bookings</small>
-        </button>
+          <div>
+            <div className="heading-with-badge">
+              <h2>Ticket Bookings</h2>
+              <span className="pending-badge">PENDING</span>
+            </div>
 
-        <button className="control-card">
-          <span>👥</span>
-          <strong>Players</strong>
-          <small>See everyone joining your game</small>
-        </button>
+            <p>
+              Review player requests before approving tickets.
+            </p>
+          </div>
+        </div>
 
-        <button className="control-card">
-          <span>🏆</span>
-          <strong>Prizes</strong>
-          <small>Manage prizes and winners</small>
-        </button>
-
-        <button className="control-card">
-          <span>🔢</span>
-          <strong>Live Game</strong>
-          <small>Start calling Tambola numbers</small>
-        </button>
-
-        <button className="control-card">
-          <span>⚙️</span>
-          <strong>Game Settings</strong>
-          <small>Manage your game controls</small>
-        </button>
+        <BookingPreviewCard />
       </div>
 
-      <button className="back-button" onClick={onHome}>
+      <div className="control-card-section">
+        <div className="section-card-heading">
+          <div className="section-card-icon">⚡</div>
+
+          <div>
+            <h2>Game Controls</h2>
+            <p>
+              Everything you need to run your live game.
+            </p>
+          </div>
+        </div>
+
+        <div className="control-grid">
+          <button type="button" className="control-action-card">
+            <span>🖼️</span>
+            <strong>Generate Poster</strong>
+            <small>
+              Create a shareable game poster.
+            </small>
+          </button>
+
+          <button type="button" className="control-action-card">
+            <span>👥</span>
+            <strong>Players</strong>
+            <small>
+              View players who have joined.
+            </small>
+          </button>
+
+          <button type="button" className="control-action-card">
+            <span>🏆</span>
+            <strong>Prizes</strong>
+            <small>
+              View and manage game prizes.
+            </small>
+          </button>
+
+          <button type="button" className="control-action-card live-action">
+            <span>🔢</span>
+            <strong>Live Game</strong>
+            <small>
+              Start calling Tambola numbers.
+            </small>
+          </button>
+
+          <button type="button" className="control-action-card">
+            <span>⚙️</span>
+            <strong>Game Settings</strong>
+            <small>
+              Manage your game settings.
+            </small>
+          </button>
+
+          <button type="button" className="control-action-card">
+            <span>📊</span>
+            <strong>Game Summary</strong>
+            <small>
+              View tickets, players and results.
+            </small>
+          </button>
+        </div>
+      </div>
+
+      <div className="control-footer-note">
+        <span>🛡</span>
+
+        <div>
+          <strong>Host controls are private</strong>
+          <p>
+            Players will only see the invitation and player
+            experience, not this control centre.
+          </p>
+        </div>
+      </div>
+
+      <button
+        className="return-home-button"
+        type="button"
+        onClick={onHome}
+      >
         ← Return Home
       </button>
     </section>
@@ -808,45 +974,43 @@ function App() {
       </footer>
 
       <nav className="bottom-nav">
-        <span
-          className={
-            page === "home" ? "active" : ""
-          }
+        <button
+          type="button"
+          className={page === "home" ? "active" : ""}
           onClick={() => setPage("home")}
         >
-          ⌂
+          <span>⌂</span>
           <small>Home</small>
-        </span>
+        </button>
 
-        <span>
-          ℹ
+        <button type="button">
+          <span>ℹ</span>
           <small>How It Works</small>
-        </span>
+        </button>
 
-        <span
+        <button
+          type="button"
           className="plus"
           onClick={() => setPage("create")}
         >
           ＋
-        </span>
+        </button>
 
-        <span>
-          🎟
+        <button type="button">
+          <span>🎟</span>
           <small>Invitations</small>
-        </span>
+        </button>
 
-        <span>
-          ♙
+        <button type="button">
+          <span>♙</span>
           <small>Account</small>
-        </span>
+        </button>
       </nav>
     </main>
   );
 }
 
-createRoot(
-  document.getElementById("root")
-).render(
+createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
