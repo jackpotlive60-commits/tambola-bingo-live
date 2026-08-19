@@ -37,29 +37,69 @@ const themes = [
 ];
 
 const defaultPrizes = [
-  { name: "First Five", amount: "", approved: false, winner: null },
-  { name: "Four Corners", amount: "", approved: false, winner: null },
-  { name: "Top Line", amount: "", approved: false, winner: null },
-  { name: "Middle Line", amount: "", approved: false, winner: null },
-  { name: "Bottom Line", amount: "", approved: false, winner: null },
-  { name: "Full House", amount: "", approved: false, winner: null },
+  {
+    name: "First Five",
+    amount: "",
+    approved: false,
+    winner: null,
+  },
+  {
+    name: "Four Corners",
+    amount: "",
+    approved: false,
+    winner: null,
+  },
+  {
+    name: "Top Line",
+    amount: "",
+    approved: false,
+    winner: null,
+  },
+  {
+    name: "Middle Line",
+    amount: "",
+    approved: false,
+    winner: null,
+  },
+  {
+    name: "Bottom Line",
+    amount: "",
+    approved: false,
+    winner: null,
+  },
+  {
+    name: "Full House",
+    amount: "",
+    approved: false,
+    winner: null,
+  },
 ];
 
 const STORAGE_KEY = "tambola_bingo_live_host_game";
 
 function generateGameCode() {
-  const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const characters =
+    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
   let code = "";
 
   for (let i = 0; i < 6; i += 1) {
-    code += characters[Math.floor(Math.random() * characters.length)];
+    code +=
+      characters[
+        Math.floor(
+          Math.random() * characters.length
+        )
+      ];
   }
 
   return code;
 }
 
 function getTheme(themeId) {
-  return themes.find((theme) => theme.id === themeId) || themes[0];
+  return (
+    themes.find((theme) => theme.id === themeId) ||
+    themes[0]
+  );
 }
 
 function saveGameSession(game) {
@@ -68,12 +108,16 @@ function saveGameSession(game) {
     return;
   }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(game));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(game)
+  );
 }
 
 function loadGameSession() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored =
+      localStorage.getItem(STORAGE_KEY);
 
     if (!stored) {
       return null;
@@ -87,14 +131,26 @@ function loadGameSession() {
 
     return {
       ...parsed,
-      status: parsed.status || "upcoming",
-      calledNumbers: Array.isArray(parsed.calledNumbers)
-        ? parsed.calledNumbers
-        : [],
-      prizes: Array.isArray(parsed.prizes)
-        ? parsed.prizes
-        : defaultPrizes,
-      gameStarted: Boolean(parsed.gameStarted),
+      status:
+        parsed.status || "upcoming",
+
+      calledNumbers:
+        Array.isArray(parsed.calledNumbers)
+          ? parsed.calledNumbers
+          : [],
+
+      prizes:
+        Array.isArray(parsed.prizes)
+          ? parsed.prizes
+          : defaultPrizes,
+
+      gameStarted:
+        Boolean(parsed.gameStarted),
+
+      bookingRequests:
+        Array.isArray(parsed.bookingRequests)
+          ? parsed.bookingRequests
+          : [],
     };
   } catch (error) {
     console.error(
@@ -103,15 +159,12 @@ function loadGameSession() {
     );
 
     localStorage.removeItem(STORAGE_KEY);
+
     return null;
   }
 }
 
 function numberName(number) {
-  if (!number) {
-    return "";
-  }
-
   const names = [
     "",
     "ONE",
@@ -209,7 +262,17 @@ function numberName(number) {
   return names[number] || "";
 }
 
-function Header({ onHome, playerMode = false }) {
+function getGameCodeFromUrl() {
+  const params =
+    new URLSearchParams(window.location.search);
+
+  return params.get("game");
+}
+
+function Header({
+  onHome,
+  playerMode = false,
+}) {
   return (
     <header className="topbar">
       <button
@@ -227,7 +290,10 @@ function Header({ onHome, playerMode = false }) {
 
       <div className="online">
         <span>●</span>
-        {playerMode ? "Game Invitation" : "Live Platform"}
+
+        {playerMode
+          ? "Game Invitation"
+          : "Live Platform"}
       </div>
 
       <button
@@ -259,9 +325,10 @@ function Home({ onCreateGame }) {
           </h1>
 
           <p>
-            A professional live Tambola platform for hosts and
-            players. Create games, invite players, manage tickets,
-            and run your game from one place.
+            A professional live Tambola platform
+            for hosts and players. Create games,
+            invite players, manage tickets, and run
+            your game from one place.
           </p>
 
           <div className="features">
@@ -272,12 +339,25 @@ function Home({ onCreateGame }) {
         </div>
 
         <div className="cage">
-          <div className="cage-decoration">✦</div>
+          <div className="cage-decoration">
+            ✦
+          </div>
 
-          <div className="ball ball-one">45</div>
-          <div className="ball ball-two">29</div>
-          <div className="bingo-cage">◎</div>
-          <div className="ball ball-three">7</div>
+          <div className="ball ball-one">
+            45
+          </div>
+
+          <div className="ball ball-two">
+            29
+          </div>
+
+          <div className="bingo-cage">
+            ◎
+          </div>
+
+          <div className="ball ball-three">
+            7
+          </div>
 
           <div className="live-now">
             🔴 LIVE PLATFORM
@@ -290,8 +370,14 @@ function Home({ onCreateGame }) {
       <section className="entry-section">
         <div className="section-heading">
           <span>GET STARTED</span>
-          <h2>How are you joining?</h2>
-          <p>Choose the option that matches your role.</p>
+
+          <h2>
+            How are you joining?
+          </h2>
+
+          <p>
+            Choose the option that matches your role.
+          </p>
         </div>
 
         <div className="entry-grid">
@@ -300,61 +386,105 @@ function Home({ onCreateGame }) {
             type="button"
             onClick={onCreateGame}
           >
-            <div className="entry-icon">🎮</div>
+            <div className="entry-icon">
+              🎮
+            </div>
 
             <div className="entry-content">
-              <span className="role">HOST</span>
-              <h2>Host a Game</h2>
+              <span className="role">
+                HOST
+              </span>
+
+              <h2>
+                Host a Game
+              </h2>
+
               <p>
-                Create and manage your Tambola game,
-                set tickets and prizes, and invite players.
+                Create and manage your Tambola
+                game, set tickets and prizes,
+                and invite players.
               </p>
             </div>
 
-            <div className="entry-arrow">→</div>
+            <div className="entry-arrow">
+              →
+            </div>
           </button>
 
           <div className="entry-card player">
-            <div className="entry-icon">🎟️</div>
+            <div className="entry-icon">
+              🎟️
+            </div>
 
             <div className="entry-content">
-              <span className="role">PLAYER</span>
-              <h2>Join an Invitation</h2>
+              <span className="role">
+                PLAYER
+              </span>
+
+              <h2>
+                Join an Invitation
+              </h2>
+
               <p>
-                Open the invitation link received from your host
-                to continue to the game.
+                Open the invitation link received
+                from your host to continue to the
+                game.
               </p>
             </div>
 
-            <div className="entry-arrow">→</div>
+            <div className="entry-arrow">
+              →
+            </div>
           </div>
         </div>
 
         <div className="invitation-note">
-          🔗 Players with a host invitation link will be taken
-          directly to their specific game invitation.
+          🔗 Players with a host invitation link
+          will be taken directly to their specific
+          game invitation.
         </div>
       </section>
 
       <section className="preview">
         <div className="section-title">
           <div>
-            <h2>📡 Live Game Preview</h2>
-            <span>Real-time gameplay</span>
+            <h2>
+              📡 Live Game Preview
+            </h2>
+
+            <span>
+              Real-time gameplay
+            </span>
           </div>
         </div>
 
         <div className="number-layout">
           <div className="last-number">
-            <small>LAST NUMBER</small>
-            <strong>45</strong>
-            <span>FORTY FIVE</span>
+            <small>
+              LAST NUMBER
+            </small>
+
+            <strong>
+              45
+            </strong>
+
+            <span>
+              FORTY FIVE
+            </span>
 
             <hr />
 
-            <small>NEXT NUMBER</small>
-            <b>??</b>
-            <span>Stay Tuned</span>
+            <small>
+              NEXT NUMBER
+            </small>
+
+            <b>
+              ??
+            </b>
+
+            <span>
+              Stay Tuned
+            </span>
           </div>
 
           <div className="board">
@@ -362,7 +492,14 @@ function Home({ onCreateGame }) {
               <span
                 key={number}
                 className={
-                  [7, 16, 29, 33, 45, 67].includes(number)
+                  [
+                    7,
+                    16,
+                    29,
+                    33,
+                    45,
+                    67,
+                  ].includes(number)
                     ? "called"
                     : ""
                 }
@@ -377,33 +514,62 @@ function Home({ onCreateGame }) {
   );
 }
 
-function CreateGame({ onBack, onCreated }) {
-  const [hostName, setHostName] = useState("");
-  const [gameName, setGameName] = useState("");
-  const [ticketLimit, setTicketLimit] = useState("");
-  const [ticketPrice, setTicketPrice] = useState("");
-  const [gameDate, setGameDate] = useState("");
-  const [gameTime, setGameTime] = useState("");
-  const [selectedTheme, setSelectedTheme] = useState("royal");
-  const [prizes, setPrizes] = useState(defaultPrizes);
-  const [customPrize, setCustomPrize] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState("");
+function CreateGame({
+  onBack,
+  onCreated,
+}) {
+  const [hostName, setHostName] =
+    useState("");
 
-  const activeTheme = getTheme(selectedTheme);
+  const [gameName, setGameName] =
+    useState("");
+
+  const [ticketLimit, setTicketLimit] =
+    useState("");
+
+  const [ticketPrice, setTicketPrice] =
+    useState("");
+
+  const [gameDate, setGameDate] =
+    useState("");
+
+  const [gameTime, setGameTime] =
+    useState("");
+
+  const [selectedTheme, setSelectedTheme] =
+    useState("royal");
+
+  const [prizes, setPrizes] =
+    useState(defaultPrizes);
+
+  const [customPrize, setCustomPrize] =
+    useState("");
+
+  const [creating, setCreating] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const activeTheme =
+    getTheme(selectedTheme);
 
   function updatePrize(index, value) {
     setPrizes((current) =>
       current.map((prize, i) =>
         i === index
-          ? { ...prize, amount: value }
+          ? {
+              ...prize,
+              amount: value,
+            }
           : prize
       )
     );
   }
 
   function addCustomPrize() {
-    const name = customPrize.trim();
+    const name =
+      customPrize.trim();
 
     if (!name) {
       return;
@@ -430,14 +596,22 @@ function CreateGame({ onBack, onCreated }) {
     setCreating(true);
 
     try {
-      let gameCode = generateGameCode();
+      let gameCode =
+        generateGameCode();
+
       let codeExists = true;
 
       while (codeExists) {
-        const { data, error: checkError } = await supabase
+        const {
+          data,
+          error: checkError,
+        } = await supabase
           .from("games")
           .select("id")
-          .eq("game_code", gameCode)
+          .eq(
+            "game_code",
+            gameCode
+          )
           .maybeSingle();
 
         if (checkError) {
@@ -447,28 +621,52 @@ function CreateGame({ onBack, onCreated }) {
         if (!data) {
           codeExists = false;
         } else {
-          gameCode = generateGameCode();
+          gameCode =
+            generateGameCode();
         }
       }
 
-      const { data: game, error: insertError } =
-        await supabase
-          .from("games")
-          .insert({
-            host_name: hostName.trim(),
-            game_name: gameName.trim(),
-            status: "upcoming",
-            ticket_limit: Number(ticketLimit),
-            ticket_price: Number(ticketPrice),
-            call_interval_seconds: 5,
-            game_date: gameDate,
-            game_time: gameTime,
-            theme: selectedTheme,
-            game_code: gameCode,
-            invite_enabled: true,
-          })
-          .select()
-          .single();
+      const {
+        data: game,
+        error: insertError,
+      } = await supabase
+        .from("games")
+        .insert({
+          host_name:
+            hostName.trim(),
+
+          game_name:
+            gameName.trim(),
+
+          status:
+            "upcoming",
+
+          ticket_limit:
+            Number(ticketLimit),
+
+          ticket_price:
+            Number(ticketPrice),
+
+          call_interval_seconds:
+            5,
+
+          game_date:
+            gameDate,
+
+          game_time:
+            gameTime,
+
+          theme:
+            selectedTheme,
+
+          game_code:
+            gameCode,
+
+          invite_enabled:
+            true,
+        })
+        .select()
+        .single();
 
       if (insertError) {
         throw insertError;
@@ -476,14 +674,25 @@ function CreateGame({ onBack, onCreated }) {
 
       onCreated({
         ...game,
-        status: "upcoming",
-        gameStarted: false,
-        calledNumbers: [],
-        prizes: prizes.map((prize) => ({
-          ...prize,
-          approved: false,
-          winner: null,
-        })),
+
+        status:
+          "upcoming",
+
+        gameStarted:
+          false,
+
+        calledNumbers:
+          [],
+
+        prizes:
+          prizes.map((prize) => ({
+            ...prize,
+            approved: false,
+            winner: null,
+          })),
+
+        bookingRequests:
+          [],
       });
     } catch (err) {
       console.error(err);
@@ -512,14 +721,20 @@ function CreateGame({ onBack, onCreated }) {
       </button>
 
       <div className="create-header">
-        <span className="live-badge">HOST PORTAL</span>
+        <span className="live-badge">
+          HOST PORTAL
+        </span>
 
         <h1>
-          Create Your <strong>Tambola Game</strong>
+          Create Your{" "}
+          <strong>
+            Tambola Game
+          </strong>
         </h1>
 
         <p>
-          Set your game details, tickets, prizes and player theme.
+          Set your game details, tickets,
+          prizes and player theme.
         </p>
       </div>
 
@@ -535,8 +750,14 @@ function CreateGame({ onBack, onCreated }) {
             <span>👤</span>
 
             <div>
-              <h2>Host Details</h2>
-              <p>Tell players who is hosting this game.</p>
+              <h2>
+                Host Details
+              </h2>
+
+              <p>
+                Tell players who is hosting
+                this game.
+              </p>
             </div>
           </div>
 
@@ -548,7 +769,9 @@ function CreateGame({ onBack, onCreated }) {
               placeholder="Your name"
               value={hostName}
               onChange={(event) =>
-                setHostName(event.target.value)
+                setHostName(
+                  event.target.value
+                )
               }
               required
             />
@@ -560,8 +783,14 @@ function CreateGame({ onBack, onCreated }) {
             <span>🎮</span>
 
             <div>
-              <h2>Game Details</h2>
-              <p>Basic information about your game.</p>
+              <h2>
+                Game Details
+              </h2>
+
+              <p>
+                Basic information about
+                your game.
+              </p>
             </div>
           </div>
 
@@ -573,7 +802,9 @@ function CreateGame({ onBack, onCreated }) {
               placeholder="Example: Friday Night Tambola"
               value={gameName}
               onChange={(event) =>
-                setGameName(event.target.value)
+                setGameName(
+                  event.target.value
+                )
               }
               required
             />
@@ -589,12 +820,16 @@ function CreateGame({ onBack, onCreated }) {
                 placeholder="100"
                 value={ticketLimit}
                 onChange={(event) =>
-                  setTicketLimit(event.target.value)
+                  setTicketLimit(
+                    event.target.value
+                  )
                 }
                 required
               />
 
-              <small>Maximum tickets available.</small>
+              <small>
+                Maximum tickets available.
+              </small>
             </label>
 
             <label>
@@ -609,13 +844,17 @@ function CreateGame({ onBack, onCreated }) {
                   placeholder="50"
                   value={ticketPrice}
                   onChange={(event) =>
-                    setTicketPrice(event.target.value)
+                    setTicketPrice(
+                      event.target.value
+                    )
                   }
                   required
                 />
               </div>
 
-              <small>Price per ticket.</small>
+              <small>
+                Price per ticket.
+              </small>
             </label>
           </div>
 
@@ -627,7 +866,9 @@ function CreateGame({ onBack, onCreated }) {
                 type="date"
                 value={gameDate}
                 onChange={(event) =>
-                  setGameDate(event.target.value)
+                  setGameDate(
+                    event.target.value
+                  )
                 }
                 required
               />
@@ -640,7 +881,9 @@ function CreateGame({ onBack, onCreated }) {
                 type="time"
                 value={gameTime}
                 onChange={(event) =>
-                  setGameTime(event.target.value)
+                  setGameTime(
+                    event.target.value
+                  )
                 }
                 required
               />
@@ -653,45 +896,57 @@ function CreateGame({ onBack, onCreated }) {
             <span>🏆</span>
 
             <div>
-              <h2>Game Prizes</h2>
+              <h2>
+                Game Prizes
+              </h2>
+
               <p>
-                Set the prize amount for each winning category.
+                Set the prize amount for
+                each winning category.
               </p>
             </div>
           </div>
 
           <div className="prize-form-grid">
-            {prizes.map((prize, index) => (
-              <div
-                className="prize-row"
-                key={`${prize.name}-${index}`}
-              >
-                <div>
-                  <strong>{prize.name}</strong>
+            {prizes.map(
+              (prize, index) => (
+                <div
+                  className="prize-row"
+                  key={`${prize.name}-${index}`}
+                >
+                  <div>
+                    <strong>
+                      {prize.name}
+                    </strong>
 
-                  {prize.custom && (
-                    <small>Custom Prize</small>
-                  )}
+                    {prize.custom && (
+                      <small>
+                        Custom Prize
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="input-with-prefix">
+                    <span>₹</span>
+
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Amount"
+                      value={
+                        prize.amount
+                      }
+                      onChange={(event) =>
+                        updatePrize(
+                          index,
+                          event.target.value
+                        )
+                      }
+                    />
+                  </div>
                 </div>
-
-                <div className="input-with-prefix">
-                  <span>₹</span>
-
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="Amount"
-                    value={prize.amount}
-                    onChange={(event) =>
-                      updatePrize(
-                        index,
-                        event.target.value
-                      )
-                    }
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
 
           <div className="custom-prize">
@@ -700,13 +955,17 @@ function CreateGame({ onBack, onCreated }) {
               placeholder="Custom prize name"
               value={customPrize}
               onChange={(event) =>
-                setCustomPrize(event.target.value)
+                setCustomPrize(
+                  event.target.value
+                )
               }
             />
 
             <button
               type="button"
-              onClick={addCustomPrize}
+              onClick={
+                addCustomPrize
+              }
             >
               + Add Custom Prize
             </button>
@@ -718,10 +977,14 @@ function CreateGame({ onBack, onCreated }) {
             <span>🎨</span>
 
             <div>
-              <h2>Game Theme</h2>
+              <h2>
+                Game Theme
+              </h2>
+
               <p>
-                Choose the complete visual identity players
-                will eventually experience.
+                Choose the complete visual
+                identity players will
+                experience.
               </p>
             </div>
           </div>
@@ -732,29 +995,45 @@ function CreateGame({ onBack, onCreated }) {
                 type="button"
                 key={theme.id}
                 className={`theme-option ${
-                  selectedTheme === theme.id
+                  selectedTheme ===
+                  theme.id
                     ? "selected"
                     : ""
-                } ${theme.className}`}
+                } ${
+                  theme.className
+                }`}
                 onClick={() =>
-                  setSelectedTheme(theme.id)
+                  setSelectedTheme(
+                    theme.id
+                  )
                 }
               >
                 <div className="theme-preview">
                   <div className="preview-decoration">
-                    {theme.id === "casino"
+                    {theme.id ===
+                    "casino"
                       ? "♠ ♥ ♦ ♣"
-                      : theme.id === "festival"
+                      : theme.id ===
+                        "festival"
                         ? "✦ ✧ ✦ ✧"
-                        : theme.id === "luxury"
+                        : theme.id ===
+                          "luxury"
                           ? "◆"
                           : "♛"}
                   </div>
 
                   <div className="preview-balls">
-                    <span>45</span>
-                    <span>29</span>
-                    <span>7</span>
+                    <span>
+                      45
+                    </span>
+
+                    <span>
+                      29
+                    </span>
+
+                    <span>
+                      7
+                    </span>
                   </div>
                 </div>
 
@@ -763,13 +1042,20 @@ function CreateGame({ onBack, onCreated }) {
                     {theme.icon}
                   </span>
 
-                  <strong>{theme.name}</strong>
+                  <strong>
+                    {theme.name}
+                  </strong>
                 </div>
 
-                <small>{theme.description}</small>
+                <small>
+                  {theme.description}
+                </small>
 
-                {selectedTheme === theme.id && (
-                  <b className="theme-check">✓</b>
+                {selectedTheme ===
+                  theme.id && (
+                  <b className="theme-check">
+                    ✓
+                  </b>
                 )}
               </button>
             ))}
@@ -777,48 +1063,76 @@ function CreateGame({ onBack, onCreated }) {
 
           <div className="theme-live-preview">
             <div className="theme-live-copy">
-              <span>SELECTED EXPERIENCE</span>
+              <span>
+                SELECTED EXPERIENCE
+              </span>
+
               <strong>
-                {activeTheme.icon} {activeTheme.name}
+                {activeTheme.icon}{" "}
+                {activeTheme.name}
               </strong>
-              <small>{activeTheme.description}</small>
+
+              <small>
+                {
+                  activeTheme.description
+                }
+              </small>
             </div>
 
             <div
               className={`mini-game-preview ${activeTheme.className}`}
             >
               <div className="mini-top">
-                <span>LIVE</span>
-                <b>45</b>
+                <span>
+                  LIVE
+                </span>
+
+                <b>
+                  45
+                </b>
               </div>
 
               <div className="mini-board">
-                {Array.from({ length: 15 }, (_, i) => (
-                  <span
-                    key={i}
-                    className={
-                      [3, 7, 11].includes(i)
-                        ? "active"
-                        : ""
-                    }
-                  >
-                    {i + 1}
-                  </span>
-                ))}
+                {Array.from(
+                  {
+                    length: 15,
+                  },
+                  (_, i) => (
+                    <span
+                      key={i}
+                      className={
+                        [3, 7, 11].includes(
+                          i
+                        )
+                          ? "active"
+                          : ""
+                      }
+                    >
+                      {i + 1}
+                    </span>
+                  )
+                )}
               </div>
             </div>
           </div>
 
           <div className="theme-info">
-            🎨 <strong>Game-wide theme:</strong>{" "}
-            Your selected theme is saved with this game and
-            controls the visual style of the player experience.
+            🎨{" "}
+            <strong>
+              Game-wide theme:
+            </strong>{" "}
+            Your selected theme is saved
+            with this game and controls
+            the visual style of the player
+            experience.
           </div>
         </div>
 
         <div className="create-summary">
           <div>
-            <span>THEME</span>
+            <span>
+              THEME
+            </span>
 
             <strong>
               {activeTheme.name}
@@ -826,13 +1140,23 @@ function CreateGame({ onBack, onCreated }) {
           </div>
 
           <div>
-            <span>TICKET PRICE</span>
-            <strong>₹{ticketPrice || "0"}</strong>
+            <span>
+              TICKET PRICE
+            </span>
+
+            <strong>
+              ₹{ticketPrice || "0"}
+            </strong>
           </div>
 
           <div>
-            <span>TICKET LIMIT</span>
-            <strong>{ticketLimit || "0"}</strong>
+            <span>
+              TICKET LIMIT
+            </span>
+
+            <strong>
+              {ticketLimit || "0"}
+            </strong>
           </div>
         </div>
 
@@ -850,397 +1174,230 @@ function CreateGame({ onBack, onCreated }) {
   );
 }
 
-function PlayerGame({ game }) {
-  const [accepted, setAccepted] = useState(false);
-  const [playerName, setPlayerName] = useState("");
-  const [selectedTickets, setSelectedTickets] = useState([]);
+function BookingPreviewCard({
+  game,
+  onGameChange,
+}) {
+  const requests =
+    game.bookingRequests || [];
 
-  const selectedTheme = getTheme(game.theme);
-  const prizes = Array.isArray(game.prizes)
-    ? game.prizes
-    : defaultPrizes;
+  const pendingRequests =
+    requests.filter(
+      (request) =>
+        request.status ===
+        "pending"
+    );
 
-  const ticketLimit = Math.max(
-    1,
-    Number(game.ticket_limit || 20)
-  );
-
-  const availableTickets = Array.from(
-    { length: ticketLimit },
-    (_, index) => index + 1
-  );
-
-  function toggleTicket(ticketNumber) {
-    setSelectedTickets((current) => {
-      if (current.includes(ticketNumber)) {
-        return current.filter(
-          (ticket) => ticket !== ticketNumber
-        );
-      }
-
-      return [...current, ticketNumber].sort(
-        (a, b) => a - b
+  function updateRequest(
+    requestId,
+    status
+  ) {
+    const updatedRequests =
+      requests.map(
+        (request) =>
+          request.id === requestId
+            ? {
+                ...request,
+                status,
+              }
+            : request
       );
+
+    onGameChange({
+      ...game,
+      bookingRequests:
+        updatedRequests,
     });
   }
 
-  function continueToBooking() {
-    setAccepted(true);
-  }
-
-  function bookTickets() {
-    const name = playerName.trim();
-
-    if (!name) {
-      window.alert("Please enter your name.");
-      return;
-    }
-
-    if (!selectedTickets.length) {
-      window.alert("Please select at least one ticket.");
-      return;
-    }
-
-    const ticketText = selectedTickets
-      .map((ticket) => `#${ticket}`)
-      .join(" ");
-
-    const message =
-      `Hi, ${name} wants to book ticket ${ticketText} ` +
-      `for ${game.game_name}. Game Code: ${game.game_code}`;
-
-    const whatsappUrl =
-      `https://wa.me/?text=${encodeURIComponent(message)}`;
-
-    window.location.href = whatsappUrl;
-  }
-
-  if (!accepted) {
+  if (!requests.length) {
     return (
-      <section
-        className={`page-shell player-page ${selectedTheme.className}`}
-      >
-        <div className="theme-atmosphere" />
-
-        <div className="player-invitation-card">
-          <span className="live-badge">
-            🎟️ GAME INVITATION
-          </span>
-
-          <div className="player-theme-icon">
-            {selectedTheme.icon}
-          </div>
-
-          <h1>{game.game_name}</h1>
-
-          <p className="player-host">
-            Hosted by <strong>{game.host_name}</strong>
-          </p>
-
-          <div className="player-game-meta">
-            <span>
-              📅 {game.game_date || "Date not set"}
+      <div className="booking-preview">
+        <div className="booking-preview-top">
+          <div>
+            <span className="booking-status">
+              PENDING
             </span>
 
-            <span>
-              🕐 {game.game_time || "Time not set"}
-            </span>
+            <h3>
+              Ticket booking requests
+            </h3>
 
-            <span>
-              {selectedTheme.icon} {selectedTheme.name}
-            </span>
+            <p>
+              Players will send booking
+              requests through WhatsApp.
+              Their requests appear here
+              for your approval.
+            </p>
           </div>
 
-          <div className="player-prizes">
-            <div className="player-section-heading">
-              <span>🏆 PRIZES</span>
-              <h2>Game Prizes</h2>
-            </div>
-
-            <div className="player-prize-list">
-              {prizes.map((prize, index) => (
-                <div
-                  className="player-prize-row"
-                  key={`${prize.name}-${index}`}
-                >
-                  <strong>{prize.name}</strong>
-
-                  <span>
-                    ₹{prize.amount || "0"}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="pending-count">
+            0
           </div>
-
-          <div className="player-ticket-info">
-            <div>
-              <span>TICKET PRICE</span>
-              <strong>
-                ₹{game.ticket_price || "0"}
-              </strong>
-            </div>
-
-            <div>
-              <span>TICKETS</span>
-              <strong>
-                {game.ticket_limit || "0"} Available
-              </strong>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="player-accept-button"
-            onClick={continueToBooking}
-          >
-            ✓ I ACCEPT
-          </button>
-
-          <small className="player-invitation-note">
-            Click I ACCEPT to continue to ticket booking.
-          </small>
         </div>
-      </section>
+
+        <div className="booking-empty">
+          <div className="empty-icon">
+            🎟️
+          </div>
+
+          <strong>
+            No pending bookings yet
+          </strong>
+
+          <p>
+            When a player sends a booking
+            request, add their request here
+            and approve or reject the tickets.
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <section
-      className={`page-shell player-page booking-page ${selectedTheme.className}`}
-    >
-      <div className="theme-atmosphere" />
-
-      <div className="player-booking-header">
-        <span className="live-badge">
-          🎟️ TICKET BOOKING
-        </span>
-
-        <h1>{game.game_name}</h1>
-
-        <p>
-          Select the tickets you want to book.
-        </p>
-      </div>
-
-      <div className="player-name-card">
-        <label>
-          Player Name
-
-          <input
-            type="text"
-            placeholder="Example: P1"
-            value={playerName}
-            onChange={(event) =>
-              setPlayerName(event.target.value)
-            }
-          />
-        </label>
-      </div>
-
-      <div className="ticket-booking-card">
-        <div className="ticket-booking-heading">
-          <div>
-            <span>TICKET NUMBERS</span>
-            <h2>Choose Your Tickets</h2>
-          </div>
-
-          <strong>
-            {selectedTickets.length} Selected
-          </strong>
-        </div>
-
-        <div className="ticket-number-grid">
-          {availableTickets.map((ticketNumber) => {
-            const selected =
-              selectedTickets.includes(ticketNumber);
-
-            return (
-              <button
-                type="button"
-                key={ticketNumber}
-                className={`ticket-number ${
-                  selected ? "selected" : ""
-                }`}
-                onClick={() =>
-                  toggleTicket(ticketNumber)
-                }
-              >
-                #{ticketNumber}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="actual-ticket-card">
-        <div className="actual-ticket-heading">
-          <span>ACTUAL TICKET</span>
-
-          <strong>3 × 9 TAMBOLA TICKET</strong>
-        </div>
-
-        <div className="tambola-ticket-preview">
-          <div className="tambola-ticket-title">
-            {playerName.trim() || "PLAYER"}
-          </div>
-
-          <div className="tambola-ticket-grid">
-            {Array.from({ length: 27 }, (_, index) => (
-              <div key={index}>
-                {index % 4 === 0
-                  ? Math.floor(
-                      Math.random() * 90
-                    ) + 1
-                  : ""}
-              </div>
-            ))}
-          </div>
-
-          <small>
-            Your actual 3 × 9 Tambola ticket will be
-            generated after the host approves your booking.
-          </small>
-        </div>
-      </div>
-
-      <div className="booking-summary">
-        <div>
-          <span>SELECTED TICKETS</span>
-
-          <strong>
-            {selectedTickets.length
-              ? selectedTickets
-                  .map((ticket) => `#${ticket}`)
-                  .join(" ")
-              : "None selected"}
-          </strong>
-        </div>
-
-        <div>
-          <span>TOTAL</span>
-
-          <strong>
-            ₹
-            {selectedTickets.length *
-              Number(game.ticket_price || 0)}
-          </strong>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        className="book-tickets-button"
-        onClick={bookTickets}
-      >
-        📲 BOOK TICKETS
-      </button>
-
-      <div className="booking-whatsapp-note">
-        <span>💬</span>
-
-        <div>
-          <strong>Send booking request to host</strong>
-
-          <p>
-            WhatsApp will open with your booking message.
-            Send it to the host and wait for approval.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function BookingPreviewCard() {
-  return (
     <div className="booking-preview">
       <div className="booking-preview-top">
         <div>
-          <span className="booking-status">PENDING</span>
+          <span className="booking-status">
+            PENDING REQUESTS
+          </span>
 
-          <h3>Ticket booking requests</h3>
+          <h3>
+            Ticket booking requests
+          </h3>
 
           <p>
-            Approved and rejected actions will be connected
-            to your ticket booking database next.
+            Review each player's requested
+            tickets.
           </p>
         </div>
 
-        <div className="pending-count">0</div>
+        <div className="pending-count">
+          {pendingRequests.length}
+        </div>
       </div>
 
-      <div className="booking-empty">
-        <div className="empty-icon">🎟️</div>
+      <div className="booking-request-list">
+        {requests.map(
+          (request) => (
+            <div
+              className={`booking-request ${
+                request.status
+              }`}
+              key={request.id}
+            >
+              <div className="booking-request-main">
+                <div className="booking-request-avatar">
+                  {request.playerName
+                    ?.charAt(0)
+                    ?.toUpperCase() ||
+                    "P"}
+                </div>
 
-        <strong>No pending bookings yet</strong>
+                <div>
+                  <strong>
+                    {request.playerName}
+                  </strong>
 
-        <p>
-          When players request tickets, their name,
-          requested tickets and booking details will appear here.
-        </p>
-      </div>
+                  <span>
+                    Wants tickets{" "}
+                    {request.ticketNumbers
+                      .map(
+                        (number) =>
+                          `#${number}`
+                      )
+                      .join(", ")}
+                  </span>
 
-      <div className="approval-preview">
-        <div className="approval-preview-label">
-          APPROVAL CONTROLS
-        </div>
+                  <small>
+                    {request.status ===
+                    "approved"
+                      ? "✓ Approved"
+                      : request.status ===
+                        "rejected"
+                        ? "✕ Rejected"
+                        : "Waiting for approval"}
+                  </small>
+                </div>
+              </div>
 
-        <div className="approval-buttons">
-          <button
-            type="button"
-            className="approve-button"
-            disabled
-          >
-            ✓ Approve
-          </button>
+              {request.status ===
+                "pending" && (
+                <div className="approval-buttons">
+                  <button
+                    type="button"
+                    className="approve-button"
+                    onClick={() =>
+                      updateRequest(
+                        request.id,
+                        "approved"
+                      )
+                    }
+                  >
+                    ✓ Approve
+                  </button>
 
-          <button
-            type="button"
-            className="reject-button"
-            disabled
-          >
-            ✕ Reject
-          </button>
-        </div>
-
-        <small>
-          These controls are ready for the booking workflow.
-        </small>
+                  <button
+                    type="button"
+                    className="reject-button"
+                    onClick={() =>
+                      updateRequest(
+                        request.id,
+                        "rejected"
+                      )
+                    }
+                  >
+                    ✕ Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        )}
       </div>
     </div>
   );
 }
 
-function LiveGamePanel({ game, onGameChange }) {
-  const [autoCalling, setAutoCalling] = useState(false);
+function LiveGamePanel({
+  game,
+  onGameChange,
+}) {
+  const [
+    autoCalling,
+    setAutoCalling,
+  ] = useState(false);
 
-  const calledNumbers = game.calledNumbers || [];
+  const calledNumbers =
+    game.calledNumbers || [];
 
   const currentNumber =
-    calledNumbers[calledNumbers.length - 1] || null;
+    calledNumbers[
+      calledNumbers.length - 1
+    ] || null;
 
-  const remainingNumbers = useMemo(
-    () =>
-      numbers.filter(
-        (number) => !calledNumbers.includes(number)
-      ),
-    [calledNumbers]
-  );
-
-  function persist(nextGame) {
-    onGameChange(nextGame);
-  }
+  const remainingNumbers =
+    useMemo(
+      () =>
+        numbers.filter(
+          (number) =>
+            !calledNumbers.includes(
+              number
+            )
+        ),
+      [calledNumbers]
+    );
 
   function callNextNumber() {
     if (!game.gameStarted) {
       return;
     }
 
-    if (remainingNumbers.length === 0) {
+    if (!remainingNumbers.length) {
       setAutoCalling(false);
 
-      persist({
+      onGameChange({
         ...game,
         status: "completed",
         gameStarted: false,
@@ -1249,13 +1406,18 @@ function LiveGamePanel({ game, onGameChange }) {
       return;
     }
 
-    const randomIndex = Math.floor(
-      Math.random() * remainingNumbers.length
-    );
+    const randomIndex =
+      Math.floor(
+        Math.random() *
+          remainingNumbers.length
+      );
 
-    const nextNumber = remainingNumbers[randomIndex];
+    const nextNumber =
+      remainingNumbers[
+        randomIndex
+      ];
 
-    persist({
+    onGameChange({
       ...game,
       status: "live",
       calledNumbers: [
@@ -1266,7 +1428,7 @@ function LiveGamePanel({ game, onGameChange }) {
   }
 
   function startGame() {
-    persist({
+    onGameChange({
       ...game,
       status: "live",
       gameStarted: true,
@@ -1277,15 +1439,16 @@ function LiveGamePanel({ game, onGameChange }) {
   function resetGame() {
     setAutoCalling(false);
 
-    const confirmed = window.confirm(
-      "Reset all called numbers and restart this game?"
-    );
+    const confirmed =
+      window.confirm(
+        "Reset all called numbers and restart this game?"
+      );
 
     if (!confirmed) {
       return;
     }
 
-    persist({
+    onGameChange({
       ...game,
       status: "upcoming",
       gameStarted: false,
@@ -1294,19 +1457,29 @@ function LiveGamePanel({ game, onGameChange }) {
   }
 
   useEffect(() => {
-    if (!autoCalling || !game.gameStarted) {
+    if (
+      !autoCalling ||
+      !game.gameStarted
+    ) {
       return undefined;
     }
 
-    const interval = window.setInterval(
-      callNextNumber,
-      Math.max(
-        1,
-        Number(game.call_interval_seconds || 5)
-      ) * 1000
-    );
+    const interval =
+      window.setInterval(
+        callNextNumber,
+        Math.max(
+          1,
+          Number(
+            game.call_interval_seconds ||
+              5
+          )
+        ) * 1000
+      );
 
-    return () => window.clearInterval(interval);
+    return () =>
+      window.clearInterval(
+        interval
+      );
   }, [
     autoCalling,
     game.gameStarted,
@@ -1322,10 +1495,13 @@ function LiveGamePanel({ game, onGameChange }) {
             LIVE GAME
           </span>
 
-          <h2>Number Calling</h2>
+          <h2>
+            Number Calling
+          </h2>
 
           <p>
-            Call numbers manually or start automatic calling.
+            Call numbers manually or start
+            automatic calling.
           </p>
         </div>
 
@@ -1346,7 +1522,9 @@ function LiveGamePanel({ game, onGameChange }) {
 
       <div className="current-number-card">
         <div className="current-number-copy">
-          <span>CURRENT NUMBER CALLED</span>
+          <span>
+            CURRENT NUMBER CALLED
+          </span>
 
           <strong>
             {currentNumber || "—"}
@@ -1354,12 +1532,15 @@ function LiveGamePanel({ game, onGameChange }) {
 
           <b>
             {currentNumber
-              ? numberName(currentNumber)
+              ? numberName(
+                  currentNumber
+                )
               : "WAITING TO START"}
           </b>
 
           <small>
-            {calledNumbers.length} of 90 numbers called
+            {calledNumbers.length} of 90
+            numbers called
           </small>
         </div>
 
@@ -1382,8 +1563,12 @@ function LiveGamePanel({ game, onGameChange }) {
             <button
               type="button"
               className="call-number-button"
-              onClick={callNextNumber}
-              disabled={!remainingNumbers.length}
+              onClick={
+                callNextNumber
+              }
+              disabled={
+                !remainingNumbers.length
+              }
             >
               🔢 Call Next Number
             </button>
@@ -1396,7 +1581,10 @@ function LiveGamePanel({ game, onGameChange }) {
                   : "auto-call-button"
               }
               onClick={() =>
-                setAutoCalling((current) => !current)
+                setAutoCalling(
+                  (current) =>
+                    !current
+                )
               }
             >
               {autoCalling
@@ -1418,69 +1606,104 @@ function LiveGamePanel({ game, onGameChange }) {
       <div className="called-board-section">
         <div className="board-section-heading">
           <div>
-            <span>CALLED NUMBERS BOARD</span>
-            <h3>1 — 90</h3>
+            <span>
+              CALLED NUMBERS BOARD
+            </span>
+
+            <h3>
+              1 — 90
+            </h3>
           </div>
 
           <strong>
-            {calledNumbers.length} CALLED
+            {calledNumbers.length}
+            {" "}
+            CALLED
           </strong>
         </div>
 
         <div className="called-number-board">
-          {numbers.map((number) => {
-            const isCalled =
-              calledNumbers.includes(number);
+          {numbers.map(
+            (number) => {
+              const isCalled =
+                calledNumbers.includes(
+                  number
+                );
 
-            const isCurrent =
-              currentNumber === number;
+              const isCurrent =
+                currentNumber ===
+                number;
 
-            return (
-              <div
-                key={number}
-                className={[
-                  "called-board-number",
-                  isCalled ? "called" : "",
-                  isCurrent ? "current" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              >
-                {number}
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={number}
+                  className={[
+                    "called-board-number",
+                    isCalled
+                      ? "called"
+                      : "",
+                    isCurrent
+                      ? "current"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {number}
+                </div>
+              );
+            }
+          )}
         </div>
       </div>
 
       <div className="history-section">
         <div className="board-section-heading">
           <div>
-            <span>CALLED NUMBERS HISTORY</span>
-            <h3>Most recent first</h3>
+            <span>
+              CALLED NUMBERS HISTORY
+            </span>
+
+            <h3>
+              Most recent first
+            </h3>
           </div>
         </div>
 
         {calledNumbers.length ? (
           <div className="history-list">
-            {[...calledNumbers]
+            {[
+              ...calledNumbers,
+            ]
               .reverse()
-              .map((number, index) => (
-                <div
-                  className={`history-chip ${
-                    index === 0 ? "latest" : ""
-                  }`}
-                  key={`${number}-${index}`}
-                >
-                  <small>
-                    {index === 0
-                      ? "CURRENT"
-                      : `#${calledNumbers.length - index}`}
-                  </small>
+              .map(
+                (
+                  number,
+                  index
+                ) => (
+                  <div
+                    className={`history-chip ${
+                      index === 0
+                        ? "latest"
+                        : ""
+                    }`}
+                    key={`${number}-${index}`}
+                  >
+                    <small>
+                      {index === 0
+                        ? "CURRENT"
+                        : `#${
+                            calledNumbers.length -
+                            index
+                          }`}
+                    </small>
 
-                  <strong>{number}</strong>
-                </div>
-              ))}
+                    <strong>
+                      {number}
+                    </strong>
+                  </div>
+                )
+              )}
           </div>
         ) : (
           <div className="history-empty">
@@ -1492,49 +1715,69 @@ function LiveGamePanel({ game, onGameChange }) {
   );
 }
 
-function PrizeControlPanel({ game, onGameChange }) {
-  const prizes = game.prizes || [];
+function PrizeControlPanel({
+  game,
+  onGameChange,
+}) {
+  const prizes =
+    game.prizes || [];
 
-  function togglePrizeApproval(index) {
-    const updatedPrizes = prizes.map(
-      (prize, prizeIndex) =>
-        prizeIndex === index
-          ? {
-              ...prize,
-              approved: !prize.approved,
-            }
-          : prize
-    );
+  function togglePrizeApproval(
+    index
+  ) {
+    const updatedPrizes =
+      prizes.map(
+        (
+          prize,
+          prizeIndex
+        ) =>
+          prizeIndex === index
+            ? {
+                ...prize,
+                approved:
+                  !prize.approved,
+              }
+            : prize
+      );
 
     onGameChange({
       ...game,
-      prizes: updatedPrizes,
+      prizes:
+        updatedPrizes,
     });
   }
 
   function markWinner(index) {
-    const winnerName = window.prompt(
-      `Enter winner name for ${prizes[index].name}:`
-    );
+    const winnerName =
+      window.prompt(
+        `Enter winner name for ${prizes[index].name}:`
+      );
 
     if (!winnerName?.trim()) {
       return;
     }
 
-    const updatedPrizes = prizes.map(
-      (prize, prizeIndex) =>
-        prizeIndex === index
-          ? {
-              ...prize,
-              approved: true,
-              winner: winnerName.trim(),
-            }
-          : prize
-    );
+    const updatedPrizes =
+      prizes.map(
+        (
+          prize,
+          prizeIndex
+        ) =>
+          prizeIndex === index
+            ? {
+                ...prize,
+                approved:
+                  true,
+                winner:
+                  winnerName.trim(),
+              }
+            : prize
+      );
 
     onGameChange({
       ...game,
-      prizes: updatedPrizes,
+      prizes:
+        updatedPrizes,
     });
   }
 
@@ -1542,68 +1785,96 @@ function PrizeControlPanel({ game, onGameChange }) {
     <div className="prize-control-panel">
       <div className="prize-control-heading">
         <div>
-          <span>🏆 PRIZE MANAGEMENT</span>
-          <h2>Prizes & Approval</h2>
+          <span>
+            🏆 PRIZE MANAGEMENT
+          </span>
+
+          <h2>
+            Prizes & Approval
+          </h2>
+
           <p>
-            Approve each prize before confirming its winner.
+            Approve each prize before
+            confirming its winner.
           </p>
         </div>
       </div>
 
       <div className="prize-control-list">
-        {prizes.map((prize, index) => (
-          <div
-            className={`prize-control-row ${
-              prize.approved ? "approved" : ""
-            }`}
-            key={`${prize.name}-${index}`}
-          >
-            <div className="prize-control-icon">
-              {prize.approved ? "✓" : "🏆"}
-            </div>
-
-            <div className="prize-control-info">
-              <strong>{prize.name}</strong>
-
-              <span>
-                ₹{prize.amount || "0"}
-              </span>
-
-              {prize.winner && (
-                <small>
-                  Winner: {prize.winner}
-                </small>
-              )}
-            </div>
-
-            <div className="prize-control-actions">
-              <button
-                type="button"
-                className={
-                  prize.approved
-                    ? "approved-prize-button"
-                    : "approve-prize-button"
-                }
-                onClick={() =>
-                  togglePrizeApproval(index)
-                }
-              >
+        {prizes.map(
+          (prize, index) => (
+            <div
+              className={`prize-control-row ${
+                prize.approved
+                  ? "approved"
+                  : ""
+              }`}
+              key={`${prize.name}-${index}`}
+            >
+              <div className="prize-control-icon">
                 {prize.approved
-                  ? "✓ Approved"
-                  : "✓ Approve Prize"}
-              </button>
+                  ? "✓"
+                  : "🏆"}
+              </div>
 
-              <button
-                type="button"
-                className="winner-button"
-                onClick={() => markWinner(index)}
-                disabled={!prize.approved}
-              >
-                🏆 Confirm Winner
-              </button>
+              <div className="prize-control-info">
+                <strong>
+                  {prize.name}
+                </strong>
+
+                <span>
+                  ₹
+                  {prize.amount ||
+                    "0"}
+                </span>
+
+                {prize.winner && (
+                  <small>
+                    Winner:{" "}
+                    {
+                      prize.winner
+                    }
+                  </small>
+                )}
+              </div>
+
+              <div className="prize-control-actions">
+                <button
+                  type="button"
+                  className={
+                    prize.approved
+                      ? "approved-prize-button"
+                      : "approve-prize-button"
+                  }
+                  onClick={() =>
+                    togglePrizeApproval(
+                      index
+                    )
+                  }
+                >
+                  {prize.approved
+                    ? "✓ Approved"
+                    : "✓ Approve Prize"}
+                </button>
+
+                <button
+                  type="button"
+                  className="winner-button"
+                  onClick={() =>
+                    markWinner(
+                      index
+                    )
+                  }
+                  disabled={
+                    !prize.approved
+                  }
+                >
+                  🏆 Confirm Winner
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
       </div>
     </div>
   );
@@ -1617,26 +1888,40 @@ function HostControlCentre({
   const inviteUrl =
     `${window.location.origin}/?game=${game.game_code}`;
 
-  const selectedTheme = getTheme(game.theme);
+  const selectedTheme =
+    getTheme(game.theme);
 
   function copyInviteLink() {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(inviteUrl);
-      alert("Invitation link copied!");
+    if (
+      navigator.clipboard
+    ) {
+      navigator.clipboard.writeText(
+        inviteUrl
+      );
+
+      alert(
+        "Invitation link copied!"
+      );
     }
   }
 
   async function shareInvite() {
-    if (navigator.share) {
+    if (
+      navigator.share
+    ) {
       try {
         await navigator.share({
-          title: game.game_name,
+          title:
+            game.game_name,
+
           text:
             `Join my Tambola game: ${game.game_name}`,
-          url: inviteUrl,
+
+          url:
+            inviteUrl,
         });
       } catch {
-        // User closed the share sheet.
+        // User closed share sheet.
       }
     } else {
       copyInviteLink();
@@ -1656,7 +1941,11 @@ function HostControlCentre({
           </span>
 
           <span className="status-pill">
-            ● {String(game.status || "UPCOMING").toUpperCase()}
+            ●{" "}
+            {String(
+              game.status ||
+                "UPCOMING"
+            ).toUpperCase()}
           </span>
         </div>
 
@@ -1671,7 +1960,9 @@ function HostControlCentre({
 
       <div className="control-hero">
         <div className="control-hero-pattern">
-          {selectedTheme.icon}
+          {
+            selectedTheme.icon
+          }
         </div>
 
         <div className="control-hero-icon">
@@ -1682,61 +1973,87 @@ function HostControlCentre({
           HOST CONTROL CENTRE
         </span>
 
-        <h1>{game.game_name}</h1>
+        <h1>
+          {game.game_name}
+        </h1>
 
         <p>
-          Hosted by <strong>{game.host_name}</strong>
+          Hosted by{" "}
+          <strong>
+            {game.host_name}
+          </strong>
         </p>
 
         <div className="game-meta">
           <span>
-            📅 {game.game_date || "Date not set"}
+            📅{" "}
+            {game.game_date ||
+              "Date not set"}
           </span>
 
           <span>
-            🕐 {game.game_time || "Time not set"}
+            🕐{" "}
+            {game.game_time ||
+              "Time not set"}
           </span>
 
           <span>
-            {selectedTheme.icon} {selectedTheme.name}
+            {
+              selectedTheme.icon
+            }{" "}
+            {
+              selectedTheme.name
+            }
           </span>
         </div>
       </div>
 
       <div className="code-card">
-        <div className="code-label">GAME CODE</div>
+        <div className="code-label">
+          GAME CODE
+        </div>
 
         <div className="game-code">
           {game.game_code}
         </div>
 
         <p>
-          Share this code or the invitation link with players.
+          Share this code or the
+          invitation link with players.
         </p>
       </div>
 
       <div className="control-card-section">
         <div className="section-card-heading">
-          <div className="section-card-icon">🔗</div>
+          <div className="section-card-icon">
+            🔗
+          </div>
 
           <div>
-            <h2>Player Invitation</h2>
+            <h2>
+              Player Invitation
+            </h2>
+
             <p>
-              Send this invitation to the players you want
-              to join.
+              Send this invitation to
+              the players you want to join.
             </p>
           </div>
         </div>
 
         <div className="invite-link-box">
-          <span>{inviteUrl}</span>
+          <span>
+            {inviteUrl}
+          </span>
         </div>
 
         <div className="invite-actions">
           <button
             type="button"
             className="secondary-action"
-            onClick={copyInviteLink}
+            onClick={
+              copyInviteLink
+            }
           >
             📋 Copy Link
           </button>
@@ -1744,7 +2061,9 @@ function HostControlCentre({
           <button
             type="button"
             className="primary-action"
-            onClick={shareInvite}
+            onClick={
+              shareInvite
+            }
           >
             📲 Share
           </button>
@@ -1753,12 +2072,18 @@ function HostControlCentre({
 
       <div className="control-card-section">
         <div className="section-card-heading">
-          <div className="section-card-icon">🎨</div>
+          <div className="section-card-icon">
+            🎨
+          </div>
 
           <div>
-            <h2>Game Theme</h2>
+            <h2>
+              Game Theme
+            </h2>
+
             <p>
-              This is the complete visual identity selected
+              This is the complete
+              visual identity selected
               for this game.
             </p>
           </div>
@@ -1769,27 +2094,45 @@ function HostControlCentre({
         >
           <div className="theme-preview large">
             <div className="preview-decoration">
-              {selectedTheme.icon}
+              {
+                selectedTheme.icon
+              }
             </div>
 
             <div className="preview-balls">
-              <span>45</span>
-              <span>29</span>
-              <span>7</span>
+              <span>
+                45
+              </span>
+
+              <span>
+                29
+              </span>
+
+              <span>
+                7
+              </span>
             </div>
           </div>
 
           <div className="selected-theme-info">
             <strong>
-              {selectedTheme.icon} {selectedTheme.name}
+              {
+                selectedTheme.icon
+              }{" "}
+              {
+                selectedTheme.name
+              }
             </strong>
 
             <span>
-              {selectedTheme.description}
+              {
+                selectedTheme.description
+              }
             </span>
 
             <small>
-              Complete game-wide visual theme
+              Complete game-wide
+              visual theme
             </small>
           </div>
         </div>
@@ -1797,41 +2140,62 @@ function HostControlCentre({
 
       <div className="control-card-section">
         <div className="section-card-heading">
-          <div className="section-card-icon">🎟️</div>
+          <div className="section-card-icon">
+            🎟️
+          </div>
 
           <div>
-            <h2>Ticket Bookings</h2>
+            <h2>
+              Ticket Bookings
+            </h2>
+
             <p>
-              Review player requests before approving tickets.
+              Review WhatsApp ticket
+              requests before approving.
             </p>
           </div>
         </div>
 
-        <BookingPreviewCard />
+        <BookingPreviewCard
+          game={game}
+          onGameChange={
+            onGameChange
+          }
+        />
       </div>
 
       <div className="control-card-section live-control-section">
         <LiveGamePanel
           game={game}
-          onGameChange={onGameChange}
+          onGameChange={
+            onGameChange
+          }
         />
       </div>
 
       <div className="control-card-section">
         <PrizeControlPanel
           game={game}
-          onGameChange={onGameChange}
+          onGameChange={
+            onGameChange
+          }
         />
       </div>
 
       <div className="control-card-section">
         <div className="section-card-heading">
-          <div className="section-card-icon">⚡</div>
+          <div className="section-card-icon">
+            ⚡
+          </div>
 
           <div>
-            <h2>Game Controls</h2>
+            <h2>
+              Game Controls
+            </h2>
+
             <p>
-              Everything you need to run your live game.
+              Everything you need to
+              run your live game.
             </p>
           </div>
         </div>
@@ -1841,8 +2205,14 @@ function HostControlCentre({
             type="button"
             className="control-action-card"
           >
-            <span>🖼️</span>
-            <strong>Generate Poster</strong>
+            <span>
+              🖼️
+            </span>
+
+            <strong>
+              Generate Poster
+            </strong>
+
             <small>
               Create a shareable game poster.
             </small>
@@ -1852,8 +2222,14 @@ function HostControlCentre({
             type="button"
             className="control-action-card"
           >
-            <span>👥</span>
-            <strong>Players</strong>
+            <span>
+              👥
+            </span>
+
+            <strong>
+              Players
+            </strong>
+
             <small>
               View players who have joined.
             </small>
@@ -1864,14 +2240,23 @@ function HostControlCentre({
             className="control-action-card"
             onClick={() =>
               document
-                .querySelector(".prize-control-panel")
+                .querySelector(
+                  ".prize-control-panel"
+                )
                 ?.scrollIntoView({
-                  behavior: "smooth",
+                  behavior:
+                    "smooth",
                 })
             }
           >
-            <span>🏆</span>
-            <strong>Prizes</strong>
+            <span>
+              🏆
+            </span>
+
+            <strong>
+              Prizes
+            </strong>
+
             <small>
               View and approve game prizes.
             </small>
@@ -1882,14 +2267,23 @@ function HostControlCentre({
             className="control-action-card live-action"
             onClick={() =>
               document
-                .querySelector(".live-game-panel")
+                .querySelector(
+                  ".live-game-panel"
+                )
                 ?.scrollIntoView({
-                  behavior: "smooth",
+                  behavior:
+                    "smooth",
                 })
             }
           >
-            <span>🔢</span>
-            <strong>Live Game</strong>
+            <span>
+              🔢
+            </span>
+
+            <strong>
+              Live Game
+            </strong>
+
             <small>
               Start calling Tambola numbers.
             </small>
@@ -1899,8 +2293,14 @@ function HostControlCentre({
             type="button"
             className="control-action-card"
           >
-            <span>⚙️</span>
-            <strong>Game Settings</strong>
+            <span>
+              ⚙️
+            </span>
+
+            <strong>
+              Game Settings
+            </strong>
+
             <small>
               Manage your game settings.
             </small>
@@ -1910,8 +2310,14 @@ function HostControlCentre({
             type="button"
             className="control-action-card"
           >
-            <span>📊</span>
-            <strong>Game Summary</strong>
+            <span>
+              📊
+            </span>
+
+            <strong>
+              Game Summary
+            </strong>
+
             <small>
               View tickets, players and results.
             </small>
@@ -1920,13 +2326,20 @@ function HostControlCentre({
       </div>
 
       <div className="control-footer-note">
-        <span>🛡</span>
+        <span>
+          🛡
+        </span>
 
         <div>
-          <strong>Host controls are private</strong>
+          <strong>
+            Host controls are private
+          </strong>
+
           <p>
-            Players will only see the invitation and player
-            experience, not this control centre.
+            Players will only see the
+            invitation and player
+            experience, not this control
+            centre.
           </p>
         </div>
       </div>
@@ -1934,7 +2347,9 @@ function HostControlCentre({
       <button
         className="end-game-large-button"
         type="button"
-        onClick={onEndGame}
+        onClick={
+          onEndGame
+        }
       >
         ⛔ End Game
       </button>
@@ -1942,100 +2357,1159 @@ function HostControlCentre({
   );
 }
 
-function App() {
-  const [page, setPage] = useState("home");
-  const [createdGame, setCreatedGame] = useState(null);
+/* ============================================================
+   PLAYER INVITATION PAGE
+   ============================================================ */
 
-  const [playerGame, setPlayerGame] = useState(null);
-  const [playerLoading, setPlayerLoading] = useState(false);
-  const [playerError, setPlayerError] = useState("");
+function PlayerInvitationPage({
+  game,
+  onAccept,
+  onBack,
+}) {
+  const selectedTheme =
+    getTheme(game?.theme);
+
+  const prizes =
+    Array.isArray(game?.prizes)
+      ? game.prizes
+      : [];
+
+  return (
+    <main
+      className={`player-invitation-page ${selectedTheme.className}`}
+    >
+      <div className="player-invitation-glow" />
+
+      <button
+        type="button"
+        className="player-back-button"
+        onClick={onBack}
+      >
+        ←
+      </button>
+
+      <div className="player-invitation-brand">
+        <span>
+          👑
+        </span>
+
+        <div>
+          <strong>
+            TAMBOLA
+          </strong>
+
+          <small>
+            BINGO LIVE
+          </small>
+        </div>
+      </div>
+
+      <div className="player-invitation-card">
+        <span className="player-invitation-pill">
+          ● GAME INVITATION
+        </span>
+
+        <div className="player-invitation-icon">
+          🎟️
+        </div>
+
+        <h1>
+          {game?.game_name ||
+            "Tambola Game"}
+        </h1>
+
+        <p>
+          You have been invited to
+          play a live Tambola game.
+        </p>
+
+        <div className="player-host-card">
+          <span>
+            HOSTED BY
+          </span>
+
+          <strong>
+            {game?.host_name ||
+              "Game Host"}
+          </strong>
+        </div>
+
+        <div className="player-game-details">
+          <div>
+            <span>
+              📅 DATE
+            </span>
+
+            <strong>
+              {game?.game_date ||
+                "Not set"}
+            </strong>
+          </div>
+
+          <div>
+            <span>
+              🕐 TIME
+            </span>
+
+            <strong>
+              {game?.game_time ||
+                "Not set"}
+            </strong>
+          </div>
+
+          <div>
+            <span>
+              🎟️ PRICE
+            </span>
+
+            <strong>
+              ₹
+              {game?.ticket_price ||
+                0}
+            </strong>
+          </div>
+        </div>
+
+        <div className="player-prize-preview">
+          <div className="player-prize-preview-heading">
+            <span>
+              🏆
+            </span>
+
+            <div>
+              <strong>
+                Game Prizes
+              </strong>
+
+              <small>
+                Win together
+              </small>
+            </div>
+          </div>
+
+          <div className="player-prize-preview-list">
+            {prizes.map(
+              (prize, index) => (
+                <div
+                  key={`${prize.name}-${index}`}
+                >
+                  <span>
+                    {prize.name}
+                  </span>
+
+                  <strong>
+                    ₹
+                    {prize.amount ||
+                      0}
+                  </strong>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="player-accept-button"
+          onClick={
+            onAccept
+          }
+        >
+          <span>
+            ✓
+          </span>
+
+          I ACCEPT
+        </button>
+
+        <small className="player-invitation-note">
+          By accepting, you can choose
+          the tickets you want to book.
+        </small>
+      </div>
+    </main>
+  );
+}
+
+/* ============================================================
+   REAL TAMBOLA TICKET
+   ============================================================ */
+
+function TambolaTicket({
+  ticketNumber,
+  playerName,
+}) {
+  /*
+   * This is a proper 3 × 9 Tambola layout.
+   *
+   * 3 rows
+   * 9 columns
+   * 15 numbers
+   * 12 blank cells
+   */
+
+  const rows = [
+    [
+      3,
+      "",
+      17,
+      "",
+      34,
+      "",
+      58,
+      71,
+      "",
+    ],
+    [
+      "",
+      11,
+      "",
+      29,
+      "",
+      46,
+      "",
+      76,
+      88,
+    ],
+    [
+      7,
+      "",
+      23,
+      "",
+      41,
+      52,
+      63,
+      "",
+      90,
+    ],
+  ];
+
+  return (
+    <div className="real-tambola-ticket">
+      <div className="real-ticket-header">
+        <div>
+          <span>
+            TAMBOLA
+          </span>
+
+          <strong>
+            BINGO LIVE
+          </strong>
+        </div>
+
+        <div className="real-ticket-number">
+          #{ticketNumber}
+        </div>
+      </div>
+
+      <div className="real-ticket-player">
+        <span>
+          PLAYER
+        </span>
+
+        <strong>
+          {playerName ||
+            "YOUR NAME"}
+        </strong>
+      </div>
+
+      <div className="real-ticket-grid">
+        {rows.map(
+          (row, rowIndex) =>
+            row.map(
+              (value, columnIndex) => (
+                <div
+                  key={`${rowIndex}-${columnIndex}`}
+                  className={
+                    value
+                      ? "real-ticket-cell filled"
+                      : "real-ticket-cell blank"
+                  }
+                >
+                  {value}
+                </div>
+              )
+            )
+        )}
+      </div>
+
+      <div className="real-ticket-footer">
+        <span>
+          3 ROWS
+        </span>
+
+        <span>
+          9 COLUMNS
+        </span>
+
+        <span>
+          15 NUMBERS
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   PLAYER TICKET BOOKING PAGE
+   ============================================================ */
+
+function PlayerBookingPage({
+  game,
+  onBack,
+}) {
+  const [
+    playerName,
+    setPlayerName,
+  ] = useState("");
+
+  const [
+    accepted,
+    setAccepted,
+  ] = useState(true);
+
+  const [
+    selectedTickets,
+    setSelectedTickets,
+  ] = useState([]);
+
+  const [
+    bookingSent,
+    setBookingSent,
+  ] = useState(false);
+
+  const [
+    bookingStatus,
+    setBookingStatus,
+  ] = useState("idle");
+
+  const selectedTheme =
+    getTheme(game?.theme);
+
+  const ticketLimit = Math.max(
+    1,
+    Number(
+      game?.ticket_limit || 100
+    )
+  );
+
+  const ticketPrice = Number(
+    game?.ticket_price || 0
+  );
+
+  const total =
+    selectedTickets.length *
+    ticketPrice;
+
+  const sortedTickets =
+    [...selectedTickets].sort(
+      (a, b) => a - b
+    );
+
+  function toggleTicket(
+    ticketNumber
+  ) {
+    if (bookingSent) {
+      return;
+    }
+
+    setSelectedTickets(
+      (current) => {
+        if (
+          current.includes(
+            ticketNumber
+          )
+        ) {
+          return current.filter(
+            (number) =>
+              number !==
+              ticketNumber
+          );
+        }
+
+        return [
+          ...current,
+          ticketNumber,
+        ];
+      }
+    );
+  }
+
+  function sendBookingRequest() {
+    const name =
+      playerName.trim();
+
+    if (!name) {
+      alert(
+        "Please enter your name."
+      );
+      return;
+    }
+
+    if (
+      !selectedTickets.length
+    ) {
+      alert(
+        "Please select at least one ticket."
+      );
+      return;
+    }
+
+    const ticketText =
+      sortedTickets
+        .map(
+          (number) =>
+            `#${number}`
+        )
+        .join(", ");
+
+    const message =
+      `Hi ${game?.host_name || "Host"}, ` +
+      `${name} wants to book ticket(s) ` +
+      `${ticketText} ` +
+      `for ${game?.game_name || "the Tambola game"}. ` +
+      `Please approve my booking.`;
+
+    const whatsappUrl =
+      `https://wa.me/?text=${encodeURIComponent(
+        message
+      )}`;
+
+    setBookingSent(true);
+    setBookingStatus(
+      "pending"
+    );
+
+    window.location.href =
+      whatsappUrl;
+  }
+
+  if (
+    bookingStatus ===
+      "approved" &&
+    bookingSent
+  ) {
+    return (
+      <main
+        className={`player-booking-page ${selectedTheme.className}`}
+      >
+        <div className="player-booking-header">
+          <button
+            type="button"
+            onClick={onBack}
+            className="player-back-button"
+          >
+            ←
+          </button>
+
+          <div>
+            <span>
+              TICKET APPROVED
+            </span>
+
+            <h1>
+              You're In! 🎉
+            </h1>
+
+            <p>
+              Your tickets have been
+              approved by the host.
+            </p>
+          </div>
+        </div>
+
+        <section className="player-approved-card">
+          <div className="approved-player">
+            <div className="approved-avatar">
+              {playerName
+                .charAt(0)
+                .toUpperCase()}
+            </div>
+
+            <div>
+              <span>
+                PLAYER
+              </span>
+
+              <strong>
+                {playerName}
+              </strong>
+            </div>
+          </div>
+
+          <div className="approved-tickets">
+            {sortedTickets.map(
+              (number) => (
+                <span key={number}>
+                  #{number}
+                </span>
+              )
+            )}
+          </div>
+
+          <div className="approved-ticket-list">
+            {sortedTickets.map(
+              (number) => (
+                <TambolaTicket
+                  key={number}
+                  ticketNumber={
+                    number
+                  }
+                  playerName={
+                    playerName
+                  }
+                />
+              )
+            )}
+          </div>
+
+          <div className="waiting-game-card">
+            <div>
+              🎮
+            </div>
+
+            <section>
+              <span>
+                NEXT STEP
+              </span>
+
+              <strong>
+                Wait for the host to
+                start the game
+              </strong>
+
+              <p>
+                Your tickets are approved.
+                Stay on this page and wait
+                for the host to begin
+                calling numbers.
+              </p>
+            </section>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main
+      className={`player-booking-page ${selectedTheme.className}`}
+    >
+      <div className="player-booking-header">
+        <button
+          type="button"
+          onClick={onBack}
+          className="player-back-button"
+        >
+          ←
+        </button>
+
+        <div>
+          <span>
+            🎟️ TICKET BOOKING
+          </span>
+
+          <h1>
+            {game?.game_name ||
+              "Tambola Game"}
+          </h1>
+
+          <p>
+            Select the tickets you want
+            to book.
+          </p>
+        </div>
+      </div>
+
+      {!accepted && (
+        <section className="player-accept-reminder">
+          <div>
+            🎟️
+          </div>
+
+          <div>
+            <strong>
+              Accept the invitation first
+            </strong>
+
+            <p>
+              You need to accept this
+              game invitation before
+              selecting tickets.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              setAccepted(true)
+            }
+          >
+            I ACCEPT
+          </button>
+        </section>
+      )}
+
+      <section className="player-booking-card">
+        <div className="player-booking-game-card">
+          <div className="player-booking-game-icon">
+            👑
+          </div>
+
+          <div>
+            <span>
+              GAME
+            </span>
+
+            <strong>
+              {game?.game_name}
+            </strong>
+
+            <small>
+              Hosted by{" "}
+              {game?.host_name}
+            </small>
+          </div>
+        </div>
+
+        <div className="player-name-field">
+          <label>
+            PLAYER NAME
+          </label>
+
+          <input
+            type="text"
+            placeholder="Enter your name"
+            value={playerName}
+            onChange={(event) =>
+              setPlayerName(
+                event.target.value
+              )
+            }
+            disabled={bookingSent}
+          />
+        </div>
+      </section>
+
+      <section className="player-booking-card">
+        <div className="booking-section-title">
+          <div>
+            <span>
+              CHOOSE YOUR TICKETS
+            </span>
+
+            <h2>
+              Select Tickets
+            </h2>
+          </div>
+
+          <strong>
+            {selectedTickets.length}
+            <small>
+              Selected
+            </small>
+          </strong>
+        </div>
+
+        <div className="player-ticket-selector">
+          {Array.from(
+            {
+              length:
+                ticketLimit,
+            },
+            (_, index) =>
+              index + 1
+          ).map(
+            (ticketNumber) => {
+              const selected =
+                selectedTickets.includes(
+                  ticketNumber
+                );
+
+              return (
+                <button
+                  type="button"
+                  key={
+                    ticketNumber
+                  }
+                  className={
+                    selected
+                      ? "player-ticket-number selected"
+                      : "player-ticket-number"
+                  }
+                  onClick={() =>
+                    toggleTicket(
+                      ticketNumber
+                    )
+                  }
+                  disabled={
+                    bookingSent ||
+                    !accepted
+                  }
+                >
+                  <small>
+                    #
+                  </small>
+
+                  {ticketNumber}
+
+                  {selected && (
+                    <span>
+                      ✓
+                    </span>
+                  )}
+                </button>
+              );
+            }
+          )}
+        </div>
+
+        <div className="ticket-selection-summary">
+          <span>
+            {sortedTickets.length
+              ? sortedTickets
+                  .map(
+                    (number) =>
+                      `#${number}`
+                  )
+                  .join("  ")
+              : "No tickets selected"}
+          </span>
+
+          <strong>
+            ₹{ticketPrice} each
+          </strong>
+        </div>
+      </section>
+
+      <section className="player-booking-card">
+        <div className="booking-section-title">
+          <div>
+            <span>
+              ACTUAL TICKET
+            </span>
+
+            <h2>
+              3 × 9 Tambola Ticket
+            </h2>
+          </div>
+
+          <span className="ticket-format">
+            15 NUMBERS
+          </span>
+        </div>
+
+        {selectedTickets.length ? (
+          <div className="selected-ticket-previews">
+            {sortedTickets.map(
+              (number) => (
+                <TambolaTicket
+                  key={number}
+                  ticketNumber={
+                    number
+                  }
+                  playerName={
+                    playerName
+                  }
+                />
+              )
+            )}
+          </div>
+        ) : (
+          <div className="ticket-empty-state">
+            <div>
+              🎫
+            </div>
+
+            <strong>
+              Select a ticket number above
+            </strong>
+
+            <p>
+              Your actual 3 × 9 Tambola
+              ticket will appear here.
+            </p>
+          </div>
+        )}
+      </section>
+
+      <section className="player-booking-summary">
+        <div>
+          <span>
+            SELECTED
+          </span>
+
+          <strong>
+            {sortedTickets.length
+              ? sortedTickets
+                  .map(
+                    (number) =>
+                      `#${number}`
+                  )
+                  .join(" ")
+              : "None"}
+          </strong>
+        </div>
+
+        <div>
+          <span>
+            TOTAL
+          </span>
+
+          <strong>
+            ₹{total}
+          </strong>
+        </div>
+      </section>
+
+      {!bookingSent ? (
+        <section className="player-whatsapp-section">
+          <button
+            type="button"
+            className="player-book-button"
+            onClick={
+              sendBookingRequest
+            }
+            disabled={
+              !accepted ||
+              !playerName.trim() ||
+              !selectedTickets.length
+            }
+          >
+            <span>
+              📲
+            </span>
+
+            <div>
+              <strong>
+                BOOK TICKETS
+              </strong>
+
+              <small>
+                Continue to WhatsApp
+              </small>
+            </div>
+
+            <b>
+              →
+            </b>
+          </button>
+
+          <div className="whatsapp-info">
+            <span>
+              💬
+            </span>
+
+            <p>
+              WhatsApp will open with a
+              ready-made message telling
+              the host that{" "}
+              <strong>
+                {playerName ||
+                  "the player"}
+              </strong>{" "}
+              wants to book{" "}
+              <strong>
+                {sortedTickets.length
+                  ? sortedTickets
+                      .map(
+                        (number) =>
+                          `#${number}`
+                      )
+                      .join(", ")
+                  : "selected tickets"}
+              </strong>
+              .
+            </p>
+          </div>
+        </section>
+      ) : (
+        <section className="booking-pending-card">
+          <div className="pending-icon">
+            ⏳
+          </div>
+
+          <span>
+            BOOKING REQUEST SENT
+          </span>
+
+          <h2>
+            Waiting for Host Approval
+          </h2>
+
+          <p>
+            Your request has been sent to
+            the host through WhatsApp.
+          </p>
+
+          <div className="pending-player-name">
+            <span>
+              PLAYER
+            </span>
+
+            <strong>
+              {playerName}
+            </strong>
+          </div>
+
+          <div className="pending-tickets">
+            {sortedTickets.map(
+              (number) => (
+                <span key={number}>
+                  #{number}
+                </span>
+              )
+            )}
+          </div>
+
+          <small>
+            Once the host approves your
+            tickets, you can continue to
+            the live game.
+          </small>
+        </section>
+      )}
+
+      <section className="player-waiting-card">
+        <div className="waiting-icon">
+          🎮
+        </div>
+
+        <div>
+          <span>
+            AFTER APPROVAL
+          </span>
+
+          <strong>
+            Wait for the host to start
+            the game
+          </strong>
+
+          <p>
+            Your ticket will be ready for
+            the live Tambola game once
+            the host approves your
+            booking.
+          </p>
+        </div>
+      </section>
+
+      <footer className="player-footer">
+        <span>
+          🛡 Secure Booking
+        </span>
+
+        <span>
+          🎟️ Tambola Bingo Live
+        </span>
+
+        <span>
+          🇮🇳 Made for India
+        </span>
+      </footer>
+    </main>
+  );
+}
+
+/* ============================================================
+   APP
+   ============================================================ */
+
+function App() {
+  const [
+    page,
+    setPage,
+  ] = useState("home");
+
+  const [
+    createdGame,
+    setCreatedGame,
+  ] = useState(null);
+
+  const [
+    playerGame,
+    setPlayerGame,
+  ] = useState(null);
+
+  const [
+    playerAccepted,
+    setPlayerAccepted,
+  ] = useState(false);
+
+  const [
+    playerLoading,
+    setPlayerLoading,
+  ] = useState(false);
+
+  const [
+    playerError,
+    setPlayerError,
+  ] = useState("");
 
   useEffect(() => {
-    const restoredGame = loadGameSession();
+    const restoredGame =
+      loadGameSession();
 
     if (restoredGame) {
-      setCreatedGame(restoredGame);
-      setPage("control");
+      setCreatedGame(
+        restoredGame
+      );
+    }
+
+    const gameCode =
+      getGameCodeFromUrl();
+
+    if (
+      gameCode &&
+      gameCode.trim()
+    ) {
+      loadPlayerGame(
+        gameCode.trim()
+      );
     }
   }, []);
 
   useEffect(() => {
     if (createdGame) {
-      saveGameSession(createdGame);
+      saveGameSession(
+        createdGame
+      );
     }
   }, [createdGame]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(
-      window.location.search
-    );
+  async function loadPlayerGame(
+    gameCode
+  ) {
+    setPlayerLoading(true);
+    setPlayerError("");
 
-    const gameCode = params.get("game");
+    try {
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("games")
+        .select("*")
+        .eq(
+          "game_code",
+          gameCode.toUpperCase()
+        )
+        .maybeSingle();
 
-    if (!gameCode) {
-      return;
-    }
+      if (error) {
+        throw error;
+      }
 
-    async function loadPlayerGame() {
-      setPlayerLoading(true);
-      setPlayerError("");
+      if (!data) {
+        setPlayerError(
+          "This game invitation could not be found."
+        );
 
-      try {
-        const { data, error } = await supabase
-          .from("games")
-          .select("*")
-          .eq("game_code", gameCode.toUpperCase())
-          .maybeSingle();
+        return;
+      }
 
-        if (error) {
-          throw error;
-        }
+      const normalizedGame = {
+        ...data,
 
-        if (!data) {
-          setPlayerError(
-            "This game invitation could not be found."
-          );
-          return;
-        }
-
-        setPlayerGame({
-          ...data,
-          prizes: Array.isArray(data.prizes)
+        prizes:
+          Array.isArray(
+            data.prizes
+          )
             ? data.prizes
             : defaultPrizes,
-        });
-      } catch (error) {
-        console.error(
-          "Unable to load player game:",
-          error
-        );
 
-        setPlayerError(
-          "We couldn't load this game invitation."
-        );
-      } finally {
-        setPlayerLoading(false);
-      }
+        calledNumbers:
+          Array.isArray(
+            data.calledNumbers
+          )
+            ? data.calledNumbers
+            : [],
+
+        bookingRequests:
+          Array.isArray(
+            data.bookingRequests
+          )
+            ? data.bookingRequests
+            : [],
+      };
+
+      setPlayerGame(
+        normalizedGame
+      );
+
+      setPage(
+        "player-invitation"
+      );
+    } catch (error) {
+      console.error(
+        "Unable to load player game:",
+        error
+      );
+
+      setPlayerError(
+        error?.message ||
+          "Unable to load this game invitation."
+      );
+    } finally {
+      setPlayerLoading(false);
     }
-
-    loadPlayerGame();
-  }, []);
-
-  function handleGameCreated(game) {
-    setCreatedGame(game);
-    saveGameSession(game);
-    setPage("control");
   }
 
-  function handleGameChange(nextGame) {
-    setCreatedGame(nextGame);
-    saveGameSession(nextGame);
+  function handleGameCreated(
+    game
+  ) {
+    const normalizedGame = {
+      ...game,
+
+      bookingRequests:
+        Array.isArray(
+          game.bookingRequests
+        )
+          ? game.bookingRequests
+          : [],
+    };
+
+    setCreatedGame(
+      normalizedGame
+    );
+
+    saveGameSession(
+      normalizedGame
+    );
+
+    setPage(
+      "control"
+    );
+  }
+
+  function handleGameChange(
+    nextGame
+  ) {
+    const normalizedGame = {
+      ...nextGame,
+
+      bookingRequests:
+        Array.isArray(
+          nextGame.bookingRequests
+        )
+          ? nextGame.bookingRequests
+          : [],
+    };
+
+    setCreatedGame(
+      normalizedGame
+    );
+
+    saveGameSession(
+      normalizedGame
+    );
   }
 
   function handleEndGame() {
-    const confirmed = window.confirm(
-      "Are you sure you want to end this game? This will clear the saved Host Control Centre session."
-    );
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to end this game? This will clear the saved Host Control Centre session."
+      );
 
     if (!confirmed) {
       return;
@@ -2043,191 +3517,350 @@ function App() {
 
     const finishedGame = {
       ...createdGame,
-      status: "ended",
-      gameStarted: false,
-    };
 
-    setCreatedGame(null);
-    setPage("home");
-    saveGameSession(null);
+      status:
+        "ended",
+
+      gameStarted:
+        false,
+    };
 
     console.info(
       "Game ended:",
       finishedGame?.game_code
     );
+
+    setCreatedGame(
+      null
+    );
+
+    saveGameSession(
+      null
+    );
+
+    setPage(
+      "home"
+    );
   }
 
   function goHomeWithoutEndingGame() {
-    setPage("home");
+    setPage(
+      "home"
+    );
   }
 
-  function exitPlayerInvitation() {
-    setPlayerGame(null);
-    setPlayerError("");
+  function openCreateGame() {
+    setPage(
+      "create"
+    );
+  }
 
-    window.history.replaceState(
-      {},
-      "",
-      window.location.pathname
+  function acceptPlayerInvitation() {
+    setPlayerAccepted(
+      true
+    );
+
+    setPage(
+      "player-booking"
+    );
+  }
+
+  function returnToPlayerInvitation() {
+    setPage(
+      "player-invitation"
     );
   }
 
   const currentTheme =
     createdGame?.theme
-      ? getTheme(createdGame.theme)
+      ? getTheme(
+          createdGame.theme
+        )
       : themes[0];
 
-  const isPlayerMode =
-    Boolean(playerGame) ||
-    playerLoading ||
-    Boolean(playerError);
+  const isPlayerPage =
+    page ===
+      "player-invitation" ||
+    page ===
+      "player-booking";
+
+  if (
+    playerLoading
+  ) {
+    return (
+      <main className="app">
+        <div className="player-loading">
+          <div className="player-loading-logo">
+            👑
+          </div>
+
+          <h1>
+            Loading Game
+          </h1>
+
+          <p>
+            Please wait while we
+            load your Tambola
+            invitation.
+          </p>
+
+          <div className="player-loading-spinner" />
+        </div>
+      </main>
+    );
+  }
+
+  if (
+    getGameCodeFromUrl() &&
+    playerError
+  ) {
+    return (
+      <main className="app">
+        <div className="player-loading">
+          <div className="player-error-icon">
+            ⚠️
+          </div>
+
+          <h1>
+            Game Not Found
+          </h1>
+
+          <p>
+            {playerError}
+          </p>
+
+          <button
+            type="button"
+            className="primary-action"
+            onClick={() => {
+              window.history.replaceState(
+                {},
+                "",
+                window.location.pathname
+              );
+
+              setPage(
+                "home"
+              );
+
+              setPlayerError(
+                ""
+              );
+            }}
+          >
+            ← Back to Home
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (
+    isPlayerPage &&
+    playerGame
+  ) {
+    return (
+      <main
+        className={`app ${getTheme(
+          playerGame.theme
+        ).className}`}
+      >
+        <Header
+          playerMode
+          onHome={() => {
+            setPage(
+              "player-invitation"
+            );
+          }}
+        />
+
+        {page ===
+          "player-invitation" && (
+          <PlayerInvitationPage
+            game={
+              playerGame
+            }
+            onAccept={
+              acceptPlayerInvitation
+            }
+            onBack={() => {
+              window.history.replaceState(
+                {},
+                "",
+                window.location.pathname
+              );
+
+              setPlayerGame(
+                null
+              );
+
+              setPage(
+                "home"
+              );
+            }}
+          />
+        )}
+
+        {page ===
+          "player-booking" && (
+          <PlayerBookingPage
+            game={
+              playerGame
+            }
+            onBack={
+              returnToPlayerInvitation
+            }
+          />
+        )}
+      </main>
+    );
+  }
 
   return (
     <main
-      className={`app ${
-        isPlayerMode
-          ? getTheme(playerGame?.theme).className
-          : currentTheme.className
-      }`}
+      className={`app ${currentTheme.className}`}
     >
       <Header
         onHome={
-          isPlayerMode
-            ? exitPlayerInvitation
-            : goHomeWithoutEndingGame
+          goHomeWithoutEndingGame
         }
-        playerMode={isPlayerMode}
       />
 
-      {playerLoading && (
-        <section className="page-shell player-loading">
-          <div className="player-loading-card">
-            <span>🎟️</span>
-            <h2>Loading Game...</h2>
-            <p>
-              Please wait while we open your invitation.
-            </p>
-          </div>
-        </section>
+      {page === "home" && (
+        <Home
+          onCreateGame={
+            openCreateGame
+          }
+        />
       )}
 
-      {playerError && !playerLoading && (
-        <section className="page-shell player-loading">
-          <div className="player-loading-card">
-            <span>⚠️</span>
-            <h2>Game Not Found</h2>
-            <p>{playerError}</p>
-
-            <button
-              type="button"
-              className="player-accept-button"
-              onClick={exitPlayerInvitation}
-            >
-              ← Back to Home
-            </button>
-          </div>
-        </section>
+      {page === "create" && (
+        <CreateGame
+          onBack={() => {
+            if (createdGame) {
+              setPage(
+                "control"
+              );
+            } else {
+              setPage(
+                "home"
+              );
+            }
+          }}
+          onCreated={
+            handleGameCreated
+          }
+        />
       )}
 
-      {playerGame && !playerLoading && !playerError && (
-        <PlayerGame game={playerGame} />
-      )}
-
-      {!playerGame &&
-        !playerLoading &&
-        !playerError &&
-        page === "home" && (
-          <Home
-            onCreateGame={() =>
-              setPage("create")
+      {page ===
+        "control" &&
+        createdGame && (
+          <HostControlCentre
+            game={
+              createdGame
+            }
+            onGameChange={
+              handleGameChange
+            }
+            onEndGame={
+              handleEndGame
             }
           />
         )}
 
-      {!playerGame &&
-        !playerLoading &&
-        !playerError &&
-        page === "create" && (
-          <CreateGame
-            onBack={() => {
-              if (createdGame) {
-                setPage("control");
-              } else {
-                setPage("home");
-              }
-            }}
-            onCreated={handleGameCreated}
-          />
-        )}
+      <footer>
+        <span>
+          🛡 Secure Platform
+        </span>
 
-      {!playerGame &&
-        !playerLoading &&
-        !playerError &&
-        page === "control" &&
-        createdGame && (
-          <HostControlCentre
-            game={createdGame}
-            onGameChange={handleGameChange}
-            onEndGame={handleEndGame}
-          />
-        )}
+        <span>
+          🎧 Host Support
+        </span>
 
-      {!isPlayerMode && (
-        <>
-          <footer>
-            <span>🛡 Secure Platform</span>
-            <span>🎧 Host Support</span>
-            <span>🇮🇳 Made for India</span>
-          </footer>
+        <span>
+          🇮🇳 Made for India
+        </span>
+      </footer>
 
-          <nav className="bottom-nav">
-            <button
-              type="button"
-              className={
-                page === "home"
-                  ? "active"
-                  : ""
-              }
-              onClick={() =>
-                setPage("home")
-              }
-            >
-              <span>⌂</span>
-              <small>Home</small>
-            </button>
+      <nav className="bottom-nav">
+        <button
+          type="button"
+          className={
+            page === "home"
+              ? "active"
+              : ""
+          }
+          onClick={() =>
+            setPage(
+              "home"
+            )
+          }
+        >
+          <span>
+            ⌂
+          </span>
 
-            <button type="button">
-              <span>ℹ</span>
-              <small>How It Works</small>
-            </button>
+          <small>
+            Home
+          </small>
+        </button>
 
-            <button
-              type="button"
-              className="plus"
-              onClick={() =>
-                setPage("create")
-              }
-            >
-              ＋
-            </button>
+        <button
+          type="button"
+        >
+          <span>
+            ℹ
+          </span>
 
-            <button type="button">
-              <span>🎟</span>
-              <small>Invitations</small>
-            </button>
+          <small>
+            How It Works
+          </small>
+        </button>
 
-            <button type="button">
-              <span>♙</span>
-              <small>Account</small>
-            </button>
-          </nav>
-        </>
-      )}
+        <button
+          type="button"
+          className="plus"
+          onClick={
+            openCreateGame
+          }
+        >
+          ＋
+        </button>
+
+        <button
+          type="button"
+        >
+          <span>
+            🎟
+          </span>
+
+          <small>
+            Invitations
+          </small>
+        </button>
+
+        <button
+          type="button"
+        >
+          <span>
+            ♙
+          </span>
+
+          <small>
+            Account
+          </small>
+        </button>
+      </nav>
     </main>
   );
 }
 
-createRoot(document.getElementById("root")).render(
+createRoot(
+  document.getElementById(
+    "root"
+  )
+).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
