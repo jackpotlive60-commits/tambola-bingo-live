@@ -76,35 +76,6 @@ const defaultPrizes = [
 ];
 
 const STORAGE_KEY = "tambola_bingo_live_host_game";
-const PLAYER_SESSION_KEY = "tambola_bingo_live_player_session";
-
-function savePlayerSession(gameCode, page = "player-booking") {
-  if (!gameCode) return;
-  localStorage.setItem(
-    PLAYER_SESSION_KEY,
-    JSON.stringify({
-      gameCode: String(gameCode).toUpperCase(),
-      page,
-    })
-  );
-}
-
-function loadPlayerSession() {
-  try {
-    const stored = localStorage.getItem(PLAYER_SESSION_KEY);
-    if (!stored) return null;
-    const parsed = JSON.parse(stored);
-    if (!parsed?.gameCode) return null;
-    return parsed;
-  } catch {
-    localStorage.removeItem(PLAYER_SESSION_KEY);
-    return null;
-  }
-}
-
-function clearPlayerSession() {
-  localStorage.removeItem(PLAYER_SESSION_KEY);
-}
 
 function generateGameCode() {
   const characters =
@@ -292,10 +263,24 @@ function numberName(number) {
 }
 
 function getGameCodeFromUrl() {
-  const params =
-    new URLSearchParams(window.location.search);
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("game");
+    return code ? code.trim().toUpperCase() : "";
+  } catch (error) {
+    console.error("Unable to read game code from URL:", error);
+    return "";
+  }
+}
 
-  return params.get("game");
+function getInviteUrl(gameCode) {
+  if (!gameCode) return window.location.origin + "/";
+
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.hash = "";
+  url.searchParams.set("game", String(gameCode).trim().toUpperCase());
+  return url.toString();
 }
 
 function Header({
@@ -1228,28 +1213,33 @@ function BookingPreviewCard({
             ? {
                 ...request,
                 status,
+                updatedAt: new Date().toISOString(),
               }
             : request
       );
 
-    const { error } = await supabase
-      .from("games")
-      .update({
-        bookingRequests: updatedRequests,
-      })
-      .eq("game_code", String(game?.game_code || "").toUpperCase());
+    try {
+      const { data, error } = await supabase
+        .from("games")
+        .update({
+          bookingRequests: updatedRequests,
+        })
+        .eq("id", game.id)
+        .select("*")
+        .single();
 
-    if (error) {
+      if (error) throw error;
+
+      onGameChange({
+        ...data,
+        bookingRequests: Array.isArray(data.bookingRequests)
+          ? data.bookingRequests
+          : updatedRequests,
+      });
+    } catch (error) {
       console.error("Unable to update booking request:", error);
-      alert(`Could not update booking request: ${error.message}`);
-      return;
+      alert(`Could not ${status === "approved" ? "approve" : "reject"} this booking. Please try again.`);
     }
-
-    onGameChange({
-      ...game,
-      bookingRequests:
-        updatedRequests,
-    });
   }
 
   if (!requests.length) {
@@ -1927,8 +1917,50 @@ function HostControlCentre({
   onGameChange,
   onEndGame,
 }) {
-  const inviteUrl =
-    `${window.location.origin}/?game=${game.game_code}`;
+  const inviteUrl = getInviteUrl(game.game_code);
+
+  // The player and host are on different browsers, so the host must refresh
+  // the shared game record. Polling keeps pending bookings visible without
+  // requiring the host to manually refresh the page.
+  useEffect(() => {
+    if (!game?.id) return undefined;
+
+    let active = true;
+
+    async function refreshBookings() {
+      try {
+        const { data, error } = await supabase
+          .from("games")
+          .select("*")
+          .eq("id", game.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (active && data) {
+          const nextRequests = Array.isArray(data.bookingRequests)
+            ? data.bookingRequests
+            : [];
+
+          onGameChange({
+            ...game,
+            ...data,
+            bookingRequests: nextRequests,
+          });
+        }
+      } catch (error) {
+        console.error("Unable to refresh booking requests:", error);
+      }
+    }
+
+    refreshBookings();
+    const timer = window.setInterval(refreshBookings, 3000);
+
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [game?.id]);
 
   const selectedTheme =
     getTheme(game.theme);
@@ -2403,107 +2435,171 @@ function HostControlCentre({
    PLAYER INVITATION PAGE
    ============================================================ */
 
-function getBookedTicketNumbers(game) {
-  const requests = Array.isArray(game?.bookingRequests)
-    ? game.bookingRequests
-    : [];
-  const booked = new Set();
-
-  requests.forEach((request) => {
-    if (request?.status === "rejected") return;
-    const tickets = Array.isArray(request?.ticketNumbers)
-      ? request.ticketNumbers
-      : [];
-    tickets.forEach((ticket) => booked.add(Number(ticket)));
-  });
-
-  return booked;
-}
-
 function PlayerInvitationPage({
   game,
   onAccept,
   onBack,
 }) {
-  const selectedTheme = getTheme(game?.theme);
-  const prizes = Array.isArray(game?.prizes) ? game.prizes : [];
-  const ticketLimit = Math.max(1, Number(game?.ticket_limit || 0));
-  const bookedTickets = getBookedTicketNumbers(game);
-  const availableTickets = Math.max(0, ticketLimit - bookedTickets.size);
-  const status = String(game?.status || "upcoming").replace(/_/g, " ").toUpperCase();
+  const selectedTheme =
+    getTheme(game?.theme);
+
+  const prizes =
+    Array.isArray(game?.prizes)
+      ? game.prizes
+      : [];
 
   return (
-    <main className={`player-invitation-page ${selectedTheme.className}`}>
+    <main
+      className={`player-invitation-page ${selectedTheme.className}`}
+    >
       <div className="player-invitation-glow" />
 
-      <button type="button" className="player-back-button" onClick={onBack}>
+      <button
+        type="button"
+        className="player-back-button"
+        onClick={onBack}
+      >
         ←
       </button>
 
       <div className="player-invitation-brand">
-        <span>♛</span>
+        <span>
+          👑
+        </span>
+
         <div>
-          <strong>TAMBOLA</strong>
-          <small>BINGO LIVE</small>
+          <strong>
+            TAMBOLA
+          </strong>
+
+          <small>
+            BINGO LIVE
+          </small>
         </div>
       </div>
 
       <div className="player-invitation-card">
-        <span className="player-invitation-pill">● GAME INVITATION</span>
+        <span className="player-invitation-pill">
+          ● GAME INVITATION
+        </span>
 
-        <h1>{game?.game_name || "Tambola Game"}</h1>
-        <p>Game details</p>
+        <div className="player-invitation-icon">
+          🎟️
+        </div>
+
+        <h1>
+          {game?.game_name ||
+            "Tambola Game"}
+        </h1>
+
+        <p>
+          You have been invited to
+          play a live Tambola game.
+        </p>
 
         <div className="player-host-card">
-          <span>HOST</span>
-          <strong>{game?.host_name || "Game Host"}</strong>
+          <span>
+            HOSTED BY
+          </span>
+
+          <strong>
+            {game?.host_name ||
+              "Game Host"}
+          </strong>
         </div>
 
         <div className="player-game-details">
           <div>
-            <span>DATE</span>
-            <strong>{game?.game_date || "Not set"}</strong>
+            <span>
+              📅 DATE
+            </span>
+
+            <strong>
+              {game?.game_date ||
+                "Not set"}
+            </strong>
           </div>
+
           <div>
-            <span>TIME</span>
-            <strong>{game?.game_time || "Not set"}</strong>
+            <span>
+              🕐 TIME
+            </span>
+
+            <strong>
+              {game?.game_time ||
+                "Not set"}
+            </strong>
           </div>
+
           <div>
-            <span>STATUS</span>
-            <strong>{status}</strong>
-          </div>
-          <div>
-            <span>AVAILABLE TICKETS</span>
-            <strong>{availableTickets} / {ticketLimit}</strong>
-          </div>
-          <div>
-            <span>PRICE / TICKET</span>
-            <strong>₹{game?.ticket_price || 0}</strong>
+            <span>
+              🎟️ PRICE
+            </span>
+
+            <strong>
+              ₹
+              {game?.ticket_price ||
+                0}
+            </strong>
           </div>
         </div>
 
         <div className="player-prize-preview">
           <div className="player-prize-preview-heading">
-            <span>🏆</span>
+            <span>
+              🏆
+            </span>
+
             <div>
-              <strong>PRIZE LIST</strong>
-              <small>Game prizes</small>
+              <strong>
+                Game Prizes
+              </strong>
+
+              <small>
+                Win together
+              </small>
             </div>
           </div>
+
           <div className="player-prize-preview-list">
-            {prizes.map((prize, index) => (
-              <div key={`${prize.name}-${index}`}>
-                <span>{prize.name}</span>
-                <strong>₹{prize.amount || 0}</strong>
-              </div>
-            ))}
+            {prizes.map(
+              (prize, index) => (
+                <div
+                  key={`${prize.name}-${index}`}
+                >
+                  <span>
+                    {prize.name}
+                  </span>
+
+                  <strong>
+                    ₹
+                    {prize.amount ||
+                      0}
+                  </strong>
+                </div>
+              )
+            )}
           </div>
         </div>
 
-        <button type="button" className="player-accept-button" onClick={onAccept}>
-          <span>✓</span>
+        <button
+          type="button"
+          className="player-accept-button"
+          onClick={
+            onAccept
+          }
+        >
+          <span>
+            ✓
+          </span>
+
           I ACCEPT
         </button>
+
+        <small className="player-invitation-note">
+          By accepting, you can choose
+          the tickets you want to book.
+        </small>
       </div>
     </main>
   );
@@ -2616,24 +2712,22 @@ function PlayerBookingPage({
   game,
   onBack,
 }) {
-  const [search, setSearch] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  const [accepted, setAccepted] = useState(true);
   const [selectedTickets, setSelectedTickets] = useState([]);
   const [bookingSent, setBookingSent] = useState(false);
+  const [bookingStatus, setBookingStatus] = useState("idle");
+  const [bookingRequestId, setBookingRequestId] = useState(null);
 
   const selectedTheme = getTheme(game?.theme);
   const ticketLimit = Math.max(1, Number(game?.ticket_limit || 100));
   const ticketPrice = Number(game?.ticket_price || 0);
-  const bookedTickets = getBookedTicketNumbers(game);
-  const availableTicketNumbers = Array.from({ length: ticketLimit }, (_, i) => i + 1)
-    .filter((number) => !bookedTickets.has(number));
-  const filteredTickets = availableTicketNumbers.filter((number) =>
-    String(number).includes(search.trim())
-  );
+  const total = selectedTickets.length * ticketPrice;
   const sortedTickets = [...selectedTickets].sort((a, b) => a - b);
-  const total = sortedTickets.length * ticketPrice;
 
   function toggleTicket(ticketNumber) {
-    if (bookingSent || bookedTickets.has(ticketNumber)) return;
+    if (bookingSent || !accepted) return;
+
     setSelectedTickets((current) =>
       current.includes(ticketNumber)
         ? current.filter((number) => number !== ticketNumber)
@@ -2641,89 +2735,132 @@ function PlayerBookingPage({
     );
   }
 
-  function searchTickets() {
-    // Filtering happens immediately as the search value changes.
-    // This button simply gives the player a clear search action on mobile.
-    document.getElementById("available-ticket-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   async function sendBookingRequest() {
+    const name = playerName.trim();
+
+    if (!name) {
+      alert("Please enter your name.");
+      return;
+    }
+
     if (!selectedTickets.length) {
       alert("Please select at least one ticket.");
       return;
     }
 
-    const gameCode = String(game?.game_code || "").toUpperCase();
+    const ticketText = sortedTickets.map((number) => `#${number}`).join(", ");
+    const message =
+      `Hi ${game?.host_name || "Host"}, ` +
+      `${name} wants to book ticket(s) ${ticketText} ` +
+      `for ${game?.game_name || "the Tambola game"}. ` +
+      `Please approve my booking.`;
 
-    if (!gameCode) {
-      alert("This game link is missing its game code. Please reopen the invitation link.");
-      return;
-    }
+    const request = {
+      id: `booking_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      playerName: name,
+      ticketNumbers: sortedTickets,
+      total,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+    };
 
     const existingRequests = Array.isArray(game?.bookingRequests)
       ? game.bookingRequests
       : [];
 
-    const request = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      playerName: "Player",
-      ticketNumbers: sortedTickets,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
+    // Prevent the same ticket from being requested twice while an earlier
+    // request for that ticket is still pending or already approved.
+    const unavailableTickets = existingRequests
+      .filter((item) => item.status === "pending" || item.status === "approved")
+      .flatMap((item) => Array.isArray(item.ticketNumbers) ? item.ticketNumbers : []);
 
-    const updatedRequests = [...existingRequests, request];
+    const alreadyTaken = sortedTickets.filter((number) =>
+      unavailableTickets.includes(number)
+    );
 
-    // Store the booking in Supabase. WhatsApp is only a notification.
-    const { error } = await supabase
-      .from("games")
-      .update({
-        bookingRequests: updatedRequests,
-      })
-      .eq("game_code", gameCode);
-
-    if (error) {
-      console.error("Unable to save booking request:", error);
-      alert(`Booking request could not be sent: ${error.message}`);
+    if (alreadyTaken.length) {
+      alert(`Ticket(s) ${alreadyTaken.map((n) => `#${n}`).join(", ")} are already pending or booked.`);
       return;
     }
 
-    const ticketText = sortedTickets.map((number) => `#${number}`).join(", ");
-    const message =
-      `Hi ${game?.host_name || "Host"}, I want to book ticket(s) ${ticketText} ` +
-      `for ${game?.game_name || "the Tambola game"}. ` +
-      `Total: ₹${total}. Please approve my booking.`;
+    setBookingStatus("saving");
 
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    setBookingSent(true);
-    window.location.href = whatsappUrl;
+    try {
+      const { data, error } = await supabase
+        .from("games")
+        .update({
+          bookingRequests: [...existingRequests, request],
+        })
+        .eq("id", game.id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+
+      setBookingRequestId(request.id);
+      setBookingSent(true);
+      setBookingStatus("pending");
+
+      // Keep WhatsApp as the notification channel, but the booking itself
+      // is now stored in Supabase so the Host Control Centre can see it.
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.location.href = whatsappUrl;
+    } catch (error) {
+      console.error("Unable to save booking request:", error);
+      setBookingStatus("idle");
+      alert(`Booking could not be sent: ${error?.message || "Please try again."}`);
+    }
   }
 
-  if (bookingSent) {
+  if (bookingStatus === "approved" && bookingSent) {
     return (
       <>
         <PlayerBookingPremiumStyles />
         <main className={`player-booking-page premium-booking-page ${selectedTheme.className}`}>
-          <div className="premium-booking-bg" />
-          <div className="premium-booking-shell">
-            <header className="premium-booking-hero compact">
-              <div className="premium-brand-line">
-                <div className="premium-brand-mark">♛</div>
-                <div><strong>TAMBOLA</strong><small>BINGO LIVE</small></div>
+        <div className="premium-booking-bg" />
+        <div className="premium-booking-shell">
+          <button type="button" onClick={onBack} className="premium-back-button">←</button>
+
+          <header className="premium-booking-hero compact">
+            <div className="premium-brand-mark">♛</div>
+            <div>
+              <span className="premium-eyebrow success">TICKET APPROVED</span>
+              <h1>You’re In! 🎉</h1>
+              <p>Your tickets have been approved by the host.</p>
+            </div>
+          </header>
+
+          <section className="premium-card approved-state-card">
+            <div className="approved-player-row">
+              <div className="approved-avatar">
+                {playerName.charAt(0).toUpperCase()}
               </div>
-              <span className="premium-eyebrow success">BOOKING SENT</span>
-              <h1>Request Sent</h1>
-              <p>Your booking request has been prepared for the host.</p>
-            </header>
-            <section className="premium-card pending-state-card">
-              <div className="pending-state-icon">🎟️</div>
               <div>
-                <span>SELECTED TICKETS</span>
-                <h2>{sortedTickets.map((n) => `#${n}`).join(", ")}</h2>
-                <p>Total: ₹{total}. Wait for the host to approve your booking.</p>
+                <span>PLAYER</span>
+                <strong>{playerName}</strong>
               </div>
-            </section>
-          </div>
+            </div>
+
+            <div className="approved-ticket-pills">
+              {sortedTickets.map((number) => <span key={number}>Ticket #{number}</span>)}
+            </div>
+
+            <div className="approved-ticket-list">
+              {sortedTickets.map((number) => (
+                <TambolaTicket key={number} ticketNumber={number} playerName={playerName} />
+              ))}
+            </div>
+
+            <div className="premium-next-step">
+              <div className="next-step-icon">🎮</div>
+              <div>
+                <span>NEXT STEP</span>
+                <strong>Wait for the host to start the game</strong>
+                <p>Your tickets are approved. Stay on this page while the host starts calling numbers.</p>
+              </div>
+            </div>
+          </section>
+        </div>
         </main>
       </>
     );
@@ -2733,138 +2870,209 @@ function PlayerBookingPage({
     <>
       <PlayerBookingPremiumStyles />
       <main className={`player-booking-page premium-booking-page ${selectedTheme.className}`}>
-        <div className="premium-booking-bg" />
-        <div className="premium-booking-shell">
-          <button type="button" onClick={onBack} className="premium-back-button" aria-label="Back">←</button>
+      <div className="premium-booking-bg" />
 
-          <header className="premium-booking-hero">
-            <div className="premium-brand-line">
-              <div className="premium-brand-mark">♛</div>
-              <div><strong>TAMBOLA</strong><small>BINGO LIVE</small></div>
-            </div>
-            <div className="premium-invite-badge">● TICKET BOOKING</div>
-            <h1>{game?.game_name || "Tambola Game"}</h1>
-            <p>Choose your ticket by number or by tapping the actual 3 × 9 ticket.</p>
+      <div className="premium-booking-shell">
+        <button type="button" onClick={onBack} className="premium-back-button" aria-label="Back">
+          ←
+        </button>
 
-            <div className="premium-game-meta">
-              <div><span>DATE</span><strong>{game?.game_date || "Not set"}</strong></div>
-              <div><span>TIME</span><strong>{game?.game_time || "Not set"}</strong></div>
-              <div><span>AVAILABLE</span><strong>{availableTicketNumbers.length}</strong></div>
-              <div><span>PRICE / TICKET</span><strong>₹{ticketPrice}</strong></div>
+        <header className="premium-booking-hero">
+          <div className="premium-brand-line">
+            <div className="premium-brand-mark">♛</div>
+            <div>
+              <strong>TAMBOLA</strong>
+              <small>BINGO LIVE</small>
             </div>
-          </header>
+          </div>
 
-          <section className="premium-card player-details-card">
-            <div className="premium-section-heading">
-              <div className="section-number">⌕</div>
-              <div>
-                <span>SEARCH TICKETS</span>
-                <h2>Find a ticket</h2>
-              </div>
+          <div className="premium-invite-badge">● TICKET BOOKING</div>
+          <h1>{game?.game_name || "Tambola Game"}</h1>
+          <p>Select your ticket, enter your name and send the booking request to the host.</p>
+
+          <div className="premium-game-meta">
+            <div>
+              <span>HOST</span>
+              <strong>{game?.host_name || "Game Host"}</strong>
             </div>
-            <div className="ticket-search-row">
-              <input
-                type="search"
-                inputMode="numeric"
-                placeholder="Search ticket number"
-                value={search}
-                onChange={(event) => setSearch(event.target.value.replace(/\D/g, ""))}
-              />
-              <button type="button" onClick={searchTickets}>SEARCH</button>
+            <div>
+              <span>DATE</span>
+              <strong>{game?.game_date || "Not set"}</strong>
             </div>
+            <div>
+              <span>TIME</span>
+              <strong>{game?.game_time || "Not set"}</strong>
+            </div>
+            <div>
+              <span>PRICE / TICKET</span>
+              <strong>₹{ticketPrice}</strong>
+            </div>
+          </div>
+        </header>
+
+        {!accepted && (
+          <section className="premium-card accept-card">
+            <div className="accept-icon">🎟️</div>
+            <div>
+              <span>INVITATION</span>
+              <strong>Accept the invitation to choose tickets</strong>
+              <p>You need to accept this game invitation before selecting tickets.</p>
+            </div>
+            <button type="button" onClick={() => setAccepted(true)}>I ACCEPT</button>
           </section>
+        )}
 
-          <section className="premium-card ticket-choice-card">
-            <div className="premium-section-heading">
-              <div className="section-number">01</div>
-              <div>
-                <span>TICKET NUMBERS</span>
-                <h2>Select ticket numbers</h2>
-              </div>
-              <div className="selection-counter">
-                <strong>{selectedTickets.length}</strong>
-                <span>selected</span>
-              </div>
+        <section className="premium-card player-details-card">
+          <div className="premium-section-heading">
+            <div className="section-number">01</div>
+            <div>
+              <span>PLAYER DETAILS</span>
+              <h2>Who is playing?</h2>
+              <p>Your name will be sent to the host with the ticket request.</p>
             </div>
+          </div>
 
-            <div className="ticket-number-strip">
-              {filteredTickets.map((number) => (
+          <label className="premium-name-field">
+            <span>PLAYER NAME</span>
+            <input
+              type="text"
+              placeholder="Enter your full name"
+              value={playerName}
+              onChange={(event) => setPlayerName(event.target.value)}
+              disabled={bookingSent || !accepted}
+            />
+          </label>
+        </section>
+
+        <section className="premium-card ticket-choice-card">
+          <div className="premium-section-heading">
+            <div className="section-number">02</div>
+            <div>
+              <span>CHOOSE YOUR TICKET</span>
+              <h2>Select a ticket number</h2>
+              <p>Tap any ticket below to select it. The actual 3 × 9 ticket is shown on every card.</p>
+            </div>
+            <div className="selection-counter">
+              <strong>{selectedTickets.length}</strong>
+              <span>selected</span>
+            </div>
+          </div>
+
+          <div className="ticket-picker-grid">
+            {Array.from({ length: ticketLimit }, (_, index) => {
+              const ticketNumber = index + 1;
+              const selected = selectedTickets.includes(ticketNumber);
+
+              return (
                 <button
                   type="button"
-                  key={number}
-                  className={selectedTickets.includes(number) ? "selected" : ""}
-                  onClick={() => toggleTicket(number)}
+                  key={ticketNumber}
+                  className={`ticket-picker-card ${selected ? "selected" : ""}`}
+                  onClick={() => toggleTicket(ticketNumber)}
+                  disabled={bookingSent || !accepted}
                 >
-                  #{number}
+                  <div className="ticket-picker-topline">
+                    <span>TICKET</span>
+                    <strong>#{ticketNumber}</strong>
+                    {selected && <b>✓</b>}
+                  </div>
+                  <TambolaTicket ticketNumber={ticketNumber} playerName={playerName} preview />
+                  <div className="ticket-picker-action">
+                    {selected ? "Selected · Tap to remove" : "Tap to select"}
+                  </div>
                 </button>
-              ))}
-            </div>
-          </section>
+              );
+            })}
+          </div>
+        </section>
 
-          <section className="premium-card ticket-choice-card" id="available-ticket-results">
-            <div className="premium-section-heading">
-              <div className="section-number">02</div>
-              <div>
-                <span>ACTUAL TAMBOLA TICKETS</span>
-                <h2>Choose your 3 × 9 ticket</h2>
-                <p>Tap anywhere on a ticket to select or remove it.</p>
-              </div>
+        <section className="premium-card chosen-ticket-card">
+          <div className="premium-section-heading">
+            <div className="section-number">03</div>
+            <div>
+              <span>YOUR ACTUAL TICKET</span>
+              <h2>3 × 9 Tambola Ticket</h2>
+              <p>This is the ticket format you will play with during the live game.</p>
             </div>
+            <span className="ticket-format-badge">15 NUMBERS</span>
+          </div>
 
-            <div className="all-real-tickets">
-              {filteredTickets.map((number) => {
-                const selected = selectedTickets.includes(number);
-                return (
-                  <button
-                    type="button"
-                    key={number}
-                    className={`real-ticket-select ${selected ? "selected" : ""}`}
-                    onClick={() => toggleTicket(number)}
-                  >
-                    <div className="real-ticket-select-header">
-                      <strong>#{number}</strong>
-                      <span>{selected ? "✓ SELECTED" : "AVAILABLE"}</span>
-                    </div>
-                    <TambolaTicket ticketNumber={number} preview={false} />
-                  </button>
-                );
-              })}
-              {!filteredTickets.length && (
-                <div className="chosen-empty-state">
-                  <strong>No available ticket found.</strong>
+          <div className="chosen-ticket-stage">
+            {sortedTickets.length ? (
+              sortedTickets.map((number) => (
+                <div className="chosen-ticket-item" key={number}>
+                  <TambolaTicket ticketNumber={number} playerName={playerName} />
                 </div>
-              )}
-            </div>
-          </section>
+              ))
+            ) : (
+              <div className="chosen-empty-state">
+                <div className="chosen-empty-ticket">
+                  <TambolaTicket ticketNumber={1} playerName={playerName} preview />
+                </div>
+                <div>
+                  <span>LIVE PREVIEW</span>
+                  <strong>Select a ticket number above</strong>
+                  <p>Your real 3 × 9 Tambola ticket will appear here as soon as you select a ticket.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
 
-          <section className="premium-booking-bar">
-            <div className="booking-total-block">
-              <span>SELECTED TICKETS</span>
-              <strong>{sortedTickets.length ? sortedTickets.map((n) => `#${n}`).join("  ") : "None selected"}</strong>
-            </div>
-            <div className="booking-total-price">
-              <span>TOTAL</span>
-              <strong>₹{total}</strong>
-            </div>
-          </section>
+        <section className="premium-booking-bar">
+          <div className="booking-total-block">
+            <span>SELECTED TICKETS</span>
+            <strong>
+              {sortedTickets.length ? sortedTickets.map((number) => `#${number}`).join("  ") : "None selected"}
+            </strong>
+          </div>
+          <div className="booking-total-price">
+            <span>TOTAL</span>
+            <strong>₹{total}</strong>
+          </div>
+        </section>
 
+        {!bookingSent ? (
           <section className="premium-submit-card">
             <button
               type="button"
               className="premium-book-button"
               onClick={sendBookingRequest}
-              disabled={!selectedTickets.length}
+              disabled={!accepted || !playerName.trim() || !selectedTickets.length}
             >
               <span className="whatsapp-icon">◉</span>
               <div>
                 <strong>BOOK {selectedTickets.length || ""} TICKET{selectedTickets.length === 1 ? "" : "S"}</strong>
-                <small>Send booking request to the host</small>
+                <small>Send booking request via WhatsApp</small>
               </div>
               <b>→</b>
             </button>
+            <p className="premium-submit-note">
+              Your request will open WhatsApp with a ready-made message for <strong>{game?.host_name || "the host"}</strong>.
+            </p>
           </section>
-        </div>
-      </main>
+        ) : (
+          <section className="premium-card pending-state-card">
+            <div className="pending-state-icon">⏳</div>
+            <div>
+              <span>BOOKING REQUEST SENT</span>
+              <h2>Waiting for Host Approval</h2>
+              <p>Your request has been sent to the host through WhatsApp.</p>
+            </div>
+            <div className="pending-details">
+              <span>{playerName}</span>
+              <strong>{sortedTickets.map((number) => `#${number}`).join("  ")}</strong>
+            </div>
+          </section>
+        )}
+
+        <footer className="premium-booking-footer">
+          <span>🛡 Secure Booking</span>
+          <span>🎟️ Tambola Bingo Live</span>
+          <span>🇮🇳 Made for India</span>
+        </footer>
+      </div>
+    </main>
     </>
   );
 }
@@ -2877,7 +3085,6 @@ function PlayerBookingPage({
 function PlayerBookingPremiumStyles() {
   return (
     <style>{`
-      .ticket-search-row{display:flex;gap:10px}.ticket-search-row input{flex:1;min-width:0;border:1px solid rgba(255,255,255,.12);background:#0d0a13;color:#fff;border-radius:14px;padding:14px 15px;font-size:15px;outline:none}.ticket-search-row button{border:0;border-radius:14px;padding:0 18px;background:#d8ad54;color:#171009;font-weight:900;cursor:pointer}.ticket-number-strip{display:flex;flex-wrap:wrap;gap:8px}.ticket-number-strip button{border:1px solid rgba(255,255,255,.12);background:#0d0a13;color:#f4eef9;border-radius:11px;padding:10px 12px;font-weight:900;cursor:pointer}.ticket-number-strip button.selected{background:#d8ad54;color:#171009;border-color:#d8ad54}.all-real-tickets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.real-ticket-select{border:1px solid rgba(255,255,255,.1);background:#0b0910;color:#fff;border-radius:18px;padding:12px;cursor:pointer;text-align:left}.real-ticket-select.selected{border-color:#d8ad54;box-shadow:0 0 0 2px rgba(216,173,84,.18)}.real-ticket-select-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 3px}.real-ticket-select-header strong{font-size:16px;color:#d8ad54}.real-ticket-select-header span{font-size:9px;font-weight:900;letter-spacing:1px;color:#968d9f}.real-ticket-select.selected .real-ticket-select-header span{color:#d8ad54}@media(max-width:700px){.all-real-tickets{grid-template-columns:1fr}.ticket-search-row button{padding:0 14px}}
       .premium-booking-page{min-height:100vh;position:relative;overflow:hidden;background:#090710;color:#f8f4ff;padding:0 16px 120px;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
       .premium-booking-bg{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% -10%,rgba(126,61,194,.38),transparent 40%),radial-gradient(circle at 10% 45%,rgba(43,25,76,.35),transparent 35%),radial-gradient(circle at 90% 75%,rgba(174,116,33,.12),transparent 32%)}
       .premium-booking-shell{position:relative;z-index:1;width:min(1180px,100%);margin:0 auto;padding-top:24px}
@@ -2965,24 +3172,24 @@ function App() {
   ] = useState("");
 
   useEffect(() => {
-    const restoredGame = loadGameSession();
+    const restoredGame =
+      loadGameSession();
 
     if (restoredGame) {
-      setCreatedGame(restoredGame);
-      setPage("control");
+      setCreatedGame(
+        restoredGame
+      );
     }
 
-    const urlGameCode = getGameCodeFromUrl();
-    const playerSession = loadPlayerSession();
-    const params = new URLSearchParams(window.location.search);
-    const urlPage = params.get("page");
-    const gameCode = urlGameCode?.trim() || playerSession?.gameCode;
+    const gameCode =
+      getGameCodeFromUrl();
 
-    if (gameCode) {
+    if (
+      gameCode &&
+      gameCode.trim()
+    ) {
       loadPlayerGame(
-        gameCode,
-        urlPage === "booking" ||
-          Boolean(playerSession && !urlGameCode)
+        gameCode.trim()
       );
     }
   }, []);
@@ -2995,54 +3202,8 @@ function App() {
     }
   }, [createdGame]);
 
-  // Keep the Host Control Centre synchronized with the shared Supabase game.
-  useEffect(() => {
-    const gameCode = createdGame?.game_code;
-
-    if (!gameCode || page !== "control") {
-      return undefined;
-    }
-
-    let cancelled = false;
-
-    async function refreshHostBookings() {
-      try {
-        const { data, error } = await supabase
-          .from("games")
-          .select("bookingRequests")
-          .eq("game_code", String(gameCode).toUpperCase())
-          .maybeSingle();
-
-        if (error) throw error;
-
-        if (!cancelled && data) {
-          const requests = Array.isArray(data.bookingRequests)
-            ? data.bookingRequests
-            : [];
-
-          setCreatedGame((current) =>
-            current
-              ? { ...current, bookingRequests: requests }
-              : current
-          );
-        }
-      } catch (error) {
-        console.error("Unable to refresh host booking requests:", error);
-      }
-    }
-
-    refreshHostBookings();
-    const intervalId = window.setInterval(refreshHostBookings, 3000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-    };
-  }, [createdGame?.game_code, page]);
-
   async function loadPlayerGame(
-    gameCode,
-    restoreBooking = false
+    gameCode
   ) {
     setPlayerLoading(true);
     setPlayerError("");
@@ -3101,30 +3262,8 @@ function App() {
         normalizedGame
       );
 
-      const savedPlayerSession = loadPlayerSession();
-      const currentUrlParams = new URLSearchParams(
-        window.location.search
-      );
-      const urlRequestsBooking =
-        currentUrlParams.get("page") === "booking";
-      const savedGameCode =
-        String(savedPlayerSession?.gameCode || "").toUpperCase();
-      const loadedGameCode =
-        String(normalizedGame.game_code || "").toUpperCase();
-
-      const shouldRestoreBooking =
-        restoreBooking ||
-        urlRequestsBooking ||
-        (
-          savedGameCode === loadedGameCode &&
-          savedPlayerSession?.page === "player-booking"
-        );
-
-      setPlayerAccepted(shouldRestoreBooking);
       setPage(
-        shouldRestoreBooking
-          ? "player-booking"
-          : "player-invitation"
+        "player-invitation"
       );
     } catch (error) {
       console.error(
@@ -3242,37 +3381,19 @@ function App() {
   }
 
   function acceptPlayerInvitation() {
-    setPlayerAccepted(true);
-    savePlayerSession(playerGame?.game_code, "player-booking");
-
-    const params = new URLSearchParams(window.location.search);
-    params.set("page", "booking");
-
-    window.history.replaceState(
-      {},
-      "",
-      `${window.location.pathname}?${params.toString()}`
+    setPlayerAccepted(
+      true
     );
 
-    setPage("player-booking");
+    setPage(
+      "player-booking"
+    );
   }
 
   function returnToPlayerInvitation() {
-    clearPlayerSession();
-    setPlayerAccepted(false);
-
-    const params = new URLSearchParams(window.location.search);
-    params.delete("page");
-
-    const query = params.toString();
-
-    window.history.replaceState(
-      {},
-      "",
-      `${window.location.pathname}${query ? `?${query}` : ""}`
+    setPage(
+      "player-invitation"
     );
-
-    setPage("player-invitation");
   }
 
   const currentTheme =
@@ -3388,20 +3509,10 @@ function App() {
               acceptPlayerInvitation
             }
             onBack={() => {
-              clearPlayerSession();
-              setPlayerAccepted(false);
-
-              const params = new URLSearchParams(
-                window.location.search
-              );
-              params.delete("page");
-
-              const query = params.toString();
-
               window.history.replaceState(
                 {},
                 "",
-                `${window.location.pathname}${query ? `?${query}` : ""}`
+                window.location.pathname
               );
 
               setPlayerGame(
