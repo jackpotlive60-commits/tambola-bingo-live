@@ -1217,7 +1217,7 @@ function BookingPreviewCard({
         "pending"
     );
 
-  function updateRequest(
+  async function updateRequest(
     requestId,
     status
   ) {
@@ -1231,6 +1231,19 @@ function BookingPreviewCard({
               }
             : request
       );
+
+    const { error } = await supabase
+      .from("games")
+      .update({
+        bookingRequests: updatedRequests,
+      })
+      .eq("game_code", String(game?.game_code || "").toUpperCase());
+
+    if (error) {
+      console.error("Unable to update booking request:", error);
+      alert(`Could not update booking request: ${error.message}`);
+      return;
+    }
 
     onGameChange({
       ...game,
@@ -2634,9 +2647,44 @@ function PlayerBookingPage({
     document.getElementById("available-ticket-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function sendBookingRequest() {
+  async function sendBookingRequest() {
     if (!selectedTickets.length) {
       alert("Please select at least one ticket.");
+      return;
+    }
+
+    const gameCode = String(game?.game_code || "").toUpperCase();
+
+    if (!gameCode) {
+      alert("This game link is missing its game code. Please reopen the invitation link.");
+      return;
+    }
+
+    const existingRequests = Array.isArray(game?.bookingRequests)
+      ? game.bookingRequests
+      : [];
+
+    const request = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      playerName: "Player",
+      ticketNumbers: sortedTickets,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedRequests = [...existingRequests, request];
+
+    // Store the booking in Supabase. WhatsApp is only a notification.
+    const { error } = await supabase
+      .from("games")
+      .update({
+        bookingRequests: updatedRequests,
+      })
+      .eq("game_code", gameCode);
+
+    if (error) {
+      console.error("Unable to save booking request:", error);
+      alert(`Booking request could not be sent: ${error.message}`);
       return;
     }
 
@@ -2946,6 +2994,51 @@ function App() {
       );
     }
   }, [createdGame]);
+
+  // Keep the Host Control Centre synchronized with the shared Supabase game.
+  useEffect(() => {
+    const gameCode = createdGame?.game_code;
+
+    if (!gameCode || page !== "control") {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    async function refreshHostBookings() {
+      try {
+        const { data, error } = await supabase
+          .from("games")
+          .select("bookingRequests")
+          .eq("game_code", String(gameCode).toUpperCase())
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (!cancelled && data) {
+          const requests = Array.isArray(data.bookingRequests)
+            ? data.bookingRequests
+            : [];
+
+          setCreatedGame((current) =>
+            current
+              ? { ...current, bookingRequests: requests }
+              : current
+          );
+        }
+      } catch (error) {
+        console.error("Unable to refresh host booking requests:", error);
+      }
+    }
+
+    refreshHostBookings();
+    const intervalId = window.setInterval(refreshHostBookings, 3000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [createdGame?.game_code, page]);
 
   async function loadPlayerGame(
     gameCode,
