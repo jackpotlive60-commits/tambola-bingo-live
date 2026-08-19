@@ -5,36 +5,28 @@ import{supabase}from"./lib/supabase";
 const nums=Array.from({length:90},(_,i)=>i+1);
 const KEY="tambola_bingo_live_host_game";
 
-const defaultPrizes=[
- "First Five",
- "Four Corners",
- "Top Line",
- "Middle Line",
- "Bottom Line",
- "Full House"
-];
+const prizes0=[
+ "First Five","Four Corners","Top Line","Middle Line","Bottom Line","Full House"
+].map(name=>({name,amount:"",approved:false,winner:null}));
 
 function code6(){
  const s="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
- return Array.from({length:6},()=>s[Math.floor(Math.random()*s.length)]).join("");
+ return Array.from({length:6},()=>s[Math.floor(Math.random()*s.length)]).join("")
 }
 
 function gameCode(){
- return new URLSearchParams(location.search).get("game");
+ return new URLSearchParams(location.search).get("game")
 }
 
 function save(g){
- if(g)localStorage.setItem(KEY,JSON.stringify(g));
- else localStorage.removeItem(KEY);
+ g?localStorage.setItem(KEY,JSON.stringify(g)):localStorage.removeItem(KEY)
 }
 
 function load(){
  try{
   const g=JSON.parse(localStorage.getItem(KEY));
-  return g?.game_code?g:null;
- }catch{
-  return null;
- }
+  return g?.game_code?g:null
+ }catch{return null}
 }
 
 function Ticket({n,name=""}){
@@ -43,90 +35,271 @@ function Ticket({n,name=""}){
   [0,1,0,1,0,1,0,1,1],
   [1,0,1,0,1,1,0,0,1]
  ];
-
  const rows=masks.map(r=>[...r]);
  const base=Math.max(1,Number(n)||1);
 
  for(let c=0;c<9;c++){
-  const min=c?c*10:1;
-  const max=c===8?90:c*10+9;
-
-  const vals=Array.from(
-   {length:max-min+1},
-   (_,i)=>min+i
-  );
-
+  const min=c?c*10:1,max=c===8?90:c*10+9;
+  const vals=Array.from({length:max-min+1},(_,i)=>min+i);
   const shift=(base*(c+3)+c*7)%vals.length;
   const v=vals.slice(shift).concat(vals.slice(0,shift));
 
   rows.forEach((r,ri)=>{
-   if(r[c]){
-    r[c]=v[(base+c*3+ri*5)%v.length];
-   }
-  });
+   if(r[c])r[c]=v[(base+c*3+ri*5)%v.length]
+  })
  }
 
  return(
-  <div style={{
-   border:"1px solid #222",
-   padding:6,
-   margin:"8px 0",
-   maxWidth:360,
-   background:"#fff"
-  }}>
-   <b>Ticket #{n}</b>
-   {name&&<span> — {name}</span>}
-
-   <div style={{
-    display:"grid",
-    gridTemplateColumns:"repeat(9,1fr)",
-    marginTop:5
-   }}>
-    {rows.flat().map((v,i)=>(
-     <div
-      key={i}
-      style={{
-       border:"1px solid #aaa",
-       height:30,
-       textAlign:"center",
-       lineHeight:"30px"
-      }}
-     >
-      {v||""}
-     </div>
-    ))}
+  <div style={{border:"1px solid #333",padding:6,margin:"8px 0",maxWidth:360}}>
+   <b>Ticket #{n}</b>{name&&<span> — {name}</span>}
+   <div style={{display:"grid",gridTemplateColumns:"repeat(9,1fr)",marginTop:5}}>
+    {rows.flat().map((v,i)=>
+     <div key={i} style={{
+      border:"1px solid #aaa",
+      height:30,
+      textAlign:"center",
+      lineHeight:"30px"
+     }}>{v||""}</div>
+    )}
    </div>
   </div>
- );
+ )
 }
 
+function Bookings({game,setGame}){
+ const r=game.bookingRequests||[];
+ const pending=r.filter(x=>x.status==="pending");
 
-/* CREATE GAME */
-
-function CreateGame({onCreated}){
-
- const[name,setName]=useState("");
- const[limit,setLimit]=useState("100");
- const[price,setPrice]=useState("20");
- const[date,setDate]=useState("");
- const[time,setTime]=useState("");
- const[amounts,setAmounts]=useState({});
- const[busy,setBusy]=useState(false);
- const[error,setError]=useState("");
-
- function setPrize(name,value){
-  setAmounts(a=>({
-   ...a,
-   [name]:value
-  }));
+ function update(id,status){
+  setGame({
+   ...game,
+   bookingRequests:r.map(x=>x.id===id?{...x,status}:x)
+  })
  }
 
- async function createGame(e){
+ return(
+  <section>
+   <h2>Ticket Bookings ({pending.length})</h2>
 
+   {!r.length&&<p>No pending bookings yet.</p>}
+
+   {r.map(x=>
+    <div key={x.id} style={{border:"1px solid #ccc",padding:10,margin:8}}>
+     <b>{x.playerName}</b>
+     <p>Tickets: {x.ticketNumbers.map(n=>`#${n}`).join(", ")}</p>
+     <p>Status: {x.status}</p>
+
+     {x.status==="pending"&&<>
+      <button onClick={()=>update(x.id,"approved")}>Approve</button>
+      <button onClick={()=>update(x.id,"rejected")}>Reject</button>
+     </>}
+    </div>
+   )}
+  </section>
+ )
+}
+
+function Live({game,setGame}){
+ const called=game.calledNumbers||[];
+ const last=called.at(-1);
+ const remaining=nums.filter(n=>!called.includes(n));
+
+ function call(){
+  if(!game.gameStarted||!remaining.length)return;
+
+  const n=remaining[Math.floor(Math.random()*remaining.length)];
+
+  setGame({
+   ...game,
+   calledNumbers:[...called,n],
+   status:"live"
+  })
+ }
+
+ return(
+  <section>
+   <h2>Live Game</h2>
+
+   <p>
+    Current: <b>{last||"—"}</b> | Called: {called.length}/90
+   </p>
+
+   {!game.gameStarted?
+    <button onClick={()=>
+     setGame({
+      ...game,
+      gameStarted:true,
+      status:"live",
+      calledNumbers:[]
+     })
+    }>
+     Start Game
+    </button>
+   :
+    <>
+     <button onClick={call}>Call Next Number</button>
+
+     <button onClick={()=>
+      setGame({
+       ...game,
+       gameStarted:false,
+       status:"upcoming",
+       calledNumbers:[]
+      })
+     }>
+      Reset
+     </button>
+    </>
+   }
+
+   <p>{called.join(", ")||"No numbers called."}</p>
+  </section>
+ )
+}
+
+function HostControl({game,setGame,end}){
+ const url=`${location.origin}/?game=${game.game_code}`;
+
+ return(
+  <main>
+
+   <h1>TambolaLive</h1>
+   <h2>Host Control Centre</h2>
+
+   <p>
+    <b>Game:</b> {game.game_name}
+   </p>
+
+   <p>
+    <b>Date:</b> {game.game_date}
+    {" | "}
+    <b>Time:</b> {game.game_time}
+   </p>
+
+   <p>
+    <b>Ticket Price:</b> ₹{game.ticket_price}
+    {" | "}
+    <b>Tickets:</b> {game.ticket_limit}
+   </p>
+
+   <hr/>
+
+   <h2>Share Game</h2>
+
+   <input
+    readOnly
+    value={url}
+    style={{width:"90%"}}
+   />
+
+   <button
+    onClick={()=>{
+     navigator.clipboard?.writeText(url);
+     alert("Game link copied")
+    }}
+   >
+    Copy Link
+   </button>
+
+   <hr/>
+
+   <Bookings game={game} setGame={setGame}/>
+
+   <hr/>
+
+   <Live game={game} setGame={setGame}/>
+
+   <hr/>
+
+   <section>
+    <h2>Prizes</h2>
+
+    {(game.prizes||[])
+     .filter(p=>String(p.amount||"").trim()!=="")
+     .map((p,i)=>
+      <div key={i}>
+       {p.name}: ₹{p.amount}
+
+       <button
+        onClick={()=>
+         setGame({
+          ...game,
+          prizes:game.prizes.map(x=>
+           x.name===p.name
+            ?{...x,approved:!x.approved}
+            :x
+          )
+         })
+        }
+       >
+        {p.approved?"Approved":"Approve"}
+       </button>
+      </div>
+     )}
+   </section>
+
+   <hr/>
+
+   <button
+    onClick={()=>{
+     if(confirm("End game?"))end()
+    }}
+   >
+    End Game
+   </button>
+
+  </main>
+ )
+}
+
+function CreateGame({done}){
+ const[
+  name,setName
+ ]=useState("TambolaLive");
+
+ const[
+  limit,setLimit
+ ]=useState("100");
+
+ const[
+  price,setPrice
+ ]=useState("20");
+
+ const[
+  date,setDate
+ ]=useState("");
+
+ const[
+  time,setTime
+ ]=useState("");
+
+ const[
+  ps,setPs
+ ]=useState(prizes0);
+
+ const[
+  custom,setCustom
+ ]=useState("");
+
+ const[
+  busy,setBusy
+ ]=useState(false);
+
+ const[
+  err,setErr
+ ]=useState("");
+
+ function prize(i,v){
+  setPs(p=>p.map((x,j)=>
+   j===i?{...x,amount:v}:x
+  ))
+ }
+
+ async function submit(e){
   e.preventDefault();
 
   setBusy(true);
-  setError("");
+  setErr("");
 
   try{
 
@@ -137,24 +310,24 @@ function CreateGame({onCreated}){
      .from("games")
      .select("id")
      .eq("game_code",gc)
-     .maybeSingle()).data
+     .maybeSingle()
+    ).data
    ){
     gc=code6();
    }
 
-   const prizes=defaultPrizes
-    .filter(p=>String(amounts[p]||"").trim()!=="")
-    .map(p=>({
-     name:p,
-     amount:amounts[p],
-     approved:false,
-     winner:null
-    }));
+   // Only prizes with an amount are saved.
+   const finalPrizes=ps.filter(
+    p=>String(p.amount||"").trim()!==""
+   );
 
-   const{data,error}=await supabase
+   const{
+    data,
+    error
+   }=await supabase
     .from("games")
     .insert({
-     game_name:name.trim(),
+     game_name:name.trim()||"TambolaLive",
      status:"upcoming",
      ticket_limit:Number(limit),
      ticket_price:Number(price),
@@ -169,52 +342,40 @@ function CreateGame({onCreated}){
 
    if(error)throw error;
 
-   const game={
+   done({
     ...data,
+    game_name:name.trim()||"TambolaLive",
     status:"upcoming",
     gameStarted:false,
     calledNumbers:[],
-    prizes,
+    prizes:finalPrizes,
     bookingRequests:[]
-   };
-
-   onCreated(game);
+   });
 
   }catch(e){
-   setError(e.message||"Could not create game");
+   setErr(e.message||"Could not create game");
   }finally{
    setBusy(false);
   }
  }
 
  return(
-  <main style={{
-   maxWidth:600,
-   margin:"30px auto",
-   padding:20,
-   fontFamily:"Arial"
-  }}>
+  <main>
 
-   <h1>TAMBOLA BINGO LIVE</h1>
-
+   <h1>TambolaLive</h1>
    <h2>Create Game</h2>
 
-   {error&&(
-    <p style={{color:"red"}}>{error}</p>
-   )}
+   {err&&<p>{err}</p>}
 
-   <form onSubmit={createGame}>
+   <form onSubmit={submit}>
 
     <input
-     style={inputStyle}
      placeholder="Game name"
      value={name}
      onChange={e=>setName(e.target.value)}
-     required
     />
 
     <input
-     style={inputStyle}
      type="number"
      min="1"
      placeholder="Ticket limit"
@@ -224,7 +385,6 @@ function CreateGame({onCreated}){
     />
 
     <input
-     style={inputStyle}
      type="number"
      min="0"
      placeholder="Ticket price"
@@ -234,7 +394,6 @@ function CreateGame({onCreated}){
     />
 
     <input
-     style={inputStyle}
      type="date"
      value={date}
      onChange={e=>setDate(e.target.value)}
@@ -242,565 +401,164 @@ function CreateGame({onCreated}){
     />
 
     <input
-     style={inputStyle}
      type="time"
      value={time}
      onChange={e=>setTime(e.target.value)}
      required
     />
 
-    <h3>Prize Amounts</h3>
+    <h3>Prizes</h3>
 
-    <p style={{fontSize:14}}>
-     Enter an amount only for prizes that will be played.
-     Blank prizes will not appear in the game.
-    </p>
-
-    {defaultPrizes.map(p=>(
-     <div
-      key={p}
-      style={{
-       display:"flex",
-       gap:10,
-       alignItems:"center",
-       marginBottom:8
-      }}
-     >
-
-      <label style={{flex:1}}>
-       {p}
-      </label>
+    {ps.map((p,i)=>
+     <div key={i}>
+      <label>{p.name}</label>
 
       <input
-       style={{
-        ...inputStyle,
-        margin:0,
-        width:120
-       }}
        type="number"
        min="0"
+       value={p.amount}
+       onChange={e=>prize(i,e.target.value)}
        placeholder="Amount"
-       value={amounts[p]||""}
-       onChange={e=>setPrize(p,e.target.value)}
       />
-
      </div>
-    ))}
+    )}
 
-    <button
-     style={buttonStyle}
-     disabled={busy}
-    >
-     {busy?"Creating...":"CREATE GAME"}
+    <div>
+     <input
+      placeholder="Custom prize"
+      value={custom}
+      onChange={e=>setCustom(e.target.value)}
+     />
+
+     <button
+      type="button"
+      onClick={()=>{
+       if(custom.trim()){
+        setPs(p=>[
+         ...p,
+         {
+          name:custom.trim(),
+          amount:"",
+          approved:false,
+          winner:null
+         }
+        ]);
+
+        setCustom("");
+       }
+      }}
+     >
+      Add
+     </button>
+    </div>
+
+    <button disabled={busy}>
+     {busy?"Creating...":"Create Game"}
     </button>
 
    </form>
 
   </main>
- );
+ )
 }
-
-
-/* BOOKINGS */
-
-function Bookings({game,setGame}){
-
- const requests=game.bookingRequests||[];
-
- const pending=requests.filter(
-  x=>x.status==="pending"
- );
-
- function update(id,status){
-
-  setGame({
-   ...game,
-   bookingRequests:requests.map(x=>
-    x.id===id
-     ?{...x,status}
-     :x
-   )
-  });
- }
-
- return(
-  <section style={panelStyle}>
-
-   <h2>
-    Ticket Bookings ({pending.length})
-   </h2>
-
-   {!requests.length&&(
-    <p>No pending bookings yet.</p>
-   )}
-
-   {requests.map(x=>(
-    <div
-     key={x.id}
-     style={{
-      border:"1px solid #ccc",
-      padding:12,
-      margin:"10px 0"
-     }}
-    >
-
-     <b>{x.playerName}</b>
-
-     <p>
-      Tickets:
-      {" "}
-      {x.ticketNumbers
-       .map(n=>`#${n}`)
-       .join(", ")}
-     </p>
-
-     <p>
-      Status: <b>{x.status}</b>
-     </p>
-
-     {x.status==="pending"&&(
-      <div>
-
-       <button
-        onClick={()=>update(x.id,"approved")}
-       >
-        Approve
-       </button>
-
-       {" "}
-
-       <button
-        onClick={()=>update(x.id,"rejected")}
-       >
-        Reject
-       </button>
-
-      </div>
-     )}
-
-    </div>
-   ))}
-
-  </section>
- );
-}
-
-
-/* LIVE GAME */
-
-function Live({game,setGame}){
-
- const called=game.calledNumbers||[];
- const last=called.at(-1);
-
- const remaining=nums.filter(
-  n=>!called.includes(n)
- );
-
- function callNext(){
-
-  if(!game.gameStarted)return;
-  if(!remaining.length)return;
-
-  const n=
-   remaining[
-    Math.floor(
-     Math.random()*remaining.length
-    )
-   ];
-
-  setGame({
-   ...game,
-   calledNumbers:[...called,n],
-   status:"live"
-  });
- }
-
- function start(){
-
-  setGame({
-   ...game,
-   gameStarted:true,
-   status:"live",
-   calledNumbers:[]
-  });
- }
-
- function reset(){
-
-  setGame({
-   ...game,
-   gameStarted:false,
-   status:"upcoming",
-   calledNumbers:[]
-  });
- }
-
- return(
-  <section style={panelStyle}>
-
-   <h2>Live Game</h2>
-
-   <p>
-    Current Number:
-    {" "}
-    <b style={{fontSize:28}}>
-     {last||"—"}
-    </b>
-   </p>
-
-   <p>
-    Called: {called.length}/90
-   </p>
-
-   {!game.gameStarted?(
-    <button
-     style={buttonStyle}
-     onClick={start}
-    >
-     START GAME
-    </button>
-   ):(
-    <>
-     <button
-      style={buttonStyle}
-      onClick={callNext}
-     >
-      CALL NEXT NUMBER
-     </button>
-
-     {" "}
-
-     <button onClick={reset}>
-      Reset
-     </button>
-    </>
-   )}
-
-   <p>
-    {called.join(", ")||"No numbers called."}
-   </p>
-
-  </section>
- );
-}
-
-
-/* HOST CONTROL CENTRE */
-
-function HostControl({game,setGame,end}){
-
- const url=
-  `${location.origin}/?game=${game.game_code}`;
-
- const prizes=(game.prizes||[])
-  .filter(
-   p=>String(p.amount||"").trim()!==""
-  );
-
- return(
-  <main style={{
-   maxWidth:800,
-   margin:"20px auto",
-   padding:20,
-   fontFamily:"Arial"
-  }}>
-
-   <div style={{
-    display:"flex",
-    justifyContent:"space-between",
-    alignItems:"center"
-   }}>
-
-    <div>
-     <h1>TAMBOLA BINGO LIVE</h1>
-     <h2>Host Control Centre</h2>
-    </div>
-
-    <button
-     onClick={()=>{
-      if(confirm("End this game?")){
-       end();
-      }
-     }}
-    >
-     End Game
-    </button>
-
-   </div>
-
-
-   <section style={panelStyle}>
-
-    <h2>{game.game_name}</h2>
-
-    <p>
-     <b>Game Code:</b>{" "}
-     {game.game_code}
-    </p>
-
-    <p>
-     <b>Date:</b>{" "}
-     {game.game_date}
-    </p>
-
-    <p>
-     <b>Time:</b>{" "}
-     {game.game_time}
-    </p>
-
-    <p>
-     <b>Ticket Price:</b>{" "}
-     ₹{game.ticket_price}
-    </p>
-
-    <p>
-     <b>Available Tickets:</b>{" "}
-     {game.ticket_limit}
-    </p>
-
-   </section>
-
-
-   <section style={panelStyle}>
-
-    <h2>Share Game</h2>
-
-    <input
-     style={{
-      ...inputStyle,
-      width:"100%",
-      boxSizing:"border-box"
-     }}
-     readOnly
-     value={url}
-    />
-
-    <button
-     style={buttonStyle}
-     onClick={()=>{
-      navigator.clipboard?.writeText(url);
-      alert("Game link copied");
-     }}
-    >
-     COPY GAME LINK
-    </button>
-
-   </section>
-
-
-   <section style={panelStyle}>
-
-    <h2>Prize List</h2>
-
-    {!prizes.length&&(
-     <p>No prizes added.</p>
-    )}
-
-    {prizes.map((p,i)=>(
-     <div
-      key={i}
-      style={{
-       padding:"8px 0",
-       borderBottom:"1px solid #ddd"
-      }}
-     >
-
-      <b>{p.name}</b>
-
-      {" — "}
-
-      ₹{p.amount}
-
-      {" "}
-
-      <button
-       onClick={()=>{
-        setGame({
-         ...game,
-         prizes:game.prizes.map(
-          (x,j)=>
-           j===i
-            ?{
-             ...x,
-             approved:!x.approved
-            }
-            :x
-         )
-        });
-       }}
-      >
-       {p.approved
-        ?"Approved"
-        :"Approve"}
-      </button>
-
-     </div>
-    ))}
-
-   </section>
-
-
-   <Bookings
-    game={game}
-    setGame={setGame}
-   />
-
-   <Live
-    game={game}
-    setGame={setGame}
-   />
-
-  </main>
- );
-}
-
-
-/* PLAYER INVITATION */
 
 function Invitation({game,accept}){
-
- const prizes=(game.prizes||[])
-  .filter(
-   p=>String(p.amount||"").trim()!==""
-  );
-
  return(
-  <main style={{
-   maxWidth:600,
-   margin:"30px auto",
-   padding:20,
-   fontFamily:"Arial"
-  }}>
+  <main>
 
    <h1>{game.game_name}</h1>
 
-   <h2>Prize List</h2>
+   <p>Prize list:</p>
 
-   {prizes.map((p,i)=>(
-    <p key={i}>
-     {p.name}: ₹{p.amount}
-    </p>
-   ))}
+   <ul>
+    {(game.prizes||[])
+     .filter(p=>String(p.amount||"").trim()!=="")
+     .map((p,i)=>
+      <li key={i}>
+       {p.name}: ₹{p.amount}
+      </li>
+     )}
+   </ul>
 
    <p>
-    <b>Available Tickets:</b>{" "}
-    {game.ticket_limit}
+    Available tickets: {game.ticket_limit}
    </p>
 
    <p>
-    <b>Status:</b>{" "}
-    {game.status}
+    Status: {game.status}
    </p>
 
    <p>
-    <b>Game Date:</b>{" "}
-    {game.game_date}
+    Game: {game.game_date} {game.game_time}
    </p>
 
-   <p>
-    <b>Game Time:</b>{" "}
-    {game.game_time}
-   </p>
-
-   <button
-    style={buttonStyle}
-    onClick={accept}
-   >
+   <button onClick={accept}>
     I ACCEPT
    </button>
 
   </main>
- );
+ )
 }
 
-
-/* PLAYER BOOKING */
-
 function Booking({game}){
-
  const[player,setPlayer]=useState("");
  const[selected,setSelected]=useState([]);
  const[sent,setSent]=useState(false);
 
  const tickets=Array.from(
-  {
-   length:Math.max(
-    1,
-    Number(game.ticket_limit||100)
-   )
-  },
+  {length:Math.max(1,Number(game.ticket_limit||100))},
   (_,i)=>i+1
  );
 
  function toggle(n){
-
   if(sent)return;
 
   setSelected(s=>
    s.includes(n)
     ?s.filter(x=>x!==n)
     :[...s,n]
-  );
+  )
  }
 
  function send(){
 
-  if(
-   !player.trim()||
-   !selected.length
-  ){
-   alert(
-    "Enter your name and select tickets."
-   );
+  if(!player.trim()||!selected.length){
+   alert("Enter your name and select tickets.");
    return;
   }
 
   const request={
    id:Date.now(),
    playerName:player.trim(),
-   ticketNumbers:[...selected]
-    .sort((a,b)=>a-b),
+   ticketNumbers:[...selected].sort((a,b)=>a-b),
    status:"pending",
    createdAt:new Date().toISOString()
   };
 
   const text=
    `${player.trim()} wants to book `+
-   `${request.ticketNumbers
-    .map(n=>`#${n}`)
-    .join(", ")} `+
-   `for ${game.game_name}. `+
-   `Please approve my booking.`;
+   `${request.ticketNumbers.map(n=>`#${n}`).join(", ")}`+
+   ` for ${game.game_name}.`;
 
   localStorage.setItem(
-   "tambola_player_request_"+
-   game.game_code,
+   "tambola_player_request_"+game.game_code,
    JSON.stringify(request)
   );
 
   setSent(true);
 
   location.href=
-   `https://wa.me/?text=${
-    encodeURIComponent(text)
-   }`;
+   `https://wa.me/?text=${encodeURIComponent(text)}`;
  }
 
  return(
-  <main style={{
-   maxWidth:700,
-   margin:"20px auto",
-   padding:20,
-   fontFamily:"Arial"
-  }}>
+  <main>
 
    <h1>Ticket Booking</h1>
 
-   <h2>{game.game_name}</h2>
+   <p>{game.game_name}</p>
 
    <input
-    style={inputStyle}
     placeholder="Player name"
     value={player}
     onChange={e=>setPlayer(e.target.value)}
@@ -812,93 +570,57 @@ function Booking({game}){
    <div style={{
     display:"flex",
     flexWrap:"wrap",
-    gap:5
+    gap:4
    }}>
-
-    {tickets.map(n=>(
+    {tickets.map(n=>
      <button
       key={n}
       onClick={()=>toggle(n)}
       disabled={sent}
-      style={{
-       minWidth:45,
-       padding:8,
-       background:
-        selected.includes(n)
-         ?"black"
-         :"white",
-       color:
-        selected.includes(n)
-         ?"white"
-         :"black"
-      }}
      >
-      {selected.includes(n)
-       ?"✓ "
-       :""}#{n}
+      {selected.includes(n)?"✓ ":""}#{n}
      </button>
-    ))}
-
+    )}
    </div>
 
    <h3>Actual 3 × 9 Tickets</h3>
 
    {(selected.length?selected:[1])
     .sort((a,b)=>a-b)
-    .map(n=>(
+    .map(n=>
      <div
       key={n}
-      onClick={()=>
-       !sent&&toggle(n)
-      }
+      onClick={()=>!sent&&toggle(n)}
      >
-      <Ticket
-       n={n}
-       name={player}
-      />
+      <Ticket n={n} name={player}/>
      </div>
-    ))}
+    )}
 
-   {!sent?(
+   {!sent?
     <button
-     style={buttonStyle}
      onClick={send}
-     disabled={
-      !player.trim()||
-      !selected.length
-     }
+     disabled={!player.trim()||!selected.length}
     >
      BOOK TICKETS
     </button>
-   ):(
+    :
     <p>
-     Booking request sent.
-     Waiting for host approval.
+     Booking request sent. Waiting for host approval.
     </p>
-   )}
+   }
 
   </main>
- );
+ )
 }
-
-
-/* APP */
 
 function App(){
 
  const[game,setGame]=useState(null);
  const[playerGame,setPlayerGame]=useState(null);
- const[page,setPage]=useState("host");
+ const[page,setPage]=useState("create");
  const[error,setError]=useState("");
 
  useEffect(()=>{
-
-  const gc=gameCode();
-
-  if(gc){
-   loadPlayer(gc);
-   return;
-  }
 
   const saved=load();
 
@@ -907,15 +629,15 @@ function App(){
    setPage("control");
   }
 
+  const gc=gameCode();
+
+  if(gc)loadPlayer(gc);
+
  },[]);
 
-
  useEffect(()=>{
-  if(game){
-   save(game);
-  }
+  if(game)save(game);
  },[game]);
-
 
  async function loadPlayer(gc){
 
@@ -925,152 +647,72 @@ function App(){
   }=await supabase
    .from("games")
    .select("*")
-   .eq(
-    "game_code",
-    gc.toUpperCase()
-   )
+   .eq("game_code",gc.toUpperCase())
    .maybeSingle();
 
   if(error||!data){
-
-   setError(
-    error?.message||
-    "Game not found"
-   );
-
+   setError(error?.message||"Game not found");
    return;
   }
 
   setPlayerGame({
    ...data,
+   game_name:data.game_name||"TambolaLive",
    prizes:Array.isArray(data.prizes)
     ?data.prizes
-    :[],
-   calledNumbers:Array.isArray(
-    data.calledNumbers
-   )
-    ?data.calledNumbers
-    :[],
-   bookingRequests:Array.isArray(
-    data.bookingRequests
-   )
-    ?data.bookingRequests
-    :[]
+    :prizes0,
+   calledNumbers:[],
+   bookingRequests:[]
   });
 
   setPage("invitation");
  }
 
-
- function created(g){
-
-  setGame(g);
-  save(g);
-  setPage("control");
-
-  history.replaceState(
-   {},
-   "",
-   location.pathname
-  );
- }
-
-
- function endGame(){
-
-  setGame(null);
-  save(null);
-  setPage("host");
- }
-
-
- if(error){
-
+ if(error)
   return(
-   <main style={{
-    padding:30,
-    fontFamily:"Arial"
-   }}>
+   <main>
     <h2>Game Not Found</h2>
     <p>{error}</p>
    </main>
   );
- }
 
-
- if(
-  playerGame&&
-  page==="invitation"
- ){
-
+ if(playerGame&&page==="invitation")
   return(
    <Invitation
     game={playerGame}
     accept={()=>setPage("booking")}
    />
   );
- }
 
-
- if(
-  playerGame&&
-  page==="booking"
- ){
-
+ if(playerGame&&page==="booking")
   return(
-   <Booking
-    game={playerGame}
+   <Booking game={playerGame}/>
+  );
+
+ // CREATE AND HOST CONTROL ARE NOW THE SAME PAGE.
+ if(game)
+  return(
+   <HostControl
+    game={game}
+    setGame={setGame}
+    end={()=>{
+     setGame(null);
+     save(null);
+     setPage("create");
+    }}
    />
   );
- }
-
-
- if(!game){
-
-  return(
-   <CreateGame
-    onCreated={created}
-   />
-  );
- }
-
 
  return(
-  <HostControl
-   game={game}
-   setGame={setGame}
-   end={endGame}
+  <CreateGame
+   done={g=>{
+    setGame(g);
+    setPage("control");
+   }}
   />
- );
+ )
 }
-
-
-const inputStyle={
- display:"block",
- width:"100%",
- padding:"10px",
- marginBottom:"10px",
- boxSizing:"border-box",
- fontSize:16
-};
-
-const buttonStyle={
- padding:"11px 18px",
- fontSize:16,
- cursor:"pointer",
- marginTop:8
-};
-
-const panelStyle={
- border:"1px solid #ccc",
- padding:15,
- marginTop:15,
- background:"#fafafa"
-};
-
 
 createRoot(
  document.getElementById("root")
-).render(
- <App/>
-);
+).render(<App/>);
