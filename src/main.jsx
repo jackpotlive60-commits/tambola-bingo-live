@@ -5,6 +5,15 @@ import{supabase}from"./lib/supabase";
 const nums=Array.from({length:90},(_,i)=>i+1);
 const KEY="tambola_bingo_live_host_game";
 
+const themes=[
+  "Classic",
+  "Royal",
+  "Party",
+  "Bollywood",
+  "Neon",
+  "Elegant"
+];
+
 const defaultPrizes=[
   "First Five",
   "Four Corners",
@@ -55,53 +64,39 @@ function Ticket({n,name=""}){
   for(let c=0;c<9;c++){
     const min=c?c*10:1;
     const max=c===8?90:c*10+9;
-
-    const vals=Array.from(
-      {length:max-min+1},
-      (_,i)=>min+i
-    );
-
+    const vals=Array.from({length:max-min+1},(_,i)=>min+i);
     const shift=(base*(c+3)+c*7)%vals.length;
     const v=vals.slice(shift).concat(vals.slice(0,shift));
 
     rows.forEach((r,ri)=>{
-      if(r[c]){
-        r[c]=v[(base+c*3+ri*5)%v.length];
-      }
+      if(r[c])r[c]=v[(base+c*3+ri*5)%v.length];
     });
   }
 
   return(
-    <div
-      style={{
-        border:"1px solid #333",
-        padding:6,
-        margin:"8px 0",
-        maxWidth:360,
-        background:"#fff"
-      }}
-    >
+    <div style={{
+      border:"1px solid #333",
+      padding:6,
+      margin:"8px 0",
+      maxWidth:360,
+      background:"#fff"
+    }}>
       <b>Ticket #{n}</b>
       {name&&<span> — {name}</span>}
 
-      <div
-        style={{
-          display:"grid",
-          gridTemplateColumns:"repeat(9,1fr)",
-          marginTop:5
-        }}
-      >
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:"repeat(9,1fr)",
+        marginTop:5
+      }}>
         {rows.flat().map((v,i)=>(
-          <div
-            key={i}
-            style={{
-              border:"1px solid #aaa",
-              height:30,
-              textAlign:"center",
-              lineHeight:"30px",
-              fontSize:14
-            }}
-          >
+          <div key={i} style={{
+            border:"1px solid #aaa",
+            height:30,
+            textAlign:"center",
+            lineHeight:"30px",
+            fontSize:14
+          }}>
             {v||""}
           </div>
         ))}
@@ -111,9 +106,7 @@ function Ticket({n,name=""}){
 }
 
 
-/* =========================================================
-   CREATE + HOST CONTROL CENTRE
-========================================================= */
+/* ================= HOST PAGE ================= */
 
 function HostPage({game,setGame}){
 
@@ -124,6 +117,10 @@ function HostPage({game,setGame}){
   const[price,setPrice]=useState(game?.ticket_price||20);
   const[date,setDate]=useState(game?.game_date||"");
   const[time,setTime]=useState(game?.game_time||"");
+
+  const[theme,setTheme]=useState(
+    game?.theme||"Classic"
+  );
 
   const[prizes,setPrizes]=useState(
     game?.prizes?.length?game.prizes:defaultPrizes
@@ -162,7 +159,10 @@ function HostPage({game,setGame}){
       }
 
       const cleanPrizes=prizes.filter(
-        p=>p.amount!==""&&p.amount!==null&&p.amount!==undefined
+        p=>
+          p.amount!==""&&
+          p.amount!==null&&
+          p.amount!==undefined
       );
 
       const{data,error}=await supabase
@@ -189,6 +189,7 @@ function HostPage({game,setGame}){
         game_name:name.trim()||"TambolaLive",
         host_name:"Host",
         status:"upcoming",
+        theme:theme,
         gameStarted:false,
         calledNumbers:[],
         prizes:cleanPrizes,
@@ -207,9 +208,7 @@ function HostPage({game,setGame}){
   }
 
 
-  /* =========================================================
-     SHARE + AUTO POSTER
-  ========================================================= */
+  /* ================= SHARE ================= */
 
   async function shareGame(){
 
@@ -224,11 +223,9 @@ function HostPage({game,setGame}){
 
       const ctx=canvas.getContext("2d");
 
-      /* Background */
       ctx.fillStyle="#ffffff";
       ctx.fillRect(0,0,1080,1350);
 
-      /* Header */
       ctx.fillStyle="#111827";
       ctx.fillRect(0,0,1080,250);
 
@@ -236,11 +233,7 @@ function HostPage({game,setGame}){
       ctx.textAlign="center";
 
       ctx.font="bold 72px Arial";
-      ctx.fillText(
-        "TAMBOLA LIVE",
-        540,
-        105
-      );
+      ctx.fillText("TAMBOLA LIVE",540,105);
 
       ctx.font="bold 50px Arial";
       ctx.fillText(
@@ -249,121 +242,88 @@ function HostPage({game,setGame}){
         180
       );
 
-      /* Game information */
-
       ctx.fillStyle="#111827";
       ctx.textAlign="left";
 
       ctx.font="bold 40px Arial";
-      ctx.fillText(
-        "GAME DETAILS",
-        80,
-        340
-      );
+      ctx.fillText("GAME DETAILS",80,340);
 
       ctx.font="34px Arial";
 
       ctx.fillText(
+        `Theme: ${game.theme||"Classic"}`,
+        90,410
+      );
+
+      ctx.fillText(
         `Date: ${game.game_date||"-"}`,
-        90,
-        410
+        90,465
       );
 
       ctx.fillText(
         `Time: ${game.game_time||"-"}`,
-        90,
-        465
+        90,520
       );
 
       ctx.fillText(
         `Ticket Price: ₹${game.ticket_price||0}`,
-        90,
-        520
+        90,575
       );
 
       ctx.fillText(
         `Tickets Available: ${game.ticket_limit||0}`,
-        90,
-        575
+        90,630
       );
-
-      /* Prize list */
 
       const realPrizes=(game.prizes||[]).filter(
         p=>
-          p &&
-          p.name &&
-          p.amount!=="" &&
-          p.amount!==null &&
+          p&&
+          p.name&&
+          p.amount!==""&&
+          p.amount!==null&&
           p.amount!==undefined
       );
 
       ctx.font="bold 40px Arial";
-
-      ctx.fillText(
-        "PRIZES",
-        80,
-        665
-      );
+      ctx.fillText("PRIZES",80,720);
 
       ctx.font="32px Arial";
 
       realPrizes.forEach((p,i)=>{
-
         ctx.fillText(
           `${i+1}. ${p.name} - ₹${p.amount}`,
           100,
-          725+(i*55)
+          780+(i*55)
         );
-
       });
 
-      /* Join message */
+      const url=
+        `${location.origin}/?game=${game.game_code}`;
 
       ctx.textAlign="center";
-
       ctx.font="bold 42px Arial";
-
-      ctx.fillText(
-        "JOIN THE GAME",
-        540,
-        1080
-      );
+      ctx.fillText("JOIN THE GAME",540,1100);
 
       ctx.font="28px Arial";
-
       ctx.fillText(
         "Open the invitation link to book tickets",
-        540,
-        1135
+        540,1155
       );
 
       ctx.font="24px Arial";
-
-      ctx.fillText(
-        `${location.origin}/?game=${game.game_code}`,
-        540,
-        1200
-      );
-
-      /* Poster image */
+      ctx.fillText(url,540,1220);
 
       const blob=await new Promise(resolve=>
         canvas.toBlob(resolve,"image/png")
       );
 
-      if(!blob){
-        throw new Error("Poster could not be created");
-      }
+      if(!blob)throw new Error("Poster failed");
 
       const file=new File(
         [blob],
         "TambolaLive-Game-Poster.png",
         {type:"image/png"}
       );
-
-      const url=
-        `${location.origin}/?game=${game.game_code}`;
 
       const message=
         `Join my Tambola game!\n\n`+
@@ -373,45 +333,31 @@ function HostPage({game,setGame}){
         `Ticket: ₹${game.ticket_price||0}\n\n`+
         `Join here:\n${url}`;
 
-      /* Android image + text sharing */
-
       if(
-        navigator.share &&
-        navigator.canShare &&
+        navigator.share&&
+        navigator.canShare&&
         navigator.canShare({files:[file]})
       ){
-
         await navigator.share({
           title:game.game_name||"TambolaLive",
           text:message,
           files:[file]
         });
-
         return;
       }
 
-      /* Normal share fallback */
-
       if(navigator.share){
-
         await navigator.share({
           title:game.game_name||"TambolaLive",
           text:message,
           url:url
         });
-
         return;
       }
 
-      /* Copy fallback */
+      await navigator.clipboard?.writeText(message);
 
-      await navigator.clipboard?.writeText(
-        message
-      );
-
-      alert(
-        "Sharing is not supported on this device. Game link copied."
-      );
+      alert("Game link copied.");
 
     }catch(e){
 
@@ -419,9 +365,7 @@ function HostPage({game,setGame}){
 
       console.error(e);
 
-      alert(
-        "Could not share the game. Please use Copy Link."
-      );
+      alert("Could not share the game.");
     }
   }
 
@@ -440,23 +384,18 @@ function HostPage({game,setGame}){
   }
 
 
-  /* =========================================================
-     CREATE GAME
-  ========================================================= */
+  /* ================= CREATE ================= */
 
   if(creating){
 
     return(
-      <main
-        style={{
-          maxWidth:600,
-          margin:"20px auto",
-          padding:20
-        }}
-      >
+      <main style={{
+        maxWidth:600,
+        margin:"20px auto",
+        padding:20
+      }}>
 
         <h1>TAMBOLA LIVE</h1>
-
         <h2>Create Game</h2>
 
         {err&&<p>{err}</p>}
@@ -522,13 +461,30 @@ function HostPage({game,setGame}){
             required
           />
 
+          <br/><br/>
+
+          <label>Game Theme</label>
+          <br/>
+
+          <select
+            value={theme}
+            onChange={e=>setTheme(e.target.value)}
+          >
+            {themes.map(t=>(
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+
           <h3>Prizes</h3>
 
           {prizes.map((p,i)=>(
-            <div key={i} style={{marginBottom:8}}>
-
+            <div
+              key={i}
+              style={{marginBottom:8}}
+            >
               <label>{p.name}</label>
-
               <br/>
 
               <input
@@ -539,7 +495,6 @@ function HostPage({game,setGame}){
                 }
                 placeholder="Amount"
               />
-
             </div>
           ))}
 
@@ -590,21 +545,53 @@ function HostPage({game,setGame}){
   }
 
 
-  /* =========================================================
-     HOST CONTROL CENTRE
-  ========================================================= */
+  /* ================= CONTROL CENTRE ================= */
 
   const inviteUrl=
     `${location.origin}/?game=${game.game_code}`;
 
+  function changeTheme(value){
+
+    const updated={
+      ...game,
+      theme:value
+    };
+
+    setGame(updated);
+    saveGame(updated);
+  }
+
+  function approvePrize(i){
+
+    const updatedPrizes=
+      (game.prizes||[]).map((p,j)=>
+        j===i
+          ?{...p,approved:!p.approved}
+          :p
+      );
+
+    const updated={
+      ...game,
+      prizes:updatedPrizes
+    };
+
+    setGame(updated);
+    saveGame(updated);
+  }
+
+  const visiblePrizes=(game.prizes||[]).filter(
+    p=>
+      p.amount!==""&&
+      p.amount!==null&&
+      p.amount!==undefined
+  );
+
   return(
-    <main
-      style={{
-        maxWidth:700,
-        margin:"20px auto",
-        padding:20
-      }}
-    >
+    <main style={{
+      maxWidth:700,
+      margin:"20px auto",
+      padding:20
+    }}>
 
       <h1>{game.game_name}</h1>
 
@@ -628,6 +615,29 @@ function HostPage({game,setGame}){
 
       <hr/>
 
+      <h3>Game Theme</h3>
+
+      <select
+        value={game.theme||"Classic"}
+        onChange={e=>
+          changeTheme(e.target.value)
+        }
+      >
+        {themes.map(t=>(
+          <option key={t} value={t}>
+            {t}
+          </option>
+        ))}
+      </select>
+
+      <p>
+        Selected Theme:
+        {" "}
+        <b>{game.theme||"Classic"}</b>
+      </p>
+
+      <hr/>
+
       <h3>Share Game</h3>
 
       <input
@@ -647,28 +657,62 @@ function HostPage({game,setGame}){
         Share Game
       </button>
 
-      <p>
-        Share Game automatically creates a game poster
-        and opens the phone share menu.
-      </p>
-
       <hr/>
 
       <h2>Prizes</h2>
 
-      {(game.prizes||[])
-        .filter(
-          p=>
-            p.amount!=="" &&
-            p.amount!==null &&
-            p.amount!==undefined
-        )
-        .map((p,i)=>(
-          <div key={i} style={{marginBottom:8}}>
-            <b>{p.name}</b>: ₹{p.amount}
+      {!visiblePrizes.length&&(
+        <p>
+          No prizes added yet.
+        </p>
+      )}
+
+      {visiblePrizes.map((p)=>{
+
+        const originalIndex=
+          (game.prizes||[]).indexOf(p);
+
+        return(
+          <div
+            key={originalIndex}
+            style={{
+              border:"1px solid #ccc",
+              padding:10,
+              marginBottom:8
+            }}
+          >
+
+            <b>{p.name}</b>
+
+            <p>
+              Amount: ₹{p.amount}
+            </p>
+
+            <p>
+              Status:
+              {" "}
+              <b>
+                {p.approved
+                  ?"Approved"
+                  :"Pending"
+                }
+              </b>
+            </p>
+
+            <button
+              onClick={()=>
+                approvePrize(originalIndex)
+              }
+            >
+              {p.approved
+                ?"Remove Approval"
+                :"Approve Prize"
+              }
+            </button>
+
           </div>
-        ))
-      }
+        );
+      })}
 
       <hr/>
 
@@ -678,12 +722,10 @@ function HostPage({game,setGame}){
         Pending booking requests will appear here.
       </p>
 
-      <div
-        style={{
-          border:"1px solid #ccc",
-          padding:15
-        }}
-      >
+      <div style={{
+        border:"1px solid #ccc",
+        padding:15
+      }}>
         No pending bookings yet.
       </div>
 
@@ -714,14 +756,11 @@ function HostPage({game,setGame}){
 }
 
 
-/* =========================================================
-   LIVE GAME
-========================================================= */
+/* ================= LIVE GAME ================= */
 
 function Live({game,setGame}){
 
   const called=game.calledNumbers||[];
-
   const last=called.at(-1);
 
   const remaining=nums.filter(
@@ -741,7 +780,6 @@ function Live({game,setGame}){
   function callNext(){
 
     if(!game.gameStarted)return;
-
     if(!remaining.length)return;
 
     const n=
@@ -781,9 +819,7 @@ function Live({game,setGame}){
       </p>
 
       <p>
-        Called:
-        {" "}
-        {called.length}/90
+        Called: {called.length}/90
       </p>
 
       {!game.gameStarted?
@@ -820,27 +856,23 @@ function Live({game,setGame}){
 }
 
 
-/* =========================================================
-   PLAYER INVITATION
-========================================================= */
+/* ================= PLAYER INVITATION ================= */
 
 function Invitation({game,accept}){
 
   const prizes=(game.prizes||[]).filter(
     p=>
-      p.amount!=="" &&
-      p.amount!==null &&
+      p.amount!==""&&
+      p.amount!==null&&
       p.amount!==undefined
   );
 
   return(
-    <main
-      style={{
-        maxWidth:600,
-        margin:"20px auto",
-        padding:20
-      }}
-    >
+    <main style={{
+      maxWidth:600,
+      margin:"20px auto",
+      padding:20
+    }}>
 
       <h1>{game.game_name}</h1>
 
@@ -881,16 +913,12 @@ function Invitation({game,accept}){
 }
 
 
-/* =========================================================
-   PLAYER BOOKING
-========================================================= */
+/* ================= PLAYER BOOKING ================= */
 
 function Booking({game}){
 
   const[player,setPlayer]=useState("");
-
   const[selected,setSelected]=useState([]);
-
   const[sent,setSent]=useState(false);
 
   const tickets=Array.from(
@@ -916,10 +944,8 @@ function Booking({game}){
 
   function send(){
 
-    if(
-      !player.trim()||
-      !selected.length
-    ){
+    if(!player.trim()||!selected.length){
+
       alert(
         "Enter your name and select tickets."
       );
@@ -948,19 +974,15 @@ function Booking({game}){
   }
 
   return(
-    <main
-      style={{
-        maxWidth:700,
-        margin:"20px auto",
-        padding:20
-      }}
-    >
+    <main style={{
+      maxWidth:700,
+      margin:"20px auto",
+      padding:20
+    }}>
 
       <h1>Ticket Booking</h1>
 
-      <p>
-        {game.game_name}
-      </p>
+      <p>{game.game_name}</p>
 
       <input
         placeholder="Player name"
@@ -971,13 +993,11 @@ function Booking({game}){
 
       <h3>Ticket Numbers</h3>
 
-      <div
-        style={{
-          display:"flex",
-          flexWrap:"wrap",
-          gap:5
-        }}
-      >
+      <div style={{
+        display:"flex",
+        flexWrap:"wrap",
+        gap:5
+      }}>
 
         {tickets.map(n=>(
           <button
@@ -1038,18 +1058,13 @@ function Booking({game}){
 }
 
 
-/* =========================================================
-   APP
-========================================================= */
+/* ================= APP ================= */
 
 function App(){
 
   const[game,setGame]=useState(null);
-
-  const[page,setPage]=useState("host");
-
   const[playerGame,setPlayerGame]=useState(null);
-
+  const[page,setPage]=useState("host");
   const[error,setError]=useState("");
 
   useEffect(()=>{
@@ -1069,7 +1084,6 @@ function App(){
 
   },[]);
 
-
   useEffect(()=>{
 
     if(game){
@@ -1077,7 +1091,6 @@ function App(){
     }
 
   },[game]);
-
 
   async function loadPlayer(gc){
 
@@ -1120,25 +1133,18 @@ function App(){
     };
 
     setPlayerGame(g);
-
     setPage("invitation");
   }
-
 
   if(error){
 
     return(
-      <main
-        style={{
-          padding:20
-        }}
-      >
+      <main style={{padding:20}}>
         <h2>Game Not Found</h2>
         <p>{error}</p>
       </main>
     );
   }
-
 
   if(playerGame&&page==="invitation"){
 
@@ -1152,7 +1158,6 @@ function App(){
     );
   }
 
-
   if(playerGame&&page==="booking"){
 
     return(
@@ -1162,7 +1167,6 @@ function App(){
     );
   }
 
-
   return(
     <HostPage
       game={game}
@@ -1170,7 +1174,6 @@ function App(){
     />
   );
 }
-
 
 createRoot(
   document.getElementById("root")
