@@ -2909,7 +2909,8 @@ function PlayerBookingPage({
 /* ============================================================
    PLAYER BOOKING PREMIUM UI
    ============================================================ */
- {
+
+function PlayerBookingPremiumStyles() {
   return (
     <style>{`
       .premium-booking-page{min-height:100vh;position:relative;overflow:hidden;background:#090710;color:#f8f4ff;padding:0 16px 120px;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
