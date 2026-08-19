@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
+import { supabase } from "./lib/supabase";
 import "./styles.css";
 
 const numbers = Array.from({ length: 90 }, (_, i) => i + 1);
@@ -8,25 +9,25 @@ const themes = [
   {
     id: "royal",
     name: "Royal Purple",
-    description: "Premium purple and gold gaming style",
+    description: "Premium purple gaming style",
     className: "theme-royal",
   },
   {
     id: "casino",
     name: "Casino Night",
-    description: "Bold casino-inspired live game",
+    description: "Bold casino-inspired style",
     className: "theme-casino",
   },
   {
     id: "festival",
     name: "Festival",
-    description: "Bright and colourful celebration style",
+    description: "Bright celebration style",
     className: "theme-festival",
   },
   {
     id: "luxury",
     name: "Luxury Gold",
-    description: "Elegant premium game experience",
+    description: "Elegant premium style",
     className: "theme-luxury",
   },
 ];
@@ -40,11 +41,23 @@ const defaultPrizes = [
   { name: "Full House", amount: "" },
 ];
 
+function generateGameCode() {
+  const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+
+  for (let i = 0; i < 6; i += 1) {
+    code += characters[Math.floor(Math.random() * characters.length)];
+  }
+
+  return code;
+}
+
 function Header({ onHome }) {
   return (
     <header className="topbar">
       <button className="brand-button" onClick={onHome}>
         <span className="crown">♛</span>
+
         <div className="logo">
           <strong>TAMBOLA</strong>
           <small>BINGO LIVE</small>
@@ -52,7 +65,7 @@ function Header({ onHome }) {
       </button>
 
       <div className="online">
-        <span>●</span> Host Portal
+        <span>●</span> Live Platform
       </div>
 
       <button className="menu">☰</button>
@@ -184,7 +197,8 @@ function Home({ onCreateGame }) {
   );
 }
 
-function CreateGame({ onBack }) {
+function CreateGame({ onBack, onCreated }) {
+  const [hostName, setHostName] = useState("");
   const [gameName, setGameName] = useState("");
   const [ticketLimit, setTicketLimit] = useState("");
   const [ticketPrice, setTicketPrice] = useState("");
@@ -193,11 +207,15 @@ function CreateGame({ onBack }) {
   const [selectedTheme, setSelectedTheme] = useState("royal");
   const [prizes, setPrizes] = useState(defaultPrizes);
   const [customPrize, setCustomPrize] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
 
   function updatePrize(index, value) {
     setPrizes((current) =>
       current.map((prize, i) =>
-        i === index ? { ...prize, amount: value } : prize
+        i === index
+          ? { ...prize, amount: value }
+          : prize
       )
     );
   }
@@ -219,12 +237,71 @@ function CreateGame({ onBack }) {
     setCustomPrize("");
   }
 
-  function handleCreateGame(event) {
+  async function createGame(event) {
     event.preventDefault();
 
-    alert(
-      "Create Game UI is ready. Supabase game creation will be connected in the next step."
-    );
+    setError("");
+    setCreating(true);
+
+    try {
+      let gameCode = generateGameCode();
+
+      let codeExists = true;
+
+      while (codeExists) {
+        const { data, error: checkError } = await supabase
+          .from("games")
+          .select("id")
+          .eq("game_code", gameCode)
+          .maybeSingle();
+
+        if (checkError) {
+          throw checkError;
+        }
+
+        if (!data) {
+          codeExists = false;
+        } else {
+          gameCode = generateGameCode();
+        }
+      }
+
+      const { data: game, error: insertError } = await supabase
+        .from("games")
+        .insert({
+          host_name: hostName.trim(),
+          game_name: gameName.trim(),
+          status: "upcoming",
+          ticket_limit: Number(ticketLimit),
+          ticket_price: Number(ticketPrice),
+          call_interval_seconds: 5,
+          game_date: gameDate,
+          game_time: gameTime,
+          theme: selectedTheme,
+          game_code: gameCode,
+          invite_enabled: true,
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      onCreated({
+        ...game,
+        prizes,
+      });
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err?.message ||
+          "We couldn't create the game. Please try again."
+      );
+    } finally {
+      setCreating(false);
+    }
   }
 
   return (
@@ -235,16 +312,49 @@ function CreateGame({ onBack }) {
 
       <div className="create-header">
         <span className="live-badge">HOST PORTAL</span>
-        <h1>Create Your <strong>Tambola Game</strong></h1>
+
+        <h1>
+          Create Your <strong>Tambola Game</strong>
+        </h1>
+
         <p>
-          Set your game rules, tickets, prizes, date, time and player theme.
+          Set your game details, tickets, prizes and player theme.
         </p>
       </div>
 
-      <form onSubmit={handleCreateGame}>
+      {error && (
+        <div className="error-message">
+          ⚠️ {error}
+        </div>
+      )}
+
+      <form onSubmit={createGame}>
+        <div className="form-card">
+          <div className="form-card-title">
+            <span>👤</span>
+
+            <div>
+              <h2>Host Details</h2>
+              <p>Tell players who is hosting this game</p>
+            </div>
+          </div>
+
+          <label>
+            Host Name
+            <input
+              type="text"
+              placeholder="Your name"
+              value={hostName}
+              onChange={(event) => setHostName(event.target.value)}
+              required
+            />
+          </label>
+        </div>
+
         <div className="form-card">
           <div className="form-card-title">
             <span>🎮</span>
+
             <div>
               <h2>Game Details</h2>
               <p>Basic information about your game</p>
@@ -265,30 +375,39 @@ function CreateGame({ onBack }) {
           <div className="two-column">
             <label>
               Ticket Limit
+
               <input
                 type="number"
                 min="1"
                 placeholder="100"
                 value={ticketLimit}
-                onChange={(event) => setTicketLimit(event.target.value)}
+                onChange={(event) =>
+                  setTicketLimit(event.target.value)
+                }
                 required
               />
+
               <small>Maximum tickets available</small>
             </label>
 
             <label>
               Ticket Price
+
               <div className="input-with-prefix">
                 <span>₹</span>
+
                 <input
                   type="number"
                   min="0"
                   placeholder="50"
                   value={ticketPrice}
-                  onChange={(event) => setTicketPrice(event.target.value)}
+                  onChange={(event) =>
+                    setTicketPrice(event.target.value)
+                  }
                   required
                 />
               </div>
+
               <small>Price per ticket</small>
             </label>
           </div>
@@ -296,20 +415,26 @@ function CreateGame({ onBack }) {
           <div className="two-column">
             <label>
               Game Date
+
               <input
                 type="date"
                 value={gameDate}
-                onChange={(event) => setGameDate(event.target.value)}
+                onChange={(event) =>
+                  setGameDate(event.target.value)
+                }
                 required
               />
             </label>
 
             <label>
               Game Time
+
               <input
                 type="time"
                 value={gameTime}
-                onChange={(event) => setGameTime(event.target.value)}
+                onChange={(event) =>
+                  setGameTime(event.target.value)
+                }
                 required
               />
             </label>
@@ -319,29 +444,42 @@ function CreateGame({ onBack }) {
         <div className="form-card">
           <div className="form-card-title">
             <span>🏆</span>
+
             <div>
               <h2>Game Prizes</h2>
-              <p>Set the prize amount for each winning category</p>
+              <p>
+                Set the prize amount for each winning category
+              </p>
             </div>
           </div>
 
           <div className="prize-form-grid">
             {prizes.map((prize, index) => (
-              <div className="prize-row" key={`${prize.name}-${index}`}>
+              <div
+                className="prize-row"
+                key={`${prize.name}-${index}`}
+              >
                 <div>
                   <strong>{prize.name}</strong>
-                  {prize.custom && <small>Custom Prize</small>}
+
+                  {prize.custom && (
+                    <small>Custom Prize</small>
+                  )}
                 </div>
 
                 <div className="input-with-prefix">
                   <span>₹</span>
+
                   <input
                     type="number"
                     min="0"
                     placeholder="Amount"
                     value={prize.amount}
                     onChange={(event) =>
-                      updatePrize(index, event.target.value)
+                      updatePrize(
+                        index,
+                        event.target.value
+                      )
                     }
                   />
                 </div>
@@ -352,12 +490,17 @@ function CreateGame({ onBack }) {
           <div className="custom-prize">
             <input
               type="text"
-              placeholder="Custom prize name, e.g. Early Bird"
+              placeholder="Custom prize name"
               value={customPrize}
-              onChange={(event) => setCustomPrize(event.target.value)}
+              onChange={(event) =>
+                setCustomPrize(event.target.value)
+              }
             />
 
-            <button type="button" onClick={addCustomPrize}>
+            <button
+              type="button"
+              onClick={addCustomPrize}
+            >
               + Add Custom Prize
             </button>
           </div>
@@ -366,11 +509,11 @@ function CreateGame({ onBack }) {
         <div className="form-card">
           <div className="form-card-title">
             <span>🎨</span>
+
             <div>
               <h2>Game Theme</h2>
               <p>
-                Players will automatically see the theme you choose for
-                this game.
+                Every player joining this game will see this theme.
               </p>
             </div>
           </div>
@@ -381,9 +524,13 @@ function CreateGame({ onBack }) {
                 type="button"
                 key={theme.id}
                 className={`theme-option ${
-                  selectedTheme === theme.id ? "selected" : ""
+                  selectedTheme === theme.id
+                    ? "selected"
+                    : ""
                 } ${theme.className}`}
-                onClick={() => setSelectedTheme(theme.id)}
+                onClick={() =>
+                  setSelectedTheme(theme.id)
+                }
               >
                 <div className="theme-preview">
                   <span>45</span>
@@ -392,6 +539,7 @@ function CreateGame({ onBack }) {
                 </div>
 
                 <strong>{theme.name}</strong>
+
                 <small>{theme.description}</small>
 
                 {selectedTheme === theme.id && (
@@ -402,51 +550,255 @@ function CreateGame({ onBack }) {
           </div>
 
           <div className="theme-info">
-            🎨 <strong>Game-wide theme:</strong> Once selected, this theme
-            will be used by both the host and all players who join this game.
+            🎨 <strong>Game-wide theme:</strong>{" "}
+            Your selected theme is saved with this game and
+            will later be automatically shown to invited players.
           </div>
         </div>
 
         <div className="create-summary">
           <div>
-            <span>SELECTED THEME</span>
+            <span>THEME</span>
+
             <strong>
-              {themes.find((theme) => theme.id === selectedTheme)?.name}
+              {
+                themes.find(
+                  (theme) =>
+                    theme.id === selectedTheme
+                )?.name
+              }
             </strong>
           </div>
 
           <div>
             <span>TICKET PRICE</span>
-            <strong>₹{ticketPrice || "0"}</strong>
+
+            <strong>
+              ₹{ticketPrice || "0"}
+            </strong>
           </div>
 
           <div>
             <span>TICKET LIMIT</span>
-            <strong>{ticketLimit || "0"}</strong>
+
+            <strong>
+              {ticketLimit || "0"}
+            </strong>
           </div>
         </div>
 
-        <button className="create-game-button" type="submit">
-          🎮 Create Game
+        <button
+          className="create-game-button"
+          type="submit"
+          disabled={creating}
+        >
+          {creating
+            ? "⏳ Creating Game..."
+            : "🎮 Create Game"}
         </button>
       </form>
     </section>
   );
 }
 
+function HostControlCentre({ game, onHome }) {
+  const inviteUrl =
+    `${window.location.origin}/?game=${game.game_code}`;
+
+  const selectedTheme =
+    themes.find(
+      (theme) => theme.id === game.theme
+    ) || themes[0];
+
+  function copyInviteLink() {
+    navigator.clipboard.writeText(inviteUrl);
+    alert("Invitation link copied!");
+  }
+
+  function shareInvite() {
+    if (navigator.share) {
+      navigator.share({
+        title: game.game_name,
+        text:
+          `Join my Tambola game: ${game.game_name}`,
+        url: inviteUrl,
+      });
+    } else {
+      copyInviteLink();
+    }
+  }
+
+  return (
+    <section className="create-page">
+      <div className="control-success">
+        <div className="success-icon">✓</div>
+
+        <span>GAME CREATED</span>
+
+        <h1>
+          Your game is <strong>ready!</strong>
+        </h1>
+
+        <p>
+          Share the invitation with your players.
+        </p>
+      </div>
+
+      <div className="form-card">
+        <div className="game-code-card">
+          <small>GAME CODE</small>
+
+          <strong>{game.game_code}</strong>
+
+          <span>
+            Players can use this code with your invitation.
+          </span>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="form-card-title">
+          <span>🔗</span>
+
+          <div>
+            <h2>Player Invitation</h2>
+            <p>
+              Share this link with everyone who wants to play.
+            </p>
+          </div>
+        </div>
+
+        <div className="invite-link">
+          {inviteUrl}
+        </div>
+
+        <div className="control-actions">
+          <button
+            className="secondary-action"
+            onClick={copyInviteLink}
+          >
+            📋 Copy Link
+          </button>
+
+          <button
+            className="primary-action"
+            onClick={shareInvite}
+          >
+            📲 Share Invitation
+          </button>
+        </div>
+      </div>
+
+      <div className="form-card">
+        <div className="form-card-title">
+          <span>🎨</span>
+
+          <div>
+            <h2>Game Theme</h2>
+            <p>The theme selected for this game.</p>
+          </div>
+        </div>
+
+        <div
+          className={`selected-theme-card ${selectedTheme.className}`}
+        >
+          <div className="theme-preview">
+            <span>45</span>
+            <span>29</span>
+            <span>7</span>
+          </div>
+
+          <div>
+            <strong>{selectedTheme.name}</strong>
+            <small>{selectedTheme.description}</small>
+          </div>
+        </div>
+      </div>
+
+      <div className="control-grid">
+        <button className="control-card">
+          <span>🖼️</span>
+          <strong>Generate Poster</strong>
+          <small>Create a shareable game poster</small>
+        </button>
+
+        <button className="control-card">
+          <span>🎟️</span>
+          <strong>Ticket Bookings</strong>
+          <small>View and manage player bookings</small>
+        </button>
+
+        <button className="control-card">
+          <span>👥</span>
+          <strong>Players</strong>
+          <small>See everyone joining your game</small>
+        </button>
+
+        <button className="control-card">
+          <span>🏆</span>
+          <strong>Prizes</strong>
+          <small>Manage prizes and winners</small>
+        </button>
+
+        <button className="control-card">
+          <span>🔢</span>
+          <strong>Live Game</strong>
+          <small>Start calling Tambola numbers</small>
+        </button>
+
+        <button className="control-card">
+          <span>⚙️</span>
+          <strong>Game Settings</strong>
+          <small>Manage your game controls</small>
+        </button>
+      </div>
+
+      <button className="back-button" onClick={onHome}>
+        ← Return Home
+      </button>
+    </section>
+  );
+}
+
 function App() {
   const [page, setPage] = useState("home");
+  const [createdGame, setCreatedGame] = useState(null);
+
+  function handleGameCreated(game) {
+    setCreatedGame(game);
+    setPage("control");
+  }
 
   return (
     <main className="app">
-      <Header onHome={() => setPage("home")} />
+      <Header
+        onHome={() => {
+          setPage("home");
+          setCreatedGame(null);
+        }}
+      />
 
       {page === "home" && (
-        <Home onCreateGame={() => setPage("create")} />
+        <Home
+          onCreateGame={() => setPage("create")}
+        />
       )}
 
       {page === "create" && (
-        <CreateGame onBack={() => setPage("home")} />
+        <CreateGame
+          onBack={() => setPage("home")}
+          onCreated={handleGameCreated}
+        />
+      )}
+
+      {page === "control" && createdGame && (
+        <HostControlCentre
+          game={createdGame}
+          onHome={() => {
+            setPage("home");
+            setCreatedGame(null);
+          }}
+        />
       )}
 
       <footer>
@@ -457,7 +809,9 @@ function App() {
 
       <nav className="bottom-nav">
         <span
-          className={page === "home" ? "active" : ""}
+          className={
+            page === "home" ? "active" : ""
+          }
           onClick={() => setPage("home")}
         >
           ⌂
@@ -469,7 +823,10 @@ function App() {
           <small>How It Works</small>
         </span>
 
-        <span className="plus" onClick={() => setPage("create")}>
+        <span
+          className="plus"
+          onClick={() => setPage("create")}
+        >
           ＋
         </span>
 
@@ -487,7 +844,9 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(
+createRoot(
+  document.getElementById("root")
+).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
