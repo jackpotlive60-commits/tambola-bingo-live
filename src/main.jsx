@@ -1,25 +1,10 @@
-import React, {
-  useEffect,
-  useState
-} from "react";
+import React, { useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { supabase } from "./lib/supabase";
 
-import {
-  createRoot
-} from "react-dom/client";
+const nums = Array.from({ length: 90 }, (_, i) => i + 1);
 
-import {
-  supabase
-} from "./lib/supabase";
-
-import LiveGame from "./LiveGame";
-
-const nums = Array.from(
-  { length: 90 },
-  (_, i) => i + 1
-);
-
-const KEY =
-  "tambola_bingo_live_host_game";
+const KEY = "tambola_bingo_live_host_game";
 
 const themes = [
   "Classic",
@@ -44,37 +29,22 @@ const defaultPrizes = [
   winner: null
 }));
 
-/* =========================================================
-   HELPERS
-========================================================= */
-
 function code6() {
-  const s =
-    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const s = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
   return Array.from(
     { length: 6 },
-    () =>
-      s[
-        Math.floor(
-          Math.random() * s.length
-        )
-      ]
+    () => s[Math.floor(Math.random() * s.length)]
   ).join("");
 }
 
 function getGameCode() {
-  return new URLSearchParams(
-    location.search
-  ).get("game");
+  return new URLSearchParams(location.search).get("game");
 }
 
 function saveGame(game) {
   if (game) {
-    localStorage.setItem(
-      KEY,
-      JSON.stringify(game)
-    );
+    localStorage.setItem(KEY, JSON.stringify(game));
   } else {
     localStorage.removeItem(KEY);
   }
@@ -82,32 +52,19 @@ function saveGame(game) {
 
 function loadGame() {
   try {
-    const game = JSON.parse(
-      localStorage.getItem(KEY)
-    );
-
-    return game?.game_code
-      ? game
-      : null;
+    const game = JSON.parse(localStorage.getItem(KEY));
+    return game?.game_code ? game : null;
   } catch {
     return null;
   }
 }
 
 function getCalledNumbers(game) {
-  if (
-    Array.isArray(
-      game?.called_numbers
-    )
-  ) {
+  if (Array.isArray(game?.called_numbers)) {
     return game.called_numbers;
   }
 
-  if (
-    Array.isArray(
-      game?.calledNumbers
-    )
-  ) {
+  if (Array.isArray(game?.calledNumbers)) {
     return game.calledNumbers;
   }
 
@@ -143,143 +100,61 @@ function Ticket({
     ]
   ];
 
-  const rows =
-    masks[
-      (Number(n) - 1) %
-        masks.length
-    ].map((row) => [
-      ...row
-    ]);
+  const rows = masks[(Number(n) - 1) % masks.length].map((row) => [
+    ...row
+  ]);
 
   const used = new Set();
 
-  for (
-    let c = 0;
-    c < 9;
-    c++
-  ) {
-    const min =
-      c === 0
-        ? 1
-        : c * 10;
+  for (let c = 0; c < 9; c++) {
+    const min = c === 0 ? 1 : c * 10;
+    const max = c === 8 ? 90 : c * 10 + 9;
 
-    const max =
-      c === 8
-        ? 90
-        : c * 10 + 9;
-
-    const values =
-      Array.from(
-        {
-          length:
-            max - min + 1
-        },
-        (_, i) =>
-          min + i
-      );
+    const values = Array.from(
+      { length: max - min + 1 },
+      (_, i) => min + i
+    );
 
     const shift =
-      (
-        Number(n) *
-          (c + 3) +
-        c * 7
-      ) %
-      values.length;
+      (Number(n) * (c + 3) + c * 7) % values.length;
 
-    const rotated =
-      values
-        .slice(shift)
-        .concat(
-          values.slice(
-            0,
-            shift
-          )
-        );
+    const rotated = values
+      .slice(shift)
+      .concat(values.slice(0, shift));
 
     let index = 0;
 
-    for (
-      let r = 0;
-      r < 3;
-      r++
-    ) {
+    for (let r = 0; r < 3; r++) {
       if (rows[r][c]) {
-        let value =
-          rotated[
-            index %
-              rotated.length
-          ];
-
+        let value = rotated[index % rotated.length];
         let tries = 0;
 
-        while (
-          used.has(value) &&
-          tries <
-            rotated.length
-        ) {
+        while (used.has(value) && tries < rotated.length) {
           index++;
-
-          value =
-            rotated[
-              index %
-                rotated.length
-            ];
-
+          value = rotated[index % rotated.length];
           tries++;
         }
 
-        rows[r][c] =
-          value;
-
+        rows[r][c] = value;
         used.add(value);
-
         index++;
       }
     }
   }
 
-  for (
-    let r = 0;
-    r < 3;
-    r++
-  ) {
-    let count =
-      rows[r].filter(
-        Boolean
-      ).length;
+  for (let r = 0; r < 3; r++) {
+    let count = rows[r].filter(Boolean).length;
 
-    for (
-      let c = 0;
-      c < 9 &&
-      count < 5;
-      c++
-    ) {
+    for (let c = 0; c < 9 && count < 5; c++) {
       if (!rows[r][c]) {
-        const min =
-          c === 0
-            ? 1
-            : c * 10;
+        const min = c === 0 ? 1 : c * 10;
+        const max = c === 8 ? 90 : c * 10 + 9;
 
-        const max =
-          c === 8
-            ? 90
-            : c * 10 + 9;
-
-        for (
-          let value = min;
-          value <= max;
-          value++
-        ) {
-          if (
-            !used.has(value)
-          ) {
-            rows[r][c] =
-              value;
-
+        for (let value = min; value <= max; value++) {
+          if (!used.has(value)) {
+            rows[r][c] = value;
             used.add(value);
-
             count++;
-
             break;
           }
         }
@@ -287,68 +162,37 @@ function Ticket({
     }
   }
 
-  const isPending =
-    status === "pending";
+  const isPending = status === "pending";
+  const isApproved = status === "approved";
 
-  const isApproved =
-    status === "approved";
-
-  let borderColor =
-    "#333";
-
-  let background =
-    "#fff";
-
-  let label =
-    "Available";
+  let borderColor = "#333";
+  let background = "#fff";
+  let label = "Available";
 
   if (isPending) {
-    borderColor =
-      "#f59e0b";
-
-    background =
-      "#fff7ed";
-
-    label =
-      "⏳ Pending";
+    borderColor = "#f59e0b";
+    background = "#fff7ed";
+    label = "⏳ Pending";
   }
 
   if (isApproved) {
-    borderColor =
-      "#16a34a";
-
-    background =
-      "#f0fff4";
-
-    label =
-      `✓ ${
-        name || "Booked"
-      }`;
+    borderColor = "#16a34a";
+    background = "#f0fff4";
+    label = `✓ ${name || "Booked"}`;
   }
 
   if (selected) {
-    borderColor =
-      "#2563eb";
-
-    background =
-      "#eff6ff";
-
-    label =
-      "✓ Selected";
+    borderColor = "#2563eb";
+    background = "#eff6ff";
+    label = "✓ Selected";
   }
 
   return (
     <div
-      onClick={
-        status ===
-        "available"
-          ? onClick
-          : undefined
-      }
+      onClick={status === "available" ? onClick : undefined}
       style={{
         width: "100%",
-        boxSizing:
-          "border-box",
+        boxSizing: "border-box",
         border: selected
           ? "3px solid #2563eb"
           : `2px solid ${borderColor}`,
@@ -356,31 +200,23 @@ function Ticket({
         marginBottom: 18,
         background,
         cursor:
-          status ===
-          "available"
-            ? "pointer"
-            : "not-allowed",
+          status === "available" ? "pointer" : "not-allowed",
         borderRadius: 8
       }}
     >
       <div
         style={{
           display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems:
-            "center",
+          justifyContent: "space-between",
+          alignItems: "center",
           marginBottom: 8
         }}
       >
-        <b>
-          Ticket #{n}
-        </b>
+        <b>Ticket #{n}</b>
 
         <span
           style={{
-            fontWeight:
-              "bold",
+            fontWeight: "bold",
             fontSize: 13
           }}
         >
@@ -392,12 +228,8 @@ function Ticket({
         <div
           style={{
             fontSize: 14,
-            fontWeight:
-              "bold",
-            color:
-              isApproved
-                ? "#15803d"
-                : "#b45309",
+            fontWeight: "bold",
+            color: isApproved ? "#15803d" : "#b45309",
             marginBottom: 6
           }}
         >
@@ -410,49 +242,29 @@ function Ticket({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(9,minmax(0,1fr))",
-          border:
-            "1px solid #333",
+          gridTemplateColumns: "repeat(9,minmax(0,1fr))",
+          border: "1px solid #333",
           width: "100%",
-          boxSizing:
-            "border-box"
+          boxSizing: "border-box"
         }}
       >
-        {rows
-          .flat()
-          .map(
-            (
-              value,
-              index
-            ) => (
-              <div
-                key={
-                  `cell-${n}-${index}`
-                }
-                style={{
-                  border:
-                    "1px solid #aaa",
-                  height: 34,
-                  display:
-                    "flex",
-                  alignItems:
-                    "center",
-                  justifyContent:
-                    "center",
-                  fontWeight:
-                    value
-                      ? "bold"
-                      : "normal",
-                  fontSize: 14,
-                  boxSizing:
-                    "border-box"
-                }}
-              >
-                {value || ""}
-              </div>
-            )
-          )}
+        {rows.flat().map((value, index) => (
+          <div
+            key={`cell-${n}-${index}`}
+            style={{
+              border: "1px solid #aaa",
+              height: 34,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: value ? "bold" : "normal",
+              fontSize: 14,
+              boxSizing: "border-box"
+            }}
+          >
+            {value || ""}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -462,59 +274,37 @@ function Ticket({
    BOOKING STATUS
 ========================================================= */
 
-function getTicketStatus(
-  ticketNumber,
-  requests
-) {
-  const approved =
-    requests.find(
-      (request) =>
-        request.status ===
-          "approved" &&
-        Array.isArray(
-          request.ticket_numbers
-        ) &&
-        request.ticket_numbers.includes(
-          ticketNumber
-        )
-    );
+function getTicketStatus(ticketNumber, requests) {
+  const approved = requests.find(
+    (request) =>
+      request.status === "approved" &&
+      Array.isArray(request.ticket_numbers) &&
+      request.ticket_numbers.includes(ticketNumber)
+  );
 
   if (approved) {
     return {
-      status:
-        "approved",
-      player:
-        approved.player_name ||
-        ""
+      status: "approved",
+      player: approved.player_name || ""
     };
   }
 
-  const pending =
-    requests.find(
-      (request) =>
-        request.status ===
-          "pending" &&
-        Array.isArray(
-          request.ticket_numbers
-        ) &&
-        request.ticket_numbers.includes(
-          ticketNumber
-        )
-    );
+  const pending = requests.find(
+    (request) =>
+      request.status === "pending" &&
+      Array.isArray(request.ticket_numbers) &&
+      request.ticket_numbers.includes(ticketNumber)
+  );
 
   if (pending) {
     return {
-      status:
-        "pending",
-      player:
-        pending.player_name ||
-        ""
+      status: "pending",
+      player: pending.player_name || ""
     };
   }
 
   return {
-    status:
-      "available",
+    status: "available",
     player: ""
   };
 }
@@ -523,452 +313,200 @@ function getTicketStatus(
    HOST PAGE
 ========================================================= */
 
-function HostPage({
-  game,
-  setGame
-}) {
-  const [name, setName] =
-    useState(
-      game?.game_name ||
-        "TambolaLive"
-    );
+function HostPage({ game, setGame }) {
+  const [name, setName] = useState(game?.game_name || "TambolaLive");
+  const [limit, setLimit] = useState(game?.ticket_limit || 100);
+  const [price, setPrice] = useState(game?.ticket_price || 20);
+  const [date, setDate] = useState(game?.game_date || "");
+  const [time, setTime] = useState(game?.game_time || "");
+  const [theme, setTheme] = useState(game?.theme || "Classic");
 
-  const [limit, setLimit] =
-    useState(
-      game?.ticket_limit ||
-        100
-    );
+  const [prizes, setPrizes] = useState(
+    game?.prizes?.length ? game.prizes : defaultPrizes
+  );
 
-  const [price, setPrice] =
-    useState(
-      game?.ticket_price ||
-        20
-    );
+  const [custom, setCustom] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
 
-  const [date, setDate] =
-    useState(
-      game?.game_date ||
-        ""
-    );
-
-  const [time, setTime] =
-    useState(
-      game?.game_time ||
-        ""
-    );
-
-  const [theme, setTheme] =
-    useState(
-      game?.theme ||
-        "Classic"
-    );
-
-  const [prizes, setPrizes] =
-    useState(
-      game?.prizes?.length
-        ? game.prizes
-        : defaultPrizes
-    );
-
-  const [custom, setCustom] =
-    useState("");
-
-  const [busy, setBusy] =
-    useState(false);
-
-  const [err, setErr] =
-    useState("");
-
-  const [
-    bookingRequests,
-    setBookingRequests
-  ] = useState([]);
-
-  const [
-    bookingLoading,
-    setBookingLoading
-  ] = useState(false);
+  const [bookingRequests, setBookingRequests] = useState([]);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   async function loadBookingRequests() {
-    if (
-      !game?.game_code
-    ) {
-      return;
-    }
+    if (!game?.game_code) return;
 
-    setBookingLoading(
-      true
-    );
+    setBookingLoading(true);
 
-    const {
-      data,
-      error
-    } =
-      await supabase
-        .from(
-          "booking_requests"
-        )
-        .select("*")
-        .eq(
-          "game_code",
-          game.game_code
-        )
-        .order(
-          "created_at",
-          {
-            ascending:
-              true
-          }
-        );
+    const { data, error } = await supabase
+      .from("booking_requests")
+      .select("*")
+      .eq("game_code", game.game_code)
+      .order("created_at", { ascending: true });
 
     if (error) {
-      console.error(
-        "Booking request load error:",
-        error
-      );
-
-      setBookingLoading(
-        false
-      );
-
+      console.error("Booking request load error:", error);
+      setBookingLoading(false);
       return;
     }
 
-    setBookingRequests(
-      data || []
-    );
-
-    setBookingLoading(
-      false
-    );
+    setBookingRequests(data || []);
+    setBookingLoading(false);
   }
 
   useEffect(() => {
-    if (
-      !game?.game_code
-    ) {
-      return;
-    }
+    if (!game?.game_code) return;
 
     loadBookingRequests();
 
-    const interval =
-      setInterval(
-        loadBookingRequests,
-        3000
-      );
+    const interval = setInterval(loadBookingRequests, 3000);
 
-    return () =>
-      clearInterval(
-        interval
-      );
-  }, [
-    game?.game_code
-  ]);
+    return () => clearInterval(interval);
+  }, [game?.game_code]);
 
-  function prizeChange(
-    index,
-    value
-  ) {
-    setPrizes(
-      (current) =>
-        current.map(
-          (item, i) =>
-            i === index
-              ? {
-                  ...item,
-                  amount:
-                    value
-                }
-              : item
-        )
+  function prizeChange(index, value) {
+    setPrizes((current) =>
+      current.map((item, i) =>
+        i === index ? { ...item, amount: value } : item
+      )
     );
   }
 
-  async function createGame(
-    event
-  ) {
+  async function createGame(event) {
     event.preventDefault();
 
     setBusy(true);
     setErr("");
 
     try {
-      let gameCode =
-        code6();
-
+      let gameCode = code6();
       let exists = true;
 
       while (exists) {
-        const {
-          data
-        } =
-          await supabase
-            .from("games")
-            .select("id")
-            .eq(
-              "game_code",
-              gameCode
-            )
-            .limit(1);
-
-        exists =
-          Array.isArray(
-            data
-          ) &&
-          data.length >
-            0;
-
-        if (exists) {
-          gameCode =
-            code6();
-        }
-      }
-
-      const cleanPrizes =
-        prizes.filter(
-          (p) =>
-            p.amount !==
-              "" &&
-            p.amount !==
-              null &&
-            p.amount !==
-              undefined
-        );
-
-      const {
-        data,
-        error
-      } =
-        await supabase
+        const { data } = await supabase
           .from("games")
-          .insert({
-            host_name:
-              "Host",
+          .select("id")
+          .eq("game_code", gameCode)
+          .limit(1);
 
-            game_name:
-              name.trim() ||
-              "TambolaLive",
+        exists = Array.isArray(data) && data.length > 0;
 
-            status:
-              "upcoming",
-
-            ticket_limit:
-              Number(limit),
-
-            ticket_price:
-              Number(price),
-
-            call_interval_seconds:
-              5,
-
-            game_date:
-              date,
-
-            game_time:
-              time,
-
-            game_code:
-              gameCode,
-
-            invite_enabled:
-              true,
-
-            called_numbers:
-              []
-          })
-          .select()
-          .single();
-
-      if (error) {
-        throw error;
+        if (exists) gameCode = code6();
       }
+
+      const cleanPrizes = prizes.filter(
+        (p) =>
+          p.amount !== "" &&
+          p.amount !== null &&
+          p.amount !== undefined
+      );
+
+      const { data, error } = await supabase
+        .from("games")
+        .insert({
+          host_name: "Host",
+          game_name: name.trim() || "TambolaLive",
+          status: "upcoming",
+          ticket_limit: Number(limit),
+          ticket_price: Number(price),
+          call_interval_seconds: 5,
+          game_date: date,
+          game_time: time,
+          game_code: gameCode,
+          invite_enabled: true,
+          called_numbers: []
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
 
       const newGame = {
         ...data,
-
-        host_name:
-          "Host",
-
-        game_name:
-          name.trim() ||
-          "TambolaLive",
-
+        host_name: "Host",
+        game_name: name.trim() || "TambolaLive",
         theme,
-
-        gameStarted:
-          false,
-
-        calledNumbers:
-          [],
-
-        called_numbers:
-          [],
-
-        prizes:
-          cleanPrizes
+        gameStarted: false,
+        calledNumbers: [],
+        called_numbers: [],
+        prizes: cleanPrizes
       };
 
-      setGame(
-        newGame
-      );
-
-      saveGame(
-        newGame
-      );
+      setGame(newGame);
+      saveGame(newGame);
     } catch (error) {
-      setErr(
-        error?.message ||
-          "Could not create game"
-      );
+      setErr(error?.message || "Could not create game");
     } finally {
       setBusy(false);
     }
   }
 
-  async function approveBooking(
-    request
-  ) {
-    if (
-      !request?.id
-    ) {
-      return;
-    }
+  async function approveBooking(request) {
+    if (!request?.id) return;
 
-    const tickets =
-      Array.isArray(
-        request.ticket_numbers
-      )
-        ? request.ticket_numbers
-        : [];
+    const tickets = Array.isArray(request.ticket_numbers)
+      ? request.ticket_numbers
+      : [];
 
-    const otherApproved =
-      bookingRequests.filter(
-        (item) =>
-          item.status ===
-            "approved" &&
-          item.id !==
-            request.id
-      );
+    const otherApproved = bookingRequests.filter(
+      (item) =>
+        item.status === "approved" &&
+        item.id !== request.id
+    );
 
-    const alreadyBooked =
-      tickets.filter(
-        (ticket) =>
-          otherApproved.some(
-            (item) => {
-              const otherTickets =
-                Array.isArray(
-                  item.ticket_numbers
-                )
-                  ? item.ticket_numbers
-                  : [];
+    const alreadyBooked = tickets.filter((ticket) =>
+      otherApproved.some((item) => {
+        const otherTickets = Array.isArray(item.ticket_numbers)
+          ? item.ticket_numbers
+          : [];
 
-              return otherTickets.includes(
-                ticket
-              );
-            }
-          )
-      );
+        return otherTickets.includes(ticket);
+      })
+    );
 
-    if (
-      alreadyBooked.length
-    ) {
+    if (alreadyBooked.length) {
       alert(
         `Cannot approve. Ticket(s) ${alreadyBooked
-          .map(
-            (n) =>
-              `#${n}`
-          )
-          .join(
-            ", "
-          )} are already booked.`
+          .map((n) => `#${n}`)
+          .join(", ")} are already booked.`
       );
 
       await loadBookingRequests();
-
       return;
     }
 
-    const {
-      error
-    } =
-      await supabase
-        .from(
-          "booking_requests"
-        )
-        .update({
-          status:
-            "approved"
-        })
-        .eq(
-          "id",
-          request.id
-        );
+    const { error } = await supabase
+      .from("booking_requests")
+      .update({ status: "approved" })
+      .eq("id", request.id);
 
     if (error) {
-      alert(
-        "Could not approve booking: " +
-          error.message
-      );
-
+      alert("Could not approve booking: " + error.message);
       return;
     }
 
     await loadBookingRequests();
   }
 
-  async function rejectBooking(
-    request
-  ) {
-    if (
-      !request?.id
-    ) {
-      return;
-    }
+  async function rejectBooking(request) {
+    if (!request?.id) return;
 
-    const confirmed =
-      confirm(
-        `Reject booking request from ${
-          request.player_name
-        } for ${
-          (
-            request.ticket_numbers ||
-            []
-          )
-            .map(
-              (n) =>
-                `#${n}`
-            )
-            .join(", ")
-        }?`
-      );
+    const confirmed = confirm(
+      `Reject booking request from ${
+        request.player_name
+      } for ${(request.ticket_numbers || [])
+        .map((n) => `#${n}`)
+        .join(", ")}?`
+    );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
-    const {
-      error
-    } =
-      await supabase
-        .from(
-          "booking_requests"
-        )
-        .update({
-          status:
-            "rejected"
-        })
-        .eq(
-          "id",
-          request.id
-        );
+    const { error } = await supabase
+      .from("booking_requests")
+      .update({ status: "rejected" })
+      .eq("id", request.id);
 
     if (error) {
-      alert(
-        "Could not reject booking: " +
-          error.message
-      );
-
+      alert("Could not reject booking: " + error.message);
       return;
     }
 
@@ -976,31 +514,20 @@ function HostPage({
   }
 
   async function copyLink() {
-    const url =
-      `${location.origin}/?game=${game.game_code}`;
+    const url = `${location.origin}/?game=${game.game_code}`;
 
     try {
-      await navigator.clipboard.writeText(
-        url
-      );
-
-      alert(
-        "Game link copied."
-      );
+      await navigator.clipboard.writeText(url);
+      alert("Game link copied.");
     } catch {
-      prompt(
-        "Copy this game link:",
-        url
-      );
+      prompt("Copy this game link:", url);
     }
   }
 
   async function shareGame() {
-    const url =
-      `${location.origin}/?game=${game.game_code}`;
+    const url = `${location.origin}/?game=${game.game_code}`;
 
-    const message =
-`Join my Tambola game!
+    const message = `Join my Tambola game!
 
 ${game.game_name || "TambolaLive"}
 
@@ -1011,44 +538,24 @@ Ticket Price: ₹${game.ticket_price || 0}
 Join here:
 ${url}`;
 
-    if (
-      navigator.share
-    ) {
+    if (navigator.share) {
       try {
         await navigator.share({
-          title:
-            game.game_name ||
-            "TambolaLive",
-          text:
-            message,
+          title: game.game_name || "TambolaLive",
+          text: message,
           url
         });
-      } catch (
-        error
-      ) {
-        if (
-          error?.name !==
-          "AbortError"
-        ) {
-          console.log(
-            error
-          );
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          console.log(error);
         }
       }
     } else {
       try {
-        await navigator.clipboard.writeText(
-          message
-        );
-
-        alert(
-          "Game details copied."
-        );
+        await navigator.clipboard.writeText(message);
+        alert("Game details copied.");
       } catch {
-        prompt(
-          "Copy this:",
-          message
-        );
+        prompt("Copy this:", message);
       }
     }
   }
@@ -1057,291 +564,154 @@ ${url}`;
     return (
       <main
         style={{
-          maxWidth:
-            600,
-          margin:
-            "20px auto",
-          padding:
-            20,
-          boxSizing:
-            "border-box"
+          maxWidth: 600,
+          margin: "20px auto",
+          padding: 20,
+          boxSizing: "border-box"
         }}
       >
-        <h1>
-          TAMBOLA LIVE
-        </h1>
+        <h1>TAMBOLA LIVE</h1>
+        <h2>Create Game</h2>
 
-        <h2>
-          Create Game
-        </h2>
+        {err && <p style={{ color: "red" }}>{err}</p>}
 
-        {err && (
-          <p
-            style={{
-              color:
-                "red"
-            }}
-          >
-            {err}
-          </p>
-        )}
-
-        <form
-          onSubmit={
-            createGame
-          }
-        >
-          <label>
-            Game Name
-          </label>
-
+        <form onSubmit={createGame}>
+          <label>Game Name</label>
           <br />
 
           <input
             value={name}
-            onChange={(e) =>
-              setName(
-                e.target.value
-              )
-            }
+            onChange={(e) => setName(e.target.value)}
             placeholder="TambolaLive"
             style={{
-              width:
-                "100%",
-              maxWidth:
-                400,
-              padding:
-                10,
-              boxSizing:
-                "border-box"
+              width: "100%",
+              maxWidth: 400,
+              padding: 10,
+              boxSizing: "border-box"
             }}
           />
 
           <br />
           <br />
 
-          <label>
-            Ticket Limit
-          </label>
-
+          <label>Ticket Limit</label>
           <br />
 
           <input
             type="number"
             min="1"
             value={limit}
-            onChange={(e) =>
-              setLimit(
-                e.target.value
-              )
-            }
+            onChange={(e) => setLimit(e.target.value)}
             required
-            style={{
-              padding:
-                10
-            }}
+            style={{ padding: 10 }}
           />
 
           <br />
           <br />
 
-          <label>
-            Ticket Price
-          </label>
-
+          <label>Ticket Price</label>
           <br />
 
           <input
             type="number"
             min="0"
             value={price}
-            onChange={(e) =>
-              setPrice(
-                e.target.value
-              )
-            }
+            onChange={(e) => setPrice(e.target.value)}
             required
-            style={{
-              padding:
-                10
-            }}
+            style={{ padding: 10 }}
           />
 
           <br />
           <br />
 
-          <label>
-            Game Date
-          </label>
-
+          <label>Game Date</label>
           <br />
 
           <input
             type="date"
             value={date}
-            onChange={(e) =>
-              setDate(
-                e.target.value
-              )
-            }
+            onChange={(e) => setDate(e.target.value)}
             required
-            style={{
-              padding:
-                10
-            }}
+            style={{ padding: 10 }}
           />
 
           <br />
           <br />
 
-          <label>
-            Game Time
-          </label>
-
+          <label>Game Time</label>
           <br />
 
           <input
             type="time"
             value={time}
-            onChange={(e) =>
-              setTime(
-                e.target.value
-              )
-            }
+            onChange={(e) => setTime(e.target.value)}
             required
-            style={{
-              padding:
-                10
-            }}
+            style={{ padding: 10 }}
           />
 
           <br />
           <br />
 
-          <label>
-            Game Theme
-          </label>
-
+          <label>Game Theme</label>
           <br />
 
           <select
             value={theme}
-            onChange={(e) =>
-              setTheme(
-                e.target.value
-              )
-            }
-            style={{
-              padding:
-                10
-            }}
+            onChange={(e) => setTheme(e.target.value)}
+            style={{ padding: 10 }}
           >
-            {themes.map(
-              (item) => (
-                <option
-                  key={item}
-                  value={item}
-                >
-                  {item}
-                </option>
-              )
-            )}
+            {themes.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
 
-          <h3>
-            Prizes
-          </h3>
+          <h3>Prizes</h3>
 
-          {prizes.map(
-            (
-              prize,
-              index
-            ) => (
-              <div
-                key={index}
-                style={{
-                  marginBottom:
-                    10
-                }}
-              >
-                <label>
-                  {
-                    prize.name
-                  }
-                </label>
+          {prizes.map((prize, index) => (
+            <div key={index} style={{ marginBottom: 10 }}>
+              <label>{prize.name}</label>
+              <br />
 
-                <br />
-
-                <input
-                  type="number"
-                  value={
-                    prize.amount
-                  }
-                  onChange={(
-                    e
-                  ) =>
-                    prizeChange(
-                      index,
-                      e.target
-                        .value
-                    )
-                  }
-                  placeholder="Amount"
-                  style={{
-                    padding:
-                      8
-                  }}
-                />
-              </div>
-            )
-          )}
+              <input
+                type="number"
+                value={prize.amount}
+                onChange={(e) =>
+                  prizeChange(index, e.target.value)
+                }
+                placeholder="Amount"
+                style={{ padding: 8 }}
+              />
+            </div>
+          ))}
 
           <div>
             <input
               placeholder="Custom prize"
               value={custom}
-              onChange={(e) =>
-                setCustom(
-                  e.target.value
-                )
-              }
-              style={{
-                padding:
-                  8
-              }}
+              onChange={(e) => setCustom(e.target.value)}
+              style={{ padding: 8 }}
             />
 
             <button
               type="button"
               onClick={() => {
-                if (
-                  !custom.trim()
-                ) {
-                  return;
-                }
+                if (!custom.trim()) return;
 
-                setPrizes(
-                  (current) => [
-                    ...current,
-                    {
-                      name:
-                        custom.trim(),
-                      amount:
-                        "",
-                      approved:
-                        false,
-                      winner:
-                        null
-                    }
-                  ]
-                );
+                setPrizes((current) => [
+                  ...current,
+                  {
+                    name: custom.trim(),
+                    amount: "",
+                    approved: false,
+                    winner: null
+                  }
+                ]);
 
                 setCustom("");
               }}
-              style={{
-                marginLeft:
-                  6
-              }}
+              style={{ marginLeft: 6 }}
             >
               Add
             </button>
@@ -1351,19 +721,13 @@ ${url}`;
 
           <button
             type="submit"
-            disabled={
-              busy
-            }
+            disabled={busy}
             style={{
-              padding:
-                "10px 18px",
-              fontWeight:
-                "bold"
+              padding: "10px 18px",
+              fontWeight: "bold"
             }}
           >
-            {busy
-              ? "Creating..."
-              : "Create Game"}
+            {busy ? "Creating..." : "Create Game"}
           </button>
         </form>
       </main>
@@ -1373,592 +737,312 @@ ${url}`;
   const inviteUrl =
     `${location.origin}/?game=${game.game_code}`;
 
-  function changeTheme(
-    value
-  ) {
-    const updated = {
-      ...game,
-      theme:
-        value
-    };
-
-    setGame(
-      updated
-    );
-
-    saveGame(
-      updated
-    );
+  function changeTheme(value) {
+    const updated = { ...game, theme: value };
+    setGame(updated);
+    saveGame(updated);
   }
 
-  function approvePrize(
-    index
-  ) {
-    const updatedPrizes =
-      (
-        game.prizes ||
-        []
-      ).map(
-        (
-          prize,
-          i
-        ) =>
-          i === index
-            ? {
-                ...prize,
-                approved:
-                  !prize.approved
-              }
-            : prize
-      );
+  function approvePrize(index) {
+    const updatedPrizes = (game.prizes || []).map(
+      (prize, i) =>
+        i === index
+          ? { ...prize, approved: !prize.approved }
+          : prize
+    );
 
     const updated = {
       ...game,
-      prizes:
-        updatedPrizes
+      prizes: updatedPrizes
     };
 
-    setGame(
-      updated
-    );
-
-    saveGame(
-      updated
-    );
+    setGame(updated);
+    saveGame(updated);
   }
 
-  const visiblePrizes =
-    (
-      game.prizes ||
-      []
-    ).filter(
-      (prize) =>
-        prize.amount !==
-          "" &&
-        prize.amount !==
-          null &&
-        prize.amount !==
-          undefined
-    );
+  const visiblePrizes = (game.prizes || []).filter(
+    (prize) =>
+      prize.amount !== "" &&
+      prize.amount !== null &&
+      prize.amount !== undefined
+  );
 
-  const pendingRequests =
-    bookingRequests.filter(
-      (item) =>
-        item.status ===
-        "pending"
-    );
+  const pendingRequests = bookingRequests.filter(
+    (item) => item.status === "pending"
+  );
 
-  const approvedRequests =
-    bookingRequests.filter(
-      (item) =>
-        item.status ===
-        "approved"
-    );
+  const approvedRequests = bookingRequests.filter(
+    (item) => item.status === "approved"
+  );
 
-  const rejectedRequests =
-    bookingRequests.filter(
-      (item) =>
-        item.status ===
-        "rejected"
-    );
+  const rejectedRequests = bookingRequests.filter(
+    (item) => item.status === "rejected"
+  );
 
   return (
     <main
       style={{
-        maxWidth:
-          700,
-        margin:
-          "20px auto",
-        padding:
-          20,
-        boxSizing:
-          "border-box"
+        maxWidth: 700,
+        margin: "20px auto",
+        padding: 20,
+        boxSizing: "border-box"
       }}
     >
-      <h1>
-        {game.game_name}
-      </h1>
+      <h1>{game.game_name}</h1>
 
-      <h2>
-        Host Control Centre
-      </h2>
+      <h2>Host Control Centre</h2>
 
-      <p>
-        Date:{" "}
-        {game.game_date}
-      </p>
+      <p>Date: {game.game_date}</p>
+      <p>Time: {game.game_time}</p>
+      <p>Ticket Price: ₹{game.ticket_price}</p>
+      <p>Ticket Limit: {game.ticket_limit}</p>
 
       <p>
-        Time:{" "}
-        {game.game_time}
-      </p>
-
-      <p>
-        Ticket Price:
-        {" "}
-        ₹
-        {
-          game.ticket_price
-        }
-      </p>
-
-      <p>
-        Ticket Limit:
-        {" "}
-        {
-          game.ticket_limit
-        }
-      </p>
-
-      <p>
-        Game Status:
-        {" "}
-        <b>
-          {
-            game.status ||
-            "upcoming"
-          }
-        </b>
+        Game Status:{" "}
+        <b>{game.status || "upcoming"}</b>
       </p>
 
       <hr />
 
-      <h3>
-        Game Theme
-      </h3>
+      <h3>Game Theme</h3>
 
       <select
-        value={
-          game.theme ||
-          "Classic"
-        }
-        onChange={(e) =>
-          changeTheme(
-            e.target.value
-          )
-        }
+        value={game.theme || "Classic"}
+        onChange={(e) => changeTheme(e.target.value)}
       >
-        {themes.map(
-          (item) => (
-            <option
-              key={item}
-              value={item}
-            >
-              {item}
-            </option>
-          )
-        )}
+        {themes.map((item) => (
+          <option key={item} value={item}>
+            {item}
+          </option>
+        ))}
       </select>
 
       <hr />
 
-      <h3>
-        Share Game
-      </h3>
+      <h3>Share Game</h3>
 
       <input
         readOnly
-        value={
-          inviteUrl
-        }
+        value={inviteUrl}
         style={{
-          width:
-            "100%",
-          padding:
-            10,
-          boxSizing:
-            "border-box",
-          marginBottom:
-            8
+          width: "100%",
+          padding: 10,
+          boxSizing: "border-box",
+          marginBottom: 8
         }}
       />
 
-      <button
-        onClick={
-          copyLink
-        }
-      >
-        Copy Link
-      </button>
+      <button onClick={copyLink}>Copy Link</button>
 
       <button
-        onClick={
-          shareGame
-        }
-        style={{
-          marginLeft:
-            8
-        }}
+        onClick={shareGame}
+        style={{ marginLeft: 8 }}
       >
         Share Game
       </button>
 
       <hr />
 
-      <h2>
-        Prizes
-      </h2>
+      <h2>Prizes</h2>
 
       {!visiblePrizes.length && (
-        <p>
-          No prizes added yet.
-        </p>
+        <p>No prizes added yet.</p>
       )}
 
-      {visiblePrizes.map(
-        (
-          prize
-        ) => {
-          const index =
-            (
-              game.prizes ||
-              []
-            ).indexOf(
-              prize
-            );
+      {visiblePrizes.map((prize) => {
+        const index = (game.prizes || []).indexOf(prize);
 
-          return (
-            <div
-              key={index}
-              style={{
-                border:
-                  "1px solid #ccc",
-                padding:
-                  10,
-                marginBottom:
-                  8,
-                borderRadius:
-                  8
-              }}
-            >
+        return (
+          <div
+            key={index}
+            style={{
+              border: "1px solid #ccc",
+              padding: 10,
+              marginBottom: 8,
+              borderRadius: 8
+            }}
+          >
+            <b>{prize.name}</b>
+
+            <p>Amount: ₹{prize.amount}</p>
+
+            <p>
+              Status:{" "}
               <b>
-                {
-                  prize.name
-                }
+                {prize.approved ? "Approved" : "Pending"}
               </b>
+            </p>
 
-              <p>
-                Amount:
-                {" "}
-                ₹
-                {
-                  prize.amount
-                }
-              </p>
-
-              <p>
-                Status:
-                {" "}
-                <b>
-                  {
-                    prize.approved
-                      ? "Approved"
-                      : "Pending"
-                  }
-                </b>
-              </p>
-
-              <button
-                onClick={() =>
-                  approvePrize(
-                    index
-                  )
-                }
-              >
-                {
-                  prize.approved
-                    ? "Remove Approval"
-                    : "Approve Prize"
-                }
-              </button>
-            </div>
-          );
-        }
-      )}
+            <button onClick={() => approvePrize(index)}>
+              {prize.approved
+                ? "Remove Approval"
+                : "Approve Prize"}
+            </button>
+          </div>
+        );
+      })}
 
       <hr />
 
-      <h2>
-        Ticket Bookings
-      </h2>
+      <h2>Ticket Bookings</h2>
 
       <div
         style={{
-          display:
-            "flex",
+          display: "flex",
           gap: 8,
-          flexWrap:
-            "wrap",
-          marginBottom:
-            15
+          flexWrap: "wrap",
+          marginBottom: 15
         }}
       >
         <span
           style={{
-            padding:
-              "6px 10px",
-            background:
-              "#fff7ed",
-            border:
-              "1px solid #f59e0b",
-            borderRadius:
-              6
+            padding: "6px 10px",
+            background: "#fff7ed",
+            border: "1px solid #f59e0b",
+            borderRadius: 6
           }}
         >
-          Pending:
-          {" "}
-          <b>
-            {
-              pendingRequests.length
-            }
-          </b>
+          Pending: <b>{pendingRequests.length}</b>
         </span>
 
         <span
           style={{
-            padding:
-              "6px 10px",
-            background:
-              "#f0fff4",
-            border:
-              "1px solid #16a34a",
-            borderRadius:
-              6
+            padding: "6px 10px",
+            background: "#f0fff4",
+            border: "1px solid #16a34a",
+            borderRadius: 6
           }}
         >
-          Approved:
-          {" "}
-          <b>
-            {
-              approvedRequests.length
-            }
-          </b>
+          Approved: <b>{approvedRequests.length}</b>
         </span>
 
         <span
           style={{
-            padding:
-              "6px 10px",
-            background:
-              "#fef2f2",
-            border:
-              "1px solid #ef4444",
-            borderRadius:
-              6
+            padding: "6px 10px",
+            background: "#fef2f2",
+            border: "1px solid #ef4444",
+            borderRadius: 6
           }}
         >
-          Rejected:
-          {" "}
-          <b>
-            {
-              rejectedRequests.length
-            }
-          </b>
+          Rejected: <b>{rejectedRequests.length}</b>
         </span>
       </div>
 
       {bookingLoading && (
-        <p>
-          Checking booking
-          requests...
-        </p>
+        <p>Checking booking requests...</p>
       )}
 
-      {!bookingLoading &&
-        bookingRequests.length ===
-          0 && (
-          <div
-            style={{
-              border:
-                "1px solid #ccc",
-              padding:
-                15,
-              borderRadius:
-                8
-            }}
-          >
-            No booking
-            requests yet.
-          </div>
-        )}
+      {!bookingLoading && bookingRequests.length === 0 && (
+        <div
+          style={{
+            border: "1px solid #ccc",
+            padding: 15,
+            borderRadius: 8
+          }}
+        >
+          No booking requests yet.
+        </div>
+      )}
 
-      {bookingRequests.map(
-        (
-          request
-        ) => (
-          <div
-            key={
-              request.id
-            }
-            style={{
-              border:
-                request.status ===
-                "approved"
-                  ? "2px solid #16a34a"
-                  : request.status ===
-                    "pending"
-                    ? "2px solid #f59e0b"
-                    : "1px solid #ccc",
+      {bookingRequests.map((request) => (
+        <div
+          key={request.id}
+          style={{
+            border:
+              request.status === "approved"
+                ? "2px solid #16a34a"
+                : request.status === "pending"
+                ? "2px solid #f59e0b"
+                : "1px solid #ccc",
+            padding: 15,
+            marginBottom: 12,
+            borderRadius: 8,
+            background:
+              request.status === "approved"
+                ? "#f0fff4"
+                : request.status === "pending"
+                ? "#fffaf0"
+                : "#fafafa"
+          }}
+        >
+          <h3 style={{ marginTop: 0 }}>
+            {request.player_name}
+          </h3>
 
-              padding:
-                15,
+          <p>
+            Tickets:{" "}
+            <b>
+              {(request.ticket_numbers || [])
+                .map((n) => `#${n}`)
+                .join(", ")}
+            </b>
+          </p>
 
-              marginBottom:
-                12,
+          <p>
+            Status:{" "}
+            <b>{request.status.toUpperCase()}</b>
+          </p>
 
-              borderRadius:
-                8,
+          {request.status === "pending" && (
+            <div>
+              <button
+                onClick={() => approveBooking(request)}
+                style={{
+                  marginRight: 8,
+                  padding: "8px 14px",
+                  fontWeight: "bold"
+                }}
+              >
+                APPROVE
+              </button>
 
-              background:
-                request.status ===
-                "approved"
-                  ? "#f0fff4"
-                  : request.status ===
-                    "pending"
-                    ? "#fffaf0"
-                    : "#fafafa"
-            }}
-          >
-            <h3
+              <button
+                onClick={() => rejectBooking(request)}
+                style={{ padding: "8px 14px" }}
+              >
+                REJECT
+              </button>
+            </div>
+          )}
+
+          {request.status === "approved" && (
+            <p
               style={{
-                marginTop:
-                  0
+                color: "#15803d",
+                fontWeight: "bold"
               }}
             >
-              {
-                request.player_name
-              }
-            </h3>
-
-            <p>
-              Tickets:
-              {" "}
-              <b>
-                {(
-                  request.ticket_numbers ||
-                  []
-                )
-                  .map(
-                    (n) =>
-                      `#${n}`
-                  )
-                  .join(
-                    ", "
-                  )}
-              </b>
+              ✓ Tickets assigned to{" "}
+              {request.player_name}
             </p>
+          )}
 
-            <p>
-              Status:
-              {" "}
-              <b>
-                {
-                  request.status.toUpperCase()
-                }
-              </b>
+          {request.status === "rejected" && (
+            <p
+              style={{
+                color: "#b91c1c",
+                fontWeight: "bold"
+              }}
+            >
+              Booking rejected.
             </p>
-
-            {request.status ===
-              "pending" && (
-              <div>
-                <button
-                  onClick={() =>
-                    approveBooking(
-                      request
-                    )
-                  }
-                  style={{
-                    marginRight:
-                      8,
-                    padding:
-                      "8px 14px",
-                    fontWeight:
-                      "bold"
-                  }}
-                >
-                  APPROVE
-                </button>
-
-                <button
-                  onClick={() =>
-                    rejectBooking(
-                      request
-                    )
-                  }
-                  style={{
-                    padding:
-                      "8px 14px"
-                  }}
-                >
-                  REJECT
-                </button>
-              </div>
-            )}
-
-            {request.status ===
-              "approved" && (
-              <p
-                style={{
-                  color:
-                    "#15803d",
-                  fontWeight:
-                    "bold"
-                }}
-              >
-                ✓ Tickets assigned
-                to{" "}
-                {
-                  request.player_name
-                }
-              </p>
-            )}
-
-            {request.status ===
-              "rejected" && (
-              <p
-                style={{
-                  color:
-                    "#b91c1c",
-                  fontWeight:
-                    "bold"
-                }}
-              >
-                Booking rejected.
-              </p>
-            )}
-          </div>
-        )
-      )}
+          )}
+        </div>
+      ))}
 
       <hr />
 
-      <h2>
-        Live Game
-      </h2>
+      <h2>Live Game</h2>
 
-      <Live
-        game={game}
-        setGame={
-          setGame
-        }
-      />
+      <Live game={game} setGame={setGame} />
 
       <hr />
 
       <button
         onClick={() => {
-          if (
-            confirm(
-              "End this game?"
-            )
-          ) {
-            saveGame(
-              null
-            );
-
-            setGame(
-              null
-            );
+          if (confirm("End this game?")) {
+            saveGame(null);
+            setGame(null);
           }
         }}
       >
@@ -1969,241 +1053,120 @@ ${url}`;
 }
 
 /* =========================================================
-   LIVE GAME
+   HOST LIVE CONTROL
 ========================================================= */
 
-function Live({
-  game,
-  setGame
-}) {
-  const [
-    autoCalling,
-    setAutoCalling
-  ] = useState(false);
+function Live({ game, setGame }) {
+  const [autoCalling, setAutoCalling] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
 
-  const [
-    actionBusy,
-    setActionBusy
-  ] = useState(false);
+  const called = getCalledNumbers(game);
 
-  const called =
-    getCalledNumbers(
-      game
-    );
+  const last = called[called.length - 1];
 
-  const last =
-    called[
-      called.length - 1
-    ];
+  const remaining = nums.filter(
+    (number) => !called.includes(number)
+  );
 
-  const remaining =
-    nums.filter(
-      (number) =>
-        !called.includes(
-          number
-        )
-    );
-
-  const intervalSeconds =
-    Math.max(
-      2,
-      Number(
-        game.call_interval_seconds ||
-          5
-      )
-    );
+  const intervalSeconds = Math.max(
+    2,
+    Number(game.call_interval_seconds || 5)
+  );
 
   async function startGame() {
-    if (
-      actionBusy
-    ) {
-      return;
-    }
+    if (actionBusy) return;
 
-    setActionBusy(
-      true
-    );
+    setActionBusy(true);
 
     try {
-      let query =
-        supabase
-          .from("games")
-          .update({
-            status:
-              "live",
-            called_numbers:
-              called
-          });
+      let query = supabase
+        .from("games")
+        .update({
+          status: "live",
+          called_numbers: called
+        });
 
       if (game.id) {
-        query =
-          query.eq(
-            "id",
-            game.id
-          );
+        query = query.eq("id", game.id);
       } else {
-        query =
-          query.eq(
-            "game_code",
-            game.game_code
-          );
+        query = query.eq("game_code", game.game_code);
       }
 
-      const {
-        error
-      } =
-        await query;
+      const { error } = await query;
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const updated = {
         ...game,
-
-        status:
-          "live",
-
-        gameStarted:
-          true,
-
-        calledNumbers:
-          called,
-
-        called_numbers:
-          called
+        status: "live",
+        gameStarted: true,
+        calledNumbers: called,
+        called_numbers: called
       };
 
-      setGame(
-        updated
-      );
-
-      saveGame(
-        updated
-      );
-
+      setGame(updated);
+      saveGame(updated);
     } catch (error) {
-      console.error(
-        "Start game error:",
-        error
-      );
+      console.error("Start game error:", error);
 
       alert(
         "Could not start game: " +
-          (
-            error?.message ||
-            "Unknown error"
-          )
+          (error?.message || "Unknown error")
       );
     } finally {
-      setActionBusy(
-        false
-      );
+      setActionBusy(false);
     }
   }
 
   async function callNextNumber() {
-    if (
-      actionBusy ||
-      remaining.length ===
-        0
-    ) {
-      return;
-    }
+    if (actionBusy || remaining.length === 0) return;
 
-    setActionBusy(
-      true
-    );
+    setActionBusy(true);
 
     try {
       const number =
         remaining[
-          Math.floor(
-            Math.random() *
-              remaining.length
-          )
+          Math.floor(Math.random() * remaining.length)
         ];
 
-      const nextCalled =
-        [
-          ...called,
-          number
-        ];
+      const nextCalled = [...called, number];
 
-      let query =
-        supabase
-          .from("games")
-          .update({
-            status:
-              "live",
-            called_numbers:
-              nextCalled
-          });
+      let query = supabase
+        .from("games")
+        .update({
+          status: "live",
+          called_numbers: nextCalled
+        });
 
       if (game.id) {
-        query =
-          query.eq(
-            "id",
-            game.id
-          );
+        query = query.eq("id", game.id);
       } else {
-        query =
-          query.eq(
-            "game_code",
-            game.game_code
-          );
+        query = query.eq("game_code", game.game_code);
       }
 
-      const {
-        error
-      } =
-        await query;
+      const { error } = await query;
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const updated = {
         ...game,
-
-        status:
-          "live",
-
-        gameStarted:
-          true,
-
-        calledNumbers:
-          nextCalled,
-
-        called_numbers:
-          nextCalled
+        status: "live",
+        gameStarted: true,
+        calledNumbers: nextCalled,
+        called_numbers: nextCalled
       };
 
-      setGame(
-        updated
-      );
-
-      saveGame(
-        updated
-      );
-
+      setGame(updated);
+      saveGame(updated);
     } catch (error) {
-      console.error(
-        "Call number error:",
-        error
-      );
+      console.error("Call number error:", error);
 
       alert(
         "Could not call number: " +
-          (
-            error?.message ||
-            "Unknown error"
-          )
+          (error?.message || "Unknown error")
       );
     } finally {
-      setActionBusy(
-        false
-      );
+      setActionBusy(false);
     }
   }
 
@@ -2211,25 +1174,19 @@ function Live({
     if (
       !autoCalling ||
       !game.gameStarted ||
-      remaining.length ===
-        0
+      remaining.length === 0
     ) {
       return;
     }
 
-    const timer =
-      setInterval(
-        () => {
-          callNextNumber();
-        },
-        intervalSeconds *
-          1000
-      );
+    const timer = setInterval(
+      () => {
+        callNextNumber();
+      },
+      intervalSeconds * 1000
+    );
 
-    return () =>
-      clearInterval(
-        timer
-      );
+    return () => clearInterval(timer);
   }, [
     autoCalling,
     game.gameStarted,
@@ -2239,24 +1196,13 @@ function Live({
   ]);
 
   useEffect(() => {
-    if (
-      called.length >=
-      90
-    ) {
-      setAutoCalling(
-        false
-      );
+    if (called.length >= 90) {
+      setAutoCalling(false);
     }
-  }, [
-    called.length
-  ]);
+  }, [called.length]);
 
   async function resetGame() {
-    if (
-      actionBusy
-    ) {
-      return;
-    }
+    if (actionBusy) return;
 
     if (
       !confirm(
@@ -2266,206 +1212,113 @@ function Live({
       return;
     }
 
-    setActionBusy(
-      true
-    );
-
-    setAutoCalling(
-      false
-    );
+    setActionBusy(true);
+    setAutoCalling(false);
 
     try {
-      let query =
-        supabase
-          .from("games")
-          .update({
-            status:
-              "upcoming",
-            called_numbers:
-              []
-          });
+      let query = supabase
+        .from("games")
+        .update({
+          status: "upcoming",
+          called_numbers: []
+        });
 
       if (game.id) {
-        query =
-          query.eq(
-            "id",
-            game.id
-          );
+        query = query.eq("id", game.id);
       } else {
-        query =
-          query.eq(
-            "game_code",
-            game.game_code
-          );
+        query = query.eq("game_code", game.game_code);
       }
 
-      const {
-        error
-      } =
-        await query;
+      const { error } = await query;
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const updated = {
         ...game,
-
-        status:
-          "upcoming",
-
-        gameStarted:
-          false,
-
-        calledNumbers:
-          [],
-
-        called_numbers:
-          []
+        status: "upcoming",
+        gameStarted: false,
+        calledNumbers: [],
+        called_numbers: []
       };
 
-      setGame(
-        updated
-      );
-
-      saveGame(
-        updated
-      );
-
+      setGame(updated);
+      saveGame(updated);
     } catch (error) {
-      console.error(
-        "Reset game error:",
-        error
-      );
+      console.error("Reset game error:", error);
 
       alert(
         "Could not reset game: " +
-          (
-            error?.message ||
-            "Unknown error"
-          )
+          (error?.message || "Unknown error")
       );
     } finally {
-      setActionBusy(
-        false
-      );
+      setActionBusy(false);
     }
   }
 
   const buttonStyle = {
-    padding:
-      "12px 16px",
-    marginRight:
-      8,
-    marginBottom:
-      8,
-    fontWeight:
-      "bold",
-    borderRadius:
-      7,
-    border:
-      "1px solid #555"
+    padding: "12px 16px",
+    marginRight: 8,
+    marginBottom: 8,
+    fontWeight: "bold",
+    borderRadius: 7,
+    border: "1px solid #555"
   };
 
   return (
     <section>
       <div
         style={{
-          border:
-            "2px solid #2563eb",
-          borderRadius:
-            12,
-          padding:
-            18,
-          background:
-            "#eff6ff",
-          marginBottom:
-            15
+          border: "2px solid #2563eb",
+          borderRadius: 12,
+          padding: 18,
+          background: "#eff6ff",
+          marginBottom: 15
         }}
       >
-        <p
-          style={{
-            marginTop:
-              0
-          }}
-        >
+        <p style={{ marginTop: 0 }}>
           Current Number
         </p>
 
         <div
           style={{
-            fontSize:
-              64,
-            fontWeight:
-              "bold",
-            textAlign:
-              "center",
-            margin:
-              "10px 0"
+            fontSize: 64,
+            fontWeight: "bold",
+            textAlign: "center",
+            margin: "10px 0"
           }}
         >
-          {last ||
-            "—"}
+          {last || "—"}
         </div>
 
         <p>
-          Called:
-          {" "}
-          <b>
-            {
-              called.length
-            }
-            /90
-          </b>
+          Called: <b>{called.length}/90</b>
         </p>
 
         <p>
-          Auto call interval:
-          {" "}
-          <b>
-            {
-              intervalSeconds
-            } seconds
-          </b>
+          Auto call interval:{" "}
+          <b>{intervalSeconds} seconds</b>
         </p>
       </div>
 
       {!game.gameStarted &&
-        game.status !==
-          "live" && (
+        game.status !== "live" && (
           <button
-            onClick={
-              startGame
-            }
-            disabled={
-              actionBusy
-            }
-            style={
-              buttonStyle
-            }
+            onClick={startGame}
+            disabled={actionBusy}
+            style={buttonStyle}
           >
-            {
-              actionBusy
-                ? "Starting..."
-                : "START GAME"
-            }
+            {actionBusy ? "Starting..." : "START GAME"}
           </button>
         )}
 
-      {game.gameStarted && (
+      {(game.gameStarted || game.status === "live") && (
         <>
           <button
-            onClick={
-              callNextNumber
-            }
+            onClick={callNextNumber}
             disabled={
-              actionBusy ||
-              remaining.length ===
-                0
+              actionBusy || remaining.length === 0
             }
-            style={
-              buttonStyle
-            }
+            style={buttonStyle}
           >
             {actionBusy
               ? "Calling..."
@@ -2474,39 +1327,25 @@ function Live({
 
           {!autoCalling ? (
             <button
-              onClick={() =>
-                setAutoCalling(
-                  true
-                )
-              }
+              onClick={() => setAutoCalling(true)}
               disabled={
-                actionBusy ||
-                remaining.length ===
-                  0
+                actionBusy || remaining.length === 0
               }
               style={{
                 ...buttonStyle,
-                background:
-                  "#16a34a",
-                color:
-                  "#fff"
+                background: "#16a34a",
+                color: "#fff"
               }}
             >
               ▶ AUTO CALL
             </button>
           ) : (
             <button
-              onClick={() =>
-                setAutoCalling(
-                  false
-                )
-              }
+              onClick={() => setAutoCalling(false)}
               style={{
                 ...buttonStyle,
-                background:
-                  "#f59e0b",
-                color:
-                  "#fff"
+                background: "#f59e0b",
+                color: "#fff"
               }}
             >
               ⏸ PAUSE AUTO CALL
@@ -2514,40 +1353,28 @@ function Live({
           )}
 
           <button
-            onClick={
-              resetGame
-            }
-            disabled={
-              actionBusy
-            }
-            style={
-              buttonStyle
-            }
+            onClick={resetGame}
+            disabled={actionBusy}
+            style={buttonStyle}
           >
             RESET GAME
           </button>
         </>
       )}
 
-      {game.gameStarted && (
+      {(game.gameStarted || game.status === "live") && (
         <div
           style={{
-            marginTop:
-              10,
-            padding:
-              10,
-            borderRadius:
-              8,
-            background:
-              autoCalling
-                ? "#dcfce7"
-                : "#fff7ed",
-            border:
-              autoCalling
-                ? "1px solid #16a34a"
-                : "1px solid #f59e0b",
-            fontWeight:
-              "bold"
+            marginTop: 10,
+            padding: 10,
+            borderRadius: 8,
+            background: autoCalling
+              ? "#dcfce7"
+              : "#fff7ed",
+            border: autoCalling
+              ? "1px solid #16a34a"
+              : "1px solid #f59e0b",
+            fontWeight: "bold"
           }}
         >
           {autoCalling
@@ -2556,80 +1383,53 @@ function Live({
         </div>
       )}
 
-      <h3>
-        Called Numbers
-      </h3>
+      <h3>Called Numbers</h3>
 
       <div
         style={{
-          display:
-            "flex",
-          flexWrap:
-            "wrap",
-          gap:
-            6
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 6
         }}
       >
-        {nums.map(
-          (number) => {
-            const wasCalled =
-              called.includes(
-                number
-              );
+        {nums.map((number) => {
+          const wasCalled = called.includes(number);
 
-            return (
-              <span
-                key={
-                  number
-                }
-                style={{
-                  minWidth:
-                    34,
-                  padding:
-                    "6px 4px",
-                  textAlign:
-                    "center",
-                  border:
-                    "1px solid #aaa",
-                  borderRadius:
-                    5,
-                  background:
-                    wasCalled
-                      ? "#111827"
-                      : "#fff",
-                  color:
-                    wasCalled
-                      ? "#fff"
-                      : "#111",
-                  fontWeight:
-                    wasCalled
-                      ? "bold"
-                      : "normal"
-                }}
-              >
-                {
-                  number
-                }
-              </span>
-            );
-          }
-        )}
+          return (
+            <span
+              key={number}
+              style={{
+                minWidth: 34,
+                padding: "6px 4px",
+                textAlign: "center",
+                border: "1px solid #aaa",
+                borderRadius: 5,
+                background: wasCalled
+                  ? "#111827"
+                  : "#fff",
+                color: wasCalled
+                  ? "#fff"
+                  : "#111",
+                fontWeight: wasCalled
+                  ? "bold"
+                  : "normal"
+              }}
+            >
+              {number}
+            </span>
+          );
+        })}
       </div>
 
-      {called.length >=
-        90 && (
+      {called.length >= 90 && (
         <p
           style={{
-            marginTop:
-              15,
-            color:
-              "#15803d",
-            fontWeight:
-              "bold"
+            marginTop: 15,
+            color: "#15803d",
+            fontWeight: "bold"
           }}
         >
-          🎉 All 90 numbers
-          have been called!
+          🎉 All 90 numbers have been called!
         </p>
       )}
     </section>
@@ -2640,111 +1440,60 @@ function Live({
    PLAYER INVITATION
 ========================================================= */
 
-function Invitation({
-  game,
-  accept
-}) {
-  const prizes =
-    (
-      game.prizes ||
-      defaultPrizes
-    ).filter(
-      (prize) =>
-        prize.amount !==
-          "" &&
-        prize.amount !==
-          null &&
-        prize.amount !==
-          undefined
-    );
+function Invitation({ game, accept }) {
+  const prizes = (
+    game.prizes || defaultPrizes
+  ).filter(
+    (prize) =>
+      prize.amount !== "" &&
+      prize.amount !== null &&
+      prize.amount !== undefined
+  );
 
   return (
     <main
       style={{
-        maxWidth:
-          600,
-        margin:
-          "20px auto",
-        padding:
-          20,
-        boxSizing:
-          "border-box"
+        maxWidth: 600,
+        margin: "20px auto",
+        padding: 20,
+        boxSizing: "border-box"
       }}
     >
-      <h1>
-        {
-          game.game_name
-        }
-      </h1>
+      <h1>{game.game_name}</h1>
 
       <p>
-        <b>Date:</b>{" "}
-        {
-          game.game_date
-        }
+        <b>Date:</b> {game.game_date}
       </p>
 
       <p>
-        <b>Time:</b>{" "}
-        {
-          game.game_time
-        }
+        <b>Time:</b> {game.game_time}
       </p>
 
       <p>
-        <b>Ticket Price:</b>{" "}
-        ₹
-        {
-          game.ticket_price
-        }
+        <b>Ticket Price:</b> ₹{game.ticket_price}
       </p>
 
       <p>
-        <b>Available Tickets:</b>{" "}
-        {
-          game.ticket_limit
-        }
+        <b>Available Tickets:</b> {game.ticket_limit}
       </p>
 
       <p>
-        <b>Status:</b>{" "}
-        {
-          game.status
-        }
+        <b>Status:</b> {game.status}
       </p>
 
-      <h3>
-        Prize List
-      </h3>
+      <h3>Prize List</h3>
 
-      {prizes.map(
-        (
-          prize,
-          index
-        ) => (
-          <p
-            key={index}
-          >
-            {
-              prize.name
-            }
-            : ₹
-            {
-              prize.amount
-            }
-          </p>
-        )
-      )}
+      {prizes.map((prize, index) => (
+        <p key={index}>
+          {prize.name}: ₹{prize.amount}
+        </p>
+      ))}
 
       <button
-        onClick={
-          accept
-        }
+        onClick={accept}
         style={{
-          padding:
-            "12px 20px",
-          fontWeight:
-            "bold"
+          padding: "12px 20px",
+          fontWeight: "bold"
         }}
       >
         I ACCEPT
@@ -2754,88 +1503,351 @@ function Invitation({
 }
 
 /* =========================================================
+   PLAYER LIVE GAME
+   THIS IS THE IMPORTANT NEW PART
+========================================================= */
+
+function PlayerLiveGame({ game }) {
+  const [liveGame, setLiveGame] = useState(game);
+
+  const called = getCalledNumbers(liveGame);
+
+  const last =
+    called.length > 0
+      ? called[called.length - 1]
+      : null;
+
+  /*
+    Continuously read the game row.
+
+    This means when the host presses START GAME,
+    the player's phone sees status = live automatically.
+  */
+  useEffect(() => {
+    if (!game?.game_code) return;
+
+    let active = true;
+
+    async function refreshGame() {
+      const { data, error } = await supabase
+        .from("games")
+        .select("*")
+        .eq("game_code", game.game_code)
+        .limit(1);
+
+      if (error) {
+        console.error(
+          "Player live game refresh error:",
+          error
+        );
+        return;
+      }
+
+      if (!active || !data || data.length === 0) {
+        return;
+      }
+
+      const row = data[0];
+
+      setLiveGame((current) => ({
+        ...current,
+        ...row,
+        calledNumbers:
+          Array.isArray(row.called_numbers)
+            ? row.called_numbers
+            : [],
+        called_numbers:
+          Array.isArray(row.called_numbers)
+            ? row.called_numbers
+            : []
+      }));
+    }
+
+    refreshGame();
+
+    /*
+      Poll every 1.5 seconds.
+
+      This is deliberately independent of the
+      booking request polling.
+    */
+    const interval = setInterval(
+      refreshGame,
+      1500
+    );
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [game?.game_code]);
+
+  return (
+    <main
+      style={{
+        maxWidth: 700,
+        margin: "0 auto",
+        padding: 15,
+        boxSizing: "border-box"
+      }}
+    >
+      <div
+        style={{
+          background: "#111827",
+          color: "#fff",
+          padding: 18,
+          borderRadius: 14,
+          textAlign: "center",
+          marginBottom: 15
+        }}
+      >
+        <h1 style={{ marginTop: 0 }}>
+          🎱 {liveGame.game_name || "TambolaLive"}
+        </h1>
+
+        <div
+          style={{
+            fontSize: 15,
+            opacity: 0.9
+          }}
+        >
+          LIVE GAME
+        </div>
+      </div>
+
+      <div
+        style={{
+          border: "3px solid #2563eb",
+          borderRadius: 16,
+          padding: 20,
+          textAlign: "center",
+          background: "#eff6ff",
+          marginBottom: 20
+        }}
+      >
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 10
+          }}
+        >
+          CURRENT NUMBER
+        </div>
+
+        <div
+          style={{
+            width: 140,
+            height: 140,
+            borderRadius: "50%",
+            background: "#fff",
+            border: "6px solid #2563eb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto",
+            fontSize: 64,
+            fontWeight: "bold"
+          }}
+        >
+          {last || "—"}
+        </div>
+
+        <p
+          style={{
+            fontSize: 18,
+            fontWeight: "bold"
+          }}
+        >
+          Numbers Called: {called.length}/90
+        </p>
+      </div>
+
+      <div
+        style={{
+          border: "1px solid #ccc",
+          borderRadius: 12,
+          padding: 15,
+          background: "#fff"
+        }}
+      >
+        <h2>Called Numbers</h2>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(10, minmax(0, 1fr))",
+            gap: 6
+          }}
+        >
+          {nums.map((number) => {
+            const wasCalled =
+              called.includes(number);
+
+            return (
+              <div
+                key={number}
+                style={{
+                  padding: "8px 3px",
+                  textAlign: "center",
+                  border: "1px solid #aaa",
+                  borderRadius: 6,
+                  background: wasCalled
+                    ? "#111827"
+                    : "#fff",
+                  color: wasCalled
+                    ? "#fff"
+                    : "#111",
+                  fontWeight: wasCalled
+                    ? "bold"
+                    : "normal"
+                }}
+              >
+                {number}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div
+        style={{
+          marginTop: 15,
+          padding: 12,
+          borderRadius: 8,
+          background: "#dcfce7",
+          border: "1px solid #16a34a",
+          color: "#166534",
+          fontWeight: "bold",
+          textAlign: "center"
+        }}
+      >
+        🟢 LIVE — Waiting for the next number
+      </div>
+    </main>
+  );
+}
+
+/* =========================================================
    PLAYER BOOKING
 ========================================================= */
 
-function Booking({
-  game
-}) {
-  const [
-    player,
-    setPlayer
-  ] = useState("");
+function Booking({ game, onGameLive }) {
+  const [player, setPlayer] = useState("");
+  const [selected, setSelected] = useState([]);
+  const [sent, setSent] = useState(false);
 
-  const [
-    selected,
-    setSelected
-  ] = useState([]);
+  const [bookingRequests, setBookingRequests] =
+    useState([]);
 
-  const [
-    sent,
-    setSent
-  ] = useState(false);
+  const [loadingRequests, setLoadingRequests] =
+    useState(true);
 
-  const [
-    bookingRequests,
-    setBookingRequests
-  ] = useState([]);
+  const [requestError, setRequestError] =
+    useState("");
 
-  const [
-    loadingRequests,
-    setLoadingRequests
-  ] = useState(true);
+  const ticketLimit = Math.max(
+    1,
+    Number(game.ticket_limit || 100)
+  );
 
-  const [
-    requestError,
-    setRequestError
-  ] = useState("");
+  const ticketNumbers = Array.from(
+    { length: ticketLimit },
+    (_, i) => i + 1
+  );
 
-  const ticketLimit =
-    Math.max(
-      1,
-      Number(
-        game.ticket_limit ||
-          100
-      )
-    );
+  /*
+    =========================================================
+    IMPORTANT FIX #1
 
-  const ticketNumbers =
-    Array.from(
-      {
-        length:
-          ticketLimit
-      },
-      (_, i) =>
-        i + 1
-    );
+    Booking page now checks the games table.
 
-  async function loadRequests() {
-    if (
-      !game?.game_code
-    ) {
-      return;
+    Previously this page ONLY checked booking_requests.
+    Therefore it could never know that the host started
+    the game.
+
+    Now it checks game status every 1.5 seconds.
+    =========================================================
+  */
+
+  useEffect(() => {
+    if (!game?.game_code) return;
+
+    let active = true;
+
+    async function checkGameStatus() {
+      const { data, error } = await supabase
+        .from("games")
+        .select("*")
+        .eq("game_code", game.game_code)
+        .limit(1);
+
+      if (error) {
+        console.error(
+          "Game status check error:",
+          error
+        );
+        return;
+      }
+
+      if (!active || !data || data.length === 0) {
+        return;
+      }
+
+      const latestGame = data[0];
+
+      /*
+        THIS is what redirects the player.
+
+        The moment the host changes status to "live",
+        this function calls onGameLive().
+      */
+      if (
+        latestGame.status === "live"
+      ) {
+        onGameLive({
+          ...game,
+          ...latestGame,
+          calledNumbers:
+            Array.isArray(
+              latestGame.called_numbers
+            )
+              ? latestGame.called_numbers
+              : [],
+          called_numbers:
+            Array.isArray(
+              latestGame.called_numbers
+            )
+              ? latestGame.called_numbers
+              : []
+        });
+      }
     }
 
-    const {
-      data,
-      error
-    } =
-      await supabase
-        .from(
-          "booking_requests"
-        )
-        .select("*")
-        .eq(
-          "game_code",
-          game.game_code
-        )
-        .order(
-          "created_at",
-          {
-            ascending:
-              true
-          }
-        );
+    checkGameStatus();
+
+    const interval = setInterval(
+      checkGameStatus,
+      1500
+    );
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [game?.game_code, onGameLive]);
+
+  async function loadRequests() {
+    if (!game?.game_code) return;
+
+    const { data, error } = await supabase
+      .from("booking_requests")
+      .select("*")
+      .eq("game_code", game.game_code)
+      .order("created_at", {
+        ascending: true
+      });
 
     if (error) {
       console.error(
@@ -2843,105 +1855,62 @@ function Booking({
         error
       );
 
-      setRequestError(
-        error.message
-      );
-
-      setLoadingRequests(
-        false
-      );
+      setRequestError(error.message);
+      setLoadingRequests(false);
 
       return;
     }
 
-    setBookingRequests(
-      data || []
-    );
-
-    setLoadingRequests(
-      false
-    );
+    setBookingRequests(data || []);
+    setLoadingRequests(false);
   }
 
   useEffect(() => {
     loadRequests();
 
-    const interval =
-      setInterval(
-        loadRequests,
-        3000
-      );
+    const interval = setInterval(
+      loadRequests,
+      3000
+    );
 
     return () =>
-      clearInterval(
-        interval
-      );
-  }, [
-    game?.game_code
-  ]);
+      clearInterval(interval);
+  }, [game?.game_code]);
 
-  function ticketInfo(
-    ticketNumber
-  ) {
+  function ticketInfo(ticketNumber) {
     return getTicketStatus(
       ticketNumber,
       bookingRequests
     );
   }
 
-  function canSelect(
-    ticketNumber
-  ) {
+  function canSelect(ticketNumber) {
     return (
-      ticketInfo(
-        ticketNumber
-      ).status ===
+      ticketInfo(ticketNumber).status ===
       "available"
     );
   }
 
-  function toggleTicket(
-    ticketNumber
-  ) {
-    if (sent) {
-      return;
-    }
+  function toggleTicket(ticketNumber) {
+    if (sent) return;
 
-    if (
-      !canSelect(
-        ticketNumber
-      )
-    ) {
-      return;
-    }
+    if (!canSelect(ticketNumber)) return;
 
-    setSelected(
-      (current) => {
-        if (
-          current.includes(
-            ticketNumber
-          )
-        ) {
-          return current.filter(
-            (item) =>
-              item !==
-              ticketNumber
-          );
-        }
-
-        return [
-          ...current,
-          ticketNumber
-        ];
+    setSelected((current) => {
+      if (current.includes(ticketNumber)) {
+        return current.filter(
+          (item) => item !== ticketNumber
+        );
       }
-    );
+
+      return [...current, ticketNumber];
+    });
   }
 
   async function send() {
     if (
       !player.trim() ||
-      selected.length ===
-        0
+      selected.length === 0
     ) {
       alert(
         "Enter your name and select tickets."
@@ -2950,69 +1919,41 @@ function Booking({
       return;
     }
 
-    const sorted =
-      [...selected].sort(
-        (a, b) =>
-          a - b
-      );
+    const sorted = [...selected].sort(
+      (a, b) => a - b
+    );
 
     await loadRequests();
 
-    const unavailable =
-      sorted.filter(
-        (ticket) =>
-          !canSelect(
-            ticket
-          )
-      );
+    const unavailable = sorted.filter(
+      (ticket) => !canSelect(ticket)
+    );
 
-    if (
-      unavailable.length
-    ) {
+    if (unavailable.length) {
       alert(
         `Ticket(s) ${unavailable
-          .map(
-            (n) =>
-              `#${n}`
-          )
-          .join(
-            ", "
-          )} are no longer available.`
+          .map((n) => `#${n}`)
+          .join(", ")} are no longer available.`
       );
 
-      setSelected(
-        (current) =>
-          current.filter(
-            (number) =>
-              !unavailable.includes(
-                number
-              )
-          )
+      setSelected((current) =>
+        current.filter(
+          (number) =>
+            !unavailable.includes(number)
+        )
       );
 
       return;
     }
 
-    const {
-      error
-    } =
-      await supabase
-        .from(
-          "booking_requests"
-        )
-        .insert({
-          game_code:
-            game.game_code,
-
-          player_name:
-            player.trim(),
-
-          ticket_numbers:
-            sorted,
-
-          status:
-            "pending"
-        });
+    const { error } = await supabase
+      .from("booking_requests")
+      .insert({
+        game_code: game.game_code,
+        player_name: player.trim(),
+        ticket_numbers: sorted,
+        status: "pending"
+      });
 
     if (error) {
       alert(
@@ -3023,25 +1964,18 @@ function Booking({
       return;
     }
 
-    setSent(
-      true
-    );
-
-    setSelected(
-      []
-    );
+    setSent(true);
+    setSelected([]);
 
     await loadRequests();
 
     const text =
-`Hi ${game.host_name || "Host"}, ${player.trim()} wants to book ${sorted
-        .map(
-          (n) =>
-            `#${n}`
-        )
-        .join(
-          ", "
-        )} for ${game.game_name}. Please approve my booking.`;
+      `Hi ${game.host_name || "Host"}, ` +
+      `${player.trim()} wants to book ` +
+      `${sorted
+        .map((n) => `#${n}`)
+        .join(", ")} for ${game.game_name}. ` +
+      `Please approve my booking.`;
 
     try {
       window.open(
@@ -3061,22 +1995,16 @@ function Booking({
     bookingRequests
       .filter(
         (item) =>
-          item.status ===
-          "approved"
+          item.status === "approved"
       )
       .reduce(
-        (
-          total,
-          item
-        ) =>
+        (total, item) =>
           total +
-          (
-            Array.isArray(
-              item.ticket_numbers
-            )
-              ? item.ticket_numbers.length
-              : 0
-          ),
+          (Array.isArray(
+            item.ticket_numbers
+          )
+            ? item.ticket_numbers.length
+            : 0),
         0
       );
 
@@ -3084,188 +2012,127 @@ function Booking({
     bookingRequests
       .filter(
         (item) =>
-          item.status ===
-          "pending"
+          item.status === "pending"
       )
       .reduce(
-        (
-          total,
-          item
-        ) =>
+        (total, item) =>
           total +
-          (
-            Array.isArray(
-              item.ticket_numbers
-            )
-              ? item.ticket_numbers.length
-              : 0
-          ),
+          (Array.isArray(
+            item.ticket_numbers
+          )
+            ? item.ticket_numbers.length
+            : 0),
         0
       );
 
   return (
     <main
       style={{
-        width:
-          "100%",
-        maxWidth:
-          700,
-        margin:
-          "20px auto",
-        padding:
-          20,
-        boxSizing:
-          "border-box"
+        width: "100%",
+        maxWidth: 700,
+        margin: "20px auto",
+        padding: 20,
+        boxSizing: "border-box"
       }}
     >
-      <h1>
-        Ticket Booking
-      </h1>
+      <h1>Ticket Booking</h1>
 
       <p>
-        <b>
-          {
-            game.game_name
-          }
-        </b>
+        <b>{game.game_name}</b>
       </p>
-
-      <h3>
-        Ticket Availability
-      </h3>
 
       <div
         style={{
-          display:
-            "flex",
-          gap:
-            8,
-          flexWrap:
-            "wrap",
-          marginBottom:
-            20
+          padding: 12,
+          background: "#eff6ff",
+          border: "1px solid #2563eb",
+          borderRadius: 8,
+          marginBottom: 15,
+          fontWeight: "bold"
+        }}
+      >
+        🟢 This page automatically switches to
+        the Live Game when the host starts.
+      </div>
+
+      <h3>Ticket Availability</h3>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
+          marginBottom: 20
         }}
       >
         <span
           style={{
-            padding:
-              "6px 10px",
-            background:
-              "#f0fff4",
-            border:
-              "1px solid #16a34a",
-            borderRadius:
-              6
+            padding: "6px 10px",
+            background: "#f0fff4",
+            border: "1px solid #16a34a",
+            borderRadius: 6
           }}
         >
-          ✓ Booked:
-          {" "}
-          <b>
-            {
-              approvedTicketCount
-            }
-          </b>
+          ✓ Booked:{" "}
+          <b>{approvedTicketCount}</b>
         </span>
 
         <span
           style={{
-            padding:
-              "6px 10px",
-            background:
-              "#fff7ed",
-            border:
-              "1px solid #f59e0b",
-            borderRadius:
-              6
+            padding: "6px 10px",
+            background: "#fff7ed",
+            border: "1px solid #f59e0b",
+            borderRadius: 6
           }}
         >
-          ⏳ Pending:
-          {" "}
-          <b>
-            {
-              pendingTicketCount
-            }
-          </b>
+          ⏳ Pending:{" "}
+          <b>{pendingTicketCount}</b>
         </span>
       </div>
 
       {loadingRequests && (
-        <p>
-          Checking ticket
-          availability...
-        </p>
+        <p>Checking ticket availability...</p>
       )}
 
       {requestError && (
-        <p
-          style={{
-            color:
-              "#b91c1c"
-          }}
-        >
-          Could not refresh
-          ticket status:
-          {" "}
-          {
-            requestError
-          }
+        <p style={{ color: "#b91c1c" }}>
+          Could not refresh ticket status:{" "}
+          {requestError}
         </p>
       )}
 
-      <h3>
-        Player Name
-      </h3>
+      <h3>Player Name</h3>
 
       <input
         type="text"
         placeholder="Player name"
-        value={
-          player
-        }
+        value={player}
         onChange={(e) =>
-          setPlayer(
-            e.target.value
-          )
+          setPlayer(e.target.value)
         }
-        disabled={
-          sent
-        }
+        disabled={sent}
         style={{
-          width:
-            "100%",
-          maxWidth:
-            400,
-          padding:
-            10,
-          boxSizing:
-            "border-box"
+          width: "100%",
+          maxWidth: 400,
+          padding: 10,
+          boxSizing: "border-box"
         }}
       />
 
-      <h3>
-        Select Ticket
-      </h3>
+      <h3>Select Ticket</h3>
 
       <div
         style={{
-          display:
-            "flex",
-          flexWrap:
-            "wrap",
-          gap:
-            5,
-          marginBottom:
-            30
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 5,
+          marginBottom: 30
         }}
       >
         {ticketNumbers.map(
-          (
-            ticketNumber
-          ) => {
+          (ticketNumber) => {
             const info =
-              ticketInfo(
-                ticketNumber
-              );
+              ticketInfo(ticketNumber);
 
             const isSelected =
               selected.includes(
@@ -3274,9 +2141,7 @@ function Booking({
 
             return (
               <button
-                key={
-                  `ticket-${ticketNumber}`
-                }
+                key={`ticket-${ticketNumber}`}
                 type="button"
                 onClick={() =>
                   toggleTicket(
@@ -3289,40 +2154,33 @@ function Booking({
                     "available"
                 }
                 style={{
-                  padding:
-                    "7px 10px",
+                  padding: "7px 10px",
                   border:
                     "1px solid #555",
-                  borderRadius:
-                    5,
+                  borderRadius: 5,
                   background:
                     isSelected
                       ? "#bfdbfe"
                       : info.status ===
                         "approved"
-                        ? "#bbf7d0"
-                        : info.status ===
-                          "pending"
-                          ? "#fed7aa"
-                          : "#fff",
-                  fontWeight:
-                    "bold"
+                      ? "#bbf7d0"
+                      : info.status ===
+                        "pending"
+                      ? "#fed7aa"
+                      : "#fff",
+                  fontWeight: "bold"
                 }}
               >
                 {isSelected
                   ? "✓ "
                   : info.status ===
                     "approved"
-                    ? "✓ "
-                    : info.status ===
-                      "pending"
-                      ? "⏳ "
-                      : ""}
-
-                #
-                {
-                  ticketNumber
-                }
+                  ? "✓ "
+                  : info.status ===
+                    "pending"
+                  ? "⏳ "
+                  : ""}
+                #{ticketNumber}
               </button>
             );
           }
@@ -3334,39 +2192,21 @@ function Booking({
       </h3>
 
       <p>
-        Green = booked
-        {" • "}
-        Orange = pending
-        {" • "}
+        Green = booked • Orange = pending •
         White = available
       </p>
 
-      <div
-        style={{
-          width:
-            "100%"
-        }}
-      >
+      <div style={{ width: "100%" }}>
         {ticketNumbers.map(
-          (
-            ticketNumber
-          ) => {
+          (ticketNumber) => {
             const info =
-              ticketInfo(
-                ticketNumber
-              );
+              ticketInfo(ticketNumber);
 
             return (
               <Ticket
-                key={
-                  `actual-${ticketNumber}`
-                }
-                n={
-                  ticketNumber
-                }
-                name={
-                  info.player
-                }
+                key={`actual-${ticketNumber}`}
+                n={ticketNumber}
+                name={info.player}
                 selected={selected.includes(
                   ticketNumber
                 )}
@@ -3388,40 +2228,25 @@ function Booking({
         )}
       </div>
 
-      {selected.length >
-        0 && (
+      {selected.length > 0 && (
         <div
           style={{
             border:
               "1px solid #2563eb",
-            borderRadius:
-              8,
-            padding:
-              12,
-            marginBottom:
-              15,
-            background:
-              "#eff6ff"
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 15,
+            background: "#eff6ff"
           }}
         >
-          <b>
-            Selected Tickets
-          </b>
+          <b>Selected Tickets</b>
 
           <p>
             {selected
               .slice()
-              .sort(
-                (a, b) =>
-                  a - b
-              )
-              .map(
-                (n) =>
-                  `#${n}`
-              )
-              .join(
-                ", "
-              )}
+              .sort((a, b) => a - b)
+              .map((n) => `#${n}`)
+              .join(", ")}
           </p>
         </div>
       )}
@@ -3429,21 +2254,15 @@ function Booking({
       {!sent ? (
         <button
           type="button"
-          onClick={
-            send
-          }
+          onClick={send}
           disabled={
             !player.trim() ||
-            selected.length ===
-              0
+            selected.length === 0
           }
           style={{
-            padding:
-              "10px 18px",
-            fontWeight:
-              "bold",
-            marginBottom:
-              30
+            padding: "10px 18px",
+            fontWeight: "bold",
+            marginBottom: 30
           }}
         >
           BOOK TICKETS
@@ -3453,44 +2272,31 @@ function Booking({
           style={{
             border:
               "2px solid #f59e0b",
-            padding:
-              15,
-            borderRadius:
-              8,
-            background:
-              "#fff7ed"
+            padding: 15,
+            borderRadius: 8,
+            background: "#fff7ed"
           }}
         >
           <p>
-            <b>
-              Booking request
-              sent.
-            </b>
+            <b>Booking request sent.</b>
           </p>
 
           <p>
-            Your selected
-            tickets are now
-            pending host
-            approval.
+            Your selected tickets are now
+            pending host approval.
           </p>
 
           <p>
-            This page will
-            automatically
-            update when the
-            host approves or
-            rejects your
-            request.
+            This page will automatically
+            switch to the live game when
+            the host starts the game.
           </p>
         </div>
       )}
 
       <hr />
 
-      <h3>
-        Ticket Status
-      </h3>
+      <h3>Ticket Status</h3>
 
       {bookingRequests
         .filter(
@@ -3500,62 +2306,40 @@ function Booking({
             item.status ===
               "pending"
         )
-        .map(
-          (item) => (
-            <div
-              key={
-                item.id
-              }
-              style={{
-                border:
-                  item.status ===
-                  "approved"
-                    ? "1px solid #16a34a"
-                    : "1px solid #f59e0b",
-                padding:
-                  10,
-                marginBottom:
-                  8,
-                borderRadius:
-                  6,
-                background:
-                  item.status ===
-                  "approved"
-                    ? "#f0fff4"
-                    : "#fff7ed"
-              }}
-            >
-              <b>
-                {
-                  item.player_name
-                }
-              </b>
+        .map((item) => (
+          <div
+            key={item.id}
+            style={{
+              border:
+                item.status ===
+                "approved"
+                  ? "1px solid #16a34a"
+                  : "1px solid #f59e0b",
+              padding: 10,
+              marginBottom: 8,
+              borderRadius: 6,
+              background:
+                item.status ===
+                "approved"
+                  ? "#f0fff4"
+                  : "#fff7ed"
+            }}
+          >
+            <b>{item.player_name}</b>
+            {" — "}
+            {item.status ===
+            "approved"
+              ? "Booked"
+              : "Pending"}
 
-              {" — "}
+            <br />
 
-              {item.status ===
-              "approved"
-                ? "Booked"
-                : "Pending"}
-
-              <br />
-
-              Tickets:
-              {" "}
-              {(
-                item.ticket_numbers ||
-                []
-              )
-                .map(
-                  (n) =>
-                    `#${n}`
-                )
-                .join(
-                  ", "
-                )}
-            </div>
-          )
-        )}
+            Tickets:{" "}
+            {(item.ticket_numbers || [])
+              .map((n) => `#${n}`)
+              .join(", ")}
+          </div>
+        ))}
     </main>
   );
 }
@@ -3565,354 +2349,151 @@ function Booking({
 ========================================================= */
 
 function App() {
-  const [
-    game,
-    setGame
-  ] = useState(null);
+  const [game, setGame] = useState(null);
+  const [playerGame, setPlayerGame] = useState(null);
 
-  const [
-    playerGame,
-    setPlayerGame
-  ] = useState(null);
+  const [page, setPage] = useState("host");
 
-  const [
-    page,
-    setPage
-  ] = useState(
-    "host"
-  );
-
-  const [
-    error,
-    setError
-  ] = useState("");
-
-  const [
-    loading,
-    setLoading
-  ] = useState(true);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved =
-      loadGame();
+    const saved = loadGame();
 
     if (saved) {
-      setGame(
-        saved
-      );
-
-      setPage(
-        "host"
-      );
+      setGame(saved);
+      setPage("host");
     }
 
-    const gameCode =
-      getGameCode();
+    const gameCode = getGameCode();
 
     if (gameCode) {
-      loadPlayer(
-        gameCode
-      );
+      loadPlayer(gameCode);
     } else {
-      setLoading(
-        false
-      );
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     if (game) {
-      saveGame(
-        game
-      );
+      saveGame(game);
     }
-  }, [
-    game
-  ]);
+  }, [game]);
 
-  /*
-   * ---------------------------------------------------------
-   * PLAYER GAME STATUS WATCHER
-   *
-   * This checks Supabase every 2 seconds.
-   *
-   * When the host starts the game, the games table gets:
-   *
-   * status = "live"
-   *
-   * The player is then automatically moved from Booking
-   * to LiveGame.
-   * ---------------------------------------------------------
-   */
-
-  useEffect(() => {
-    if (
-      !playerGame?.game_code
-    ) {
-      return;
-    }
-
-    checkPlayerGameStatus();
-
-    const interval =
-      setInterval(
-        checkPlayerGameStatus,
-        2000
-      );
-
-    return () =>
-      clearInterval(
-        interval
-      );
-  }, [
-    playerGame?.game_code,
-    page
-  ]);
-
-  async function checkPlayerGameStatus() {
-    if (
-      !playerGame?.game_code
-    ) {
-      return;
-    }
-
-    const {
-      data,
-      error
-    } =
-      await supabase
-        .from("games")
-        .select("*")
-        .eq(
-          "game_code",
-          playerGame.game_code
-        )
-        .maybeSingle();
-
-    if (error) {
-      console.error(
-        "Player game status error:",
-        error
-      );
-
-      return;
-    }
-
-    if (!data) {
-      return;
-    }
-
-    const updatedPlayerGame = {
-      ...playerGame,
-
-      ...data,
-
-      prizes:
-        Array.isArray(
-          data.prizes
-        )
-          ? data.prizes
-          : (
-              playerGame.prizes ||
-              defaultPrizes
-            ),
-
-      calledNumbers:
-        Array.isArray(
-          data.called_numbers
-        )
-          ? data.called_numbers
-          : []
-    };
-
-    setPlayerGame(
-      updatedPlayerGame
-    );
-
-    /*
-     * Host starts game by setting status = "live".
-     *
-     * Support the other possible flags too so this remains
-     * compatible if LiveGame uses them later.
-     */
-
-    const status =
-      String(
-        data.status ||
-          "upcoming"
-      ).toLowerCase();
-
-    const gameIsLive =
-      status ===
-        "live" ||
-      status ===
-        "started" ||
-      data.game_started ===
-        true ||
-      data.gameStarted ===
-        true;
-
-    if (
-      gameIsLive &&
-      page !==
-        "live"
-    ) {
-      setPage(
-        "live"
-      );
-    }
-  }
-
-  async function loadPlayer(
-    gameCode
-  ) {
-    const {
-      data,
-      error
-    } =
-      await supabase
-        .from("games")
-        .select("*")
-        .eq(
-          "game_code",
-          gameCode.toUpperCase()
-        )
-        .limit(1);
+  async function loadPlayer(gameCode) {
+    const { data, error } = await supabase
+      .from("games")
+      .select("*")
+      .eq(
+        "game_code",
+        gameCode.toUpperCase()
+      )
+      .limit(1);
 
     if (
       error ||
       !data ||
-      data.length ===
-        0
+      data.length === 0
     ) {
       setError(
         error?.message ||
           "Game not found"
       );
 
-      setLoading(
-        false
-      );
-
+      setLoading(false);
       return;
     }
 
-    const row =
-      data[0];
+    const row = data[0];
 
-    const player =
-      {
-        ...row,
+    const player = {
+      ...row,
 
-        prizes:
-          Array.isArray(
-            row.prizes
-          )
-            ? row.prizes
-            : defaultPrizes,
+      prizes:
+        Array.isArray(row.prizes)
+          ? row.prizes
+          : defaultPrizes,
 
-        calledNumbers:
-          Array.isArray(
-            row.called_numbers
-          )
-            ? row.called_numbers
-            : []
-      };
+      calledNumbers:
+        Array.isArray(
+          row.called_numbers
+        )
+          ? row.called_numbers
+          : [],
 
-    setPlayerGame(
-      player
-    );
+      called_numbers:
+        Array.isArray(
+          row.called_numbers
+        )
+          ? row.called_numbers
+          : []
+    };
+
+    setPlayerGame(player);
 
     /*
-     * If player opens the link after the host has already
-     * started the game, go directly to LiveGame.
-     */
-
-    const status =
-      String(
-        row.status ||
-          "upcoming"
-      ).toLowerCase();
-
-    const gameIsLive =
-      status ===
-        "live" ||
-      status ===
-        "started" ||
-      row.game_started ===
-        true ||
-      row.gameStarted ===
-        true;
-
-    if (
-      gameIsLive
-    ) {
-      setPage(
-        "live"
-      );
+      IMPORTANT:
+      If the player opens the link after the
+      host already started, don't show invitation
+      or booking. Go directly to live game.
+    */
+    if (row.status === "live") {
+      setPage("live");
     } else {
-      setPage(
-        "invitation"
-      );
+      setPage("invitation");
     }
 
-    setLoading(
-      false
-    );
+    setLoading(false);
+  }
+
+  /*
+    =========================================================
+    IMPORTANT FIX #2
+
+    This callback is passed to Booking.
+
+    Booking calls this when it detects status = live.
+    App then switches the entire player interface
+    to PlayerLiveGame.
+    =========================================================
+  */
+
+  function handlePlayerGameLive(updatedGame) {
+    setPlayerGame(updatedGame);
+    setPage("live");
   }
 
   if (loading) {
     return (
       <main
         style={{
-          padding:
-            20,
-          textAlign:
-            "center"
+          padding: 20,
+          textAlign: "center"
         }}
       >
-        <h2>
-          Loading...
-        </h2>
+        <h2>Loading...</h2>
       </main>
     );
   }
 
   if (error) {
     return (
-      <main
-        style={{
-          padding:
-            20
-        }}
-      >
-        <h2>
-          Game Not Found
-        </h2>
-
-        <p>
-          {
-            error
-          }
-        </p>
+      <main style={{ padding: 20 }}>
+        <h2>Game Not Found</h2>
+        <p>{error}</p>
       </main>
     );
   }
 
   if (
     playerGame &&
-    page ===
-      "invitation"
+    page === "invitation"
   ) {
     return (
       <Invitation
-        game={
-          playerGame
-        }
+        game={playerGame}
         accept={() =>
-          setPage(
-            "booking"
-          )
+          setPage("booking")
         }
       />
     );
@@ -3920,48 +2501,36 @@ function App() {
 
   if (
     playerGame &&
-    page ===
-      "booking"
+    page === "booking"
   ) {
     return (
       <Booking
-        game={
-          playerGame
+        game={playerGame}
+        onGameLive={
+          handlePlayerGameLive
         }
       />
     );
   }
 
   /*
-   * ---------------------------------------------------------
-   * PLAYER LIVE GAME
-   *
-   * The existing LiveGame component is rendered here.
-   * ---------------------------------------------------------
-   */
-
+    PLAYER LIVE PAGE
+  */
   if (
     playerGame &&
-    page ===
-      "live"
+    page === "live"
   ) {
     return (
-      <LiveGame
-        game={
-          playerGame
-        }
+      <PlayerLiveGame
+        game={playerGame}
       />
     );
   }
 
   return (
     <HostPage
-      game={
-        game
-      }
-      setGame={
-        setGame
-      }
+      game={game}
+      setGame={setGame}
     />
   );
 }
@@ -3971,9 +2540,7 @@ function App() {
 ========================================================= */
 
 createRoot(
-  document.getElementById(
-    "root"
-  )
+  document.getElementById("root")
 ).render(
   <App />
 );
