@@ -40,7 +40,9 @@ return null;
 }
 
 
-/* ================= TAMBOLA TICKET ================= */
+/* =========================================================
+   TAMBOLA TICKET
+========================================================= */
 
 function Ticket({n,name="",selected=false,onClick}){
 
@@ -62,8 +64,7 @@ const masks=[
 ]
 ];
 
-const rows=masks[(Number(n)-1)%masks.length]
-.map(r=>[...r]);
+const rows=masks[(Number(n)-1)%masks.length].map(r=>[...r]);
 
 const used=new Set();
 
@@ -78,13 +79,10 @@ const values=Array.from(
 );
 
 const shift=
-(Number(n)*(c+3)+c*7)%
-values.length;
+(Number(n)*(c+3)+c*7)%values.length;
 
 const rotated=
-values.slice(shift).concat(
-values.slice(0,shift)
-);
+values.slice(shift).concat(values.slice(0,shift));
 
 let index=0;
 
@@ -92,65 +90,51 @@ for(let r=0;r<3;r++){
 
 if(rows[r][c]){
 
-let value=
-rotated[index%rotated.length];
-
+let value=rotated[index%rotated.length];
 let tries=0;
 
-while(
-used.has(value)&&
-tries<rotated.length
-){
+while(used.has(value)&&tries<rotated.length){
 
 index++;
 
-value=
-rotated[index%rotated.length];
+value=rotated[index%rotated.length];
 
 tries++;
+
 }
 
 rows[r][c]=value;
 used.add(value);
 index++;
+
 }
 
 }
+
 }
 
 
-/* Make sure every row contains five numbers */
+/* Ensure every row has 5 numbers */
 
 for(let r=0;r<3;r++){
 
-let count=
-rows[r].filter(Boolean).length;
+let count=rows[r].filter(Boolean).length;
 
-for(
-let c=0;
-c<9&&count<5;
-c++
-){
+for(let c=0;c<9&&count<5;c++){
 
 if(!rows[r][c]){
 
-const min=
-c===0?1:c*10;
+const min=c===0?1:c*10;
+const max=c===8?90:c*10+9;
 
-const max=
-c===8?90:c*10+9;
-
-for(
-let value=min;
-value<=max;
-value++
-){
+for(let value=min;value<=max;value++){
 
 if(!used.has(value)){
 
 rows[r][c]=value;
 used.add(value);
 count++;
+
 break;
 
 }
@@ -165,64 +149,103 @@ break;
 
 
 return(
+
 <div
 onClick={onClick}
 style={{
+width:"100%",
+boxSizing:"border-box",
 border:selected
-?"3px solid #111"
+?"3px solid #16a34a"
 :"1px solid #333",
 padding:8,
-margin:"10px 0",
-maxWidth:380,
+margin:"0 0 18px 0",
 background:"#fff",
-cursor:"pointer"
+cursor:"pointer",
+borderRadius:8
 }}
 >
 
-<div style={{marginBottom:6}}>
-<b>Ticket #{n}</b>
+<div
+style={{
+display:"flex",
+justifyContent:"space-between",
+alignItems:"center",
+marginBottom:8
+}}
+>
+
+<b>
+Ticket #{n}
+</b>
 
 {selected&&(
-<span> ✓ Selected</span>
-)}
-
-{name&&(
-<span> — {name}</span>
+<span
+style={{
+fontWeight:"bold"
+}}
+>
+✓ Selected
+</span>
 )}
 
 </div>
+
+{name&&(
+<div
+style={{
+fontSize:13,
+marginBottom:6
+}}
+>
+{name}
+</div>
+)}
 
 <div
 style={{
 display:"grid",
-gridTemplateColumns:"repeat(9,1fr)",
-border:"1px solid #333"
+gridTemplateColumns:"repeat(9,minmax(0,1fr))",
+border:"1px solid #333",
+width:"100%",
+boxSizing:"border-box"
 }}
 >
 
 {rows.flat().map((v,i)=>(
+
 <div
 key={i}
 style={{
 border:"1px solid #aaa",
-height:30,
-textAlign:"center",
-lineHeight:"30px",
-fontWeight:v?"bold":"normal"
+height:34,
+display:"flex",
+alignItems:"center",
+justifyContent:"center",
+fontWeight:v?"bold":"normal",
+fontSize:14,
+boxSizing:"border-box"
 }}
 >
+
 {v||""}
+
 </div>
+
 ))}
 
 </div>
 
 </div>
+
 );
+
 }
 
 
-/* ================= HOST ================= */
+/* =========================================================
+   HOST PAGE
+========================================================= */
 
 function HostPage({game,setGame}){
 
@@ -441,6 +464,7 @@ message
 if(creating){
 
 return(
+
 <main
 style={{
 maxWidth:600,
@@ -537,6 +561,7 @@ onChange={e=>setTheme(e.target.value)}
 <h3>Prizes</h3>
 
 {prizes.map((p,i)=>(
+
 <div
 key={i}
 style={{marginBottom:8}}
@@ -555,6 +580,7 @@ placeholder="Amount"
 />
 
 </div>
+
 ))}
 
 <div>
@@ -568,6 +594,7 @@ onChange={e=>setCustom(e.target.value)}
 <button
 type="button"
 onClick={()=>{
+
 if(!custom.trim())return;
 
 setPrizes(p=>[
@@ -581,6 +608,7 @@ winner:null
 ]);
 
 setCustom("");
+
 }}
 >
 Add
@@ -600,6 +628,7 @@ disabled={busy}
 </form>
 
 </main>
+
 );
 
 }
@@ -650,6 +679,7 @@ p.amount!==undefined
 
 
 return(
+
 <main
 style={{
 maxWidth:700,
@@ -732,6 +762,7 @@ const i=
 (game.prizes||[]).indexOf(p);
 
 return(
+
 <div
 key={i}
 style={{
@@ -767,6 +798,7 @@ approvePrize(i)
 </button>
 
 </div>
+
 );
 
 })}
@@ -801,24 +833,29 @@ setGame={setGame}
 
 <button
 onClick={()=>{
+
 if(confirm("End this game?")){
 
 saveGame(null);
 setGame(null);
 
 }
+
 }}
 >
 End Game
 </button>
 
 </main>
+
 );
 
 }
 
 
-/* ================= LIVE ================= */
+/* =========================================================
+   LIVE GAME
+========================================================= */
 
 function Live({game,setGame}){
 
@@ -878,6 +915,7 @@ calledNumbers:[]
 }
 
 return(
+
 <section>
 
 <p>
@@ -921,12 +959,15 @@ Reset
 </p>
 
 </section>
+
 );
 
 }
 
 
-/* ================= PLAYER INVITATION ================= */
+/* =========================================================
+   PLAYER INVITATION
+========================================================= */
 
 function Invitation({game,accept}){
 
@@ -939,6 +980,7 @@ p.amount!==undefined
 );
 
 return(
+
 <main
 style={{
 maxWidth:600,
@@ -984,12 +1026,15 @@ I ACCEPT
 </button>
 
 </main>
+
 );
 
 }
 
 
-/* ================= PLAYER BOOKING ================= */
+/* =========================================================
+   PLAYER BOOKING
+========================================================= */
 
 function Booking({game}){
 
@@ -998,6 +1043,21 @@ const[player,setPlayer]=useState("");
 const[selected,setSelected]=useState([]);
 
 const[sent,setSent]=useState(false);
+
+
+/*
+IMPORTANT:
+
+Use the actual ticket limit from the game.
+
+Example:
+
+ticket_limit = 10
+
+creates:
+
+1,2,3,4,5,6,7,8,9,10
+*/
 
 const ticketLimit=
 Math.max(
@@ -1013,25 +1073,33 @@ Array.from(
 
 
 /*
-THIS IS THE IMPORTANT PART.
+One selection function for BOTH:
 
-Clicking either:
-
-1. Ticket number
-2. Actual 3x9 ticket
-
-uses this SAME function.
+Ticket number button
+AND
+actual 3x9 ticket
 */
 
 function toggle(n){
 
 if(sent)return;
 
-setSelected(s=>
-s.includes(n)
-?s.filter(x=>x!==n)
-:[...s,n]
+setSelected(current=>{
+
+if(current.includes(n)){
+
+return current.filter(
+x=>x!==n
 );
+
+}
+
+return[
+...current,
+n
+];
+
+});
 
 }
 
@@ -1045,6 +1113,7 @@ alert(
 );
 
 return;
+
 }
 
 const sorted=
@@ -1083,22 +1152,27 @@ encodeURIComponent(text)
 }
 
 
-/*
-ALL ticket numbers are shown.
-*/
+/* =========================================================
+   PLAYER PAGE
+========================================================= */
 
 return(
+
 <main
 style={{
 maxWidth:700,
 margin:"20px auto",
-padding:20
+padding:20,
+boxSizing:"border-box"
 }}
 >
 
 <h1>Ticket Booking</h1>
 
-<p>{game.game_name}</p>
+<p>
+<b>{game.game_name}</b>
+</p>
+
 
 <h3>Player Name</h3>
 
@@ -1109,76 +1183,102 @@ onChange={e=>
 setPlayer(e.target.value)
 }
 disabled={sent}
+style={{
+width:"100%",
+maxWidth:400,
+padding:8,
+boxSizing:"border-box"
+}}
 />
 
 
-<h3>Select Ticket</h3>
+{/* =======================================================
+    TICKET NUMBER SELECTOR
+======================================================= */}
+
+<h3>
+Select Ticket
+</h3>
 
 <div
 style={{
 display:"flex",
 flexWrap:"wrap",
-gap:4
+gap:5,
+marginBottom:20
 }}
 >
 
 {ticketNumbers.map(n=>(
+
 <button
-key={n}
+key={`number-${n}`}
+type="button"
 onClick={()=>
 toggle(n)
 }
 disabled={sent}
 style={{
+padding:"7px 9px",
+borderRadius:5,
+border:"1px solid #555",
 background:
 selected.includes(n)
-?"lightgreen"
-:"white"
+?"#90ee90"
+:"#fff",
+fontWeight:
+selected.includes(n)
+?"bold"
+:"normal",
+cursor:"pointer"
 }}
 >
 
 {selected.includes(n)
 ?"✓ "
-:""
-}
+:""}
 
 #{n}
 
 </button>
+
 ))}
 
 </div>
 
 
+{/* =======================================================
+    ALL ACTUAL 3 x 9 TAMBOLA TICKETS
+======================================================= */}
+
 <h3>
-Actual 3 × 9 Tambola Tickets
+All Actual 3 × 9 Tambola Tickets
 </h3>
 
 <p>
-Tap any actual ticket to select it.
+Tap any ticket below to select or unselect it.
 </p>
 
 
-{/* ==================================================
-     IMPORTANT FIX:
-     
-     EVERY ticket is rendered here.
-
-     Ticket #1
-     Ticket #2
-     Ticket #3
-     ...
-     Ticket #50
-     
-     Clicking any actual ticket calls toggle(n),
-     exactly like clicking its number above.
-================================================== */}
-
-<div>
+<div
+style={{
+display:"block",
+width:"100%"
+}}
+>
 
 {ticketNumbers.map(n=>(
+
+<div
+key={`actual-ticket-${n}`}
+style={{
+display:"block",
+width:"100%",
+marginBottom:20
+}}
+>
+
 <Ticket
-key={n}
 n={n}
 name={player}
 selected={selected.includes(n)}
@@ -1186,53 +1286,105 @@ onClick={()=>
 toggle(n)
 }
 />
+
+</div>
+
 ))}
 
 </div>
 
 
+{/* =======================================================
+    SELECTED TICKETS
+======================================================= */
+
 {selected.length>0&&(
-<p>
-Selected tickets:
-{" "}
+
+<div
+style={{
+border:"1px solid #16a34a",
+padding:12,
+marginTop:10,
+marginBottom:15,
+borderRadius:8
+}}
+>
+
 <b>
+Selected Tickets:
+</b>
+
+<p
+style={{
+marginBottom:0
+}}
+>
+
 {selected
 .slice()
 .sort((a,b)=>a-b)
 .map(n=>`#${n}`)
 .join(", ")}
-</b>
+
 </p>
+
+</div>
+
 )}
 
+
+{/* =======================================================
+    BOOK
+======================================================= */
 
 {!sent?
 
 <button
+type="button"
 onClick={send}
 disabled={
 !player.trim()||
 !selected.length
 }
+style={{
+padding:"10px 18px",
+fontWeight:"bold",
+cursor:
+!player.trim()||
+!selected.length
+?"not-allowed"
+:"pointer"
+}}
 >
 BOOK TICKETS
 </button>
 
 :
 
+<div>
+
 <p>
 Booking request sent.
+</p>
+
+<p>
 Waiting for host approval.
 </p>
+
+</div>
+
 }
 
 </main>
+
 );
 
 }
 
 
-/* ================= APP ================= */
+/* =========================================================
+   APP
+========================================================= */
 
 function App(){
 
@@ -1300,6 +1452,7 @@ error?.message||
 );
 
 return;
+
 }
 
 const g={
@@ -1330,13 +1483,21 @@ setPage("invitation");
 if(error){
 
 return(
-<main style={{padding:20}}>
 
-<h2>Game Not Found</h2>
+<main
+style={{padding:20}}
+>
 
-<p>{error}</p>
+<h2>
+Game Not Found
+</h2>
+
+<p>
+{error}
+</p>
 
 </main>
+
 );
 
 }
@@ -1348,12 +1509,14 @@ page==="invitation"
 ){
 
 return(
+
 <Invitation
 game={playerGame}
 accept={()=>
 setPage("booking")
 }
 />
+
 );
 
 }
@@ -1365,19 +1528,23 @@ page==="booking"
 ){
 
 return(
+
 <Booking
 game={playerGame}
 />
+
 );
 
 }
 
 
 return(
+
 <HostPage
 game={game}
 setGame={setGame}
 />
+
 );
 
 }
