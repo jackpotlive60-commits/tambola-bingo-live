@@ -1079,7 +1079,7 @@ async function createGamePoster(
     ],
     [
       "TICKET PRICE",
-      `â‚¹${
+      `INR ${
         game.ticket_price ||
         0
       }`
@@ -1203,7 +1203,7 @@ async function createGamePoster(
           `${
             prize.name ||
             "Prize"
-          } â€” â‚¹${
+          } - INR ${
             prize.amount ||
             0
           }`,
@@ -2192,7 +2192,7 @@ function TicketGridComponent({
         }}
       >
         {selected
-          ? "âœ“ Tap to unselect"
+          ? "[OK] Tap to unselect"
           : "Tap to select"}
       </div>
     </div>
@@ -2816,7 +2816,7 @@ function PlayerBookingPage({
 
             <InfoBox
               title="Ticket Price"
-              value={`â‚¹${
+              value={`INR ${
                 game.ticket_price ||
                 0
               }`}
@@ -3028,7 +3028,7 @@ function PlayerBookingPage({
           }
         >
           <h2>
-            All 3Ã—9 Tambola Tickets
+            All 3x9 Tambola Tickets
           </h2>
 
           <div
@@ -3620,7 +3620,7 @@ function LiveGamePage({ game }) {
               fontWeight: "bold"
             }}
           >
-            â— LIVE GAME
+            [DOT] LIVE GAME
           </div>
         </div>
 
@@ -3645,7 +3645,7 @@ function LiveGamePage({ game }) {
               boxShadow: "0 10px 30px rgba(37,99,235,.25)"
             }}
           >
-            {lastCalled || "â€”"}
+            {lastCalled || "-"}
           </div>
 
           <div style={{ color: "#64748b" }}>
@@ -3708,7 +3708,7 @@ function LiveGamePage({ game }) {
           >
             <div>
               <h2 style={{ marginBottom: 5 }}>
-                All Booked 3Ã—9 Tickets
+                All Booked 3x9 Tickets
               </h2>
               <p style={{ color: "#64748b", marginTop: 0 }}>
                 Every accepted player's ticket is visible to everyone.
@@ -3748,7 +3748,7 @@ function LiveGamePage({ game }) {
               onClick={() => setSearchText("")}
               style={secondaryButton}
             >
-              ðŸ”Ž Search / Clear
+              [SEARCH] Search / Clear
             </button>
           </div>
 
@@ -3859,7 +3859,7 @@ function LivePrizeList({ game }) {
 
   return (
     <section style={cardStyle}>
-      <h2>ðŸ† Prizes & Winners</h2>
+      <h2>[WINNER] Prizes & Winners</h2>
 
       {prizes.length === 0 ? (
         <p style={{ color: "#64748b" }}>
@@ -3921,7 +3921,7 @@ function LivePrizeList({ game }) {
                       fontSize: 12
                     }}
                   >
-                    {locked ? "ðŸ† WON" : "ðŸŸ¡ OPEN"}
+                    {locked ? "[WINNER] WON" : "[OPEN] OPEN"}
                   </div>
                 </div>
 
@@ -3938,7 +3938,7 @@ function LivePrizeList({ game }) {
                           fontWeight: "bold"
                         }}
                       >
-                        ðŸ† {winner.playerName || "Player"} â€” Ticket #{winner.ticketNumber}
+                        [WINNER] {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
                       </div>
                     ))}
                   </div>
@@ -3950,7 +3950,7 @@ function LivePrizeList({ game }) {
                       fontWeight: "bold"
                     }}
                   >
-                    Remaining prize â€” waiting for a winner
+                    Remaining prize - waiting for a winner
                   </div>
                 )}
               </div>
@@ -4411,13 +4411,13 @@ function HostControlPage({
     setShareMessage("");
 
     const message =
-`ðŸŽŸï¸ ${game.game_name}
+`[TICKET] ${game.game_name}
 
-ðŸ“… ${game.game_date || "-"}
-â° ${game.game_time || "-"}
-ðŸŽ« Ticket Price: â‚¹${game.ticket_price || 0}
+[DATE] ${game.game_date || "-"}
+[TIME] ${game.game_time || "-"}
+[TICKET] Ticket Price: INR ${game.ticket_price || 0}
 
-ðŸŽŸï¸ Game Code: ${game.game_code}
+[TICKET] Game Code: ${game.game_code}
 
 Join Game:
 ${inviteUrl}`;
@@ -5173,7 +5173,7 @@ ${inviteUrl}`;
             }}
           >
             {isLive
-              ? "â— GAME LIVE"
+              ? "[DOT] GAME LIVE"
               : isEnded
               ? "GAME ENDED"
               : "GAME UPCOMING"}
@@ -5246,7 +5246,7 @@ ${inviteUrl}`;
 
             <InfoBox
               title="Ticket Price"
-              value={`â‚¹${
+              value={`INR ${
                 game.ticket_price ||
                 0
               }`}
@@ -5321,7 +5321,7 @@ ${inviteUrl}`;
               }
             >
               {copied
-                ? "âœ“ Copied"
+                ? "[OK] Copied"
                 : "Copy Link"}
             </button>
 
@@ -5342,7 +5342,7 @@ ${inviteUrl}`;
             >
               {posterCreating
                 ? "Creating Poster..."
-                : "ðŸŽ¨ Share Game + Poster"}
+                : "[STYLE] Share Game + Poster"}
             </button>
           </div>
 
@@ -5558,7 +5558,7 @@ ${inviteUrl}`;
                                   : 1
                             }}
                           >
-                            âœ“ APPROVE
+                            [OK] APPROVE
                           </button>
 
                           <button
@@ -5585,7 +5585,7 @@ ${inviteUrl}`;
                                   : 1
                             }}
                           >
-                            âœ• REJECT
+                            [X] REJECT
                           </button>
                         </div>
                       )}
@@ -5662,7 +5662,7 @@ ${inviteUrl}`;
               {gameAction
                 ? "STARTING..."
                 : isLive
-                ? "âœ“ GAME IS LIVE"
+                ? "[OK] GAME IS LIVE"
                 : "START GAME"}
             </button>
 
@@ -5743,7 +5743,7 @@ ${inviteUrl}`;
                       calledNumbers.length -
                         1
                     ]
-                  : "â€”"}
+                  : "-"}
               </div>
 
               <div
@@ -5780,7 +5780,7 @@ ${inviteUrl}`;
                       : 1
                 }}
               >
-                {autoCall ? "â¹ STOP AUTO CALL" : "â–¶ AUTO CALL"}
+                {autoCall ? "[STOP] STOP AUTO CALL" : "[PLAY] AUTO CALL"}
               </button>
 
               <button
@@ -5794,7 +5794,7 @@ ${inviteUrl}`;
                   opacity: !autoCall || callingNumber ? 0.55 : 1
                 }}
               >
-                {autoCallPaused ? "â–¶ RESUME AUTO CALL" : "â¸ PAUSE AUTO CALL"}
+                {autoCallPaused ? "[PLAY] RESUME AUTO CALL" : "[PAUSE] PAUSE AUTO CALL"}
               </button>
 
               <button
@@ -5816,7 +5816,7 @@ ${inviteUrl}`;
                       : 1
                 }}
               >
-                {callingNumber ? "CALLING..." : "ðŸŽ± CALL NEXT"}
+                {callingNumber ? "CALLING..." : "[TAMBOLA] CALL NEXT"}
               </button>
 
               <label
@@ -5875,7 +5875,7 @@ ${inviteUrl}`;
                   fontWeight: "bold"
                 }}
               >
-                <span>ðŸŽ™ï¸ Caller Style</span>
+                <span>[CALLER] Caller Style</span>
                 <select
                   value={callerMode}
                   onChange={(e) => setCallerMode(e.target.value)}
@@ -5889,8 +5889,8 @@ ${inviteUrl}`;
                   }}
                 >
                   <option value="classic">Classic</option>
-                  <option value="indian">ðŸ‡®ðŸ‡³ Indian / Hinglish</option>
-                  <option value="fun">ðŸŽ‰ Fun</option>
+                  <option value="indian"> Indian / Hinglish</option>
+                  <option value="fun">[CELEBRATE] Fun</option>
                 </select>
               </label>
             </div>
@@ -5915,10 +5915,10 @@ ${inviteUrl}`;
               }}
             >
               {autoCallPaused
-                ? "â¸ AUTO CALL PAUSED"
+                ? "[PAUSE] AUTO CALL PAUSED"
                 : autoCall
-                ? `ðŸ”Š AUTO CALL ACTIVE â€” every ${callIntervalSeconds} seconds`
-                : "AUTO CALL OFF â€” use CALL NEXT or select a number manually"}
+                ? `[VOICE] AUTO CALL ACTIVE - every ${callIntervalSeconds} seconds`
+                : "AUTO CALL OFF - use CALL NEXT or select a number manually"}
             </div>
 
             {pendingWinnerEvents.length > 0 && (
@@ -5933,7 +5933,7 @@ ${inviteUrl}`;
                   fontWeight: "bold"
                 }}
               >
-                ðŸ›‘ WINNER DETECTED â€” confirm the award before calling another number.
+                [STOP] WINNER DETECTED - confirm the award before calling another number.
               </div>
             )}
 
@@ -6061,7 +6061,7 @@ ${inviteUrl}`;
                 textAlign: "center"
               }}
             >
-              <div style={{ fontSize: 54 }}>ðŸ†</div>
+              <div style={{ fontSize: 54 }}>[WINNER]</div>
               <h2 style={{ margin: "8px 0 6px" }}>WINNER DETECTED!</h2>
               <p style={{ color: "#64748b", marginTop: 0 }}>
                 The game has been paused so the host can confirm the award.
@@ -6085,7 +6085,7 @@ ${inviteUrl}`;
                         fontSize: 20
                       }}
                     >
-                      ðŸŽ‰ {event.prizeName} WON!
+                      [CELEBRATE] {event.prizeName} WON!
                     </div>
 
                     <div
@@ -6105,7 +6105,7 @@ ${inviteUrl}`;
                             fontWeight: "bold"
                           }}
                         >
-                          ðŸ‘¤ {winner.playerName} â€” ðŸŽŸï¸ Ticket #{winner.ticketNumber}
+                          [PLAYER] {winner.playerName} - [TICKET] Ticket #{winner.ticketNumber}
                         </div>
                       ))}
                     </div>
@@ -6137,7 +6137,7 @@ ${inviteUrl}`;
               >
                 {confirmingWinners
                   ? "CONFIRMING WINNER..."
-                  : "âœ“ CONFIRM WINNER & LOCK PRIZE"}
+                  : "[OK] CONFIRM WINNER & LOCK PRIZE"}
               </button>
 
               <div
