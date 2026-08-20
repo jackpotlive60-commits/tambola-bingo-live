@@ -3763,6 +3763,11 @@ function HostControlPage({
   ] = useState(5);
 
   const [
+    callerMode,
+    setCallerMode
+  ] = useState("Fun");
+
+  const [
     callingNumber,
     setCallingNumber
   ] = useState(false);
@@ -4301,21 +4306,129 @@ ${inviteUrl}`;
     90: "Top of the house, number 90"
   };
 
+  const INDIAN_CALLER_PHRASES = {
+    1: "Chaliye ji, shuruaat number 1 se",
+    2: "Do chhote ducks, number 2",
+    3: "Chai ka cup, number 3",
+    4: "Knock knock, number 4",
+    5: "Paanch ka punch, number 5",
+    6: "Half dozen, number 6",
+    7: "Lucky seven ji, number 7",
+    8: "Aath ka saath, number 8",
+    9: "Doctor saab ka number 9",
+    10: "Das ka dhamaka, number 10",
+    11: "Gyarah, legs eleven — number 11",
+    12: "Ek dozen, number 12",
+    13: "Tera number, number 13",
+    14: "Valentine wala 14",
+    15: "Pandrah, full josh — number 15",
+    16: "Sweet sixteen, number 16",
+    17: "Seventeen ki dhun, number 17",
+    18: "Adulting shuru, number 18",
+    19: "Teenage ka goodbye, number 19",
+    20: "Bees ka score, number 20",
+    21: "Ikkis, key to the door — 21",
+    22: "Do chhote ducks, number 22",
+    23: "Teis, you and me — number 23",
+    24: "Dozen ka double, number 24",
+    25: "Quarter century, number 25",
+    26: "Republic Day wala 26",
+    27: "Sattais, lucky vibes — 27",
+    28: "Athais, duck ka saathi — 28",
+    29: "Untees, bas tees ke paas — 29",
+    30: "Tees ka tadka, number 30",
+    31: "Ikattis, chalo ji — 31",
+    32: "Battis, buckle my shoe — 32",
+    33: "Tees teen, all the threes — 33",
+    34: "Dil maange more, number 34",
+    35: "Paintees, full masti — 35",
+    36: "Teen dozen, number 36",
+    37: "Saintis, lucky mix — 37",
+    38: "Adtees, party mode — 38",
+    39: "Untalis, tees ke baad — 39",
+    40: "Chalees, life begins — 40",
+    41: "Iktaalis, game on — 41",
+    42: "Bayaalis, answer to life — 42",
+    43: "Taintalis, knees please — 43",
+    44: "Chavalis, all the fours — 44",
+    45: "Paintalis, halfway there — 45",
+    46: "Chhiyalis, josh high — 46",
+    47: "Saintalis, four plus seven — 47",
+    48: "Adataalis, four dozen — 48",
+    49: "Unchaas, fifty ke bilkul paas — 49",
+    50: "Pachaas, half century — 50",
+    51: "Ikyaavan, fifty one — 51",
+    52: "Baavan, pack of cards — 52",
+    53: "Tirpan, game mast hai — 53",
+    54: "Chauvan, floor saaf karo — 54",
+    55: "Pachpan, snakes alive — 55",
+    56: "Chhappan, pick up sticks — 56",
+    57: "Sattavan, fifty-seven varieties — 57",
+    58: "Athavan, thoda wait karo — 58",
+    59: "Unsath, sixty ke paas — 59",
+    60: "Saath, diamond jubilee — 60",
+    61: "Iksath, baker ka bun — 61",
+    62: "Baansath, turn the screw — 62",
+    63: "Tirsath, tickle me — 63",
+    64: "Chaunsath, almost retired — 64",
+    65: "Painsath, retirement time — 65",
+    66: "Chhiyaasath, clickety click — 66",
+    67: "Sadsath, stairway to heaven — 67",
+    68: "Adsaath, pick a mate — 68",
+    69: "Unhattar, ulta pulta — 69",
+    70: "Sattar, three score and ten — 70",
+    71: "Ikhattar, bang on the drum — 71",
+    72: "Bahattar, six dozen — 72",
+    73: "Tihattar, queen bee — 73",
+    74: "Chauhattar, hit the floor — 74",
+    75: "Pachhattar, strive and strive — 75",
+    76: "Chhihattar, seventy-six — 76",
+    77: "Sattattar, double lucky seven — 77",
+    78: "Athhattar, lucky seth — 78",
+    79: "Unasi, one more time — 79",
+    80: "Assi, eighty ji — 80",
+    81: "Ikyasi, stop and run — 81",
+    82: "Bayaasi, straight on through — 82",
+    83: "Tirasi, time for tea — 83",
+    84: "Chaurasi, seven dozen — 84",
+    85: "Pachasi, staying alive — 85",
+    86: "Chhiyaasi, between the sticks — 86",
+    87: "Sattasi, last of luck — 87",
+    88: "Athasi, do fat ladies — 88",
+    89: "Navasi, nearly there — 89",
+    90: "Nabbe, top of the house — 90"
+  };
+
+  function getCallerPhrase(number) {
+    if (callerMode === "Classic") {
+      return `Number ${number}`;
+    }
+
+    if (callerMode === "Indian / Hinglish") {
+      return (
+        INDIAN_CALLER_PHRASES[number] ||
+        `Chaliye ji, number ${number}`
+      );
+    }
+
+    return (
+      CALLER_PHRASES[number] ||
+      `Number ${number}`
+    );
+  }
+
   function announceNumber(number) {
     try {
       if (!("speechSynthesis" in window)) return;
 
       window.speechSynthesis.cancel();
 
-      const phrase =
-        CALLER_PHRASES[number] ||
-        `Number ${number}`;
-
       const utterance = new SpeechSynthesisUtterance(
-        phrase
+        getCallerPhrase(number)
       );
-      utterance.rate = 0.88;
-      utterance.pitch = 1.02;
+      utterance.rate = callerMode === "Classic" ? 0.92 : 0.88;
+      utterance.pitch =
+        callerMode === "Indian / Hinglish" ? 1.06 : 1.02;
       utterance.volume = 1;
 
       window.speechSynthesis.speak(utterance);
@@ -5262,6 +5375,84 @@ ${inviteUrl}`;
 
             <div
               style={{
+                padding: "12px 14px",
+                marginBottom: 12,
+                borderRadius: 12,
+                background: "#eff6ff",
+                border: "1px solid #bfdbfe"
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "800",
+                  marginBottom: 8,
+                  color: "#1e3a8a"
+                }}
+              >
+                🎙️ CALLER VOICE MODE
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit,minmax(150px,1fr))",
+                  gap: 8
+                }}
+              >
+                {[
+                  ["Classic", "🔊 Classic"],
+                  ["Indian / Hinglish", "🇮🇳 Indian / Hinglish"],
+                  ["Fun", "🎉 Fun"]
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setCallerMode(value)}
+                    disabled={callingNumber}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 10,
+                      border:
+                        callerMode === value
+                          ? "2px solid #2563eb"
+                          : "1px solid #cbd5e1",
+                      background:
+                        callerMode === value
+                          ? "#2563eb"
+                          : "#ffffff",
+                      color:
+                        callerMode === value
+                          ? "#ffffff"
+                          : "#111827",
+                      fontWeight: "800",
+                      cursor: callingNumber
+                        ? "not-allowed"
+                        : "pointer"
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: 13,
+                  color: "#475569"
+                }}
+              >
+                {callerMode === "Classic"
+                  ? "Simple number announcement."
+                  : callerMode === "Indian / Hinglish"
+                  ? "Desi-style phrases with clear numbers."
+                  : "Traditional Tambola nicknames, rhymes and fun calls."}
+              </div>
+            </div>
+
+            <div
+              style={{
                 display: "grid",
                 gridTemplateColumns:
                   "repeat(auto-fit,minmax(140px,1fr))",
@@ -5379,6 +5570,74 @@ ${inviteUrl}`;
                 : autoCall
                 ? `🔊 AUTO CALL ACTIVE — every ${callIntervalSeconds} seconds`
                 : "AUTO CALL OFF — use CALL NEXT or select a number manually"}
+            </div>
+
+            <div
+              style={{
+                padding: "14px",
+                marginBottom: 16,
+                borderRadius: 12,
+                background: "#f8fafc",
+                border: "1px solid #cbd5e1"
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: "800",
+                  marginBottom: 10,
+                  color: "#0f172a"
+                }}
+              >
+                📜 CALLED NUMBER HISTORY
+              </div>
+
+              {calledNumbers.length ? (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 7,
+                    maxHeight: 170,
+                    overflowY: "auto",
+                    paddingRight: 3
+                  }}
+                >
+                  {calledNumbers.map((number, index) => (
+                    <div
+                      key={`${number}-${index}`}
+                      style={{
+                        minWidth: 38,
+                        height: 38,
+                        padding: "0 8px",
+                        borderRadius: 9,
+                        background:
+                          index === calledNumbers.length - 1
+                            ? "#16a34a"
+                            : "#2563eb",
+                        color: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "900",
+                        fontSize: 14
+                      }}
+                      title={`Call ${index + 1}`}
+                    >
+                      {number}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    color: "#64748b",
+                    textAlign: "center",
+                    padding: "8px"
+                  }}
+                >
+                  No numbers called yet.
+                </div>
+              )}
             </div>
 
             <div
@@ -5829,326 +6088,5 @@ function App() {
               data
             ) {
               setGame(
-                data
-              );
-
-              saveHostGame(
-                data
-              );
-            }
-          },
-          3000
-        );
-
-      return () => {
-        clearInterval(
-          interval
-        );
-
-        supabase.removeChannel(
-          channel
-        );
-      };
-    },
-    [
-      playerCode,
-      game?.id
-    ]
-  );
-
-  async function loadPlayerGame(
-    code
-  ) {
-    try {
-      if (!code) {
-        setPlayerGame(
-          null
-        );
-
-        return;
-      }
-
-      const {
-        data,
-        error
-      } =
-        await supabase
-          .from(
-            "games"
-          )
-          .select("*")
-          .eq(
-            "game_code",
-            code
-          )
-          .maybeSingle();
-
-      if (error) {
-        throw error;
-      }
-
-      setPlayerGame((current) => {
-        if (!data) {
-          return null;
-        }
-
-        if (
-          current &&
-          current.id === data.id &&
-          current.status === data.status &&
-          JSON.stringify(current.called_numbers || []) ===
-            JSON.stringify(data.called_numbers || []) &&
-          current.game_name === data.game_name &&
-          current.game_code === data.game_code
-        ) {
-          return current;
-        }
-
-        return data;
-      });
-    } catch (err) {
-      console.error(
-        "Could not load player game:",
-        err
-      );
-
-      setPlayerGame(
-        null
-      );
-    } finally {
-      setLoading(
-        false
-      );
-    }
-  }
-
-  function handleCreated(
-    newGame
-  ) {
-    setGame(
-      newGame
-    );
-
-    saveHostGame(
-      newGame
-    );
-
-    window.history.replaceState(
-      {},
-      "",
-      window.location.pathname
-    );
-  }
-
-  function handleGameUpdated(
-    updatedGame
-  ) {
-    setGame(
-      updatedGame
-    );
-
-    saveHostGame(
-      updatedGame
-    );
-  }
-
-  function handleNewGame() {
-    saveHostGame(
-      null
-    );
-
-    setGame(
-      null
-    );
-
-    setPlayerGame(
-      null
-    );
-
-    window.history.replaceState(
-      {},
-      "",
-      window.location.pathname
-    );
-  }
-
-  if (loading) {
-    return (
-      <main
-        style={{
-          ...pageStyle,
-          display:
-            "flex",
-          justifyContent:
-            "center",
-          alignItems:
-            "center"
-        }}
-      >
-        <h2>
-          Loading...
-        </h2>
-      </main>
-    );
-  }
-
-  /* -------------------------------------------------------
-     PLAYER ROUTING
-  ------------------------------------------------------- */
-
-  if (
-    playerCode
-  ) {
-    if (
-      !playerGame
-    ) {
-      return (
-        <main
-          style={
-            pageStyle
-          }
-        >
-          <div
-            style={{
-              maxWidth:
-                600,
-              margin:
-                "60px auto",
-              textAlign:
-                "center"
-            }}
-          >
-            <section
-              style={
-                cardStyle
-              }
-            >
-              <h2>
-                Game Not Found
-              </h2>
-
-              <p>
-                This game link is
-                invalid or the game
-                no longer exists.
-              </p>
-
-              <p
-                style={{
-                  color:
-                    "#64748b",
-                  fontSize:
-                    13
-                }}
-              >
-                Game Code:
-                {" "}
-                {
-                  playerCode
-                }
-              </p>
-            </section>
-          </div>
-        </main>
-      );
-    }
-
-    /* -----------------------------------------------------
-       THIS IS THE IMPORTANT PART.
-
-       UPCOMING = BOOKING PAGE
-       LIVE     = LIVE GAME PAGE
-       ENDED    = LIVE PAGE'S END SCREEN
-    ----------------------------------------------------- */
-
-    if (
-      playerGame.status ===
-      "live"
-    ) {
-      return (
-        <LiveGamePage
-          game={
-            playerGame
-          }
-        />
-      );
-    }
-
-    if (
-      playerGame.status ===
-      "ended"
-    ) {
-      return (
-        <LiveGamePage
-          game={
-            playerGame
-          }
-        />
-      );
-    }
-
-    return (
-      <PlayerBookingPage
-        game={
-          playerGame
-        }
-      />
-    );
-  }
-
-  /* -------------------------------------------------------
-     HOST ROUTING
-  ------------------------------------------------------- */
-
-  if (game) {
-    return (
-      <HostControlPage
-        game={
-          game
-        }
-        onNewGame={
-          handleNewGame
-        }
-        onGameUpdated={
-          handleGameUpdated
-        }
-      />
-    );
-  }
-
-  return (
-    <CreateGamePage
-      onCreated={
-        handleCreated
-      }
-    />
-  );
-}
-
-/* =========================================================
-   START APP
-========================================================= */
-
-const rootElement =
-  document.getElementById(
-    "root"
-  );
-
-if (
-  !rootElement
-) {
-  throw new Error(
-    'Could not find the root element. Make sure index.html contains <div id="root"></div>.'
-  );
-}
-
-const root =
-  createRoot(
-    rootElement
-  );
-
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+         
+Preview truncated for large file
