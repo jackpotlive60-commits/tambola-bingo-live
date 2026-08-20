@@ -29,6 +29,11 @@ const defaultPrizes = [
   winner: null
 }));
 
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
 function code6() {
   const s = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -38,17 +43,23 @@ function code6() {
   ).join("");
 }
 
+
 function getGameCode() {
   return new URLSearchParams(location.search).get("game");
 }
 
+
 function saveGame(g) {
   if (g) {
-    localStorage.setItem(KEY, JSON.stringify(g));
+    localStorage.setItem(
+      KEY,
+      JSON.stringify(g)
+    );
   } else {
     localStorage.removeItem(KEY);
   }
 }
+
 
 function loadGame() {
   try {
@@ -57,6 +68,7 @@ function loadGame() {
     );
 
     return g?.game_code ? g : null;
+
   } catch {
     return null;
   }
@@ -162,6 +174,7 @@ function Ticket({
     }
   }
 
+
   for (let r = 0; r < 3; r++) {
 
     let count =
@@ -206,6 +219,7 @@ function Ticket({
     }
   }
 
+
   return (
     <div
       onClick={onClick}
@@ -244,6 +258,7 @@ function Ticket({
 
       </div>
 
+
       {name && (
         <div
           style={{
@@ -254,6 +269,7 @@ function Ticket({
           {name}
         </div>
       )}
+
 
       <div
         style={{
@@ -266,27 +282,29 @@ function Ticket({
         }}
       >
 
-        {rows.flat().map((value, index) => (
+        {rows.flat().map(
+          (value, index) => (
 
-          <div
-            key={`cell-${n}-${index}`}
-            style={{
-              border: "1px solid #aaa",
-              height: 34,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: value
-                ? "bold"
-                : "normal",
-              fontSize: 14,
-              boxSizing: "border-box"
-            }}
-          >
-            {value || ""}
-          </div>
+            <div
+              key={`cell-${n}-${index}`}
+              style={{
+                border: "1px solid #aaa",
+                height: 34,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: value
+                  ? "bold"
+                  : "normal",
+                fontSize: 14,
+                boxSizing: "border-box"
+              }}
+            >
+              {value || ""}
+            </div>
 
-        ))}
+          )
+        )}
 
       </div>
 
@@ -299,26 +317,10 @@ function Ticket({
    HOST PAGE
 ========================================================= */
 
-function HostPage({ game, setGame }) {
-
-  /*
-     IMPORTANT FIX
-
-     Do NOT use:
-
-     const [creating, setCreating] =
-       useState(!game);
-
-     That value only gets calculated on
-     the first render.
-
-     After refresh the saved game loads
-     slightly later, but "creating" would
-     remain true.
-
-     We therefore determine this directly
-     from the current game value.
-  */
+function HostPage({
+  game,
+  setGame
+}) {
 
   const [name, setName] =
     useState(
@@ -372,8 +374,140 @@ function HostPage({ game, setGame }) {
   const [err, setErr] =
     useState("");
 
+  const [
+    bookingRequests,
+    setBookingRequests
+  ] = useState([]);
 
-  function prizeChange(i, value) {
+  const [
+    bookingsLoading,
+    setBookingsLoading
+  ] = useState(false);
+
+  const [
+    bookingAction,
+    setBookingAction
+  ] = useState(null);
+
+
+  /* =======================================================
+     LOAD BOOKING REQUESTS
+  ======================================================= */
+
+  async function loadBookingRequests() {
+
+    if (!game?.game_code) {
+      return;
+    }
+
+    setBookingsLoading(true);
+
+    const {
+      data,
+      error
+    } =
+      await supabase
+        .from("booking_requests")
+        .select("*")
+        .eq(
+          "game_code",
+          game.game_code
+        )
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+    if (error) {
+
+      console.error(
+        "Booking request load error:",
+        error
+      );
+
+      setBookingsLoading(false);
+
+      return;
+    }
+
+    setBookingRequests(
+      data || []
+    );
+
+    setBookingsLoading(false);
+  }
+
+
+  useEffect(() => {
+
+    if (!game?.game_code) {
+      return;
+    }
+
+    loadBookingRequests();
+
+    const interval =
+      setInterval(
+        loadBookingRequests,
+        3000
+      );
+
+    return () =>
+      clearInterval(interval);
+
+  }, [game?.game_code]);
+
+
+  /* =======================================================
+     APPROVE / REJECT BOOKING
+  ======================================================= */
+
+  async function updateBooking(
+    requestId,
+    status
+  ) {
+
+    setBookingAction(
+      requestId
+    );
+
+    const {
+      error
+    } =
+      await supabase
+        .from("booking_requests")
+        .update({
+          status
+        })
+        .eq(
+          "id",
+          requestId
+        );
+
+    if (error) {
+
+      alert(
+        "Could not update booking: " +
+        error.message
+      );
+
+      setBookingAction(null);
+
+      return;
+    }
+
+    await loadBookingRequests();
+
+    setBookingAction(null);
+  }
+
+
+  function prizeChange(
+    i,
+    value
+  ) {
 
     setPrizes((p) =>
       p.map((x, j) =>
@@ -385,9 +519,12 @@ function HostPage({ game, setGame }) {
           : x
       )
     );
-
   }
 
+
+  /* =======================================================
+     CREATE GAME
+  ======================================================= */
 
   async function createGame(e) {
 
@@ -406,7 +543,10 @@ function HostPage({ game, setGame }) {
           await supabase
             .from("games")
             .select("id")
-            .eq("game_code", gc)
+            .eq(
+              "game_code",
+              gc
+            )
             .maybeSingle()
         ).data
       ) {
@@ -482,9 +622,7 @@ function HostPage({ game, setGame }) {
 
         calledNumbers: [],
 
-        prizes: cleanPrizes,
-
-        bookingRequests: []
+        prizes: cleanPrizes
 
       };
 
@@ -492,6 +630,8 @@ function HostPage({ game, setGame }) {
       setGame(g);
 
       saveGame(g);
+
+      setBookingRequests([]);
 
     } catch (e) {
 
@@ -509,6 +649,10 @@ function HostPage({ game, setGame }) {
   }
 
 
+  /* =======================================================
+     COPY LINK
+  ======================================================= */
+
   async function copyLink() {
 
     const url =
@@ -516,7 +660,9 @@ function HostPage({ game, setGame }) {
 
     try {
 
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(
+        url
+      );
 
       alert(
         "Game link copied."
@@ -533,6 +679,10 @@ function HostPage({ game, setGame }) {
 
   }
 
+
+  /* =======================================================
+     SHARE GAME
+  ======================================================= */
 
   async function shareGame() {
 
@@ -607,16 +757,9 @@ ${url}`;
   }
 
 
-  /*
-     IMPORTANT FIX:
-
-     If there is no game, show Create Game.
-
-     If a saved game exists, show the
-     Host Control Centre.
-
-     This automatically works after refresh.
-  */
+  /* =======================================================
+     CREATE GAME FORM
+  ======================================================= */
 
   if (!game) {
 
@@ -638,11 +781,17 @@ ${url}`;
           Create Game
         </h2>
 
+
         {err && (
-          <p>
+          <p
+            style={{
+              color: "red"
+            }}
+          >
             {err}
           </p>
         )}
+
 
         <form
           onSubmit={createGame}
@@ -657,13 +806,17 @@ ${url}`;
           <input
             value={name}
             onChange={(e) =>
-              setName(e.target.value)
+              setName(
+                e.target.value
+              )
             }
             placeholder="TambolaLive"
           />
 
+
           <br />
           <br />
+
 
           <label>
             Ticket Limit
@@ -676,13 +829,17 @@ ${url}`;
             min="1"
             value={limit}
             onChange={(e) =>
-              setLimit(e.target.value)
+              setLimit(
+                e.target.value
+              )
             }
             required
           />
 
+
           <br />
           <br />
+
 
           <label>
             Ticket Price
@@ -695,13 +852,17 @@ ${url}`;
             min="0"
             value={price}
             onChange={(e) =>
-              setPrice(e.target.value)
+              setPrice(
+                e.target.value
+              )
             }
             required
           />
 
+
           <br />
           <br />
+
 
           <label>
             Game Date
@@ -713,13 +874,17 @@ ${url}`;
             type="date"
             value={date}
             onChange={(e) =>
-              setDate(e.target.value)
+              setDate(
+                e.target.value
+              )
             }
             required
           />
 
+
           <br />
           <br />
+
 
           <label>
             Game Time
@@ -731,13 +896,17 @@ ${url}`;
             type="time"
             value={time}
             onChange={(e) =>
-              setTime(e.target.value)
+              setTime(
+                e.target.value
+              )
             }
             required
           />
 
+
           <br />
           <br />
+
 
           <label>
             Game Theme
@@ -748,18 +917,22 @@ ${url}`;
           <select
             value={theme}
             onChange={(e) =>
-              setTheme(e.target.value)
+              setTheme(
+                e.target.value
+              )
             }
           >
 
-            {themes.map((t) => (
-              <option
-                key={t}
-                value={t}
-              >
-                {t}
-              </option>
-            ))}
+            {themes.map(
+              (t) => (
+                <option
+                  key={t}
+                  value={t}
+                >
+                  {t}
+                </option>
+              )
+            )}
 
           </select>
 
@@ -769,36 +942,38 @@ ${url}`;
           </h3>
 
 
-          {prizes.map((p, i) => (
+          {prizes.map(
+            (p, i) => (
 
-            <div
-              key={i}
-              style={{
-                marginBottom: 8
-              }}
-            >
+              <div
+                key={i}
+                style={{
+                  marginBottom: 8
+                }}
+              >
 
-              <label>
-                {p.name}
-              </label>
+                <label>
+                  {p.name}
+                </label>
 
-              <br />
+                <br />
 
-              <input
-                type="number"
-                value={p.amount}
-                onChange={(e) =>
-                  prizeChange(
-                    i,
-                    e.target.value
-                  )
-                }
-                placeholder="Amount"
-              />
+                <input
+                  type="number"
+                  value={p.amount}
+                  onChange={(e) =>
+                    prizeChange(
+                      i,
+                      e.target.value
+                    )
+                  }
+                  placeholder="Amount"
+                />
 
-            </div>
+              </div>
 
-          ))}
+            )
+          )}
 
 
           <div>
@@ -807,7 +982,9 @@ ${url}`;
               placeholder="Custom prize"
               value={custom}
               onChange={(e) =>
-                setCustom(e.target.value)
+                setCustom(
+                  e.target.value
+                )
               }
             />
 
@@ -815,20 +992,24 @@ ${url}`;
               type="button"
               onClick={() => {
 
-                if (!custom.trim()) {
+                if (
+                  !custom.trim()
+                ) {
                   return;
                 }
 
-                setPrizes((p) => [
-                  ...p,
-                  {
-                    name:
-                      custom.trim(),
-                    amount: "",
-                    approved: false,
-                    winner: null
-                  }
-                ]);
+                setPrizes(
+                  (p) => [
+                    ...p,
+                    {
+                      name:
+                        custom.trim(),
+                      amount: "",
+                      approved: false,
+                      winner: null
+                    }
+                  ]
+                );
 
                 setCustom("");
 
@@ -842,6 +1023,7 @@ ${url}`;
 
           <br />
 
+
           <button
             type="submit"
             disabled={busy}
@@ -854,15 +1036,13 @@ ${url}`;
         </form>
 
       </main>
-
     );
-
   }
 
 
-  /*
+  /* =======================================================
      HOST CONTROL CENTRE
-  */
+  ======================================================= */
 
   const inviteUrl =
     `${location.origin}/?game=${game.game_code}`;
@@ -918,6 +1098,13 @@ ${url}`;
     );
 
 
+  const pendingBookings =
+    bookingRequests.filter(
+      (r) =>
+        r.status === "pending"
+    );
+
+
   return (
 
     <main
@@ -935,6 +1122,7 @@ ${url}`;
       <h2>
         Host Control Centre
       </h2>
+
 
       <p>
         Date: {game.game_date}
@@ -964,6 +1152,7 @@ ${url}`;
         Game Theme
       </h3>
 
+
       <select
         value={
           game.theme ||
@@ -976,14 +1165,16 @@ ${url}`;
         }
       >
 
-        {themes.map((t) => (
-          <option
-            key={t}
-            value={t}
-          >
-            {t}
-          </option>
-        ))}
+        {themes.map(
+          (t) => (
+            <option
+              key={t}
+              value={t}
+            >
+              {t}
+            </option>
+          )
+        )}
 
       </select>
 
@@ -995,19 +1186,23 @@ ${url}`;
         Share Game
       </h3>
 
+
       <input
         readOnly
         value={inviteUrl}
         style={{
-          width: "70%"
+          width: "70%",
+          boxSizing: "border-box"
         }}
       />
+
 
       <button
         onClick={copyLink}
       >
         Copy Link
       </button>
+
 
       <button
         onClick={shareGame}
@@ -1022,6 +1217,10 @@ ${url}`;
       <hr />
 
 
+      {/* =================================================
+          PRIZES
+      ================================================= */}
+
       <h2>
         Prizes
       </h2>
@@ -1034,91 +1233,347 @@ ${url}`;
       )}
 
 
-      {visiblePrizes.map((p) => {
+      {visiblePrizes.map(
+        (p) => {
 
-        const i =
-          (game.prizes || [])
-            .indexOf(p);
+          const i =
+            (game.prizes || [])
+              .indexOf(p);
 
-        return (
+          return (
 
-          <div
-            key={i}
-            style={{
-              border:
-                "1px solid #ccc",
-              padding: 10,
-              marginBottom: 8
-            }}
-          >
-
-            <b>
-              {p.name}
-            </b>
-
-            <p>
-              Amount:
-              {" "}
-              ₹{p.amount}
-            </p>
-
-            <p>
-              Status:
-              {" "}
+            <div
+              key={i}
+              style={{
+                border:
+                  "1px solid #ccc",
+                padding: 10,
+                marginBottom: 8
+              }}
+            >
 
               <b>
-                {p.approved
-                  ? "Approved"
-                  : "Pending"}
+                {p.name}
               </b>
-            </p>
 
-            <button
-              onClick={() =>
-                approvePrize(i)
-              }
-            >
-              {p.approved
-                ? "Remove Approval"
-                : "Approve Prize"}
-            </button>
+              <p>
+                Amount:
+                {" "}
+                ₹{p.amount}
+              </p>
 
-          </div>
+              <p>
+                Status:
+                {" "}
 
-        );
+                <b>
+                  {p.approved
+                    ? "Approved"
+                    : "Pending"}
+                </b>
+              </p>
 
-      })}
+              <button
+                onClick={() =>
+                  approvePrize(i)
+                }
+              >
+                {p.approved
+                  ? "Remove Approval"
+                  : "Approve Prize"}
+              </button>
+
+            </div>
+
+          );
+        }
+      )}
 
 
       <hr />
 
+
+      {/* =================================================
+          BOOKING REQUESTS
+      ================================================= */}
 
       <h2>
         Ticket Bookings
       </h2>
 
-      <p>
-        Pending booking requests
-        will appear here.
-      </p>
 
       <div
         style={{
+          background:
+            pendingBookings.length
+              ? "#fff7ed"
+              : "#f5f5f5",
           border:
-            "1px solid #ccc",
-          padding: 15
+            pendingBookings.length
+              ? "2px solid #f59e0b"
+              : "1px solid #ccc",
+          borderRadius: 10,
+          padding: 15,
+          marginBottom: 15
         }}
       >
-        No pending bookings yet.
+
+        <h3
+          style={{
+            marginTop: 0
+          }}
+        >
+          Pending Requests:
+          {" "}
+          {pendingBookings.length}
+        </h3>
+
+
+        {bookingsLoading && (
+          <p>
+            Checking for booking requests...
+          </p>
+        )}
+
+
+        {!bookingsLoading &&
+          pendingBookings.length === 0 && (
+
+            <p>
+              No pending booking requests.
+            </p>
+
+          )}
+
       </div>
+
+
+      {pendingBookings.map(
+        (request) => (
+
+          <div
+            key={request.id}
+            style={{
+              border:
+                "2px solid #ddd",
+              borderRadius: 10,
+              padding: 15,
+              marginBottom: 12,
+              background: "#fff"
+            }}
+          >
+
+            <h3
+              style={{
+                marginTop: 0
+              }}
+            >
+              {request.player_name}
+            </h3>
+
+
+            <p>
+              <b>
+                Requested Tickets:
+              </b>
+            </p>
+
+
+            <p
+              style={{
+                fontSize: 18,
+                fontWeight: "bold"
+              }}
+            >
+              {Array.isArray(
+                request.ticket_numbers
+              )
+                ? request.ticket_numbers
+                    .map(
+                      (n) =>
+                        `#${n}`
+                    )
+                    .join(", ")
+                : String(
+                    request.ticket_numbers
+                  )}
+            </p>
+
+
+            <p
+              style={{
+                fontSize: 12,
+                color: "#666"
+              }}
+            >
+              Requested:
+              {" "}
+              {request.created_at
+                ? new Date(
+                    request.created_at
+                  ).toLocaleString()
+                : "-"}
+            </p>
+
+
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                flexWrap: "wrap"
+              }}
+            >
+
+              <button
+                onClick={() =>
+                  updateBooking(
+                    request.id,
+                    "approved"
+                  )
+                }
+                disabled={
+                  bookingAction ===
+                  request.id
+                }
+                style={{
+                  padding:
+                    "10px 18px",
+                  fontWeight: "bold",
+                  background:
+                    "#16a34a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 6
+                }}
+              >
+                {bookingAction ===
+                request.id
+                  ? "Updating..."
+                  : "✓ Approve"}
+              </button>
+
+
+              <button
+                onClick={() =>
+                  updateBooking(
+                    request.id,
+                    "rejected"
+                  )
+                }
+                disabled={
+                  bookingAction ===
+                  request.id
+                }
+                style={{
+                  padding:
+                    "10px 18px",
+                  fontWeight: "bold",
+                  background:
+                    "#dc2626",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 6
+                }}
+              >
+                ✕ Reject
+              </button>
+
+            </div>
+
+          </div>
+
+        )
+      )}
+
+
+      {/* =================================================
+          PREVIOUS REQUESTS
+      ================================================= */}
+
+      {bookingRequests.some(
+        (r) =>
+          r.status !== "pending"
+      ) && (
+
+        <>
+
+          <h3>
+            Processed Requests
+          </h3>
+
+
+          {bookingRequests
+            .filter(
+              (r) =>
+                r.status !==
+                "pending"
+            )
+            .map(
+              (request) => (
+
+                <div
+                  key={request.id}
+                  style={{
+                    border:
+                      "1px solid #ddd",
+                    borderRadius: 8,
+                    padding: 10,
+                    marginBottom: 8
+                  }}
+                >
+
+                  <b>
+                    {request.player_name}
+                  </b>
+
+                  {" — "}
+
+                  {Array.isArray(
+                    request.ticket_numbers
+                  )
+                    ? request.ticket_numbers
+                        .map(
+                          (n) =>
+                            `#${n}`
+                        )
+                        .join(", ")
+                    : String(
+                        request.ticket_numbers
+                      )}
+
+                  <p
+                    style={{
+                      marginBottom: 0
+                    }}
+                  >
+                    Status:
+                    {" "}
+                    <b>
+                      {request.status}
+                    </b>
+                  </p>
+
+                </div>
+
+              )
+            )}
+
+        </>
+
+      )}
 
 
       <hr />
 
 
+      {/* =================================================
+          LIVE GAME
+      ================================================= */}
+
       <h2>
         Live Game
       </h2>
+
 
       <Live
         game={game}
@@ -1150,9 +1605,7 @@ ${url}`;
       </button>
 
     </main>
-
   );
-
 }
 
 
@@ -1190,7 +1643,6 @@ function Live({
     setGame(updated);
 
     saveGame(updated);
-
   }
 
 
@@ -1203,6 +1655,7 @@ function Live({
     if (!remaining.length) {
       return;
     }
+
 
     const n =
       remaining[
@@ -1225,7 +1678,6 @@ function Live({
     setGame(updated);
 
     saveGame(updated);
-
   }
 
 
@@ -1241,7 +1693,6 @@ function Live({
     setGame(updated);
 
     saveGame(updated);
-
   }
 
 
@@ -1256,6 +1707,7 @@ function Live({
           {last || "—"}
         </b>
       </p>
+
 
       <p>
         Called:
@@ -1282,6 +1734,7 @@ function Live({
             Call Next Number
           </button>
 
+
           <button
             onClick={reset}
             style={{
@@ -1303,9 +1756,7 @@ function Live({
       </p>
 
     </section>
-
   );
-
 }
 
 
@@ -1341,11 +1792,13 @@ function Invitation({
         {game.game_name}
       </h1>
 
+
       <p>
         <b>Date:</b>
         {" "}
         {game.game_date}
       </p>
+
 
       <p>
         <b>Time:</b>
@@ -1353,17 +1806,20 @@ function Invitation({
         {game.game_time}
       </p>
 
+
       <p>
         <b>Ticket Price:</b>
         {" "}
         ₹{game.ticket_price}
       </p>
 
+
       <p>
         <b>Available Tickets:</b>
         {" "}
         {game.ticket_limit}
       </p>
+
 
       <p>
         <b>Status:</b>
@@ -1377,15 +1833,17 @@ function Invitation({
       </h3>
 
 
-      {prizes.map((p, i) => (
+      {prizes.map(
+        (p, i) => (
 
-        <p key={i}>
-          {p.name}:
-          {" "}
-          ₹{p.amount}
-        </p>
+          <p key={i}>
+            {p.name}:
+            {" "}
+            ₹{p.amount}
+          </p>
 
-      ))}
+        )
+      )}
 
 
       <button
@@ -1395,9 +1853,7 @@ function Invitation({
       </button>
 
     </main>
-
   );
-
 }
 
 
@@ -1405,7 +1861,9 @@ function Invitation({
    PLAYER BOOKING
 ========================================================= */
 
-function Booking({ game }) {
+function Booking({
+  game
+}) {
 
   const [player, setPlayer] =
     useState("");
@@ -1415,6 +1873,12 @@ function Booking({ game }) {
 
   const [sent, setSent] =
     useState(false);
+
+  const [sending, setSending] =
+    useState(false);
+
+  const [message, setMessage] =
+    useState("");
 
 
   const ticketLimit =
@@ -1435,6 +1899,10 @@ function Booking({ game }) {
     );
 
 
+  /* =======================================================
+     SELECT / UNSELECT TICKET
+  ======================================================= */
+
   function toggleTicket(
     ticketNumber
   ) {
@@ -1443,32 +1911,39 @@ function Booking({ game }) {
       return;
     }
 
-    setSelected((current) => {
 
-      if (
-        current.includes(
+    setSelected(
+      (current) => {
+
+        if (
+          current.includes(
+            ticketNumber
+          )
+        ) {
+
+          return current.filter(
+            (x) =>
+              x !== ticketNumber
+          );
+
+        }
+
+
+        return [
+          ...current,
           ticketNumber
-        )
-      ) {
-
-        return current.filter(
-          (x) =>
-            x !== ticketNumber
-        );
+        ];
 
       }
-
-      return [
-        ...current,
-        ticketNumber
-      ];
-
-    });
-
+    );
   }
 
 
-  function send() {
+  /* =======================================================
+     SEND BOOKING REQUEST TO SUPABASE
+  ======================================================= */
+
+  async function send() {
 
     if (
       !player.trim() ||
@@ -1483,51 +1958,140 @@ function Booking({ game }) {
     }
 
 
+    setSending(true);
+
+    setMessage("");
+
+
     const sorted =
       [...selected].sort(
         (a, b) => a - b
       );
 
 
-    const text =
-`Hi ${game.host_name || "Host"}, ${player.trim()} wants to book ${sorted.map((n) => `#${n}`).join(", ")} for ${game.game_name}. Please approve my booking.`;
+    try {
+
+      /*
+         First check whether this player
+         already has a pending request
+         for this game.
+      */
+
+      const {
+        data: existing,
+        error: existingError
+      } =
+        await supabase
+          .from("booking_requests")
+          .select("*")
+          .eq(
+            "game_code",
+            game.game_code
+          )
+          .eq(
+            "player_name",
+            player.trim()
+          )
+          .eq(
+            "status",
+            "pending"
+          );
 
 
-    const request = {
-
-      id: Date.now(),
-
-      playerName:
-        player.trim(),
-
-      ticketNumbers:
-        sorted,
-
-      status:
-        "pending",
-
-      createdAt:
-        new Date().toISOString()
-
-    };
+      if (existingError) {
+        throw existingError;
+      }
 
 
-    localStorage.setItem(
-      "tambola_player_request_" +
-        game.game_code,
+      if (
+        existing &&
+        existing.length > 0
+      ) {
 
-      JSON.stringify(request)
-    );
+        setMessage(
+          "You already have a pending booking request for this game."
+        );
+
+        setSending(false);
+
+        return;
+      }
 
 
-    setSent(true);
+      /*
+         THIS IS THE IMPORTANT FIX.
+
+         The booking is now stored in
+         Supabase instead of localStorage.
+
+         Host Control Centre reads the
+         same table.
+      */
+
+      const {
+        data,
+        error
+      } =
+        await supabase
+          .from("booking_requests")
+          .insert({
+
+            game_code:
+              game.game_code,
+
+            player_name:
+              player.trim(),
+
+            ticket_numbers:
+              sorted,
+
+            status:
+              "pending"
+
+          })
+          .select()
+          .single();
 
 
-    location.href =
-      `https://wa.me/?text=${encodeURIComponent(
-        text
-      )}`;
+      if (error) {
+        throw error;
+      }
 
+
+      console.log(
+        "Booking request created:",
+        data
+      );
+
+
+      setSent(true);
+
+      setMessage(
+        `Booking request sent for ${sorted
+          .map(
+            (n) => `#${n}`
+          )
+          .join(", ")}. Waiting for host approval.`
+      );
+
+
+    } catch (e) {
+
+      console.error(
+        "Booking request error:",
+        e
+      );
+
+      setMessage(
+        "Could not send booking request: " +
+        e.message
+      );
+
+    } finally {
+
+      setSending(false);
+
+    }
   }
 
 
@@ -1556,6 +2120,7 @@ function Booking({ game }) {
               ticketNumber
             )
           }
+
         />
 
       )
@@ -1578,6 +2143,7 @@ function Booking({ game }) {
         Ticket Booking
       </h1>
 
+
       <p>
         <b>
           {game.game_name}
@@ -1589,6 +2155,7 @@ function Booking({ game }) {
         Player Name
       </h3>
 
+
       <input
         type="text"
         placeholder="Player name"
@@ -1598,7 +2165,10 @@ function Booking({ game }) {
             e.target.value
           )
         }
-        disabled={sent}
+        disabled={
+          sent ||
+          sending
+        }
         style={{
           width: "100%",
           maxWidth: 400,
@@ -1639,7 +2209,10 @@ function Booking({ game }) {
                 )
               }
 
-              disabled={sent}
+              disabled={
+                sent ||
+                sending
+              }
 
               style={{
                 padding:
@@ -1686,6 +2259,7 @@ function Booking({ game }) {
         All Actual 3 × 9 Tambola Tickets
       </h3>
 
+
       <p>
         Tap any actual ticket to
         select or unselect it.
@@ -1711,15 +2285,10 @@ function Booking({ game }) {
           style={{
             border:
               "1px solid #16a34a",
-
             borderRadius: 8,
-
             padding: 12,
-
             marginTop: 10,
-
             marginBottom: 15,
-
             background:
               "#f0fff4"
           }}
@@ -1728,6 +2297,7 @@ function Booking({ game }) {
           <b>
             Selected Tickets
           </b>
+
 
           <p>
             {selected
@@ -1747,25 +2317,47 @@ function Booking({ game }) {
       )}
 
 
+      {message && (
+
+        <div
+          style={{
+            border:
+              "1px solid #ccc",
+            padding: 12,
+            borderRadius: 8,
+            marginBottom: 15,
+            background:
+              sent
+                ? "#f0fff4"
+                : "#fff7ed"
+          }}
+        >
+          {message}
+        </div>
+
+      )}
+
+
       {!sent ? (
 
         <button
           type="button"
           onClick={send}
           disabled={
+            sending ||
             !player.trim() ||
             selected.length === 0
           }
           style={{
             padding:
               "10px 18px",
-
             fontWeight: "bold",
-
             marginBottom: 30
           }}
         >
-          BOOK TICKETS
+          {sending
+            ? "SENDING..."
+            : "BOOK TICKETS"}
         </button>
 
       ) : (
@@ -1774,7 +2366,7 @@ function Booking({ game }) {
 
           <p>
             <b>
-              Booking request sent.
+              Booking request sent ✓
             </b>
           </p>
 
@@ -1787,9 +2379,7 @@ function Booking({ game }) {
       )}
 
     </main>
-
   );
-
 }
 
 
@@ -1815,35 +2405,67 @@ function App() {
     useState(true);
 
 
+  /* =======================================================
+     INITIAL LOAD
+  ======================================================= */
+
   useEffect(() => {
 
-    const saved =
-      loadGame();
+    async function initialize() {
 
-    if (saved) {
+      /*
+         PLAYER LINK
 
-      setGame(saved);
+         If URL contains ?game=XXXXXX,
+         load that game as a player.
+      */
 
-      setPage("host");
+      const gc =
+        getGameCode();
 
-    }
+
+      if (gc) {
+
+        await loadPlayer(gc);
+
+        return;
+      }
 
 
-    const gc =
-      getGameCode();
+      /*
+         HOST PAGE
 
-    if (gc) {
+         If there is no ?game= code,
+         restore the host game from
+         localStorage.
+      */
 
-      loadPlayer(gc);
+      const saved =
+        loadGame();
 
-    } else {
+
+      if (saved) {
+
+        setGame(saved);
+
+        setPage("host");
+
+      }
+
 
       setLoading(false);
 
     }
 
+
+    initialize();
+
   }, []);
 
+
+  /* =======================================================
+     ALWAYS SAVE HOST GAME
+  ======================================================= */
 
   useEffect(() => {
 
@@ -1856,7 +2478,16 @@ function App() {
   }, [game]);
 
 
+  /* =======================================================
+     LOAD PLAYER GAME FROM SUPABASE
+  ======================================================= */
+
   async function loadPlayer(gc) {
+
+    setLoading(true);
+
+    setError("");
+
 
     const {
       data,
@@ -1885,7 +2516,6 @@ function App() {
       setLoading(false);
 
       return;
-
     }
 
 
@@ -1922,9 +2552,12 @@ function App() {
     setPage("invitation");
 
     setLoading(false);
-
   }
 
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
 
   if (loading) {
 
@@ -1942,11 +2575,13 @@ function App() {
         </h2>
 
       </main>
-
     );
-
   }
 
+
+  /* =======================================================
+     ERROR
+  ======================================================= */
 
   if (error) {
 
@@ -1967,11 +2602,13 @@ function App() {
         </p>
 
       </main>
-
     );
-
   }
 
+
+  /* =======================================================
+     PLAYER INVITATION
+  ======================================================= */
 
   if (
     playerGame &&
@@ -1988,9 +2625,12 @@ function App() {
       />
 
     );
-
   }
 
+
+  /* =======================================================
+     PLAYER BOOKING
+  ======================================================= */
 
   if (
     playerGame &&
@@ -2004,9 +2644,12 @@ function App() {
       />
 
     );
-
   }
 
+
+  /* =======================================================
+     HOST
+  ======================================================= */
 
   return (
 
@@ -2016,9 +2659,12 @@ function App() {
     />
 
   );
-
 }
 
+
+/* =========================================================
+   START APP
+========================================================= */
 
 createRoot(
   document.getElementById("root")
