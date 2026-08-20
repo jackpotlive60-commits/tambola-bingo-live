@@ -1,6 +1,7 @@
 import React, {
   useEffect,
   useMemo,
+  useRef,
   useState
 } from "react";
 
@@ -3745,6 +3746,29 @@ function HostControlPage({
     setGameError
   ] = useState("");
 
+  // Live calling controls
+  const [
+    autoCall,
+    setAutoCall
+  ] = useState(false);
+
+  const [
+    autoCallPaused,
+    setAutoCallPaused
+  ] = useState(false);
+
+  const [
+    callIntervalSeconds,
+    setCallIntervalSeconds
+  ] = useState(5);
+
+  const [
+    callingNumber,
+    setCallingNumber
+  ] = useState(false);
+
+  const callingRef = useRef(false);
+
   useEffect(
     () => {
       setCalledNumbers(
@@ -4183,6 +4207,179 @@ ${inviteUrl}`;
       );
     }
   }
+
+  function announceNumber(number) {
+    try {
+      if (!("speechSynthesis" in window)) return;
+
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(
+        `Number ${number}`
+      );
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.error("Could not announce number:", err);
+    }
+  }
+
+  function playCallSound() {
+    try {
+      const AudioContextClass =
+        window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextClass) return;
+
+      const context = new AudioContextClass();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(660, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        880,
+        context.currentTime + 0.12
+      );
+
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(
+        0.18,
+        context.currentTime + 0.02
+      );
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        context.currentTime + 0.22
+      );
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.24);
+
+      oscillator.onended = () => {
+        context.close().catch(() => {});
+      };
+    } catch (err) {
+      console.error("Could not play call sound:", err);
+    }
+  }
+
+  async function callNextNumber() {
+    if (
+      game.status !== "live" ||
+      callingRef.current ||
+      calledNumbers.length >= 90
+    ) {
+      return false;
+    }
+
+    callingRef.current = true;
+    setCallingNumber(true);
+    setGameError("");
+
+    try {
+      const currentCalled = Array.isArray(calledNumbers)
+        ? calledNumbers
+        : [];
+
+      const remaining = Array.from(
+        { length: 90 },
+        (_, index) => index + 1
+      ).filter(
+        (number) => !currentCalled.includes(number)
+      );
+
+      if (!remaining.length) {
+        return false;
+      }
+
+      const nextNumber =
+        remaining[Math.floor(Math.random() * remaining.length)];
+
+      const next = [
+        ...currentCalled,
+        nextNumber
+      ];
+
+      const { data, error } = await supabase
+        .from("games")
+        .update({
+          called_numbers: next
+        })
+        .eq("id", game.id)
+        .select()
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedGame = data || {
+        ...game,
+        called_numbers: next
+      };
+
+      setCalledNumbers(next);
+      saveHostGame(updatedGame);
+      onGameUpdated(updatedGame);
+
+      playCallSound();
+
+      // Small delay makes the sound lead naturally into the voice.
+      window.setTimeout(() => {
+        announceNumber(nextNumber);
+      }, 260);
+
+      return true;
+    } catch (err) {
+      console.error("Could not call next number:", err);
+      setGameError(
+        err?.message || "Could not call the next number."
+      );
+      return false;
+    } finally {
+      callingRef.current = false;
+      setCallingNumber(false);
+    }
+  }
+
+  useEffect(() => {
+    if (
+      !autoCall ||
+      autoCallPaused ||
+      game.status !== "live" ||
+      calledNumbers.length >= 90
+    ) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      callNextNumber();
+    }, Math.max(3, Number(callIntervalSeconds) || 5) * 1000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [
+    autoCall,
+    autoCallPaused,
+    game.status,
+    game.id,
+    calledNumbers.length,
+    callIntervalSeconds
+  ]);
+
+  useEffect(() => {
+    if (calledNumbers.length >= 90) {
+      setAutoCall(false);
+      setAutoCallPaused(false);
+    }
+  }, [calledNumbers.length]);
 
   async function toggleCalledNumber(
     number
@@ -4968,6 +5165,127 @@ ${inviteUrl}`;
 
             <div
               style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit,minmax(140px,1fr))",
+                gap: 10,
+                marginBottom: 18
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setAutoCall((current) => !current)}
+                disabled={callingNumber || calledNumbers.length >= 90}
+                style={{
+                  ...primaryButton,
+                  background: autoCall ? "#16a34a" : "#2563eb",
+                  opacity:
+                    callingNumber || calledNumbers.length >= 90
+                      ? 0.55
+                      : 1
+                }}
+              >
+                {autoCall ? "⏹ STOP AUTO CALL" : "▶ AUTO CALL"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setAutoCallPaused((current) => !current)
+                }
+                disabled={!autoCall || callingNumber}
+                style={{
+                  ...secondaryButton,
+                  opacity: !autoCall || callingNumber ? 0.55 : 1
+                }}
+              >
+                {autoCallPaused ? "▶ RESUME AUTO CALL" : "⏸ PAUSE AUTO CALL"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => callNextNumber()}
+                disabled={
+                  callingNumber ||
+                  game.status !== "live" ||
+                  calledNumbers.length >= 90
+                }
+                style={{
+                  ...secondaryButton,
+                  opacity:
+                    callingNumber ||
+                    game.status !== "live" ||
+                    calledNumbers.length >= 90
+                      ? 0.55
+                      : 1
+                }}
+              >
+                {callingNumber ? "CALLING..." : "🎱 CALL NEXT"}
+              </button>
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "10px 12px",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 10,
+                  background: "#f8fafc",
+                  fontWeight: "bold"
+                }}
+              >
+                Every
+                <select
+                  value={callIntervalSeconds}
+                  onChange={(e) =>
+                    setCallIntervalSeconds(Number(e.target.value))
+                  }
+                  disabled={autoCall || callingNumber}
+                  style={{
+                    padding: "7px 8px",
+                    borderRadius: 8,
+                    border: "1px solid #cbd5e1"
+                  }}
+                >
+                  <option value={3}>3 sec</option>
+                  <option value={5}>5 sec</option>
+                  <option value={7}>7 sec</option>
+                  <option value={10}>10 sec</option>
+                  <option value={15}>15 sec</option>
+                </select>
+              </label>
+            </div>
+
+            <div
+              style={{
+                padding: "10px 12px",
+                marginBottom: 16,
+                borderRadius: 10,
+                background: autoCallPaused
+                  ? "#fef3c7"
+                  : autoCall
+                  ? "#dcfce7"
+                  : "#f1f5f9",
+                color: autoCallPaused
+                  ? "#92400e"
+                  : autoCall
+                  ? "#166534"
+                  : "#475569",
+                textAlign: "center",
+                fontWeight: "bold"
+              }}
+            >
+              {autoCallPaused
+                ? "⏸ AUTO CALL PAUSED"
+                : autoCall
+                ? `🔊 AUTO CALL ACTIVE — every ${callIntervalSeconds} seconds`
+                : "AUTO CALL OFF — use CALL NEXT or select a number manually"}
+            </div>
+
+            <div
+              style={{
                 display:
                   "grid",
                 gridTemplateColumns:
@@ -5005,6 +5323,7 @@ ${inviteUrl}`;
                           number
                         )
                       }
+                      disabled={callingNumber}
                       style={{
                         padding:
                           "10px 3px",
