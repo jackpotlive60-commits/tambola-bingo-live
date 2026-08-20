@@ -1,3 +1,5 @@
+Complete Fixed "src/main.jsx"
+
 import React, {
   useEffect,
   useMemo,
@@ -208,11 +210,6 @@ function makeTicket(
 
   let pattern = null;
 
-  /*
-    Each row gets exactly 5 numbers.
-    Every column gets at least 1 number.
-  */
-
   for (
     let attempt = 0;
     attempt < 500;
@@ -260,10 +257,6 @@ function makeTicket(
       break;
     }
   }
-
-  /*
-    Guaranteed fallback.
-  */
 
   if (!pattern) {
     pattern = [
@@ -1090,12 +1083,14 @@ function TicketGrid({
     </div>
   );
 }
+
 /* =========================================================
    PLAYER BOOKING PAGE
 ========================================================= */
 
 function PlayerBookingPage({
-/
+  game
+}) {
   const limit = Math.min(
     100,
     Math.max(
@@ -1130,12 +1125,6 @@ function PlayerBookingPage({
     loadingUnavailable,
     setLoadingUnavailable
   ] = useState(true);
-
-  /*
-    =========================================================
-    LOAD PENDING + ACCEPTED TICKETS
-    =========================================================
-  */
 
   async function loadUnavailableTickets() {
     try {
@@ -1208,12 +1197,6 @@ function PlayerBookingPage({
     }
   }
 
-  /*
-    =========================================================
-    INITIAL LOAD + REALTIME UPDATES + BACKUP REFRESH
-    =========================================================
-  */
-
   useEffect(() => {
     loadUnavailableTickets();
 
@@ -1238,11 +1221,6 @@ function PlayerBookingPage({
         )
         .subscribe();
 
-    /*
-      Backup refresh every 5 seconds.
-      This helps even if realtime is unavailable.
-    */
-
     const interval =
       setInterval(
         () => {
@@ -1265,12 +1243,6 @@ function PlayerBookingPage({
     limit
   ]);
 
-  /*
-    =========================================================
-    GENERATE ALL TICKETS
-    =========================================================
-  */
-
   const tickets = useMemo(() => {
     return Array.from(
       { length: limit },
@@ -1287,20 +1259,9 @@ function PlayerBookingPage({
     limit
   ]);
 
-  /*
-    =========================================================
-    TICKET SELECTION
-    =========================================================
-  */
-
   function toggleTicket(
     number
   ) {
-    /*
-      Never allow selection of a
-      pending or accepted ticket.
-    */
-
     if (
       unavailableTickets.includes(
         number
@@ -1335,12 +1296,6 @@ function PlayerBookingPage({
     setSelected([]);
   }
 
-  /*
-    =========================================================
-    BOOK TICKETS
-    =========================================================
-  */
-
   async function bookTickets() {
     const name =
       playerName.trim();
@@ -1364,12 +1319,6 @@ function PlayerBookingPage({
 
       return;
     }
-
-    /*
-      Check again immediately before
-      submitting, in case another player
-      booked one of the selected tickets.
-    */
 
     await loadUnavailableTickets();
 
@@ -1426,12 +1375,6 @@ function PlayerBookingPage({
         (a, b) => a - b
       );
 
-    /*
-      IMPORTANT:
-      This uses the same booking structure
-      that is already working in your app.
-    */
-
     const bookingData = {
       game_id: game.id,
       player_name: name,
@@ -1469,11 +1412,6 @@ function PlayerBookingPage({
 
       setSelected([]);
 
-      /*
-        Immediately mark the newly booked
-        tickets as unavailable.
-      */
-
       await loadUnavailableTickets();
 
     } catch (err) {
@@ -1490,12 +1428,6 @@ function PlayerBookingPage({
     }
   }
 
-  /*
-    =========================================================
-    RENDER
-    =========================================================
-  */
-
   return (
     <main style={pageStyle}>
       <div
@@ -1504,9 +1436,6 @@ function PlayerBookingPage({
           margin: "0 auto"
         }}
       >
-
-        {/* HEADER */}
-
         <div
           style={{
             textAlign:
@@ -1528,8 +1457,6 @@ function PlayerBookingPage({
             Player Ticket Booking
           </p>
         </div>
-
-        {/* GAME DETAILS */}
 
         <section
           style={cardStyle}
@@ -1579,10 +1506,6 @@ function PlayerBookingPage({
             />
           </div>
         </section>
-
-        {/* =================================================
-            TICKET NUMBERS
-        ================================================= */}
 
         <section
           style={cardStyle}
@@ -1718,8 +1641,6 @@ function PlayerBookingPage({
             )}
           </div>
 
-          {/* SELECTED SUMMARY */}
-
           <div
             style={{
               marginTop: 18,
@@ -1796,10 +1717,6 @@ function PlayerBookingPage({
             </div>
           </div>
         </section>
-
-        {/* =================================================
-            ACTUAL 3 × 9 TICKETS
-        ================================================= */}
 
         <section
           style={cardStyle}
@@ -1890,10 +1807,6 @@ function PlayerBookingPage({
             )}
           </div>
         </section>
-
-        {/* =================================================
-            BOOKING
-        ================================================= */}
 
         <section
           style={{
@@ -2007,6 +1920,7 @@ function PlayerBookingPage({
     </main>
   );
 }
+
 /* =========================================================
    HOST CONTROL CENTRE
 ========================================================= */
@@ -3002,24 +2916,11 @@ function StatusBox({
 ========================================================= */
 
 function App() {
-  /*
-    Read the URL once when App starts.
-
-    This is important because:
-    https://your-site.vercel.app/?game=ABC123
-
-    must always behave as a PLAYER URL.
-  */
-
   const [
     playerCode
   ] = useState(
     () => getGameFromUrl()
   );
-
-  /*
-    Restore host game from localStorage.
-  */
 
   const [
     game,
@@ -3038,11 +2939,6 @@ function App() {
     setLoading
   ] = useState(true);
 
-  /*
-    Load player game when URL contains
-    ?game=XXXXXX
-  */
-
   useEffect(() => {
     if (playerCode) {
       loadPlayerGame(
@@ -3050,13 +2946,6 @@ function App() {
       );
       return;
     }
-
-    /*
-      Normal website.
-
-      Host game is restored from
-      localStorage automatically.
-    */
 
     setLoading(false);
   }, [playerCode]);
@@ -3116,11 +3005,6 @@ function App() {
 
     saveHostGame(newGame);
 
-    /*
-      Make sure a previous ?game=
-      parameter is removed.
-    */
-
     window.history.replaceState(
       {},
       "",
@@ -3160,12 +3044,6 @@ function App() {
       </main>
     );
   }
-
-  /*
-    ========================================================
-    PLAYER PAGE
-    ========================================================
-  */
 
   if (playerCode) {
     if (!playerGame) {
@@ -3218,12 +3096,6 @@ function App() {
     );
   }
 
-  /*
-    ========================================================
-    HOST CONTROL CENTRE
-    ========================================================
-  */
-
   if (game) {
     return (
       <HostControlPage
@@ -3234,13 +3106,6 @@ function App() {
       />
     );
   }
-
-  /*
-    ========================================================
-    NORMAL WEBSITE
-    CREATE GAME PAGE
-    ========================================================
-  */
 
   return (
     <CreateGamePage
@@ -3253,12 +3118,6 @@ function App() {
 
 /* =========================================================
    START APP
-   =========================================================
-
-   THIS WAS MISSING FROM YOUR CODE.
-
-   Without this React never mounts App()
-   into index.html.
 ========================================================= */
 
 const rootElement =
