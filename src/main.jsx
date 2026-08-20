@@ -3316,6 +3316,8 @@ function LiveGamePage({
       </div>
     </main>
   );
+        <LivePrizeList game={liveGame} />
+
 }
 
 /* =========================================================
@@ -4868,6 +4870,66 @@ function StatusBox({
         }
       </div>
     </div>
+  );
+}
+
+
+/* =========================================================
+   LIVE GAME PRIZE LIST
+========================================================= */
+
+function LivePrizeList({ game }) {
+  const prizes = Array.isArray(game.selected_prizes)
+    ? game.selected_prizes
+    : [];
+
+  return (
+    <section style={cardStyle}>
+      <h2>🏆 Prizes & Winners</h2>
+
+      {prizes.length === 0 ? (
+        <p style={{ color: "#64748b" }}>
+          No prizes have been configured for this game.
+        </p>
+      ) : (
+        <div style={{ display: "grid", gap: 10 }}>
+          {prizes.map((prize, index) => (
+            <div
+              key={`${prize.name}-${index}`}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto",
+                gap: 12,
+                alignItems: "center",
+                padding: 13,
+                border: "1px solid #e2e8f0",
+                borderRadius: 10,
+                background: "#f8fafc"
+              }}
+            >
+              <div>
+                <b>{prize.name}</b>
+              </div>
+
+              <div
+                style={{
+                  minWidth: 110,
+                  textAlign: "center",
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  background: "#fff",
+                  border: "1px solid #cbd5e1",
+                  fontWeight: "bold",
+                  color: "#64748b"
+                }}
+              >
+                Winner: —
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
