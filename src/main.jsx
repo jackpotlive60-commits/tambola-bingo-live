@@ -3560,48 +3560,34 @@ function HostControlPage({
   async function startGame() {
     if (
       gameAction ||
-      game.status ===
-        "live"
+      game.status === "live"
     ) {
       return;
     }
 
-    setGameAction(
-      true
-    );
-
+    setGameAction(true);
     setGameError("");
 
     try {
-      const {
-        data,
-        error
-      } =
+      const { error } =
         await supabase
-          .from(
-            "games"
-          )
+          .from("games")
           .update({
-            status:
-              "live"
+            status: "live"
           })
           .eq(
             "id",
             game.id
-          )
-          .select()
-          .single();
+          );
 
       if (error) {
         throw error;
       }
 
-      const updatedGame =
-        data || {
-          ...game,
-          status:
-            "live"
-        };
+      const updatedGame = {
+        ...game,
+        status: "live"
+      };
 
       saveHostGame(
         updatedGame
@@ -3610,6 +3596,7 @@ function HostControlPage({
       onGameUpdated(
         updatedGame
       );
+
     } catch (err) {
       console.error(
         "Could not start game:",
@@ -3620,13 +3607,12 @@ function HostControlPage({
         err?.message ||
         "Could not start game."
       );
+
     } finally {
-      setGameAction(
-        false
-      );
+      setGameAction(false);
     }
   }
-
+    
   async function endGame() {
     if (
       gameAction ||
