@@ -45,6 +45,250 @@ const DEFAULT_PRIZES = [
    BASIC HELPERS
 ========================================================= */
 
+function normalizePrizeKey(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getPrizePattern(name) {
+  const key = normalizePrizeKey(name);
+
+  if (
+    key === "first five" ||
+    key === "early five" ||
+    key === "early 5" ||
+    key === "first 5"
+  ) {
+    return "first_five";
+  }
+
+  if (key === "four corners" || key === "4 corners") {
+    return "four_corners";
+  }
+
+  if (key === "top line" || key === "top row") {
+    return "top_line";
+  }
+
+  if (key === "middle line" || key === "middle row") {
+    return "middle_line";
+  }
+
+  if (key === "bottom line" || key === "bottom row") {
+    return "bottom_line";
+  }
+
+  if (
+    key === "full house" ||
+    key === "full ticket" ||
+    key === "house"
+  ) {
+    return "full_house";
+  }
+
+  return null;
+}
+
+function getOccupiedCells(grid) {
+  const cells = [];
+
+  if (!Array.isArray(grid)) {
+    return cells;
+  }
+
+  grid.forEach((row, rowIndex) => {
+    if (!Array.isArray(row)) return;
+
+    row.forEach((value, columnIndex) => {
+      const number = Number(value);
+      if (Number.isInteger(number) && number >= 1 && number <= 90) {
+        cells.push({
+          number,
+          row: rowIndex,
+          column: columnIndex
+        });
+      }
+    });
+  });
+
+  return cells;
+}
+
+function getWinningNumbersForPattern(grid, pattern, calledSet) {
+  const occupied = getOccupiedCells(grid);
+
+  if (!occupied.length) {
+    return [];
+  }
+
+  const isCalled = (number) => calledSet.has(number);
+
+  if (pattern === "first_five") {
+    const called = occupied.filter((cell) => isCalled(cell.number));
+    return called.length >= 5
+      ? called.slice(0, 5).map((cell) => cell.number)
+      : [];
+  }
+
+  if (pattern === "full_house") {
+    return occupied.every((cell) => isCalled(cell.number))
+      ? occupied.map((cell) => cell.number)
+      : [];
+  }
+
+  if (
+    pattern === "top_line" ||
+    pattern === "middle_line" ||
+    pattern === "bottom_line"
+  ) {
+    const rowIndex =
+      pattern === "top_line"
+        ? 0
+        : pattern === "middle_line"
+        ? 1
+        : 2;
+
+    const rowCells = occupied.filter((cell) => cell.row === rowIndex);
+
+    return rowCells.length && rowCells.every((cell) => isCalled(cell.number))
+      ? rowCells.map((cell) => cell.number)
+      : [];
+  }
+
+  if (pattern === "four_corners") {
+    const top = occupied
+      .filter((cell) => cell.row === 0)
+      .sort((a, b) => a.column - b.column);
+    const bottom = occupied
+      .filter((cell) => cell.row === 2)
+      .sort((a, b) => a.column - b.column);
+
+    if (top.length < 2 || bottom.length < 2) {
+      return [];
+    }
+
+    const corners = [
+      top[0],
+      top[top.length - 1],
+      bottom[0],
+      bottom[bottom.length - 1]
+    ];
+
+    return corners.every((cell) => isCalled(cell.number))
+      ? corners.map((cell) => cell.number)
+      : [];
+  }
+
+  return [];
+}
+
+function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber, gameCode) {
+  const pattern = getPrizePattern(prize?.name);
+  if (!pattern || prize?.locked) {
+    return [];
+  }
+
+  const calledSet = new Set(
+    Array.isArray(calledNumbers)
+      ? calledNumbers.map(Number)
+      : []
+  );
+
+  const winners = [];
+
+  acceptedBookings.forEach((booking) => {
+    const ticketNumbers = Array.isArray(booking.ticket_numbers)
+      ? booking.ticket_numbers
+      : [];
+
+    ticketNumbers.forEach((ticketValue) => {
+      const ticketNumber = Number(ticketValue);
+      if (!Number.isInteger(ticketNumber) || ticketNumber < 1 || ticketNumber > 100) {
+        return;
+      }
+
+      const grid = makeTicket(gameCode, ticketNumber);
+
+      const winningNumbers = getWinningNumbersForPattern(
+        grid,
+        pattern,
+        calledSet
+      );
+
+      if (!winningNumbers.length) {
+        return;
+      }
+
+      winners.push({
+        bookingId: booking.id,
+        playerName: booking.player_name || "Player",
+        ticketNumber,
+        winningNumber,
+        winningNumbers,
+        wonAt: new Date().toISOString()
+      });
+    });
+  });
+
+  const unique = [];
+  const seen = new Set();
+
+  winners.forEach((winner) => {
+    const key = `${winner.bookingId}:${winner.ticketNumber}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    unique.push(winner);
+  });
+
+  return unique;
+}
+
+function getPrizeVoiceName(name) {
+  const pattern = getPrizePattern(name);
+
+  if (pattern === "first_five") return "Early Five";
+  if (pattern === "four_corners") return "Four Corners";
+  if (pattern === "top_line") return "Top Line";
+  if (pattern === "middle_line") return "Middle Line";
+  if (pattern === "bottom_line") return "Bottom Line";
+  if (pattern === "full_house") return "Full House";
+
+  return String(name || "Prize");
+}
+
+function speakWinnerAnnouncement(events) {
+  try {
+    if (!("speechSynthesis" in window) || !events?.length) return;
+
+    window.speechSynthesis.cancel();
+
+    const parts = events.map((event) => {
+      const voicePrizeName = getPrizeVoiceName(event.prizeName);
+      const names = event.winners.map((winner) => winner.playerName);
+      let winnersText = names[0] || "a player";
+
+      if (names.length === 2) {
+        winnersText = `${names[0]} and ${names[1]}`;
+      } else if (names.length > 2) {
+        winnersText = `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+      }
+
+      return `${voicePrizeName} won by ${winnersText}`;
+    });
+
+    const utterance = new SpeechSynthesisUtterance(parts.join(". "));
+    utterance.rate = 0.82;
+    utterance.pitch = 1.04;
+    utterance.volume = 1;
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.error("Could not announce winner:", err);
+  }
+}
+
 function generateGameCode() {
   const chars =
     "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -835,7 +1079,7 @@ async function createGamePoster(
     ],
     [
       "TICKET PRICE",
-      `₹${
+      `â‚¹${
         game.ticket_price ||
         0
       }`
@@ -959,7 +1203,7 @@ async function createGamePoster(
           `${
             prize.name ||
             "Prize"
-          } — ₹${
+          } â€” â‚¹${
             prize.amount ||
             0
           }`,
@@ -1948,7 +2192,7 @@ function TicketGridComponent({
         }}
       >
         {selected
-          ? "✓ Tap to unselect"
+          ? "âœ“ Tap to unselect"
           : "Tap to select"}
       </div>
     </div>
@@ -2572,7 +2816,7 @@ function PlayerBookingPage({
 
             <InfoBox
               title="Ticket Price"
-              value={`₹${
+              value={`â‚¹${
                 game.ticket_price ||
                 0
               }`}
@@ -2784,7 +3028,7 @@ function PlayerBookingPage({
           }
         >
           <h2>
-            All 3×9 Tambola Tickets
+            All 3Ã—9 Tambola Tickets
           </h2>
 
           <div
@@ -3376,7 +3620,7 @@ function LiveGamePage({ game }) {
               fontWeight: "bold"
             }}
           >
-            ● LIVE GAME
+            â— LIVE GAME
           </div>
         </div>
 
@@ -3401,7 +3645,7 @@ function LiveGamePage({ game }) {
               boxShadow: "0 10px 30px rgba(37,99,235,.25)"
             }}
           >
-            {lastCalled || "—"}
+            {lastCalled || "â€”"}
           </div>
 
           <div style={{ color: "#64748b" }}>
@@ -3464,7 +3708,7 @@ function LiveGamePage({ game }) {
           >
             <div>
               <h2 style={{ marginBottom: 5 }}>
-                All Booked 3×9 Tickets
+                All Booked 3Ã—9 Tickets
               </h2>
               <p style={{ color: "#64748b", marginTop: 0 }}>
                 Every accepted player's ticket is visible to everyone.
@@ -3504,7 +3748,7 @@ function LiveGamePage({ game }) {
               onClick={() => setSearchText("")}
               style={secondaryButton}
             >
-              🔎 Search / Clear
+              ðŸ”Ž Search / Clear
             </button>
           </div>
 
@@ -3615,7 +3859,7 @@ function LivePrizeList({ game }) {
 
   return (
     <section style={cardStyle}>
-      <h2>🏆 Prizes & Winners</h2>
+      <h2>ðŸ† Prizes & Winners</h2>
 
       {prizes.length === 0 ? (
         <p style={{ color: "#64748b" }}>
@@ -3623,51 +3867,95 @@ function LivePrizeList({ game }) {
         </p>
       ) : (
         <div style={{ display: "grid", gap: 10 }}>
-          {prizes.map((prize, index) => (
-            <div
-              key={`${prize.name || "prize"}-${index}`}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 10,
-                alignItems: "center",
-                padding: 12,
-                borderRadius: 10,
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0"
-              }}
-            >
-              <div>
-                <div style={{ fontWeight: "bold" }}>
-                  {prize.name || `Prize ${index + 1}`}
-                </div>
-                {prize.description && (
+          {prizes.map((prize, index) => {
+            const winners = Array.isArray(prize.winners)
+              ? prize.winners
+              : [];
+            const locked = Boolean(prize.locked);
+
+            return (
+              <div
+                key={`${prize.name || "prize"}-${index}`}
+                style={{
+                  padding: 12,
+                  borderRadius: 10,
+                  background: locked ? "#ecfdf5" : "#fffbeb",
+                  border: locked
+                    ? "2px solid #22c55e"
+                    : "2px solid #f59e0b"
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    alignItems: "center",
+                    flexWrap: "wrap"
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: "bold", fontSize: 16 }}>
+                      {prize.name || `Prize ${index + 1}`}
+                    </div>
+                    {prize.description && (
+                      <div
+                        style={{
+                          color: "#64748b",
+                          fontSize: 13,
+                          marginTop: 3
+                        }}
+                      >
+                        {prize.description}
+                      </div>
+                    )}
+                  </div>
+
                   <div
                     style={{
-                      color: "#64748b",
-                      fontSize: 13,
-                      marginTop: 3
+                      padding: "7px 10px",
+                      borderRadius: 999,
+                      background: locked ? "#16a34a" : "#f59e0b",
+                      color: "#fff",
+                      fontWeight: "bold",
+                      fontSize: 12
                     }}
                   >
-                    {prize.description}
+                    {locked ? "ðŸ† WON" : "ðŸŸ¡ OPEN"}
+                  </div>
+                </div>
+
+                {locked && winners.length > 0 ? (
+                  <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                    {winners.map((winner, winnerIndex) => (
+                      <div
+                        key={`${winner.bookingId || winnerIndex}-${winner.ticketNumber || "ticket"}`}
+                        style={{
+                          padding: "9px 10px",
+                          borderRadius: 8,
+                          background: "#fff",
+                          border: "1px solid #bbf7d0",
+                          fontWeight: "bold"
+                        }}
+                      >
+                        ðŸ† {winner.playerName || "Player"} â€” Ticket #{winner.ticketNumber}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      color: "#92400e",
+                      fontWeight: "bold"
+                    }}
+                  >
+                    Remaining prize â€” waiting for a winner
                   </div>
                 )}
               </div>
-
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 8,
-                  background: "#fff",
-                  border: "1px solid #cbd5e1",
-                  fontWeight: "bold",
-                  color: "#64748b"
-                }}
-              >
-                Winner: —
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>
@@ -3770,6 +4058,16 @@ function HostControlPage({
   const [
     callingNumber,
     setCallingNumber
+  ] = useState(false);
+
+  const [
+    pendingWinnerEvents,
+    setPendingWinnerEvents
+  ] = useState([]);
+
+  const [
+    confirmingWinners,
+    setConfirmingWinners
   ] = useState(false);
 
   const callingRef = useRef(false);
@@ -4113,13 +4411,13 @@ function HostControlPage({
     setShareMessage("");
 
     const message =
-`🎟️ ${game.game_name}
+`ðŸŽŸï¸ ${game.game_name}
 
-📅 ${game.game_date || "-"}
-⏰ ${game.game_time || "-"}
-🎫 Ticket Price: ₹${game.ticket_price || 0}
+ðŸ“… ${game.game_date || "-"}
+â° ${game.game_time || "-"}
+ðŸŽ« Ticket Price: â‚¹${game.ticket_price || 0}
 
-🎟️ Game Code: ${game.game_code}
+ðŸŽŸï¸ Game Code: ${game.game_code}
 
 Join Game:
 ${inviteUrl}`;
@@ -4424,11 +4722,144 @@ ${inviteUrl}`;
     }
   }
 
+  function detectWinnersForCall(nextNumber, nextCalledNumbers) {
+    const acceptedBookings = bookings.filter(
+      (booking) => booking.status === "accepted"
+    );
+
+    if (!acceptedBookings.length) {
+      return [];
+    }
+
+    const currentPrizes = Array.isArray(game.selected_prizes)
+      ? game.selected_prizes
+      : [];
+
+    const events = [];
+
+    currentPrizes.forEach((prize, prizeIndex) => {
+      if (prize?.locked) return;
+
+      const winners = findPrizeWinners(
+        prize,
+        acceptedBookings,
+        nextCalledNumbers,
+        nextNumber,
+        game.game_code
+      );
+
+      if (winners.length) {
+        events.push({
+          prizeIndex,
+          prizeName: prize.name || `Prize ${prizeIndex + 1}`,
+          winningNumber: nextNumber,
+          winners
+        });
+      }
+    });
+
+    if (!events.length) {
+      return [];
+    }
+
+    setPendingWinnerEvents(events);
+
+    if (autoCall) {
+      setAutoCallPaused(true);
+    }
+
+    window.setTimeout(() => {
+      speakWinnerAnnouncement(events);
+    }, 950);
+
+    return events;
+  }
+
+  async function confirmWinnerEvents() {
+    if (!pendingWinnerEvents.length || confirmingWinners) {
+      return;
+    }
+
+    setConfirmingWinners(true);
+    setGameError("");
+
+    try {
+      const currentPrizes = Array.isArray(game.selected_prizes)
+        ? game.selected_prizes
+        : [];
+
+      const updatedPrizes = currentPrizes.map((prize, index) => {
+        const event = pendingWinnerEvents.find(
+          (item) => item.prizeIndex === index
+        );
+
+        if (!event || prize?.locked) {
+          return prize;
+        }
+
+        const existingWinners = Array.isArray(prize.winners)
+          ? prize.winners
+          : [];
+
+        const mergedWinners = [...existingWinners];
+        const seen = new Set(
+          mergedWinners.map(
+            (winner) => `${winner.bookingId || ""}:${winner.ticketNumber || ""}`
+          )
+        );
+
+        event.winners.forEach((winner) => {
+          const key = `${winner.bookingId || ""}:${winner.ticketNumber || ""}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          mergedWinners.push(winner);
+        });
+
+        return {
+          ...prize,
+          winners: mergedWinners,
+          locked: true,
+          lockedAt: new Date().toISOString()
+        };
+      });
+
+      const { data, error } = await supabase
+        .from("games")
+        .update({
+          selected_prizes: updatedPrizes
+        })
+        .eq("id", game.id)
+        .select()
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedGame = data || {
+        ...game,
+        selected_prizes: updatedPrizes
+      };
+
+      saveHostGame(updatedGame);
+      onGameUpdated(updatedGame);
+      setPendingWinnerEvents([]);
+    } catch (err) {
+      console.error("Could not confirm winner:", err);
+      setGameError(
+        err?.message || "Could not confirm the winner. Please try again."
+      );
+    } finally {
+      setConfirmingWinners(false);
+    }
+  }
+
   async function callNextNumber() {
     if (
       game.status !== "live" ||
       callingRef.current ||
-      calledNumbers.length >= 90
+      calledNumbers.length >= 90 ||
+      pendingWinnerEvents.length > 0
     ) {
       return false;
     }
@@ -4483,6 +4914,8 @@ ${inviteUrl}`;
       saveHostGame(updatedGame);
       onGameUpdated(updatedGame);
 
+      detectWinnersForCall(nextNumber, next);
+
       playCallSound();
 
       // Small delay makes the sound lead naturally into the voice.
@@ -4508,7 +4941,8 @@ ${inviteUrl}`;
       !autoCall ||
       autoCallPaused ||
       game.status !== "live" ||
-      calledNumbers.length >= 90
+      calledNumbers.length >= 90 ||
+      pendingWinnerEvents.length > 0
     ) {
       return;
     }
@@ -4526,7 +4960,8 @@ ${inviteUrl}`;
     game.status,
     game.id,
     calledNumbers.length,
-    callIntervalSeconds
+    callIntervalSeconds,
+    pendingWinnerEvents.length
   ]);
 
   useEffect(() => {
@@ -4541,7 +4976,8 @@ ${inviteUrl}`;
   ) {
     if (
       game.status !==
-      "live"
+      "live" ||
+      pendingWinnerEvents.length > 0
     ) {
       return;
     }
@@ -4583,6 +5019,10 @@ ${inviteUrl}`;
     onGameUpdated(
       localUpdated
     );
+
+    if (!exists) {
+      detectWinnersForCall(number, next);
+    }
 
     try {
       const {
@@ -4733,7 +5173,7 @@ ${inviteUrl}`;
             }}
           >
             {isLive
-              ? "● GAME LIVE"
+              ? "â— GAME LIVE"
               : isEnded
               ? "GAME ENDED"
               : "GAME UPCOMING"}
@@ -4806,7 +5246,7 @@ ${inviteUrl}`;
 
             <InfoBox
               title="Ticket Price"
-              value={`₹${
+              value={`â‚¹${
                 game.ticket_price ||
                 0
               }`}
@@ -4881,7 +5321,7 @@ ${inviteUrl}`;
               }
             >
               {copied
-                ? "✓ Copied"
+                ? "âœ“ Copied"
                 : "Copy Link"}
             </button>
 
@@ -4902,7 +5342,7 @@ ${inviteUrl}`;
             >
               {posterCreating
                 ? "Creating Poster..."
-                : "🎨 Share Game + Poster"}
+                : "ðŸŽ¨ Share Game + Poster"}
             </button>
           </div>
 
@@ -5118,7 +5558,7 @@ ${inviteUrl}`;
                                   : 1
                             }}
                           >
-                            ✓ APPROVE
+                            âœ“ APPROVE
                           </button>
 
                           <button
@@ -5145,7 +5585,7 @@ ${inviteUrl}`;
                                   : 1
                             }}
                           >
-                            ✕ REJECT
+                            âœ• REJECT
                           </button>
                         </div>
                       )}
@@ -5222,7 +5662,7 @@ ${inviteUrl}`;
               {gameAction
                 ? "STARTING..."
                 : isLive
-                ? "✓ GAME IS LIVE"
+                ? "âœ“ GAME IS LIVE"
                 : "START GAME"}
             </button>
 
@@ -5303,7 +5743,7 @@ ${inviteUrl}`;
                       calledNumbers.length -
                         1
                     ]
-                  : "—"}
+                  : "â€”"}
               </div>
 
               <div
@@ -5330,7 +5770,7 @@ ${inviteUrl}`;
               <button
                 type="button"
                 onClick={() => setAutoCall((current) => !current)}
-                disabled={callingNumber || calledNumbers.length >= 90}
+                disabled={callingNumber || calledNumbers.length >= 90 || pendingWinnerEvents.length > 0}
                 style={{
                   ...primaryButton,
                   background: autoCall ? "#16a34a" : "#2563eb",
@@ -5340,7 +5780,7 @@ ${inviteUrl}`;
                       : 1
                 }}
               >
-                {autoCall ? "⏹ STOP AUTO CALL" : "▶ AUTO CALL"}
+                {autoCall ? "â¹ STOP AUTO CALL" : "â–¶ AUTO CALL"}
               </button>
 
               <button
@@ -5348,13 +5788,13 @@ ${inviteUrl}`;
                 onClick={() =>
                   setAutoCallPaused((current) => !current)
                 }
-                disabled={!autoCall || callingNumber}
+                disabled={!autoCall || callingNumber || pendingWinnerEvents.length > 0}
                 style={{
                   ...secondaryButton,
                   opacity: !autoCall || callingNumber ? 0.55 : 1
                 }}
               >
-                {autoCallPaused ? "▶ RESUME AUTO CALL" : "⏸ PAUSE AUTO CALL"}
+                {autoCallPaused ? "â–¶ RESUME AUTO CALL" : "â¸ PAUSE AUTO CALL"}
               </button>
 
               <button
@@ -5363,7 +5803,8 @@ ${inviteUrl}`;
                 disabled={
                   callingNumber ||
                   game.status !== "live" ||
-                  calledNumbers.length >= 90
+                  calledNumbers.length >= 90 ||
+                  pendingWinnerEvents.length > 0
                 }
                 style={{
                   ...secondaryButton,
@@ -5375,7 +5816,7 @@ ${inviteUrl}`;
                       : 1
                 }}
               >
-                {callingNumber ? "CALLING..." : "🎱 CALL NEXT"}
+                {callingNumber ? "CALLING..." : "ðŸŽ± CALL NEXT"}
               </button>
 
               <label
@@ -5434,7 +5875,7 @@ ${inviteUrl}`;
                   fontWeight: "bold"
                 }}
               >
-                <span>🎙️ Caller Style</span>
+                <span>ðŸŽ™ï¸ Caller Style</span>
                 <select
                   value={callerMode}
                   onChange={(e) => setCallerMode(e.target.value)}
@@ -5448,8 +5889,8 @@ ${inviteUrl}`;
                   }}
                 >
                   <option value="classic">Classic</option>
-                  <option value="indian">🇮🇳 Indian / Hinglish</option>
-                  <option value="fun">🎉 Fun</option>
+                  <option value="indian">ðŸ‡®ðŸ‡³ Indian / Hinglish</option>
+                  <option value="fun">ðŸŽ‰ Fun</option>
                 </select>
               </label>
             </div>
@@ -5474,11 +5915,27 @@ ${inviteUrl}`;
               }}
             >
               {autoCallPaused
-                ? "⏸ AUTO CALL PAUSED"
+                ? "â¸ AUTO CALL PAUSED"
                 : autoCall
-                ? `🔊 AUTO CALL ACTIVE — every ${callIntervalSeconds} seconds`
-                : "AUTO CALL OFF — use CALL NEXT or select a number manually"}
+                ? `ðŸ”Š AUTO CALL ACTIVE â€” every ${callIntervalSeconds} seconds`
+                : "AUTO CALL OFF â€” use CALL NEXT or select a number manually"}
             </div>
+
+            {pendingWinnerEvents.length > 0 && (
+              <div
+                style={{
+                  marginBottom: 12,
+                  padding: 12,
+                  borderRadius: 10,
+                  background: "#fef3c7",
+                  color: "#92400e",
+                  textAlign: "center",
+                  fontWeight: "bold"
+                }}
+              >
+                ðŸ›‘ WINNER DETECTED â€” confirm the award before calling another number.
+              </div>
+            )}
 
             <div
               style={{
@@ -5519,7 +5976,7 @@ ${inviteUrl}`;
                           number
                         )
                       }
-                      disabled={callingNumber}
+                      disabled={callingNumber || pendingWinnerEvents.length > 0}
                       style={{
                         padding:
                           "10px 3px",
@@ -5576,58 +6033,128 @@ ${inviteUrl}`;
           </section>
         )}
 
-        <section
-          style={
-            cardStyle
-          }
-        >
-          <h2>
-            Prizes
-          </h2>
+        <LivePrizeList game={game} />
 
-          {prizes.length ===
-          0 ? (
-            <p>
-              No prizes selected.
-            </p>
-          ) : (
-            prizes.map(
-              (
-                prize,
-                index
-              ) => (
-                <div
-                  key={
-                    index
-                  }
-                  style={{
-                    display:
-                      "flex",
-                    justifyContent:
-                      "space-between",
-                    padding:
-                      "12px 0",
-                    borderBottom:
-                      "1px solid #e5e7eb"
-                  }}
-                >
-                  <b>
-                    {
-                      prize.name
-                    }
-                  </b>
+        {pendingWinnerEvents.length > 0 && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(15,23,42,0.72)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 18,
+              zIndex: 9999
+            }}
+          >
+            <section
+              style={{
+                width: "100%",
+                maxWidth: 620,
+                maxHeight: "90vh",
+                overflowY: "auto",
+                background: "#fff",
+                borderRadius: 22,
+                padding: 24,
+                boxShadow: "0 25px 70px rgba(0,0,0,0.35)",
+                textAlign: "center"
+              }}
+            >
+              <div style={{ fontSize: 54 }}>ðŸ†</div>
+              <h2 style={{ margin: "8px 0 6px" }}>WINNER DETECTED!</h2>
+              <p style={{ color: "#64748b", marginTop: 0 }}>
+                The game has been paused so the host can confirm the award.
+              </p>
 
-                  <span>
-                    ₹
-                    {
-                      prize.amount
-                    }
-                  </span>
-                </div>
-              )
-            )
-          )}
-        </section>
+              <div style={{ display: "grid", gap: 12, marginTop: 18 }}>
+                {pendingWinnerEvents.map((event) => (
+                  <div
+                    key={`${event.prizeIndex}-${event.winningNumber}`}
+                    style={{
+                      padding: 16,
+                      borderRadius: 14,
+                      background: "#ecfdf5",
+                      border: "2px solid #22c55e"
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#166534",
+                        fontWeight: "bold",
+                        fontSize: 20
+                      }}
+                    >
+                      ðŸŽ‰ {event.prizeName} WON!
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 8,
+                        display: "grid",
+                        gap: 6
+                      }}
+                    >
+                      {event.winners.map((winner, index) => (
+                        <div
+                          key={`${winner.bookingId}-${winner.ticketNumber}-${index}`}
+                          style={{
+                            padding: "10px 12px",
+                            borderRadius: 10,
+                            background: "#fff",
+                            fontWeight: "bold"
+                          }}
+                        >
+                          ðŸ‘¤ {winner.playerName} â€” ðŸŽŸï¸ Ticket #{winner.ticketNumber}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 8,
+                        color: "#64748b",
+                        fontSize: 13
+                      }}
+                    >
+                      Winning call: #{event.winningNumber}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={confirmWinnerEvents}
+                disabled={confirmingWinners}
+                style={{
+                  ...primaryButton,
+                  width: "100%",
+                  marginTop: 20,
+                  background: "#16a34a",
+                  opacity: confirmingWinners ? 0.6 : 1
+                }}
+              >
+                {confirmingWinners
+                  ? "CONFIRMING WINNER..."
+                  : "âœ“ CONFIRM WINNER & LOCK PRIZE"}
+              </button>
+
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: 12,
+                  borderRadius: 10,
+                  background: "#fffbeb",
+                  color: "#92400e",
+                  fontWeight: "bold"
+                }}
+              >
+                Remaining prizes stay OPEN and highlighted until they are won.
+              </div>
+            </section>
+          </div>
+        )}
 
         <button
           onClick={
