@@ -51,10 +51,7 @@ function getGameCode() {
 
 function saveGame(g) {
   if (g) {
-    localStorage.setItem(
-      KEY,
-      JSON.stringify(g)
-    );
+    localStorage.setItem(KEY, JSON.stringify(g));
   } else {
     localStorage.removeItem(KEY);
   }
@@ -68,7 +65,6 @@ function loadGame() {
     );
 
     return g?.game_code ? g : null;
-
   } catch {
     return null;
   }
@@ -76,13 +72,14 @@ function loadGame() {
 
 
 /* =========================================================
-   TAMBOLA TICKET
+   TICKET
 ========================================================= */
 
 function Ticket({
   n,
   name = "",
   selected = false,
+  status = "available",
   onClick
 }) {
 
@@ -220,20 +217,73 @@ function Ticket({
   }
 
 
+  const isAvailable =
+    status === "available";
+
+  const isPending =
+    status === "pending";
+
+  const isApproved =
+    status === "approved";
+
+
+  let borderColor = "#333";
+  let background = "#fff";
+  let label = "Available";
+
+  if (isPending) {
+    borderColor = "#f59e0b";
+    background = "#fff7ed";
+    label = "⏳ Pending";
+  }
+
+  if (isApproved) {
+    borderColor = "#16a34a";
+    background = "#f0fff4";
+    label = `✓ ${name || "Booked"}`;
+  }
+
+  if (selected) {
+    borderColor = "#2563eb";
+    background = "#eff6ff";
+    label = "✓ Selected";
+  }
+
+
   return (
+
     <div
-      onClick={onClick}
+      onClick={
+        isAvailable
+          ? onClick
+          : undefined
+      }
+
       style={{
         width: "100%",
         boxSizing: "border-box",
-        border: selected
-          ? "3px solid #16a34a"
-          : "1px solid #333",
+
+        border:
+          selected
+            ? "3px solid #2563eb"
+            : `2px solid ${borderColor}`,
+
         padding: 8,
         marginBottom: 18,
-        background: "#fff",
-        cursor: "pointer",
-        borderRadius: 8
+
+        background,
+
+        cursor:
+          isAvailable
+            ? "pointer"
+            : "not-allowed",
+
+        borderRadius: 8,
+
+        opacity:
+          isApproved
+            ? 0.95
+            : 1
       }}
     >
 
@@ -250,24 +300,31 @@ function Ticket({
           Ticket #{n}
         </b>
 
-        {selected && (
-          <span>
-            ✓ Selected
-          </span>
-        )}
+        <span
+          style={{
+            fontWeight: "bold",
+            fontSize: 13
+          }}
+        >
+          {label}
+        </span>
 
       </div>
 
 
-      {name && (
+      {name && isApproved && (
+
         <div
           style={{
-            fontSize: 13,
+            fontSize: 14,
+            fontWeight: "bold",
+            color: "#15803d",
             marginBottom: 6
           }}
         >
-          {name}
+          Booked by: {name}
         </div>
+
       )}
 
 
@@ -288,16 +345,24 @@ function Ticket({
             <div
               key={`cell-${n}-${index}`}
               style={{
-                border: "1px solid #aaa",
+                border:
+                  "1px solid #aaa",
+
                 height: 34,
+
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontWeight: value
-                  ? "bold"
-                  : "normal",
+
+                fontWeight:
+                  value
+                    ? "bold"
+                    : "normal",
+
                 fontSize: 14,
-                boxSizing: "border-box"
+
+                boxSizing:
+                  "border-box"
               }}
             >
               {value || ""}
@@ -309,7 +374,69 @@ function Ticket({
       </div>
 
     </div>
+
   );
+}
+
+
+/* =========================================================
+   BOOKING REQUEST STATUS
+========================================================= */
+
+function getTicketStatus(
+  ticketNumber,
+  requests
+) {
+
+  for (const request of requests) {
+
+    const tickets =
+      Array.isArray(
+        request.ticket_numbers
+      )
+        ? request.ticket_numbers
+        : [];
+
+    if (
+      tickets.includes(ticketNumber)
+    ) {
+
+      if (
+        request.status ===
+        "approved"
+      ) {
+
+        return {
+          status: "approved",
+          player:
+            request.player_name ||
+            ""
+        };
+
+      }
+
+      if (
+        request.status ===
+        "pending"
+      ) {
+
+        return {
+          status: "pending",
+          player:
+            request.player_name ||
+            ""
+        };
+
+      }
+
+    }
+
+  }
+
+  return {
+    status: "available",
+    player: ""
+  };
 }
 
 
@@ -380,14 +507,9 @@ function HostPage({
   ] = useState([]);
 
   const [
-    bookingsLoading,
-    setBookingsLoading
+    bookingLoading,
+    setBookingLoading
   ] = useState(false);
-
-  const [
-    bookingAction,
-    setBookingAction
-  ] = useState(null);
 
 
   /* =======================================================
@@ -400,7 +522,7 @@ function HostPage({
       return;
     }
 
-    setBookingsLoading(true);
+    setBookingLoading(true);
 
     const {
       data,
@@ -416,9 +538,10 @@ function HostPage({
         .order(
           "created_at",
           {
-            ascending: false
+            ascending: true
           }
         );
+
 
     if (error) {
 
@@ -427,16 +550,17 @@ function HostPage({
         error
       );
 
-      setBookingsLoading(false);
+      setBookingLoading(false);
 
       return;
     }
+
 
     setBookingRequests(
       data || []
     );
 
-    setBookingsLoading(false);
+    setBookingLoading(false);
   }
 
 
@@ -457,52 +581,14 @@ function HostPage({
     return () =>
       clearInterval(interval);
 
-  }, [game?.game_code]);
+  }, [
+    game?.game_code
+  ]);
 
 
   /* =======================================================
-     APPROVE / REJECT BOOKING
+     PRIZES
   ======================================================= */
-
-  async function updateBooking(
-    requestId,
-    status
-  ) {
-
-    setBookingAction(
-      requestId
-    );
-
-    const {
-      error
-    } =
-      await supabase
-        .from("booking_requests")
-        .update({
-          status
-        })
-        .eq(
-          "id",
-          requestId
-        );
-
-    if (error) {
-
-      alert(
-        "Could not update booking: " +
-        error.message
-      );
-
-      setBookingAction(null);
-
-      return;
-    }
-
-    await loadBookingRequests();
-
-    setBookingAction(null);
-  }
-
 
   function prizeChange(
     i,
@@ -510,15 +596,17 @@ function HostPage({
   ) {
 
     setPrizes((p) =>
-      p.map((x, j) =>
-        j === i
-          ? {
-              ...x,
-              amount: value
-            }
-          : x
+      p.map(
+        (x, j) =>
+          j === i
+            ? {
+                ...x,
+                amount: value
+              }
+            : x
       )
     );
+
   }
 
 
@@ -531,7 +619,6 @@ function HostPage({
     e.preventDefault();
 
     setBusy(true);
-
     setErr("");
 
     try {
@@ -578,7 +665,8 @@ function HostPage({
               name.trim() ||
               "TambolaLive",
 
-            status: "upcoming",
+            status:
+              "upcoming",
 
             ticket_limit:
               Number(limit),
@@ -586,15 +674,20 @@ function HostPage({
             ticket_price:
               Number(price),
 
-            call_interval_seconds: 5,
+            call_interval_seconds:
+              5,
 
-            game_date: date,
+            game_date:
+              date,
 
-            game_time: time,
+            game_time:
+              time,
 
-            game_code: gc,
+            game_code:
+              gc,
 
-            invite_enabled: true
+            invite_enabled:
+              true
 
           })
           .select()
@@ -610,7 +703,8 @@ function HostPage({
 
         ...data,
 
-        host_name: "Host",
+        host_name:
+          "Host",
 
         game_name:
           name.trim() ||
@@ -618,11 +712,14 @@ function HostPage({
 
         theme,
 
-        gameStarted: false,
+        gameStarted:
+          false,
 
-        calledNumbers: [],
+        calledNumbers:
+          [],
 
-        prizes: cleanPrizes
+        prizes:
+          cleanPrizes
 
       };
 
@@ -630,8 +727,6 @@ function HostPage({
       setGame(g);
 
       saveGame(g);
-
-      setBookingRequests([]);
 
     } catch (e) {
 
@@ -650,7 +745,176 @@ function HostPage({
 
 
   /* =======================================================
-     COPY LINK
+     APPROVE BOOKING
+  ======================================================= */
+
+  async function approveBooking(
+    request
+  ) {
+
+    if (!request?.id) {
+      return;
+    }
+
+
+    const ticketNumbers =
+      Array.isArray(
+        request.ticket_numbers
+      )
+        ? request.ticket_numbers
+        : [];
+
+
+    /*
+       Double-check that none of these
+       tickets were approved for somebody
+       else while this request was waiting.
+    */
+
+    const approvedRequests =
+      bookingRequests.filter(
+        (r) =>
+          r.status ===
+          "approved" &&
+          r.id !== request.id
+      );
+
+
+    const alreadyBooked =
+      ticketNumbers.filter(
+        (ticket) => {
+
+          return approvedRequests.some(
+            (r) => {
+
+              const otherTickets =
+                Array.isArray(
+                  r.ticket_numbers
+                )
+                  ? r.ticket_numbers
+                  : [];
+
+              return otherTickets.includes(
+                ticket
+              );
+
+            }
+          );
+
+        }
+      );
+
+
+    if (alreadyBooked.length) {
+
+      alert(
+        `Cannot approve. Ticket(s) ${alreadyBooked
+          .map((n) => `#${n}`)
+          .join(", ")} are already booked.`
+      );
+
+      await loadBookingRequests();
+
+      return;
+    }
+
+
+    const {
+      error
+    } =
+      await supabase
+        .from("booking_requests")
+        .update({
+          status:
+            "approved"
+        })
+        .eq(
+          "id",
+          request.id
+        );
+
+
+    if (error) {
+
+      alert(
+        "Could not approve booking: " +
+        error.message
+      );
+
+      return;
+    }
+
+
+    await loadBookingRequests();
+
+  }
+
+
+  /* =======================================================
+     REJECT BOOKING
+  ======================================================= */
+
+  async function rejectBooking(
+    request
+  ) {
+
+    if (!request?.id) {
+      return;
+    }
+
+
+    const confirmed =
+      confirm(
+        `Reject booking request from ${
+          request.player_name
+        } for ${
+          (request.ticket_numbers || [])
+            .map(
+              (n) => `#${n}`
+            )
+            .join(", ")
+        }?`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    const {
+      error
+    } =
+      await supabase
+        .from("booking_requests")
+        .update({
+          status:
+            "rejected"
+        })
+        .eq(
+          "id",
+          request.id
+        );
+
+
+    if (error) {
+
+      alert(
+        "Could not reject booking: " +
+        error.message
+      );
+
+      return;
+    }
+
+
+    await loadBookingRequests();
+
+  }
+
+
+  /* =======================================================
+     SHARE
   ======================================================= */
 
   async function copyLink() {
@@ -660,9 +924,8 @@ function HostPage({
 
     try {
 
-      await navigator.clipboard.writeText(
-        url
-      );
+      await navigator.clipboard
+        .writeText(url);
 
       alert(
         "Game link copied."
@@ -679,10 +942,6 @@ function HostPage({
 
   }
 
-
-  /* =======================================================
-     SHARE GAME
-  ======================================================= */
 
   async function shareGame() {
 
@@ -702,7 +961,9 @@ Join here:
 ${url}`;
 
 
-    if (navigator.share) {
+    if (
+      navigator.share
+    ) {
 
       try {
 
@@ -712,7 +973,8 @@ ${url}`;
             game.game_name ||
             "TambolaLive",
 
-          text: message,
+          text:
+            message,
 
           url
 
@@ -735,9 +997,8 @@ ${url}`;
 
       try {
 
-        await navigator.clipboard.writeText(
-          message
-        );
+        await navigator.clipboard
+          .writeText(message);
 
         alert(
           "Game details copied."
@@ -758,7 +1019,7 @@ ${url}`;
 
 
   /* =======================================================
-     CREATE GAME FORM
+     CREATE PAGE
   ======================================================= */
 
   if (!game) {
@@ -781,7 +1042,6 @@ ${url}`;
           Create Game
         </h2>
 
-
         {err && (
           <p
             style={{
@@ -794,7 +1054,9 @@ ${url}`;
 
 
         <form
-          onSubmit={createGame}
+          onSubmit={
+            createGame
+          }
         >
 
           <label>
@@ -812,7 +1074,6 @@ ${url}`;
             }
             placeholder="TambolaLive"
           />
-
 
           <br />
           <br />
@@ -836,7 +1097,6 @@ ${url}`;
             required
           />
 
-
           <br />
           <br />
 
@@ -859,7 +1119,6 @@ ${url}`;
             required
           />
 
-
           <br />
           <br />
 
@@ -880,7 +1139,6 @@ ${url}`;
             }
             required
           />
-
 
           <br />
           <br />
@@ -903,7 +1161,6 @@ ${url}`;
             required
           />
 
-
           <br />
           <br />
 
@@ -925,12 +1182,14 @@ ${url}`;
 
             {themes.map(
               (t) => (
+
                 <option
                   key={t}
                   value={t}
                 >
                   {t}
                 </option>
+
               )
             )}
 
@@ -1004,9 +1263,12 @@ ${url}`;
                     {
                       name:
                         custom.trim(),
-                      amount: "",
-                      approved: false,
-                      winner: null
+                      amount:
+                        "",
+                      approved:
+                        false,
+                      winner:
+                        null
                     }
                   ]
                 );
@@ -1023,7 +1285,6 @@ ${url}`;
 
           <br />
 
-
           <button
             type="submit"
             disabled={busy}
@@ -1036,7 +1297,9 @@ ${url}`;
         </form>
 
       </main>
+
     );
+
   }
 
 
@@ -1048,11 +1311,14 @@ ${url}`;
     `${location.origin}/?game=${game.game_code}`;
 
 
-  function changeTheme(value) {
+  function changeTheme(
+    value
+  ) {
 
     const updated = {
       ...game,
-      theme: value
+      theme:
+        value
     };
 
     setGame(updated);
@@ -1079,7 +1345,8 @@ ${url}`;
 
     const updated = {
       ...game,
-      prizes: updatedPrizes
+      prizes:
+        updatedPrizes
     };
 
     setGame(updated);
@@ -1098,10 +1365,27 @@ ${url}`;
     );
 
 
-  const pendingBookings =
+  const pendingRequests =
     bookingRequests.filter(
       (r) =>
-        r.status === "pending"
+        r.status ===
+        "pending"
+    );
+
+
+  const approvedRequests =
+    bookingRequests.filter(
+      (r) =>
+        r.status ===
+        "approved"
+    );
+
+
+  const rejectedRequests =
+    bookingRequests.filter(
+      (r) =>
+        r.status ===
+        "rejected"
     );
 
 
@@ -1152,7 +1436,6 @@ ${url}`;
         Game Theme
       </h3>
 
-
       <select
         value={
           game.theme ||
@@ -1167,12 +1450,14 @@ ${url}`;
 
         {themes.map(
           (t) => (
+
             <option
               key={t}
               value={t}
             >
               {t}
             </option>
+
           )
         )}
 
@@ -1191,21 +1476,24 @@ ${url}`;
         readOnly
         value={inviteUrl}
         style={{
-          width: "70%",
-          boxSizing: "border-box"
+          width: "70%"
         }}
       />
 
 
       <button
-        onClick={copyLink}
+        onClick={
+          copyLink
+        }
       >
         Copy Link
       </button>
 
 
       <button
-        onClick={shareGame}
+        onClick={
+          shareGame
+        }
         style={{
           marginLeft: 8
         }}
@@ -1217,19 +1505,17 @@ ${url}`;
       <hr />
 
 
-      {/* =================================================
-          PRIZES
-      ================================================= */}
-
       <h2>
         Prizes
       </h2>
 
 
       {!visiblePrizes.length && (
+
         <p>
           No prizes added yet.
         </p>
+
       )}
 
 
@@ -1265,7 +1551,6 @@ ${url}`;
               <p>
                 Status:
                 {" "}
-
                 <b>
                   {p.approved
                     ? "Approved"
@@ -1286,6 +1571,7 @@ ${url}`;
             </div>
 
           );
+
         }
       )}
 
@@ -1304,62 +1590,117 @@ ${url}`;
 
       <div
         style={{
-          background:
-            pendingBookings.length
-              ? "#fff7ed"
-              : "#f5f5f5",
-          border:
-            pendingBookings.length
-              ? "2px solid #f59e0b"
-              : "1px solid #ccc",
-          borderRadius: 10,
-          padding: 15,
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
           marginBottom: 15
         }}
       >
 
-        <h3
+        <span
           style={{
-            marginTop: 0
+            padding: "6px 10px",
+            background:
+              "#fff7ed",
+            border:
+              "1px solid #f59e0b",
+            borderRadius: 6
           }}
         >
-          Pending Requests:
-          {" "}
-          {pendingBookings.length}
-        </h3>
+          Pending:{" "}
+          <b>
+            {pendingRequests.length}
+          </b>
+        </span>
 
 
-        {bookingsLoading && (
-          <p>
-            Checking for booking requests...
-          </p>
-        )}
+        <span
+          style={{
+            padding: "6px 10px",
+            background:
+              "#f0fff4",
+            border:
+              "1px solid #16a34a",
+            borderRadius: 6
+          }}
+        >
+          Approved:{" "}
+          <b>
+            {approvedRequests.length}
+          </b>
+        </span>
 
 
-        {!bookingsLoading &&
-          pendingBookings.length === 0 && (
-
-            <p>
-              No pending booking requests.
-            </p>
-
-          )}
+        <span
+          style={{
+            padding: "6px 10px",
+            background:
+              "#fef2f2",
+            border:
+              "1px solid #ef4444",
+            borderRadius: 6
+          }}
+        >
+          Rejected:{" "}
+          <b>
+            {rejectedRequests.length}
+          </b>
+        </span>
 
       </div>
 
 
-      {pendingBookings.map(
+      {bookingLoading && (
+        <p>
+          Checking booking requests...
+        </p>
+      )}
+
+
+      {!bookingLoading &&
+        bookingRequests.length === 0 && (
+
+          <div
+            style={{
+              border:
+                "1px solid #ccc",
+              padding: 15,
+              borderRadius: 8
+            }}
+          >
+            No booking requests yet.
+          </div>
+
+        )}
+
+
+      {bookingRequests.map(
         (request) => (
 
           <div
             key={request.id}
             style={{
               border:
-                "2px solid #ddd",
-              borderRadius: 10,
+                request.status ===
+                "approved"
+                  ? "2px solid #16a34a"
+                  : request.status ===
+                    "pending"
+                    ? "2px solid #f59e0b"
+                    : "1px solid #ccc",
+
               padding: 15,
               marginBottom: 12,
-              background: "#fff"
+              borderRadius: 8,
+
+              background:
+                request.status ===
+                "approved"
+                  ? "#f0fff4"
+                  : request.status ===
+                    "pending"
+                    ? "#fffaf0"
+                    : "#fafafa"
             }}
           >
 
@@ -1373,112 +1714,105 @@ ${url}`;
 
 
             <p>
+              Tickets:
+              {" "}
               <b>
-                Requested Tickets:
+                {(request.ticket_numbers || [])
+                  .map(
+                    (n) =>
+                      `#${n}`
+                  )
+                  .join(", ")}
               </b>
             </p>
 
 
-            <p
-              style={{
-                fontSize: 18,
-                fontWeight: "bold"
-              }}
-            >
-              {Array.isArray(
-                request.ticket_numbers
-              )
-                ? request.ticket_numbers
-                    .map(
-                      (n) =>
-                        `#${n}`
-                    )
-                    .join(", ")
-                : String(
-                    request.ticket_numbers
-                  )}
-            </p>
-
-
-            <p
-              style={{
-                fontSize: 12,
-                color: "#666"
-              }}
-            >
-              Requested:
+            <p>
+              Status:
               {" "}
-              {request.created_at
-                ? new Date(
-                    request.created_at
-                  ).toLocaleString()
-                : "-"}
+              <b>
+                {request.status
+                  .toUpperCase()}
+              </b>
             </p>
 
 
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                flexWrap: "wrap"
-              }}
-            >
+            {request.status ===
+              "pending" && (
 
-              <button
-                onClick={() =>
-                  updateBooking(
-                    request.id,
-                    "approved"
-                  )
-                }
-                disabled={
-                  bookingAction ===
-                  request.id
-                }
+              <div>
+
+                <button
+                  onClick={() =>
+                    approveBooking(
+                      request
+                    )
+                  }
+                  style={{
+                    marginRight: 8,
+                    padding:
+                      "8px 14px",
+                    fontWeight:
+                      "bold"
+                  }}
+                >
+                  APPROVE
+                </button>
+
+
+                <button
+                  onClick={() =>
+                    rejectBooking(
+                      request
+                    )
+                  }
+                  style={{
+                    padding:
+                      "8px 14px"
+                  }}
+                >
+                  REJECT
+                </button>
+
+              </div>
+
+            )}
+
+
+            {request.status ===
+              "approved" && (
+
+              <p
                 style={{
-                  padding:
-                    "10px 18px",
-                  fontWeight: "bold",
-                  background:
-                    "#16a34a",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 6
+                  color:
+                    "#15803d",
+                  fontWeight:
+                    "bold"
                 }}
               >
-                {bookingAction ===
-                request.id
-                  ? "Updating..."
-                  : "✓ Approve"}
-              </button>
+                ✓ Tickets assigned
+                to{" "}
+                {request.player_name}
+              </p>
+
+            )}
 
 
-              <button
-                onClick={() =>
-                  updateBooking(
-                    request.id,
-                    "rejected"
-                  )
-                }
-                disabled={
-                  bookingAction ===
-                  request.id
-                }
+            {request.status ===
+              "rejected" && (
+
+              <p
                 style={{
-                  padding:
-                    "10px 18px",
-                  fontWeight: "bold",
-                  background:
-                    "#dc2626",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 6
+                  color:
+                    "#b91c1c",
+                  fontWeight:
+                    "bold"
                 }}
               >
-                ✕ Reject
-              </button>
+                Booking rejected.
+              </p>
 
-            </div>
+            )}
 
           </div>
 
@@ -1486,89 +1820,8 @@ ${url}`;
       )}
 
 
-      {/* =================================================
-          PREVIOUS REQUESTS
-      ================================================= */}
-
-      {bookingRequests.some(
-        (r) =>
-          r.status !== "pending"
-      ) && (
-
-        <>
-
-          <h3>
-            Processed Requests
-          </h3>
-
-
-          {bookingRequests
-            .filter(
-              (r) =>
-                r.status !==
-                "pending"
-            )
-            .map(
-              (request) => (
-
-                <div
-                  key={request.id}
-                  style={{
-                    border:
-                      "1px solid #ddd",
-                    borderRadius: 8,
-                    padding: 10,
-                    marginBottom: 8
-                  }}
-                >
-
-                  <b>
-                    {request.player_name}
-                  </b>
-
-                  {" — "}
-
-                  {Array.isArray(
-                    request.ticket_numbers
-                  )
-                    ? request.ticket_numbers
-                        .map(
-                          (n) =>
-                            `#${n}`
-                        )
-                        .join(", ")
-                    : String(
-                        request.ticket_numbers
-                      )}
-
-                  <p
-                    style={{
-                      marginBottom: 0
-                    }}
-                  >
-                    Status:
-                    {" "}
-                    <b>
-                      {request.status}
-                    </b>
-                  </p>
-
-                </div>
-
-              )
-            )}
-
-        </>
-
-      )}
-
-
       <hr />
 
-
-      {/* =================================================
-          LIVE GAME
-      ================================================= */}
 
       <h2>
         Live Game
@@ -1605,7 +1858,9 @@ ${url}`;
       </button>
 
     </main>
+
   );
+
 }
 
 
@@ -1635,24 +1890,35 @@ function Live({
 
     const updated = {
       ...game,
-      gameStarted: true,
-      status: "live",
-      calledNumbers: []
+
+      gameStarted:
+        true,
+
+      status:
+        "live",
+
+      calledNumbers:
+        []
     };
 
     setGame(updated);
 
     saveGame(updated);
+
   }
 
 
   function callNext() {
 
-    if (!game.gameStarted) {
+    if (
+      !game.gameStarted
+    ) {
       return;
     }
 
-    if (!remaining.length) {
+    if (
+      !remaining.length
+    ) {
       return;
     }
 
@@ -1668,16 +1934,22 @@ function Live({
 
     const updated = {
       ...game,
-      status: "live",
-      calledNumbers: [
-        ...called,
-        n
-      ]
+
+      status:
+        "live",
+
+      calledNumbers:
+        [
+          ...called,
+          n
+        ]
     };
+
 
     setGame(updated);
 
     saveGame(updated);
+
   }
 
 
@@ -1685,14 +1957,22 @@ function Live({
 
     const updated = {
       ...game,
-      gameStarted: false,
-      status: "upcoming",
-      calledNumbers: []
+
+      gameStarted:
+        false,
+
+      status:
+        "upcoming",
+
+      calledNumbers:
+        []
     };
+
 
     setGame(updated);
 
     saveGame(updated);
+
   }
 
 
@@ -1719,7 +1999,9 @@ function Live({
       {!game.gameStarted ? (
 
         <button
-          onClick={start}
+          onClick={
+            start
+          }
         >
           Start Game
         </button>
@@ -1729,14 +2011,18 @@ function Live({
         <>
 
           <button
-            onClick={callNext}
+            onClick={
+              callNext
+            }
           >
             Call Next Number
           </button>
 
 
           <button
-            onClick={reset}
+            onClick={
+              reset
+            }
             style={{
               marginLeft: 8
             }}
@@ -1756,7 +2042,9 @@ function Live({
       </p>
 
     </section>
+
   );
+
 }
 
 
@@ -1794,36 +2082,31 @@ function Invitation({
 
 
       <p>
-        <b>Date:</b>
-        {" "}
+        <b>Date:</b>{" "}
         {game.game_date}
       </p>
 
 
       <p>
-        <b>Time:</b>
-        {" "}
+        <b>Time:</b>{" "}
         {game.game_time}
       </p>
 
 
       <p>
-        <b>Ticket Price:</b>
-        {" "}
+        <b>Ticket Price:</b>{" "}
         ₹{game.ticket_price}
       </p>
 
 
       <p>
-        <b>Available Tickets:</b>
-        {" "}
+        <b>Available Tickets:</b>{" "}
         {game.ticket_limit}
       </p>
 
 
       <p>
-        <b>Status:</b>
-        {" "}
+        <b>Status:</b>{" "}
         {game.status}
       </p>
 
@@ -1837,8 +2120,7 @@ function Invitation({
         (p, i) => (
 
           <p key={i}>
-            {p.name}:
-            {" "}
+            {p.name}:{" "}
             ₹{p.amount}
           </p>
 
@@ -1847,13 +2129,17 @@ function Invitation({
 
 
       <button
-        onClick={accept}
+        onClick={
+          accept
+        }
       >
         I ACCEPT
       </button>
 
     </main>
+
   );
+
 }
 
 
@@ -1874,18 +2160,28 @@ function Booking({
   const [sent, setSent] =
     useState(false);
 
-  const [sending, setSending] =
-    useState(false);
+  const [
+    bookingRequests,
+    setBookingRequests
+  ] = useState([]);
 
-  const [message, setMessage] =
-    useState("");
+  const [
+    loadingRequests,
+    setLoadingRequests
+  ] = useState(true);
+
+  const [
+    requestError,
+    setRequestError
+  ] = useState("");
 
 
   const ticketLimit =
     Math.max(
       1,
       Number(
-        game.ticket_limit || 100
+        game.ticket_limit ||
+        100
       )
     );
 
@@ -1893,14 +2189,123 @@ function Booking({
   const ticketNumbers =
     Array.from(
       {
-        length: ticketLimit
+        length:
+          ticketLimit
       },
-      (_, i) => i + 1
+      (_, i) =>
+        i + 1
     );
 
 
   /* =======================================================
-     SELECT / UNSELECT TICKET
+     LOAD REQUESTS FOR PLAYER
+  ======================================================= */
+
+  async function loadRequests() {
+
+    if (!game?.game_code) {
+      return;
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabase
+        .from("booking_requests")
+        .select("*")
+        .eq(
+          "game_code",
+          game.game_code
+        )
+        .order(
+          "created_at",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        "Could not load ticket status:",
+        error
+      );
+
+      setRequestError(
+        error.message
+      );
+
+      setLoadingRequests(false);
+
+      return;
+    }
+
+
+    setBookingRequests(
+      data || []
+    );
+
+    setLoadingRequests(false);
+
+  }
+
+
+  useEffect(() => {
+
+    loadRequests();
+
+    const interval =
+      setInterval(
+        loadRequests,
+        3000
+      );
+
+    return () =>
+      clearInterval(interval);
+
+  }, [
+    game?.game_code
+  ]);
+
+
+  /* =======================================================
+     TICKET STATUS
+  ======================================================= */
+
+  function ticketInfo(
+    ticketNumber
+  ) {
+
+    return getTicketStatus(
+      ticketNumber,
+      bookingRequests
+    );
+
+  }
+
+
+  function canSelect(
+    ticketNumber
+  ) {
+
+    const info =
+      ticketInfo(
+        ticketNumber
+      );
+
+    return (
+      info.status ===
+      "available"
+    );
+
+  }
+
+
+  /* =======================================================
+     SELECT TICKET
   ======================================================= */
 
   function toggleTicket(
@@ -1908,6 +2313,16 @@ function Booking({
   ) {
 
     if (sent) {
+      return;
+    }
+
+
+    if (
+      !canSelect(
+        ticketNumber
+      )
+    ) {
+
       return;
     }
 
@@ -1923,7 +2338,8 @@ function Booking({
 
           return current.filter(
             (x) =>
-              x !== ticketNumber
+              x !==
+              ticketNumber
           );
 
         }
@@ -1936,11 +2352,12 @@ function Booking({
 
       }
     );
+
   }
 
 
   /* =======================================================
-     SEND BOOKING REQUEST TO SUPABASE
+     SEND BOOKING REQUEST
   ======================================================= */
 
   async function send() {
@@ -1958,173 +2375,256 @@ function Booking({
     }
 
 
-    setSending(true);
-
-    setMessage("");
-
-
     const sorted =
       [...selected].sort(
-        (a, b) => a - b
+        (a, b) =>
+          a - b
       );
+
+
+    /*
+       FINAL CHECK AGAINST DATABASE
+       BEFORE CREATING REQUEST.
+    */
+
+    await loadRequests();
+
+
+    const unavailable =
+      sorted.filter(
+        (ticket) =>
+          !canSelect(
+            ticket
+          )
+      );
+
+
+    if (
+      unavailable.length
+    ) {
+
+      alert(
+        `Ticket(s) ${unavailable
+          .map(
+            (n) =>
+              `#${n}`
+          )
+          .join(
+            ", "
+          )} are no longer available.`
+      );
+
+      setSelected(
+        (current) =>
+          current.filter(
+            (n) =>
+              !unavailable.includes(
+                n
+              )
+          )
+      );
+
+      return;
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabase
+        .from(
+          "booking_requests"
+        )
+        .insert({
+
+          game_code:
+            game.game_code,
+
+          player_name:
+            player.trim(),
+
+          ticket_numbers:
+            sorted,
+
+          status:
+            "pending"
+
+        })
+        .select()
+        .single();
+
+
+    if (error) {
+
+      alert(
+        "Could not send booking request: " +
+        error.message
+      );
+
+      return;
+    }
+
+
+    console.log(
+      "Booking request created:",
+      data
+    );
+
+
+    setSent(true);
+
+    setSelected([]);
+
+    await loadRequests();
+
+
+    /*
+       Open WhatsApp after the
+       database request has been
+       successfully created.
+    */
+
+    const text =
+`Hi ${game.host_name || "Host"}, ${player.trim()} wants to book ${sorted
+      .map(
+        (n) =>
+          `#${n}`
+      )
+      .join(
+        ", "
+      )} for ${game.game_name}. Please approve my booking.`;
 
 
     try {
 
-      /*
-         First check whether this player
-         already has a pending request
-         for this game.
-      */
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(
+          text
+        )}`,
+        "_blank"
+      );
 
-      const {
-        data: existing,
-        error: existingError
-      } =
-        await supabase
-          .from("booking_requests")
-          .select("*")
-          .eq(
-            "game_code",
-            game.game_code
-          )
-          .eq(
-            "player_name",
-            player.trim()
-          )
-          .eq(
-            "status",
-            "pending"
-          );
-
-
-      if (existingError) {
-        throw existingError;
-      }
-
-
-      if (
-        existing &&
-        existing.length > 0
-      ) {
-
-        setMessage(
-          "You already have a pending booking request for this game."
-        );
-
-        setSending(false);
-
-        return;
-      }
-
-
-      /*
-         THIS IS THE IMPORTANT FIX.
-
-         The booking is now stored in
-         Supabase instead of localStorage.
-
-         Host Control Centre reads the
-         same table.
-      */
-
-      const {
-        data,
-        error
-      } =
-        await supabase
-          .from("booking_requests")
-          .insert({
-
-            game_code:
-              game.game_code,
-
-            player_name:
-              player.trim(),
-
-            ticket_numbers:
-              sorted,
-
-            status:
-              "pending"
-
-          })
-          .select()
-          .single();
-
-
-      if (error) {
-        throw error;
-      }
-
+    } catch {
 
       console.log(
-        "Booking request created:",
-        data
+        "WhatsApp could not be opened."
       );
-
-
-      setSent(true);
-
-      setMessage(
-        `Booking request sent for ${sorted
-          .map(
-            (n) => `#${n}`
-          )
-          .join(", ")}. Waiting for host approval.`
-      );
-
-
-    } catch (e) {
-
-      console.error(
-        "Booking request error:",
-        e
-      );
-
-      setMessage(
-        "Could not send booking request: " +
-        e.message
-      );
-
-    } finally {
-
-      setSending(false);
 
     }
+
   }
 
 
+  /* =======================================================
+     ACTUAL TICKETS
+  ======================================================= */
+
   const actualTickets =
     ticketNumbers.map(
-      (ticketNumber) => (
+      (ticketNumber) => {
 
-        <Ticket
-          key={
-            "actual-ticket-" +
+        const info =
+          ticketInfo(
             ticketNumber
-          }
+          );
 
-          n={ticketNumber}
 
-          name={player}
+        const selected =
+          selected.includes(
+            ticketNumber
+          );
 
-          selected={
-            selected.includes(
+
+        return (
+
+          <Ticket
+            key={
+              "actual-ticket-" +
               ticketNumber
-            )
-          }
+            }
 
-          onClick={() =>
-            toggleTicket(
+            n={
               ticketNumber
-            )
-          }
+            }
 
-        />
+            name={
+              info.player
+            }
 
-      )
+            selected={
+              selected
+            }
+
+            status={
+              selected
+                ? "available"
+                : info.status
+            }
+
+            onClick={() =>
+              toggleTicket(
+                ticketNumber
+              )
+            }
+          />
+
+        );
+
+      }
     );
+
+
+  /* =======================================================
+     STATUS COUNTS
+  ======================================================= */
+
+  const approvedTicketCount =
+    bookingRequests
+      .filter(
+        (r) =>
+          r.status ===
+          "approved"
+      )
+      .reduce(
+        (
+          total,
+          r
+        ) =>
+          total +
+          (
+            Array.isArray(
+              r.ticket_numbers
+            )
+              ? r.ticket_numbers.length
+              : 0
+          ),
+        0
+      );
+
+
+  const pendingTicketCount =
+    bookingRequests
+      .filter(
+        (r) =>
+          r.status ===
+          "pending"
+      )
+      .reduce(
+        (
+          total,
+          r
+        ) =>
+          total +
+          (
+            Array.isArray(
+              r.ticket_numbers
+            )
+              ? r.ticket_numbers.length
+              : 0
+          ),
+        0
+      );
 
 
   return (
@@ -2135,7 +2635,8 @@ function Booking({
         maxWidth: 700,
         margin: "20px auto",
         padding: 20,
-        boxSizing: "border-box"
+        boxSizing:
+          "border-box"
       }}
     >
 
@@ -2152,6 +2653,87 @@ function Booking({
 
 
       <h3>
+        Ticket Availability
+      </h3>
+
+
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          flexWrap:
+            "wrap",
+          marginBottom:
+            20
+        }}
+      >
+
+        <span
+          style={{
+            padding:
+              "6px 10px",
+            background:
+              "#f0fff4",
+            border:
+              "1px solid #16a34a",
+            borderRadius:
+              6
+          }}
+        >
+          ✓ Booked:{" "}
+          <b>
+            {approvedTicketCount}
+          </b>
+        </span>
+
+
+        <span
+          style={{
+            padding:
+              "6px 10px",
+            background:
+              "#fff7ed",
+            border:
+              "1px solid #f59e0b",
+            borderRadius:
+              6
+          }}
+        >
+          ⏳ Pending:{" "}
+          <b>
+            {pendingTicketCount}
+          </b>
+        </span>
+
+      </div>
+
+
+      {loadingRequests && (
+
+        <p>
+          Checking ticket availability...
+        </p>
+
+      )}
+
+
+      {requestError && (
+
+        <p
+          style={{
+            color:
+              "#b91c1c"
+          }}
+        >
+          Could not refresh ticket
+          status:{" "}
+          {requestError}
+        </p>
+
+      )}
+
+
+      <h3>
         Player Name
       </h3>
 
@@ -2165,15 +2747,13 @@ function Booking({
             e.target.value
           )
         }
-        disabled={
-          sent ||
-          sending
-        }
+        disabled={sent}
         style={{
           width: "100%",
           maxWidth: 400,
           padding: 10,
-          boxSizing: "border-box"
+          boxSizing:
+            "border-box"
         }}
       />
 
@@ -2186,70 +2766,98 @@ function Booking({
       <div
         style={{
           display: "flex",
-          flexWrap: "wrap",
+          flexWrap:
+            "wrap",
           gap: 5,
-          marginBottom: 30
+          marginBottom:
+            30
         }}
       >
 
         {ticketNumbers.map(
-          (ticketNumber) => (
+          (ticketNumber) => {
 
-            <button
-              key={
-                "ticket-number-" +
+            const info =
+              ticketInfo(
                 ticketNumber
-              }
+              );
 
-              type="button"
 
-              onClick={() =>
-                toggleTicket(
+            return (
+
+              <button
+                key={
+                  "ticket-number-" +
+                  ticketNumber
+                }
+
+                type="button"
+
+                onClick={() =>
+                  toggleTicket(
+                    ticketNumber
+                  )
+                }
+
+                disabled={
+                  sent ||
+                  info.status !==
+                    "available"
+                }
+
+                style={{
+                  padding:
+                    "7px 10px",
+
+                  border:
+                    "1px solid #555",
+
+                  borderRadius:
+                    5,
+
+                  background:
+                    selected.includes(
+                      ticketNumber
+                    )
+                      ? "#bfdbfe"
+                      : info.status ===
+                        "approved"
+                        ? "#bbf7d0"
+                        : info.status ===
+                          "pending"
+                          ? "#fed7aa"
+                          : "#fff",
+
+                  fontWeight:
+                    "bold",
+
+                  cursor:
+                    info.status ===
+                    "available"
+                      ? "pointer"
+                      : "not-allowed"
+                }}
+              >
+
+                {selected.includes(
                   ticketNumber
                 )
-              }
+                  ? "✓ "
+                  : info.status ===
+                    "approved"
+                    ? "✓ "
+                    : info.status ===
+                      "pending"
+                      ? "⏳ "
+                      : ""}
 
-              disabled={
-                sent ||
-                sending
-              }
+                #{ticketNumber}
 
-              style={{
-                padding:
-                  "7px 10px",
+              </button>
 
-                border:
-                  "1px solid #555",
+            );
 
-                borderRadius: 5,
-
-                background:
-                  selected.includes(
-                    ticketNumber
-                  )
-                    ? "#90ee90"
-                    : "#fff",
-
-                fontWeight:
-                  selected.includes(
-                    ticketNumber
-                  )
-                    ? "bold"
-                    : "normal"
-              }}
-            >
-
-              {selected.includes(
-                ticketNumber
-              )
-                ? "✓ "
-                : ""}
-
-              #{ticketNumber}
-
-            </button>
-
-          )
+          }
         )}
 
       </div>
@@ -2261,16 +2869,21 @@ function Booking({
 
 
       <p>
-        Tap any actual ticket to
-        select or unselect it.
+        Green = booked
+        {" • "}
+        Orange = pending
+        {" • "}
+        White = available
       </p>
 
 
       <div
         style={{
           width: "100%",
-          display: "block",
-          boxSizing: "border-box"
+          display:
+            "block",
+          boxSizing:
+            "border-box"
         }}
       >
 
@@ -2284,13 +2897,17 @@ function Booking({
         <div
           style={{
             border:
-              "1px solid #16a34a",
-            borderRadius: 8,
-            padding: 12,
-            marginTop: 10,
-            marginBottom: 15,
+              "1px solid #2563eb",
+            borderRadius:
+              8,
+            padding:
+              12,
+            marginTop:
+              10,
+            marginBottom:
+              15,
             background:
-              "#f0fff4"
+              "#eff6ff"
           }}
         >
 
@@ -2303,36 +2920,18 @@ function Booking({
             {selected
               .slice()
               .sort(
-                (a, b) => a - b
+                (a, b) =>
+                  a - b
               )
               .map(
                 (n) =>
                   `#${n}`
               )
-              .join(", ")}
+              .join(
+                ", "
+              )}
           </p>
 
-        </div>
-
-      )}
-
-
-      {message && (
-
-        <div
-          style={{
-            border:
-              "1px solid #ccc",
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 15,
-            background:
-              sent
-                ? "#f0fff4"
-                : "#fff7ed"
-          }}
-        >
-          {message}
         </div>
 
       )}
@@ -2342,44 +2941,171 @@ function Booking({
 
         <button
           type="button"
-          onClick={send}
-          disabled={
-            sending ||
-            !player.trim() ||
-            selected.length === 0
+          onClick={
+            send
           }
+
+          disabled={
+            !player.trim() ||
+            selected.length ===
+              0
+          }
+
           style={{
             padding:
               "10px 18px",
-            fontWeight: "bold",
-            marginBottom: 30
+
+            fontWeight:
+              "bold",
+
+            marginBottom:
+              30
           }}
         >
-          {sending
-            ? "SENDING..."
-            : "BOOK TICKETS"}
+          BOOK TICKETS
         </button>
 
       ) : (
 
-        <div>
+        <div
+          style={{
+            border:
+              "2px solid #f59e0b",
+            padding:
+              15,
+            borderRadius:
+              8,
+            background:
+              "#fff7ed"
+          }}
+        >
 
           <p>
             <b>
-              Booking request sent ✓
+              Booking request sent.
             </b>
           </p>
 
+
           <p>
-            Waiting for host approval.
+            Your selected tickets
+            are now pending host
+            approval.
+          </p>
+
+
+          <p>
+            This page will automatically
+            update when the host approves
+            or rejects your request.
           </p>
 
         </div>
 
       )}
 
+
+      {/* =================================================
+          CURRENT BOOKINGS LIST
+      ================================================= */}
+
+      <hr />
+
+
+      <h3>
+        Ticket Status
+      </h3>
+
+
+      {bookingRequests.length ===
+        0 && (
+
+        <p>
+          No booking requests yet.
+        </p>
+
+      )}
+
+
+      {bookingRequests
+        .filter(
+          (r) =>
+            r.status ===
+              "approved" ||
+            r.status ===
+              "pending"
+        )
+        .map(
+          (r) => (
+
+            <div
+              key={
+                r.id
+              }
+              style={{
+                border:
+                  r.status ===
+                  "approved"
+                    ? "1px solid #16a34a"
+                    : "1px solid #f59e0b",
+
+                padding:
+                  10,
+
+                marginBottom:
+                  8,
+
+                borderRadius:
+                  6,
+
+                background:
+                  r.status ===
+                  "approved"
+                    ? "#f0fff4"
+                    : "#fff7ed"
+              }}
+            >
+
+              <b>
+                {r.player_name}
+              </b>
+
+
+              {" "}
+              —
+
+
+              {" "}
+
+              {r.status ===
+              "approved"
+                ? "Booked"
+                : "Pending"}
+
+
+              <br />
+
+
+              Tickets:{" "}
+
+              {(r.ticket_numbers || [])
+                .map(
+                  (n) =>
+                    `#${n}`
+                )
+                .join(
+                  ", "
+                )}
+
+            </div>
+
+          )
+        )}
+
     </main>
+
   );
+
 }
 
 
@@ -2405,89 +3131,64 @@ function App() {
     useState(true);
 
 
-  /* =======================================================
-     INITIAL LOAD
-  ======================================================= */
-
   useEffect(() => {
 
-    async function initialize() {
-
-      /*
-         PLAYER LINK
-
-         If URL contains ?game=XXXXXX,
-         load that game as a player.
-      */
-
-      const gc =
-        getGameCode();
+    const saved =
+      loadGame();
 
 
-      if (gc) {
+    if (saved) {
 
-        await loadPlayer(gc);
+      setGame(
+        saved
+      );
 
-        return;
-      }
-
-
-      /*
-         HOST PAGE
-
-         If there is no ?game= code,
-         restore the host game from
-         localStorage.
-      */
-
-      const saved =
-        loadGame();
-
-
-      if (saved) {
-
-        setGame(saved);
-
-        setPage("host");
-
-      }
-
-
-      setLoading(false);
+      setPage(
+        "host"
+      );
 
     }
 
 
-    initialize();
+    const gc =
+      getGameCode();
+
+
+    if (gc) {
+
+      loadPlayer(
+        gc
+      );
+
+    } else {
+
+      setLoading(
+        false
+      );
+
+    }
 
   }, []);
 
-
-  /* =======================================================
-     ALWAYS SAVE HOST GAME
-  ======================================================= */
 
   useEffect(() => {
 
     if (game) {
 
-      saveGame(game);
+      saveGame(
+        game
+      );
 
     }
 
-  }, [game]);
+  }, [
+    game
+  ]);
 
 
-  /* =======================================================
-     LOAD PLAYER GAME FROM SUPABASE
-  ======================================================= */
-
-  async function loadPlayer(gc) {
-
-    setLoading(true);
-
-    setError("");
-
+  async function loadPlayer(
+    gc
+  ) {
 
     const {
       data,
@@ -2513,9 +3214,12 @@ function App() {
         "Game not found"
       );
 
-      setLoading(false);
+      setLoading(
+        false
+      );
 
       return;
+
     }
 
 
@@ -2535,29 +3239,25 @@ function App() {
           data.calledNumbers
         )
           ? data.calledNumbers
-          : [],
-
-      bookingRequests:
-        Array.isArray(
-          data.bookingRequests
-        )
-          ? data.bookingRequests
           : []
 
     };
 
 
-    setPlayerGame(g);
+    setPlayerGame(
+      g
+    );
 
-    setPage("invitation");
+    setPage(
+      "invitation"
+    );
 
-    setLoading(false);
+    setLoading(
+      false
+    );
+
   }
 
-
-  /* =======================================================
-     LOADING
-  ======================================================= */
 
   if (loading) {
 
@@ -2565,8 +3265,10 @@ function App() {
 
       <main
         style={{
-          padding: 20,
-          textAlign: "center"
+          padding:
+            20,
+          textAlign:
+            "center"
         }}
       >
 
@@ -2575,13 +3277,11 @@ function App() {
         </h2>
 
       </main>
+
     );
+
   }
 
-
-  /* =======================================================
-     ERROR
-  ======================================================= */
 
   if (error) {
 
@@ -2589,7 +3289,8 @@ function App() {
 
       <main
         style={{
-          padding: 20
+          padding:
+            20
         }}
       >
 
@@ -2602,63 +3303,70 @@ function App() {
         </p>
 
       </main>
+
     );
+
   }
 
 
-  /* =======================================================
-     PLAYER INVITATION
-  ======================================================= */
-
   if (
     playerGame &&
-    page === "invitation"
+    page ===
+      "invitation"
   ) {
 
     return (
 
       <Invitation
-        game={playerGame}
+        game={
+          playerGame
+        }
+
         accept={() =>
-          setPage("booking")
+          setPage(
+            "booking"
+          )
         }
       />
 
     );
+
   }
 
 
-  /* =======================================================
-     PLAYER BOOKING
-  ======================================================= */
-
   if (
     playerGame &&
-    page === "booking"
+    page ===
+      "booking"
   ) {
 
     return (
 
       <Booking
-        game={playerGame}
+        game={
+          playerGame
+        }
       />
 
     );
+
   }
 
-
-  /* =======================================================
-     HOST
-  ======================================================= */
 
   return (
 
     <HostPage
-      game={game}
-      setGame={setGame}
+      game={
+        game
+      }
+
+      setGame={
+        setGame
+      }
     />
 
   );
+
 }
 
 
@@ -2667,7 +3375,9 @@ function App() {
 ========================================================= */
 
 createRoot(
-  document.getElementById("root")
+  document.getElementById(
+    "root"
+  )
 ).render(
   <App />
 );
