@@ -19,9 +19,6 @@ const GAME_KEY = "tambolalive_host_game";
 const PLAYER_BOOKING_PREFIX =
   "tambolalive_player_booking_";
 
-const PLAYER_ID_PREFIX =
-  "tambolalive_player_id_";
-
 const THEMES = [
   "Classic",
   "Royal",
@@ -117,65 +114,78 @@ function getGameFromUrl() {
   }
 }
 
+function getPlayerIdentityKey(gameId) {
+  return `tambolalive_player_identity_${gameId}`;
+}
+
+function createPlayerKey() {
+  try {
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+  } catch (error) {
+    console.warn("Could not create UUID:", error);
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function getOrCreatePlayerKey(gameId) {
+  try {
+    const keyName = getPlayerIdentityKey(gameId);
+    const existing = localStorage.getItem(keyName);
+
+    if (existing) {
+      return existing;
+    }
+
+    const created = createPlayerKey();
+    localStorage.setItem(keyName, created);
+    return created;
+  } catch (error) {
+    console.error("Could not restore/create player key:", error);
+    return createPlayerKey();
+  }
+}
+
+function getPlayerNameKey(gameId) {
+  return `tambolalive_player_name_${gameId}`;
+}
+
+function savePlayerName(gameId, name) {
+  try {
+    localStorage.setItem(
+      getPlayerNameKey(gameId),
+      name
+    );
+  } catch (error) {
+    console.error("Could not save player name:", error);
+  }
+}
+
+function getSavedPlayerName(gameId) {
+  try {
+    return localStorage.getItem(
+      getPlayerNameKey(gameId)
+    ) || "";
+  } catch (error) {
+    console.error("Could not restore player name:", error);
+    return "";
+  }
+}
+
 function getPlayerBookingKey(gameId) {
   return `${PLAYER_BOOKING_PREFIX}${gameId}`;
 }
 
-function getPlayerIdKey(gameId) {
-  return `${PLAYER_ID_PREFIX}${gameId}`;
-}
-
-function generatePlayerId() {
+function savePlayerBooking(
+  gameId,
+  booking
+) {
   try {
-    if (window.crypto?.randomUUID) {
-      return window.crypto.randomUUID();
-    }
-  } catch {}
-
-  return `player-${Date.now()}-${Math.random()
-    .toString(36)
-    .slice(2, 12)}`;
-}
-
-function getPlayerId(gameId) {
-  try {
-    const key = getPlayerIdKey(gameId);
-    let id = localStorage.getItem(key);
-
-    if (!id) {
-      id = generatePlayerId();
-      localStorage.setItem(key, id);
-    }
-
-    return id;
-  } catch (error) {
-    console.error(
-      "Could not restore player identity:",
-      error
-    );
-    return generatePlayerId();
-  }
-}
-
-function savePlayerBooking(gameId, booking) {
-  try {
-    const existing = getPlayerBooking(gameId);
-    const list = Array.isArray(existing)
-      ? existing
-      : existing
-      ? [existing]
-      : [];
-
-    const next = [
-      ...list.filter(
-        (item) => item?.bookingId !== booking?.bookingId
-      ),
-      booking
-    ];
-
     localStorage.setItem(
       getPlayerBookingKey(gameId),
-      JSON.stringify(next)
+      JSON.stringify(booking)
     );
   } catch (error) {
     console.error(
@@ -187,28 +197,23 @@ function savePlayerBooking(gameId, booking) {
 
 function getPlayerBooking(gameId) {
   try {
-    const saved = localStorage.getItem(
-      getPlayerBookingKey(gameId)
-    );
+    const saved =
+      localStorage.getItem(
+        getPlayerBookingKey(gameId)
+      );
 
     if (!saved) {
-      return [];
+      return null;
     }
 
-    const parsed = JSON.parse(saved);
-
-    return Array.isArray(parsed)
-      ? parsed
-      : parsed
-      ? [parsed]
-      : [];
+    return JSON.parse(saved);
   } catch (error) {
     console.error(
-      "Could not restore player bookings:",
+      "Could not restore player booking:",
       error
     );
 
-    return [];
+    return null;
   }
 }
 
@@ -1771,26 +1776,27 @@ function TicketGridComponent({
   ticket,
   selected,
   onSelect,
-  calledNumbers = [],
-  readOnly = false,
-  ownerName = ""
+  calledNumbers = []
 }) {
-  const isReadOnly = Boolean(readOnly);
-
   return (
     <div
-      onClick={isReadOnly ? undefined : onSelect}
+      onClick={
+        onSelect
+      }
       style={{
         border:
           selected
             ? "4px solid #2563eb"
-            : isReadOnly
-            ? "2px solid #111827"
             : "2px solid #111827",
-        borderRadius: 14,
+        borderRadius:
+          14,
         padding: 12,
-        background: selected ? "#eff6ff" : "#fff",
-        cursor: isReadOnly ? "default" : "pointer",
+        background:
+          selected
+            ? "#eff6ff"
+            : "#fff",
+        cursor:
+          "pointer",
         boxShadow:
           selected
             ? "0 0 0 3px rgba(37,99,235,.12)"
@@ -1799,120 +1805,148 @@ function TicketGridComponent({
     >
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 10
+          display:
+            "flex",
+          justifyContent:
+            "space-between",
+          alignItems:
+            "center",
+          marginBottom:
+            10
         }}
       >
-        <b style={{ fontSize: 21 }}>
-          Ticket #{ticket.number}
+        <b
+          style={{
+            fontSize: 21
+          }}
+        >
+          Ticket #
+          {
+            ticket.number
+          }
         </b>
 
         <span
           style={{
-            padding: "6px 10px",
-            borderRadius: 8,
+            padding:
+              "6px 10px",
+            borderRadius:
+              8,
             background:
-              isReadOnly
-                ? "#dcfce7"
-                : selected
+              selected
                 ? "#2563eb"
                 : "#f1f5f9",
             color:
-              isReadOnly
-                ? "#166534"
-                : selected
+              selected
                 ? "#fff"
                 : "#475569",
-            fontWeight: "bold",
+            fontWeight:
+              "bold",
             fontSize: 13
           }}
         >
-          {isReadOnly
-            ? "BOOKED"
-            : selected
+          {selected
             ? "SELECTED"
             : "AVAILABLE"}
         </span>
       </div>
 
-      {ownerName && (
-        <div
-          style={{
-            marginBottom: 10,
-            padding: "8px 10px",
-            borderRadius: 8,
-            background: "#f8fafc",
-            border: "1px solid #e2e8f0",
-            color: "#334155",
-            fontSize: 14
-          }}
-        >
-          Player: <b>{ownerName}</b>
-        </div>
-      )}
-
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(9,minmax(28px,1fr))",
-          border: "2px solid #111827",
-          overflow: "hidden",
-          borderRadius: 8
+          display:
+            "grid",
+          gridTemplateColumns:
+            "repeat(9,minmax(28px,1fr))",
+          border:
+            "2px solid #111827",
+          overflow:
+            "hidden",
+          borderRadius:
+            8
         }}
       >
-        {ticket.grid.flatMap((row, r) =>
-          row.map((value, c) => {
-            const called =
-              value && calledNumbers.includes(value);
+        {ticket.grid.flatMap(
+          (
+            row,
+            r
+          ) =>
+            row.map(
+              (
+                value,
+                c
+              ) => {
+                const called =
+                  value &&
+                  calledNumbers.includes(
+                    value
+                  );
 
-            return (
-              <div
-                key={`${r}-${c}`}
-                style={{
-                  minHeight: 48,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRight:
-                    c === 8
-                      ? "none"
-                      : "1px solid #94a3b8",
-                  borderBottom:
-                    r === 2
-                      ? "none"
-                      : "1px solid #94a3b8",
-                  fontWeight: value ? "bold" : "normal",
-                  fontSize: 17,
-                  background:
-                    called
-                      ? "#fde68a"
-                      : value
-                      ? "#fff"
-                      : "#f8fafc",
-                  color: called ? "#92400e" : "#111827"
-                }}
-              >
-                {value || ""}
-              </div>
-            );
-          })
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    style={{
+                      minHeight:
+                        48,
+                      display:
+                        "flex",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "center",
+                      borderRight:
+                        c ===
+                        8
+                          ? "none"
+                          : "1px solid #94a3b8",
+                      borderBottom:
+                        r ===
+                        2
+                          ? "none"
+                          : "1px solid #94a3b8",
+                      fontWeight:
+                        value
+                          ? "bold"
+                          : "normal",
+                      fontSize:
+                        17,
+                      background:
+                        called
+                          ? "#fde68a"
+                          : value
+                          ? "#fff"
+                          : "#f8fafc",
+                      color:
+                        called
+                          ? "#92400e"
+                          : "#111827"
+                    }}
+                  >
+                    {
+                      value ||
+                      ""
+                    }
+                  </div>
+                );
+              }
+            )
         )}
       </div>
 
       <div
         style={{
-          marginTop: 9,
-          textAlign: "center",
-          color: isReadOnly ? "#166534" : selected ? "#1d4ed8" : "#64748b",
-          fontWeight: "bold"
+          marginTop:
+            9,
+          textAlign:
+            "center",
+          color:
+            selected
+              ? "#1d4ed8"
+              : "#64748b",
+          fontWeight:
+            "bold"
         }}
       >
-        {isReadOnly
-          ? "✓ Visible to all players"
-          : selected
+        {selected
           ? "✓ Tap to unselect"
           : "Tap to select"}
       </div>
@@ -1949,7 +1983,9 @@ function PlayerBookingPage({
   const [
     playerName,
     setPlayerName
-  ] = useState("");
+  ] = useState(
+    () => getSavedPlayerName(game.id)
+  );
 
   const [
     booking,
@@ -1965,6 +2001,13 @@ function PlayerBookingPage({
     messageType,
     setMessageType
   ] = useState("info");
+
+  useEffect(() => {
+    const savedName = getSavedPlayerName(game.id);
+    if (savedName && !playerName) {
+      setPlayerName(savedName);
+    }
+  }, [game.id]);
 
   const [
     unavailableTickets,
@@ -2276,35 +2319,104 @@ function PlayerBookingPage({
           a - b
       );
 
-    const playerId = getPlayerId(game.id);
-
-    const bookingData = {
-      game_id:
-        game.id,
-      player_id:
-        playerId,
-      player_name:
-        name,
-      ticket_numbers:
-        sortedTickets,
-      status:
-        "pending"
-    };
-
     try {
+      const playerKey = getOrCreatePlayerKey(game.id);
+
+      savePlayerName(
+        game.id,
+        name
+      );
+
+      // Reuse the same database player record for every booking
+      // made by this player on this device for this game.
+      let player = null;
+
+      const {
+        data: existingPlayer,
+        error: existingPlayerError
+      } = await supabase
+        .from("players")
+        .select("id, player_name, player_key")
+        .eq("game_id", game.id)
+        .eq("player_key", playerKey)
+        .maybeSingle();
+
+      if (existingPlayerError) {
+        throw existingPlayerError;
+      }
+
+      player = existingPlayer;
+
+      if (!player) {
+        const {
+          data: createdPlayer,
+          error: createPlayerError
+        } = await supabase
+          .from("players")
+          .insert({
+            game_id: game.id,
+            player_name: name,
+            player_key: playerKey,
+            status: "pending"
+          })
+          .select("id, player_name, player_key")
+          .single();
+
+        if (createPlayerError) {
+          // Another request/device tab may have created it between
+          // the SELECT and INSERT. Try to read it once more.
+          const {
+            data: retryPlayer,
+            error: retryPlayerError
+          } = await supabase
+            .from("players")
+            .select("id, player_name, player_key")
+            .eq("game_id", game.id)
+            .eq("player_key", playerKey)
+            .maybeSingle();
+
+          if (retryPlayerError || !retryPlayer) {
+            throw createPlayerError;
+          }
+
+          player = retryPlayer;
+        } else {
+          player = createdPlayer;
+        }
+      }
+
+      if (!player?.id) {
+        throw new Error("Could not create or find your player record.");
+      }
+
+      // Keep the display name current without changing the player's identity.
+      if (player.player_name !== name) {
+        const { error: nameUpdateError } = await supabase
+          .from("players")
+          .update({ player_name: name })
+          .eq("id", player.id);
+
+        if (nameUpdateError) {
+          throw nameUpdateError;
+        }
+      }
+
+      const bookingData = {
+        game_id: game.id,
+        player_id: player.id,
+        player_name: name,
+        ticket_numbers: sortedTickets,
+        status: "pending"
+      };
+
       const {
         data,
         error
-      } =
-        await supabase
-          .from(
-            "ticket_bookings"
-          )
-          .insert(
-            bookingData
-          )
-          .select()
-          .single();
+      } = await supabase
+        .from("ticket_bookings")
+        .insert(bookingData)
+        .select()
+        .single();
 
       if (error) {
         throw error;
@@ -2313,14 +2425,11 @@ function PlayerBookingPage({
       savePlayerBooking(
         game.id,
         {
-          bookingId:
-            data?.id ||
-            null,
-          playerId,
-          playerName:
-            name,
-          ticketNumbers:
-            sortedTickets
+          bookingId: data?.id || null,
+          playerId: player.id,
+          playerKey,
+          playerName: name,
+          ticketNumbers: sortedTickets
         }
       );
 
@@ -2778,11 +2887,13 @@ function PlayerBookingPage({
             value={
               playerName
             }
-            onChange={(e) =>
-              setPlayerName(
-                e.target.value
-              )
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              setPlayerName(value);
+              if (value.trim()) {
+                savePlayerName(game.id, value.trim());
+              }
+            }}
             placeholder="Enter your name"
             style={{
               ...inputStyle,
@@ -2884,26 +2995,78 @@ function PlayerBookingPage({
 function LiveGamePage({
   game
 }) {
-  const [calledNumbers, setCalledNumbers] = useState(
-    Array.isArray(game.called_numbers) ? game.called_numbers : []
+  const [
+    calledNumbers,
+    setCalledNumbers
+  ] = useState(
+    Array.isArray(
+      game.called_numbers
+    )
+      ? game.called_numbers
+      : []
   );
 
-  const [liveGame, setLiveGame] = useState(game);
+  const [
+    liveGame,
+    setLiveGame
+  ] = useState(
+    game
+  );
 
-  const [playerBooking, setPlayerBooking] = useState(
+  const [
+    playerBooking,
+    setPlayerBooking
+  ] = useState(
     () => getPlayerBooking(game.id)
   );
 
-  const [bookings, setBookings] = useState([]);
-  const [loadingBookings, setLoadingBookings] = useState(true);
-  const [searchText, setSearchText] = useState("");
+  const [
+    playerBookings,
+    setPlayerBookings
+  ] = useState([]);
 
-  async function loadLiveBookings() {
+  const [
+    loadingPlayerBookings,
+    setLoadingPlayerBookings
+  ] = useState(true);
+
+  async function loadMyBookings() {
+    const playerKey = getOrCreatePlayerKey(game.id);
+
     try {
-      const { data, error } = await supabase
+      let playerId = playerBooking?.playerId || null;
+
+      if (!playerId) {
+        const {
+          data: player,
+          error: playerError
+        } = await supabase
+          .from("players")
+          .select("id, player_name, player_key")
+          .eq("game_id", game.id)
+          .eq("player_key", playerKey)
+          .maybeSingle();
+
+        if (playerError) {
+          throw playerError;
+        }
+
+        playerId = player?.id || null;
+      }
+
+      if (!playerId) {
+        setPlayerBookings([]);
+        return;
+      }
+
+      const {
+        data,
+        error
+      } = await supabase
         .from("ticket_bookings")
         .select("id, player_id, player_name, ticket_numbers, status, created_at")
         .eq("game_id", game.id)
+        .eq("player_id", playerId)
         .eq("status", "accepted")
         .order("created_at", { ascending: true });
 
@@ -2911,117 +3074,197 @@ function LiveGamePage({
         throw error;
       }
 
-      setBookings(data || []);
+      setPlayerBookings(data || []);
+
+      const allTickets = [];
+      (data || []).forEach((booking) => {
+        (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : []).forEach((n) => {
+          const number = Number(n);
+          if (Number.isInteger(number) && number >= 1 && number <= 100) {
+            allTickets.push(number);
+          }
+        });
+      });
+
+      const uniqueTickets = [...new Set(allTickets)].sort((a, b) => a - b);
+      const displayName = data?.[data.length - 1]?.player_name || playerBooking?.playerName || getSavedPlayerName(game.id);
+
+      setPlayerBooking({
+        ...(playerBooking || {}),
+        playerId,
+        playerKey,
+        playerName: displayName,
+        ticketNumbers: uniqueTickets
+      });
+
+      savePlayerBooking(game.id, {
+        ...(playerBooking || {}),
+        playerId,
+        playerKey,
+        playerName: displayName,
+        ticketNumbers: uniqueTickets
+      });
     } catch (err) {
-      console.error("Could not load live game bookings:", err);
-      setBookings([]);
+      console.error("Could not load this player's bookings:", err);
+      setPlayerBookings([]);
     } finally {
-      setLoadingBookings(false);
+      setLoadingPlayerBookings(false);
     }
   }
 
-  useEffect(() => {
-    setLiveGame((current) => {
-      if (
-        current &&
-        current.id === game.id &&
-        current.status === game.status &&
-        JSON.stringify(current.called_numbers || []) ===
-          JSON.stringify(game.called_numbers || [])
-      ) {
-        return current;
-      }
-
-      return game;
-    });
-
-    setCalledNumbers((current) => {
-      const next = Array.isArray(game.called_numbers)
-        ? game.called_numbers
-        : [];
-
-      return JSON.stringify(current) === JSON.stringify(next)
-        ? current
-        : next;
-    });
-
-    setPlayerBooking(getPlayerBooking(game.id));
-  }, [game.id, game.status, game.called_numbers]);
-
-  useEffect(() => {
-    async function refreshGame() {
-      const { data, error } = await supabase
-        .from("games")
-        .select("*")
-        .eq("id", game.id)
-        .maybeSingle();
-
-      if (!error && data) {
-        setLiveGame((current) => {
-          if (
-            current &&
-            current.id === data.id &&
-            current.status === data.status &&
-            JSON.stringify(current.called_numbers || []) ===
-              JSON.stringify(data.called_numbers || []) &&
-            current.game_name === data.game_name &&
-            current.game_code === data.game_code
-          ) {
-            return current;
-          }
-
-          return data;
-        });
-
-        setCalledNumbers((current) => {
-          const next = Array.isArray(data.called_numbers)
-            ? data.called_numbers
-            : [];
-
-          return JSON.stringify(current) === JSON.stringify(next)
-            ? current
-            : next;
-        });
-      }
-    }
-
-    refreshGame();
-
-    const channel = supabase
-      .channel(`live-game-${game.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "games",
-          filter: `id=eq.${game.id}`
-        },
-        (payload) => {
-          const updated = payload.new;
-          setLiveGame(updated);
-          setCalledNumbers(
-            Array.isArray(updated.called_numbers)
-              ? updated.called_numbers
-              : []
-          );
+  useEffect(
+    () => {
+      setLiveGame((current) => {
+        if (
+          current &&
+          current.id === game.id &&
+          current.status === game.status &&
+          JSON.stringify(current.called_numbers || []) ===
+            JSON.stringify(game.called_numbers || [])
+        ) {
+          return current;
         }
-      )
-      .subscribe();
 
-    const interval = setInterval(refreshGame, 5000);
+        return game;
+      });
 
-    return () => {
-      clearInterval(interval);
-      supabase.removeChannel(channel);
-    };
-  }, [game.id]);
+      setCalledNumbers((current) => {
+        const next = Array.isArray(game.called_numbers)
+          ? game.called_numbers
+          : [];
+
+        return JSON.stringify(current) === JSON.stringify(next)
+          ? current
+          : next;
+      });
+
+      setPlayerBooking(
+        getPlayerBooking(game.id)
+      );
+
+      loadMyBookings();
+    },
+    [
+      game.id,
+      game.status,
+      game.called_numbers
+    ]
+  );
+
+  useEffect(
+    () => {
+      async function refreshGame() {
+        const {
+          data,
+          error
+        } =
+          await supabase
+            .from(
+              "games"
+            )
+            .select("*")
+            .eq(
+              "id",
+              game.id
+            )
+            .maybeSingle();
+
+        if (
+          !error &&
+          data
+        ) {
+          setLiveGame((current) => {
+            if (
+              current &&
+              current.id === data.id &&
+              current.status === data.status &&
+              JSON.stringify(current.called_numbers || []) ===
+                JSON.stringify(data.called_numbers || []) &&
+              current.game_name === data.game_name &&
+              current.game_code === data.game_code
+            ) {
+              return current;
+            }
+
+            return data;
+          });
+
+          setCalledNumbers((current) => {
+            const next = Array.isArray(data.called_numbers)
+              ? data.called_numbers
+              : [];
+
+            return JSON.stringify(current) === JSON.stringify(next)
+              ? current
+              : next;
+          });
+        }
+      }
+
+      refreshGame();
+
+      const channel =
+        supabase
+          .channel(
+            `live-game-${game.id}`
+          )
+          .on(
+            "postgres_changes",
+            {
+              event:
+                "UPDATE",
+              schema:
+                "public",
+              table:
+                "games",
+              filter:
+                `id=eq.${game.id}`
+            },
+            (payload) => {
+              const updated =
+                payload.new;
+
+              setLiveGame(
+                updated
+              );
+
+              setCalledNumbers(
+                Array.isArray(
+                  updated.called_numbers
+                )
+                  ? updated.called_numbers
+                  : []
+              );
+            }
+          )
+          .subscribe();
+
+      const interval =
+        setInterval(
+          refreshGame,
+          5000
+        );
+
+      return () => {
+        clearInterval(
+          interval
+        );
+
+        supabase.removeChannel(
+          channel
+        );
+      };
+    },
+    [
+      game.id
+    ]
+  );
 
   useEffect(() => {
-    loadLiveBookings();
+    loadMyBookings();
 
     const channel = supabase
-      .channel(`live-bookings-${game.id}`)
+      .channel(`my-live-bookings-${game.id}`)
       .on(
         "postgres_changes",
         {
@@ -3031,129 +3274,133 @@ function LiveGamePage({
           filter: `game_id=eq.${game.id}`
         },
         () => {
-          loadLiveBookings();
+          loadMyBookings();
         }
       )
       .subscribe();
 
-    const interval = setInterval(loadLiveBookings, 5000);
+    const interval = setInterval(loadMyBookings, 5000);
 
     return () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [game.id]);
+  }, [game.id, playerBooking?.playerId]);
 
-  const myBookings = useMemo(
-    () => (Array.isArray(playerBooking) ? playerBooking : []),
-    [playerBooking]
-  );
+  const tickets = useMemo(() => {
+    const allTickets = [];
 
-  const myTicketNumbers = useMemo(() => {
-    const numbers = [];
-
-    myBookings.forEach((booking) => {
-      const ticketNumbers = Array.isArray(booking?.ticketNumbers)
-        ? booking.ticketNumbers
-        : [];
-
-      ticketNumbers.forEach((number) => {
-        const n = Number(number);
-        if (Number.isInteger(n) && n >= 1 && n <= 100) {
-          numbers.push(n);
+    playerBookings.forEach((booking) => {
+      (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : []).forEach((n) => {
+        const number = Number(n);
+        if (Number.isInteger(number) && number >= 1 && number <= 100) {
+          allTickets.push(number);
         }
       });
     });
 
-    return [...new Set(numbers)].sort((a, b) => a - b);
-  }, [myBookings]);
-
-  const myPlayerName = useMemo(() => {
-    const latest = [...myBookings].reverse().find((b) => b?.playerName);
-    return latest?.playerName || "Player";
-  }, [myBookings]);
-
-  const myTicketCards = useMemo(
-    () =>
-      myTicketNumbers.map((ticketNumber) => ({
-        number: ticketNumber,
-        grid: makeTicket(liveGame.game_code, ticketNumber)
-      })),
-    [myTicketNumbers, liveGame.game_code]
-  );
-
-  const allBookedTickets = useMemo(() => {
-    const result = [];
-
-    bookings.forEach((booking) => {
-      const numbers = Array.isArray(booking.ticket_numbers)
-        ? booking.ticket_numbers
-        : [];
-
-      numbers.forEach((number) => {
-        const ticketNumber = Number(number);
-
-        if (
-          Number.isInteger(ticketNumber) &&
-          ticketNumber >= 1 &&
-          ticketNumber <= 100
-        ) {
-          result.push({
-            bookingId: booking.id,
-            playerName: booking.player_name || "Player",
-            number: ticketNumber,
-            grid: makeTicket(liveGame.game_code, ticketNumber)
-          });
-        }
-      });
-    });
-
-    return result.sort((a, b) => a.number - b.number);
-  }, [bookings, liveGame.game_code]);
-
-  const filteredBookedTickets = useMemo(() => {
-    const query = searchText.trim().toLowerCase();
-
-    if (!query) {
-      return allBookedTickets;
+    if (!allTickets.length && Array.isArray(playerBooking?.ticketNumbers)) {
+      allTickets.push(...playerBooking.ticketNumbers.map(Number));
     }
 
-    return allBookedTickets.filter((ticket) => {
-      const player = ticket.playerName.toLowerCase();
-      const number = String(ticket.number);
+    return [...new Set(allTickets)]
+      .filter((n) => Number.isInteger(n) && n >= 1 && n <= 100)
+      .sort((a, b) => a - b);
+  }, [playerBookings, playerBooking?.ticketNumbers]);
 
-      return (
-        player.includes(query) ||
-        number === query.replace(/^#/, "") ||
-        `#${number}`.includes(query)
-      );
-    });
-  }, [allBookedTickets, searchText]);
+  const ticketCards = useMemo(
+    () =>
+      tickets.map((ticketNumber) => ({
+        number: ticketNumber,
+        grid: makeTicket(
+          liveGame.game_code,
+          ticketNumber
+        )
+      })),
+    [
+      tickets,
+      liveGame.game_code
+    ]
+  );
 
-  const lastCalled = calledNumbers.length
-    ? calledNumbers[calledNumbers.length - 1]
-    : null;
+  const lastCalled =
+    calledNumbers.length
+      ? calledNumbers[
+          calledNumbers.length -
+            1
+        ]
+      : null;
 
-  if (liveGame.status === "ended") {
+  if (
+    liveGame.status ===
+    "ended"
+  ) {
     return (
-      <main style={pageStyle}>
-        <div style={{ maxWidth: 700, margin: "60px auto" }}>
-          <section style={{ ...cardStyle, textAlign: "center" }}>
-            <h1>GAME ENDED</h1>
-            <p style={{ color: "#64748b", fontSize: 18 }}>
-              Thank you for playing TambolaLive.
-            </p>
-            <div
+      <main
+        style={
+          pageStyle
+        }
+      >
+        <div
+          style={{
+            maxWidth:
+              700,
+            margin:
+              "60px auto"
+          }}
+        >
+          <section
+            style={{
+              ...cardStyle,
+              textAlign:
+                "center"
+            }}
+          >
+            <h1>
+              GAME ENDED
+            </h1>
+
+            <p
               style={{
-                marginTop: 20,
-                padding: 20,
-                borderRadius: 14,
-                background: "#f8fafc"
+                color:
+                  "#64748b",
+                fontSize:
+                  18
               }}
             >
-              <b>Total Numbers Called</b>
-              <div style={{ fontSize: 35, fontWeight: "bold", marginTop: 8 }}>
-                {calledNumbers.length}
+              Thank you for playing
+              TambolaLive.
+            </p>
+
+            <div
+              style={{
+                marginTop:
+                  20,
+                padding:
+                  20,
+                borderRadius:
+                  14,
+                background:
+                  "#f8fafc"
+              }}
+            >
+              <b>
+                Total Numbers Called
+              </b>
+
+              <div
+                style={{
+                  fontSize:
+                    35,
+                  fontWeight:
+                    "bold",
+                  marginTop:
+                    8
+                }}
+              >
+                {
+                  calledNumbers.length
+                }
               </div>
             </div>
           </section>
@@ -3163,234 +3410,263 @@ function LiveGamePage({
   }
 
   return (
-    <main style={pageStyle}>
-      <div style={{ maxWidth: 1050, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <h1>{liveGame.game_name}</h1>
+    <main
+      style={
+        pageStyle
+      }
+    >
+      <div
+        style={{
+          maxWidth:
+            1050,
+          margin:
+            "0 auto"
+        }}
+      >
+        <div
+          style={{
+            textAlign:
+              "center",
+            marginBottom:
+              20
+          }}
+        >
+          <h1>
+            {
+              liveGame.game_name
+            }
+          </h1>
+
           <div
             style={{
-              display: "inline-block",
-              padding: "8px 18px",
-              borderRadius: 30,
-              background: "#dcfce7",
-              color: "#166534",
-              fontWeight: "bold"
+              display:
+                "inline-block",
+              padding:
+                "8px 18px",
+              borderRadius:
+                30,
+              background:
+                "#dcfce7",
+              color:
+                "#166534",
+              fontWeight:
+                "bold"
             }}
           >
             ● LIVE GAME
           </div>
         </div>
 
-        <section style={{ ...cardStyle, textAlign: "center" }}>
-          <div style={{ color: "#64748b", fontWeight: "bold" }}>
+        <section
+          style={{
+            ...cardStyle,
+            textAlign:
+              "center"
+          }}
+        >
+          <div
+            style={{
+              color:
+                "#64748b",
+              fontWeight:
+                "bold"
+            }}
+          >
             LAST CALLED NUMBER
           </div>
 
           <div
             style={{
-              width: 150,
-              height: 150,
-              margin: "15px auto",
-              borderRadius: "50%",
-              background: "#2563eb",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 58,
-              fontWeight: "bold",
-              boxShadow: "0 10px 30px rgba(37,99,235,.25)"
+              width:
+                150,
+              height:
+                150,
+              margin:
+                "15px auto",
+              borderRadius:
+                "50%",
+              background:
+                "#2563eb",
+              color:
+                "#fff",
+              display:
+                "flex",
+              alignItems:
+                "center",
+              justifyContent:
+                "center",
+              fontSize:
+                58,
+              fontWeight:
+                "bold",
+              boxShadow:
+                "0 10px 30px rgba(37,99,235,.25)"
             }}
           >
-            {lastCalled || "—"}
+            {
+              lastCalled ||
+              "—"
+            }
           </div>
 
-          <div style={{ color: "#64748b" }}>
-            Numbers called: {calledNumbers.length}/90
+          <div
+            style={{
+              color:
+                "#64748b"
+            }}
+          >
+            Numbers called:
+            {" "}
+            {
+              calledNumbers.length
+            }
+            / 90
           </div>
         </section>
 
-        {myBookings.length > 0 && (
-          <section style={cardStyle}>
-            <h2>Your Tickets</h2>
-            <p style={{ color: "#64748b" }}>
-              Player: <b>{myPlayerName}</b>
+        {playerBooking && (
+          <section
+            style={
+              cardStyle
+            }
+          >
+            <h2>
+              Your Tickets
+            </h2>
+
+            <p
+              style={{
+                color:
+                  "#64748b"
+              }}
+            >
+              Player:
+              {" "}
+              <b>
+                {
+                  playerBooking.playerName
+                }
+              </b>
             </p>
 
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-                gap: 16,
+                display:
+                  "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit,minmax(250px,1fr))",
+                gap:
+                  16,
                 alignItems: "start",
                 contain: "layout"
               }}
             >
-              {myTicketCards.length ? (
-                myTicketCards.map((ticket) => (
-                  <TicketGrid
-                    key={`mine-${ticket.number}`}
-                    ticket={ticket}
-                    selected={false}
-                    calledNumbers={calledNumbers}
-                    readOnly
-                    ownerName={myPlayerName}
-                  />
-                ))
-              ) : (
-                <p style={{ color: "#64748b" }}>
-                  No booked tickets found for this device yet.
-                </p>
-              )}
+              {ticketCards.map(
+              (ticket) => (
+                <TicketGrid
+                  key={ticket.number}
+                  ticket={ticket}
+                  selected={false}
+                  calledNumbers={calledNumbers}
+                  onSelect={() => {}}
+                />
+              )
+            )}
             </div>
           </section>
         )}
 
-        <section style={cardStyle}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 12,
-              flexWrap: "wrap"
-            }}
-          >
-            <div>
-              <h2 style={{ marginBottom: 5 }}>
-                All Booked 3×9 Tickets
-              </h2>
-              <p style={{ color: "#64748b", marginTop: 0 }}>
-                Every accepted player's ticket is visible to everyone.
-              </p>
-            </div>
-
-            <div
-              style={{
-                padding: "8px 12px",
-                borderRadius: 9,
-                background: "#eff6ff",
-                color: "#1d4ed8",
-                fontWeight: "bold"
-              }}
-            >
-              {allBookedTickets.length} booked
-            </div>
-          </div>
+        <section
+          style={
+            cardStyle
+          }
+        >
+          <h2>
+            Called Numbers
+          </h2>
 
           <div
             style={{
-              display: "flex",
-              gap: 8,
-              marginTop: 12,
-              flexWrap: "wrap"
-            }}
-          >
-            <input
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Search player name or ticket #"
-              style={{ ...inputStyle, flex: "1 1 240px" }}
-            />
-
-            <button
-              type="button"
-              onClick={() => setSearchText("")}
-              style={secondaryButton}
-            >
-              🔎 Search / Clear
-            </button>
-          </div>
-
-          {loadingBookings ? (
-            <p style={{ color: "#64748b", marginTop: 18 }}>
-              Loading booked tickets...
-            </p>
-          ) : filteredBookedTickets.length === 0 ? (
-            <div
-              style={{
-                marginTop: 18,
-                padding: 20,
-                borderRadius: 12,
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-                textAlign: "center",
-                color: "#64748b"
-              }}
-            >
-              {allBookedTickets.length === 0
-                ? "No accepted tickets found yet."
-                : "No tickets match your search."}
-            </div>
-          ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-                gap: 18,
-                marginTop: 18,
-                contain: "layout"
-              }}
-            >
-              {filteredBookedTickets.map((ticket) => (
-                <TicketGrid
-                  key={`${ticket.bookingId}-${ticket.number}`}
-                  ticket={ticket}
-                  selected={false}
-                  calledNumbers={calledNumbers}
-                  readOnly
-                  ownerName={ticket.playerName}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section style={cardStyle}>
-          <h2>Called Numbers</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(10,minmax(0,1fr))",
+              display:
+                "grid",
+              gridTemplateColumns:
+                "repeat(10,minmax(0,1fr))",
               gap: 7
             }}
           >
-            {Array.from({ length: 90 }, (_, i) => i + 1).map((number) => {
-              const called = calledNumbers.includes(number);
+            {Array.from(
+              {
+                length:
+                  90
+              },
+              (
+                _,
+                i
+              ) =>
+                i + 1
+            ).map(
+              (
+                number
+              ) => {
+                const called =
+                  calledNumbers.includes(
+                    number
+                  );
 
-              return (
-                <div
-                  key={number}
-                  style={{
-                    padding: "11px 4px",
-                    textAlign: "center",
-                    borderRadius: 8,
-                    border: called
-                      ? "2px solid #2563eb"
-                      : "1px solid #e2e8f0",
-                    background: called ? "#2563eb" : "#fff",
-                    color: called ? "#fff" : "#64748b",
-                    fontWeight: "bold"
-                  }}
-                >
-                  {number}
-                </div>
-              );
-            })}
+                return (
+                  <div
+                    key={
+                      number
+                    }
+                    style={{
+                      padding:
+                        "11px 4px",
+                      textAlign:
+                        "center",
+                      borderRadius:
+                        8,
+                      border:
+                        called
+                          ? "2px solid #2563eb"
+                          : "1px solid #e2e8f0",
+                      background:
+                        called
+                          ? "#2563eb"
+                          : "#fff",
+                      color:
+                        called
+                          ? "#fff"
+                          : "#64748b",
+                      fontWeight:
+                        "bold"
+                    }}
+                  >
+                    {
+                      number
+                    }
+                  </div>
+                );
+              }
+            )}
           </div>
         </section>
 
-        <LivePrizeList game={liveGame} />
-
-      <div
-        style={{
-          textAlign: "center",
-          color: "#64748b",
-          padding: "10px 0 30px"
-        }}
-      >
-        Stay on this page. The game board will update automatically when the host calls a number.
-      </div>
+        <div
+          style={{
+            textAlign:
+              "center",
+            color:
+              "#64748b",
+            padding:
+              "10px 0 30px"
+          }}
+        >
+          Stay on this page.
+          The game board will
+          update automatically
+          when the host calls
+          a number.
+        </div>
       </div>
     </main>
   );
@@ -4946,66 +5222,6 @@ function StatusBox({
         }
       </div>
     </div>
-  );
-}
-
-
-/* =========================================================
-   LIVE GAME PRIZE LIST
-========================================================= */
-
-function LivePrizeList({ game }) {
-  const prizes = Array.isArray(game.selected_prizes)
-    ? game.selected_prizes
-    : [];
-
-  return (
-    <section style={cardStyle}>
-      <h2>🏆 Prizes & Winners</h2>
-
-      {prizes.length === 0 ? (
-        <p style={{ color: "#64748b" }}>
-          No prizes have been configured for this game.
-        </p>
-      ) : (
-        <div style={{ display: "grid", gap: 10 }}>
-          {prizes.map((prize, index) => (
-            <div
-              key={`${prize.name}-${index}`}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr auto",
-                gap: 12,
-                alignItems: "center",
-                padding: 13,
-                border: "1px solid #e2e8f0",
-                borderRadius: 10,
-                background: "#f8fafc"
-              }}
-            >
-              <div>
-                <b>{prize.name}</b>
-              </div>
-
-              <div
-                style={{
-                  minWidth: 110,
-                  textAlign: "center",
-                  padding: "8px 10px",
-                  borderRadius: 8,
-                  background: "#fff",
-                  border: "1px solid #cbd5e1",
-                  fontWeight: "bold",
-                  color: "#64748b"
-                }}
-              >
-                Winner: —
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
   );
 }
 
