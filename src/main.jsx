@@ -2868,11 +2868,7 @@ function PlayerBookingPage({
         <section
           style={{
             ...cardStyle,
-            position:
-              "sticky",
-            bottom: 10,
-            zIndex:
-              10
+            marginTop: 20
           }}
         >
           <h2>
