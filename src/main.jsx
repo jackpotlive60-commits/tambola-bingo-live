@@ -3874,6 +3874,71 @@ function LiveGamePage({ game }) {
 }
 
 /* =========================================================
+   WINNER HISTORY
+========================================================= */
+
+function WinnerHistory({ history }) {
+  return (
+    <section style={cardStyle}>
+      <h2>Winner History</h2>
+
+      {history.length === 0 ? (
+        <p style={{ color: "#64748b" }}>
+          No confirmed winners yet.
+        </p>
+      ) : (
+        <div style={{ display: "grid", gap: 10 }}>
+          {history.map((winner, index) => (
+            <div
+              key={`${winner.prizeName}-${winner.playerName}-${winner.ticketNumber}-${winner.winningNumber}-${index}`}
+              style={{
+                padding: 12,
+                borderRadius: 10,
+                background: "#f0fdf4",
+                border: "1px solid #bbf7d0"
+              }}
+            >
+              <div style={{ fontWeight: "bold" }}>
+                {winner.prizeName}
+              </div>
+
+              <div style={{ marginTop: 4 }}>
+                {winner.playerName} - Ticket #{winner.ticketNumber}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 4,
+                  color: "#166534",
+                  fontWeight: "bold"
+                }}
+              >
+                Share: {formatPrizeAmount(winner.prizeShare)}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 4,
+                  color: "#64748b",
+                  fontSize: 13
+                }}
+              >
+                Prize Pool: {formatPrizeAmount(winner.prizeAmount)}
+                {" | "}
+                Winning Call: #{winner.winningNumber}
+                {" | "}
+                {winner.winnerCount} winner{winner.winnerCount === 1 ? "" : "s"}
+                {" | Confirmed"}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* =========================================================
    LIVE PRIZE LIST
 ========================================================= */
 
@@ -4105,6 +4170,11 @@ function HostControlPage({
     confirmingWinners,
     setConfirmingWinners
   ] = useState(false);
+
+  const [
+    winnerHistory,
+    setWinnerHistory
+  ] = useState([]);
 
   const callingRef = useRef(false);
 
@@ -4828,6 +4898,61 @@ ${inviteUrl}`;
     return events;
   }
 
+  function recordWinnerHistory(events) {
+    if (!Array.isArray(events) || !events.length) {
+      return;
+    }
+
+    setWinnerHistory((current) => {
+      const existingKeys = new Set(
+        current.map(
+          (item) =>
+            `${item.prizeName}|${item.playerName}|${item.ticketNumber}|${item.winningNumber}`
+        )
+      );
+
+      const entries = [];
+
+      events.forEach((event) => {
+        if (!Array.isArray(event.winners)) {
+          return;
+        }
+
+        event.winners.forEach((winner) => {
+          const item = {
+            prizeName: event.prizeName,
+            prizeAmount: event.prizeAmount,
+            winnerCount:
+              event.winnerCount || event.winners.length,
+            playerName:
+              winner.playerName || "Player",
+            ticketNumber:
+              winner.ticketNumber,
+            prizeShare:
+              winner.prizeShare,
+            winningNumber:
+              event.winningNumber,
+            confirmedAt:
+              new Date().toISOString()
+          };
+
+          const key =
+            `${item.prizeName}|${item.playerName}|${item.ticketNumber}|${item.winningNumber}`;
+
+          if (!existingKeys.has(key)) {
+            existingKeys.add(key);
+            entries.push(item);
+          }
+        });
+      });
+
+      return [
+        ...current,
+        ...entries
+      ];
+    });
+  }
+
   async function confirmWinnerEvents() {
     if (!pendingWinnerEvents.length || confirmingWinners) {
       return;
@@ -4896,6 +5021,7 @@ ${inviteUrl}`;
 
       saveHostGame(updatedGame);
       onGameUpdated(updatedGame);
+      recordWinnerHistory(pendingWinnerEvents);
       setPendingWinnerEvents([]);
     } catch (err) {
       console.error("Could not confirm winner:", err);
@@ -6085,6 +6211,8 @@ ${inviteUrl}`;
             </p>
           </section>
         )}
+
+        <WinnerHistory history={winnerHistory} />
 
         <LivePrizeList game={game} />
 
