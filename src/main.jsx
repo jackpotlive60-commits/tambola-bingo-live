@@ -1716,180 +1716,123 @@ function TicketGrid({
   ticket,
   selected,
   onSelect,
-  calledNumbers = []
+  calledNumbers = [],
+  statusLabel,
+  interactive = true
 }) {
+  const label =
+    statusLabel ||
+    (selected ? "SELECTED" : "AVAILABLE");
+
   return (
     <div
-      onClick={
-        onSelect
-      }
+      onClick={interactive ? onSelect : undefined}
       style={{
         border:
           selected
             ? "4px solid #2563eb"
             : "2px solid #111827",
-        borderRadius:
-          14,
+        borderRadius: 14,
         padding: 12,
-        background:
-          selected
-            ? "#eff6ff"
-            : "#fff",
-        cursor:
-          "pointer",
-        boxShadow:
-          selected
-            ? "0 0 0 3px rgba(37,99,235,.12)"
-            : "none"
+        background: selected ? "#eff6ff" : "#fff",
+        cursor: interactive ? "pointer" : "default",
+        boxShadow: selected
+          ? "0 0 0 3px rgba(37,99,235,.12)"
+          : "none"
       }}
     >
       <div
         style={{
-          display:
-            "flex",
-          justifyContent:
-            "space-between",
-          alignItems:
-            "center",
-          marginBottom:
-            10
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 10
         }}
       >
-        <b
-          style={{
-            fontSize: 21
-          }}
-        >
-          Ticket #
-          {
-            ticket.number
-          }
+        <b style={{ fontSize: 21 }}>
+          Ticket #{ticket.number}
         </b>
 
         <span
           style={{
-            padding:
-              "6px 10px",
-            borderRadius:
-              8,
+            padding: "6px 10px",
+            borderRadius: 8,
             background:
-              selected
+              label === "BOOKED"
+                ? "#dcfce7"
+                : selected
                 ? "#2563eb"
                 : "#f1f5f9",
             color:
-              selected
+              label === "BOOKED"
+                ? "#166534"
+                : selected
                 ? "#fff"
                 : "#475569",
-            fontWeight:
-              "bold",
+            fontWeight: "bold",
             fontSize: 13
           }}
         >
-          {selected
-            ? "SELECTED"
-            : "AVAILABLE"}
+          {label}
         </span>
       </div>
 
       <div
         style={{
-          display:
-            "grid",
-          gridTemplateColumns:
-            "repeat(9,minmax(28px,1fr))",
-          border:
-            "2px solid #111827",
-          overflow:
-            "hidden",
-          borderRadius:
-            8
+          display: "grid",
+          gridTemplateColumns: "repeat(9,minmax(28px,1fr))",
+          border: "2px solid #111827",
+          overflow: "hidden",
+          borderRadius: 8
         }}
       >
-        {ticket.grid.flatMap(
-          (
-            row,
-            r
-          ) =>
-            row.map(
-              (
-                value,
-                c
-              ) => {
-                const called =
-                  value &&
-                  calledNumbers.includes(
-                    value
-                  );
+        {ticket.grid.flatMap((row, r) =>
+          row.map((value, c) => {
+            const called =
+              value && calledNumbers.includes(value);
 
-                return (
-                  <div
-                    key={`${r}-${c}`}
-                    style={{
-                      minHeight:
-                        48,
-                      display:
-                        "flex",
-                      alignItems:
-                        "center",
-                      justifyContent:
-                        "center",
-                      borderRight:
-                        c ===
-                        8
-                          ? "none"
-                          : "1px solid #94a3b8",
-                      borderBottom:
-                        r ===
-                        2
-                          ? "none"
-                          : "1px solid #94a3b8",
-                      fontWeight:
-                        value
-                          ? "bold"
-                          : "normal",
-                      fontSize:
-                        17,
-                      background:
-                        called
-                          ? "#fde68a"
-                          : value
-                          ? "#fff"
-                          : "#f8fafc",
-                      color:
-                        called
-                          ? "#92400e"
-                          : "#111827"
-                    }}
-                  >
-                    {
-                      value ||
-                      ""
-                    }
-                  </div>
-                );
-              }
-            )
+            return (
+              <div
+                key={`${r}-${c}`}
+                style={{
+                  minHeight: 48,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRight:
+                    c === 8 ? "none" : "1px solid #94a3b8",
+                  borderBottom:
+                    r === 2 ? "none" : "1px solid #94a3b8",
+                  fontWeight: value ? "bold" : "normal",
+                  fontSize: 17,
+                  background: called
+                    ? "#fde68a"
+                    : value
+                    ? "#fff"
+                    : "#f8fafc",
+                  color: called ? "#92400e" : "#111827"
+                }}
+              >
+                {value || ""}
+              </div>
+            );
+          })
         )}
       </div>
 
-      <div
-        style={{
-          marginTop:
-            9,
-          textAlign:
-            "center",
-          color:
-            selected
-              ? "#1d4ed8"
-              : "#64748b",
-          fontWeight:
-            "bold"
-        }}
-      >
-        {selected
-          ? "✓ Tap to unselect"
-          : "Tap to select"}
-      </div>
+      {interactive && (
+        <div
+          style={{
+            marginTop: 9,
+            textAlign: "center",
+            color: selected ? "#1d4ed8" : "#64748b",
+            fontWeight: "bold"
+          }}
+        >
+          {selected ? "✓ Tap to unselect" : "Tap to select"}
+        </div>
+      )}
     </div>
   );
 }
@@ -2850,238 +2793,208 @@ function PlayerBookingPage({
 function LiveGamePage({
   game
 }) {
-  const [
-    calledNumbers,
-    setCalledNumbers
-  ] = useState(
-    Array.isArray(
-      game.called_numbers
-    )
+  const [calledNumbers, setCalledNumbers] = useState(
+    Array.isArray(game.called_numbers)
       ? game.called_numbers
       : []
   );
 
-  const [
-    liveGame,
-    setLiveGame
-  ] = useState(
-    game
+  const [liveGame, setLiveGame] = useState(game);
+
+  const [playerBooking, setPlayerBooking] = useState(
+    () => getPlayerBooking(game.id)
   );
 
-  const [
-    playerBooking,
-    setPlayerBooking
-  ] = useState(
-    () =>
-      getPlayerBooking(
-        game.id
-      )
-  );
+  const [bookings, setBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(
-    () => {
-      setLiveGame(
-        game
-      );
+  useEffect(() => {
+    setLiveGame(game);
+    setCalledNumbers(
+      Array.isArray(game.called_numbers)
+        ? game.called_numbers
+        : []
+    );
+    setPlayerBooking(getPlayerBooking(game.id));
+  }, [game]);
 
+  async function refreshGame() {
+    const { data, error } = await supabase
+      .from("games")
+      .select("*")
+      .eq("id", game.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setLiveGame(data);
       setCalledNumbers(
-        Array.isArray(
-          game.called_numbers
-        )
-          ? game.called_numbers
+        Array.isArray(data.called_numbers)
+          ? data.called_numbers
           : []
       );
+    }
+  }
 
-      setPlayerBooking(
-        getPlayerBooking(
-          game.id
-        )
-      );
-    },
-    [
-      game
-    ]
-  );
+  async function loadBookings() {
+    setLoadingBookings(true);
 
-  useEffect(
-    () => {
-      async function refreshGame() {
-        const {
-          data,
-          error
-        } =
-          await supabase
-            .from(
-              "games"
-            )
-            .select("*")
-            .eq(
-              "id",
-              game.id
-            )
-            .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from("ticket_bookings")
+        .select("*")
+        .eq("game_id", game.id)
+        .eq("status", "accepted")
+        .order("created_at", { ascending: true });
 
-        if (
-          !error &&
-          data
-        ) {
-          setLiveGame(
-            data
-          );
+      if (error) {
+        throw error;
+      }
 
+      setBookings(data || []);
+    } catch (error) {
+      console.error("Could not load live bookings:", error);
+      setBookings([]);
+    } finally {
+      setLoadingBookings(false);
+    }
+  }
+
+  useEffect(() => {
+    refreshGame();
+    loadBookings();
+
+    const gameChannel = supabase
+      .channel(`live-game-${game.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "games",
+          filter: `id=eq.${game.id}`
+        },
+        (payload) => {
+          const updated = payload.new;
+          setLiveGame(updated);
           setCalledNumbers(
-            Array.isArray(
-              data.called_numbers
-            )
-              ? data.called_numbers
+            Array.isArray(updated.called_numbers)
+              ? updated.called_numbers
               : []
           );
         }
-      }
+      )
+      .subscribe();
 
+    const bookingChannel = supabase
+      .channel(`live-bookings-${game.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "ticket_bookings",
+          filter: `game_id=eq.${game.id}`
+        },
+        () => {
+          loadBookings();
+        }
+      )
+      .subscribe();
+
+    const interval = setInterval(() => {
       refreshGame();
+      loadBookings();
+    }, 3000);
 
-      const channel =
-        supabase
-          .channel(
-            `live-game-${game.id}`
-          )
-          .on(
-            "postgres_changes",
-            {
-              event:
-                "UPDATE",
-              schema:
-                "public",
-              table:
-                "games",
-              filter:
-                `id=eq.${game.id}`
-            },
-            (payload) => {
-              const updated =
-                payload.new;
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(gameChannel);
+      supabase.removeChannel(bookingChannel);
+    };
+  }, [game.id]);
 
-              setLiveGame(
-                updated
-              );
+  const tickets = playerBooking?.ticketNumbers || [];
 
-              setCalledNumbers(
-                Array.isArray(
-                  updated.called_numbers
-                )
-                  ? updated.called_numbers
-                  : []
-              );
-            }
-          )
-          .subscribe();
+  const lastCalled = calledNumbers.length
+    ? calledNumbers[calledNumbers.length - 1]
+    : null;
 
-      const interval =
-        setInterval(
-          refreshGame,
-          2000
-        );
+  const prizes = Array.isArray(liveGame.selected_prizes)
+    ? liveGame.selected_prizes
+    : [];
 
-      return () => {
-        clearInterval(
-          interval
-        );
-
-        supabase.removeChannel(
-          channel
-        );
-      };
-    },
-    [
-      game.id
-    ]
+  const acceptedBookings = bookings.filter(
+    (booking) =>
+      Array.isArray(booking.ticket_numbers) &&
+      booking.ticket_numbers.length > 0
   );
 
-  const tickets =
-    playerBooking?.ticketNumbers ||
-    [];
+  const normalizedSearch = searchQuery.trim().toLowerCase();
 
-  const lastCalled =
-    calledNumbers.length
-      ? calledNumbers[
-          calledNumbers.length -
-            1
-        ]
-      : null;
+  const visibleBookings = acceptedBookings.filter((booking) => {
+    if (!normalizedSearch) {
+      return true;
+    }
 
-  if (
-    liveGame.status ===
-    "ended"
-  ) {
+    const playerName = String(
+      booking.player_name || ""
+    ).toLowerCase();
+
+    const ticketText = Array.isArray(booking.ticket_numbers)
+      ? booking.ticket_numbers.join(" ")
+      : "";
+
     return (
-      <main
-        style={
-          pageStyle
-        }
-      >
-        <div
-          style={{
-            maxWidth:
-              700,
-            margin:
-              "60px auto"
-          }}
-        >
-          <section
-            style={{
-              ...cardStyle,
-              textAlign:
-                "center"
-            }}
-          >
-            <h1>
-              GAME ENDED
-            </h1>
+      playerName.includes(normalizedSearch) ||
+      ticketText.includes(normalizedSearch.replace(/^#/, ""))
+    );
+  });
 
-            <p
-              style={{
-                color:
-                  "#64748b",
-                fontSize:
-                  18
-              }}
-            >
-              Thank you for playing
-              TambolaLive.
+  function ticketNumbersText(booking) {
+    const numbers = Array.isArray(booking.ticket_numbers)
+      ? [...booking.ticket_numbers].sort((a, b) => a - b)
+      : [];
+
+    return numbers.length
+      ? numbers.map((n) => `#${n}`).join(", ")
+      : "-";
+  }
+
+  if (liveGame.status === "ended") {
+    return (
+      <main style={pageStyle}>
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <section style={{ ...cardStyle, textAlign: "center" }}>
+            <h1>GAME ENDED</h1>
+            <p style={{ color: "#64748b", fontSize: 18 }}>
+              Thank you for playing TambolaLive.
             </p>
-
             <div
               style={{
-                marginTop:
-                  20,
-                padding:
-                  20,
-                borderRadius:
-                  14,
-                background:
-                  "#f8fafc"
+                marginTop: 20,
+                padding: 20,
+                borderRadius: 14,
+                background: "#f8fafc"
               }}
             >
-              <b>
-                Total Numbers Called
-              </b>
-
+              <b>Total Numbers Called</b>
               <div
                 style={{
-                  fontSize:
-                    35,
-                  fontWeight:
-                    "bold",
-                  marginTop:
-                    8
+                  fontSize: 35,
+                  fontWeight: "bold",
+                  marginTop: 8
                 }}
               >
-                {
-                  calledNumbers.length
-                }
+                {calledNumbers.length}
               </div>
             </div>
+          </section>
+
+          <section style={cardStyle}>
+            <h2>Prize Winners</h2>
+            <PrizeWinnerColumns prizes={prizes} />
           </section>
         </div>
       </main>
@@ -3089,279 +3002,429 @@ function LiveGamePage({
   }
 
   return (
-    <main
-      style={
-        pageStyle
-      }
-    >
-      <div
-        style={{
-          maxWidth:
-            1050,
-          margin:
-            "0 auto"
-        }}
-      >
-        <div
-          style={{
-            textAlign:
-              "center",
-            marginBottom:
-              20
-          }}
-        >
-          <h1>
-            {
-              liveGame.game_name
-            }
-          </h1>
-
+    <main style={pageStyle}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <h1>{liveGame.game_name}</h1>
           <div
             style={{
-              display:
-                "inline-block",
-              padding:
-                "8px 18px",
-              borderRadius:
-                30,
-              background:
-                "#dcfce7",
-              color:
-                "#166534",
-              fontWeight:
-                "bold"
+              display: "inline-block",
+              padding: "8px 18px",
+              borderRadius: 30,
+              background: "#dcfce7",
+              color: "#166534",
+              fontWeight: "bold"
             }}
           >
             ● LIVE GAME
           </div>
         </div>
 
-        <section
-          style={{
-            ...cardStyle,
-            textAlign:
-              "center"
-          }}
-        >
-          <div
-            style={{
-              color:
-                "#64748b",
-              fontWeight:
-                "bold"
-            }}
-          >
+        <section style={{ ...cardStyle, textAlign: "center" }}>
+          <div style={{ color: "#64748b", fontWeight: "bold" }}>
             LAST CALLED NUMBER
           </div>
 
           <div
             style={{
-              width:
-                150,
-              height:
-                150,
-              margin:
-                "15px auto",
-              borderRadius:
-                "50%",
-              background:
-                "#2563eb",
-              color:
-                "#fff",
-              display:
-                "flex",
-              alignItems:
-                "center",
-              justifyContent:
-                "center",
-              fontSize:
-                58,
-              fontWeight:
-                "bold",
-              boxShadow:
-                "0 10px 30px rgba(37,99,235,.25)"
+              width: 150,
+              height: 150,
+              margin: "15px auto",
+              borderRadius: "50%",
+              background: "#2563eb",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 58,
+              fontWeight: "bold",
+              boxShadow: "0 10px 30px rgba(37,99,235,.25)"
             }}
           >
-            {
-              lastCalled ||
-              "—"
-            }
+            {lastCalled || "—"}
           </div>
 
-          <div
-            style={{
-              color:
-                "#64748b"
-            }}
-          >
-            Numbers called:
-            {" "}
-            {
-              calledNumbers.length
-            }
-            / 90
+          <div style={{ color: "#64748b" }}>
+            Numbers called: {calledNumbers.length} / 90
           </div>
         </section>
 
-        {playerBooking && (
-          <section
-            style={
-              cardStyle
-            }
-          >
-            <h2>
-              Your Tickets
-            </h2>
+        <section style={{ ...cardStyle, border: "2px solid #f59e0b" }}>
+          <h2>Prize Winners</h2>
+          <p style={{ color: "#64748b" }}>
+            Winners assigned by the host will appear here for everyone in real time.
+          </p>
+          <PrizeWinnerColumns prizes={prizes} />
+        </section>
 
-            <p
-              style={{
-                color:
-                  "#64748b"
-              }}
-            >
-              Player:
-              {" "}
-              <b>
-                {
-                  playerBooking.playerName
-                }
-              </b>
+        {playerBooking && (
+          <section style={cardStyle}>
+            <h2>Your Tickets</h2>
+            <p style={{ color: "#64748b" }}>
+              Player: <b>{playerBooking.playerName}</b>
             </p>
 
             <div
               style={{
-                display:
-                  "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit,minmax(250px,1fr))",
-                gap:
-                  16
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+                gap: 16
               }}
             >
-              {tickets.map(
-                (
-                  ticketNumber
-                ) => (
-                  <TicketGrid
-                    key={
+              {tickets.map((ticketNumber) => (
+                <TicketGrid
+                  key={ticketNumber}
+                  ticket={{
+                    number: ticketNumber,
+                    grid: makeTicket(
+                      liveGame.game_code,
                       ticketNumber
-                    }
-                    ticket={{
-                      number:
-                        ticketNumber,
-                      grid:
-                        makeTicket(
-                          liveGame.game_code,
-                          ticketNumber
-                        )
-                    }}
-                    selected={
-                      false
-                    }
-                    calledNumbers={
-                      calledNumbers
-                    }
-                    onSelect={() => {}}
-                  />
-                )
-              )}
+                    )
+                  }}
+                  selected={false}
+                  calledNumbers={calledNumbers}
+                  onSelect={() => {}}
+                  statusLabel="YOUR TICKET"
+                  interactive={false}
+                />
+              ))}
             </div>
           </section>
         )}
 
-        <section
-          style={
-            cardStyle
-          }
-        >
-          <h2>
-            Called Numbers
-          </h2>
-
+        <section style={{ ...cardStyle, border: "2px solid #8b5cf6" }}>
           <div
             style={{
-              display:
-                "grid",
-              gridTemplateColumns:
-                "repeat(10,minmax(0,1fr))",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap"
+            }}
+          >
+            <div>
+              <h2 style={{ marginBottom: 5 }}>
+                All Players' Booked Tickets
+              </h2>
+              <p style={{ color: "#64748b", marginTop: 0 }}>
+                Every accepted booked 3×9 ticket is visible to all players.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSearchOpen((value) => !value);
+                if (searchOpen) {
+                  setSearchQuery("");
+                }
+              }}
+              style={primaryButton}
+            >
+              {searchOpen ? "✕ Close Search" : "🔎 Search Tickets"}
+            </button>
+          </div>
+
+          {searchOpen && (
+            <div style={{ marginBottom: 16 }}>
+              <input
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search player name or ticket number, e.g. Rahul or 27"
+                style={inputStyle}
+              />
+            </div>
+          )}
+
+          {loadingBookings ? (
+            <p>Loading booked tickets...</p>
+          ) : visibleBookings.length === 0 ? (
+            <div
+              style={{
+                padding: 20,
+                textAlign: "center",
+                background: "#f8fafc",
+                borderRadius: 10,
+                color: "#64748b"
+              }}
+            >
+              {normalizedSearch
+                ? "No booked tickets match your search."
+                : "No accepted booked tickets yet."}
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 20 }}>
+              {visibleBookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  style={{
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 14,
+                    padding: 15,
+                    background: "#fff"
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 10,
+                      flexWrap: "wrap",
+                      marginBottom: 12
+                    }}
+                  >
+                    <div>
+                      <div style={{ color: "#64748b", fontSize: 13 }}>
+                        PLAYER
+                      </div>
+                      <div style={{ fontSize: 20, fontWeight: "bold" }}>
+                        {booking.player_name || "Player"}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "7px 10px",
+                        borderRadius: 8,
+                        background: "#dcfce7",
+                        color: "#166534",
+                        fontWeight: "bold",
+                        fontSize: 13
+                      }}
+                    >
+                      BOOKED
+                    </div>
+                  </div>
+
+                  <div style={{ display: "grid", gap: 18 }}>
+                    {booking.ticket_numbers.map((ticketNumber) => (
+                      <TicketGrid
+                        key={`${booking.id}-${ticketNumber}`}
+                        ticket={{
+                          number: Number(ticketNumber),
+                          grid: makeTicket(
+                            liveGame.game_code,
+                            Number(ticketNumber)
+                          )
+                        }}
+                        selected={false}
+                        calledNumbers={calledNumbers}
+                        onSelect={() => {}}
+                        statusLabel="BOOKED"
+                        interactive={false}
+                      />
+                    ))}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: 10,
+                      borderRadius: 9,
+                      background: "#f8fafc",
+                      color: "#475569",
+                      fontWeight: "bold"
+                    }}
+                  >
+                    Tickets: {ticketNumbersText(booking)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section style={cardStyle}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap"
+            }}
+          >
+            <div>
+              <h2 style={{ marginBottom: 5 }}>Called Number History</h2>
+              <p style={{ color: "#64748b", marginTop: 0 }}>
+                Numbers are shown in the exact order called by the host.
+              </p>
+            </div>
+            <b style={{ color: "#2563eb" }}>
+              {calledNumbers.length} / 90
+            </b>
+          </div>
+
+          {calledNumbers.length === 0 ? (
+            <div
+              style={{
+                padding: 18,
+                textAlign: "center",
+                background: "#f8fafc",
+                borderRadius: 10,
+                color: "#64748b"
+              }}
+            >
+              No numbers called yet.
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8
+              }}
+            >
+              {calledNumbers.map((number, index) => (
+                <div
+                  key={`${number}-${index}`}
+                  style={{
+                    minWidth: 42,
+                    padding: "9px 10px",
+                    borderRadius: 9,
+                    background:
+                      index === calledNumbers.length - 1
+                        ? "#2563eb"
+                        : "#eff6ff",
+                    color:
+                      index === calledNumbers.length - 1
+                        ? "#fff"
+                        : "#1d4ed8",
+                    textAlign: "center",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {number}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section style={cardStyle}>
+          <h2>Called Numbers Board</h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(10,minmax(0,1fr))",
               gap: 7
             }}
           >
-            {Array.from(
-              {
-                length:
-                  90
-              },
-              (
-                _,
-                i
-              ) =>
-                i + 1
-            ).map(
-              (
-                number
-              ) => {
-                const called =
-                  calledNumbers.includes(
-                    number
-                  );
+            {Array.from({ length: 90 }, (_, i) => i + 1).map((number) => {
+              const called = calledNumbers.includes(number);
+              const isLast = lastCalled === number;
 
-                return (
-                  <div
-                    key={
-                      number
-                    }
-                    style={{
-                      padding:
-                        "11px 4px",
-                      textAlign:
-                        "center",
-                      borderRadius:
-                        8,
-                      border:
-                        called
-                          ? "2px solid #2563eb"
-                          : "1px solid #e2e8f0",
-                      background:
-                        called
-                          ? "#2563eb"
-                          : "#fff",
-                      color:
-                        called
-                          ? "#fff"
-                          : "#64748b",
-                      fontWeight:
-                        "bold"
-                    }}
-                  >
-                    {
-                      number
-                    }
-                  </div>
-                );
-              }
-            )}
+              return (
+                <div
+                  key={number}
+                  style={{
+                    padding: "11px 4px",
+                    textAlign: "center",
+                    borderRadius: 8,
+                    border: isLast
+                      ? "3px solid #1d4ed8"
+                      : called
+                      ? "2px solid #2563eb"
+                      : "1px solid #e2e8f0",
+                    background: called ? "#2563eb" : "#fff",
+                    color: called ? "#fff" : "#64748b",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {number}
+                </div>
+              );
+            })}
           </div>
         </section>
 
         <div
           style={{
-            textAlign:
-              "center",
-            color:
-              "#64748b",
-            padding:
-              "10px 0 30px"
+            textAlign: "center",
+            color: "#64748b",
+            padding: "10px 0 30px"
           }}
         >
-          Stay on this page.
-          The game board will
-          update automatically
-          when the host calls
-          a number.
+          Stay on this page. The live board, called numbers, booked tickets and prize winners update automatically.
         </div>
       </div>
     </main>
+  );
+}
+
+function PrizeWinnerColumns({ prizes }) {
+  if (!prizes.length) {
+    return (
+      <div
+        style={{
+          padding: 18,
+          borderRadius: 10,
+          background: "#f8fafc",
+          color: "#64748b",
+          textAlign: "center"
+        }}
+      >
+        No prizes configured for this game.
+      </div>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))",
+        gap: 12
+      }}
+    >
+      {prizes.map((prize, index) => (
+        <div
+          key={`${prize.name || "prize"}-${index}`}
+          style={{
+            border: "1px solid #e5e7eb",
+            borderRadius: 12,
+            padding: 15,
+            background: "#fff",
+            minHeight: 105
+          }}
+        >
+          <div
+            style={{
+              fontWeight: "bold",
+              fontSize: 17,
+              color: "#111827"
+            }}
+          >
+            {prize.name || "Prize"}
+          </div>
+
+          <div
+            style={{
+              marginTop: 5,
+              color: "#64748b",
+              fontSize: 14
+            }}
+          >
+            ₹{prize.amount || 0}
+          </div>
+
+          <div
+            style={{
+              marginTop: 14,
+              padding: 9,
+              borderRadius: 8,
+              background: prize.winner_name ? "#ecfdf5" : "#f8fafc",
+              color: prize.winner_name ? "#047857" : "#64748b",
+              fontWeight: "bold"
+            }}
+          >
+            {prize.winner_name || "Winner: —"}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -3557,6 +3620,53 @@ function HostControlPage({
         "rejected"
     );
 
+  async function updatePrizeWinner(prizeIndex, winnerName) {
+    if (game.status !== "live") {
+      return;
+    }
+
+    const currentPrizes = Array.isArray(game.selected_prizes)
+      ? game.selected_prizes
+      : [];
+
+    const nextPrizes = currentPrizes.map((prize, index) =>
+      index === prizeIndex
+        ? {
+            ...prize,
+            winner_name: winnerName || ""
+          }
+        : prize
+    );
+
+    setGameError("");
+
+    try {
+      const { data, error } = await supabase
+        .from("games")
+        .update({ selected_prizes: nextPrizes })
+        .eq("id", game.id)
+        .select()
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedGame = data || {
+        ...game,
+        selected_prizes: nextPrizes
+      };
+
+      saveHostGame(updatedGame);
+      onGameUpdated(updatedGame);
+    } catch (err) {
+      console.error("Could not update prize winner:", err);
+      setGameError(
+        err?.message || "Could not update prize winner."
+      );
+    }
+  }
+
   async function startGame() {
     if (
       gameAction ||
@@ -3569,10 +3679,7 @@ function HostControlPage({
     setGameError("");
 
     try {
-      const {
-        data,
-        error
-      } =
+      const { error } =
         await supabase
           .from("games")
           .update({
@@ -3581,25 +3688,24 @@ function HostControlPage({
           .eq(
             "id",
             game.id
-          )
-          .select("*")
-          .maybeSingle();
+          );
 
       if (error) {
         throw error;
       }
 
-      if (
-        !data ||
-        data.status !== "live"
-      ) {
-        throw new Error(
-          "The game status could not be saved as LIVE. Please check the games table permissions in Supabase."
-        );
-      }
+      const updatedGame = {
+        ...game,
+        status: "live"
+      };
 
-      saveHostGame(data);
-      onGameUpdated(data);
+      saveHostGame(
+        updatedGame
+      );
+
+      onGameUpdated(
+        updatedGame
+      );
 
     } catch (err) {
       console.error(
@@ -3905,10 +4011,7 @@ ${inviteUrl}`;
         : [
             ...calledNumbers,
             number
-          ].sort(
-            (a, b) =>
-              a - b
-          );
+          ];
 
     setCalledNumbers(
       next
@@ -4501,6 +4604,66 @@ ${inviteUrl}`;
           )}
         </section>
 
+        <section style={{ ...cardStyle, border: "2px solid #f59e0b" }}>
+          <h2>Prize Winner Columns</h2>
+          <p style={{ color: "#64748b" }}>
+            Select the winning player's name for each prize. The winner will appear instantly on every player's LIVE page.
+          </p>
+
+          {prizes.length === 0 ? (
+            <p>No prizes configured.</p>
+          ) : (
+            <div style={{ display: "grid", gap: 12 }}>
+              {prizes.map((prize, index) => (
+                <div
+                  key={`${prize.name || "prize"}-${index}`}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr minmax(180px,280px)",
+                    gap: 12,
+                    alignItems: "center",
+                    padding: 12,
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 10,
+                    background: "#fff"
+                  }}
+                >
+                  <div>
+                    <b>{prize.name || "Prize"}</b>
+                    <div style={{ color: "#64748b", fontSize: 13, marginTop: 3 }}>
+                      ₹{prize.amount || 0}
+                    </div>
+                  </div>
+
+                  <select
+                    value={prize.winner_name || ""}
+                    onChange={(e) =>
+                      updatePrizeWinner(index, e.target.value)
+                    }
+                    disabled={!isLive || gameAction}
+                    style={inputStyle}
+                  >
+                    <option value="">Winner: Not announced</option>
+                    {[
+                      ...new Set(
+                        accepted
+                          .map((booking) =>
+                            String(booking.player_name || "").trim()
+                          )
+                          .filter(Boolean)
+                      )
+                    ].map((playerName) => (
+                      <option key={playerName} value={playerName}>
+                        {playerName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
         <section
           style={{
             ...cardStyle,
@@ -5074,26 +5237,12 @@ function App() {
               if (
                 payload?.new
               ) {
-                const incomingGame =
-                  payload.new;
-
-                // Never let a stale realtime event
-                // move an already-live host game
-                // backwards to "upcoming".
-                if (
-                  game?.status === "live" &&
-                  incomingGame.status ===
-                    "upcoming"
-                ) {
-                  return;
-                }
-
                 setGame(
-                  incomingGame
+                  payload.new
                 );
 
                 saveHostGame(
-                  incomingGame
+                  payload.new
                 );
               }
             }
@@ -5122,23 +5271,13 @@ function App() {
               !error &&
               data
             ) {
-              // Never overwrite a locally confirmed LIVE game
-              // with an older/stale UPCOMING response.
-              if (
-                !(
-                  game?.status === "live" &&
-                  data.status ===
-                    "upcoming"
-                )
-              ) {
-                setGame(
-                  data
-                );
+              setGame(
+                data
+              );
 
-                saveHostGame(
-                  data
-                );
-              }
+              saveHostGame(
+                data
+              );
             }
           },
           3000
