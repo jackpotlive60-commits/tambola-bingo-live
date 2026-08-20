@@ -52,7 +52,9 @@ function saveGame(g) {
 
 function loadGame() {
   try {
-    const g = JSON.parse(localStorage.getItem(KEY));
+    const g = JSON.parse(
+      localStorage.getItem(KEY)
+    );
 
     return g?.game_code ? g : null;
   } catch {
@@ -299,8 +301,24 @@ function Ticket({
 
 function HostPage({ game, setGame }) {
 
-  const [creating, setCreating] =
-    useState(!game);
+  /*
+     IMPORTANT FIX
+
+     Do NOT use:
+
+     const [creating, setCreating] =
+       useState(!game);
+
+     That value only gets calculated on
+     the first render.
+
+     After refresh the saved game loads
+     slightly later, but "creating" would
+     remain true.
+
+     We therefore determine this directly
+     from the current game value.
+  */
 
   const [name, setName] =
     useState(
@@ -360,7 +378,10 @@ function HostPage({ game, setGame }) {
     setPrizes((p) =>
       p.map((x, j) =>
         j === i
-          ? { ...x, amount: value }
+          ? {
+              ...x,
+              amount: value
+            }
           : x
       )
     );
@@ -472,8 +493,6 @@ function HostPage({ game, setGame }) {
 
       saveGame(g);
 
-      setCreating(false);
-
     } catch (e) {
 
       setErr(
@@ -559,6 +578,7 @@ ${url}`;
           console.log(e);
 
         }
+
       }
 
     } else {
@@ -587,7 +607,18 @@ ${url}`;
   }
 
 
-  if (creating) {
+  /*
+     IMPORTANT FIX:
+
+     If there is no game, show Create Game.
+
+     If a saved game exists, show the
+     Host Control Centre.
+
+     This automatically works after refresh.
+  */
+
+  if (!game) {
 
     return (
 
@@ -828,6 +859,10 @@ ${url}`;
 
   }
 
+
+  /*
+     HOST CONTROL CENTRE
+  */
 
   const inviteUrl =
     `${location.origin}/?game=${game.game_code}`;
@@ -1125,7 +1160,10 @@ ${url}`;
    LIVE GAME
 ========================================================= */
 
-function Live({ game, setGame }) {
+function Live({
+  game,
+  setGame
+}) {
 
   const called =
     game.calledNumbers || [];
@@ -1142,12 +1180,16 @@ function Live({ game, setGame }) {
 
   function start() {
 
-    setGame({
+    const updated = {
       ...game,
       gameStarted: true,
       status: "live",
       calledNumbers: []
-    });
+    };
+
+    setGame(updated);
+
+    saveGame(updated);
 
   }
 
@@ -1171,26 +1213,34 @@ function Live({ game, setGame }) {
       ];
 
 
-    setGame({
+    const updated = {
       ...game,
       status: "live",
       calledNumbers: [
         ...called,
         n
       ]
-    });
+    };
+
+    setGame(updated);
+
+    saveGame(updated);
 
   }
 
 
   function reset() {
 
-    setGame({
+    const updated = {
       ...game,
       gameStarted: false,
       status: "upcoming",
       calledNumbers: []
-    });
+    };
+
+    setGame(updated);
+
+    saveGame(updated);
 
   }
 
@@ -1385,7 +1435,9 @@ function Booking({ game }) {
     );
 
 
-  function toggleTicket(ticketNumber) {
+  function toggleTicket(
+    ticketNumber
+  ) {
 
     if (sent) {
       return;
@@ -1451,7 +1503,8 @@ function Booking({ game }) {
       ticketNumbers:
         sorted,
 
-      status: "pending",
+      status:
+        "pending",
 
       createdAt:
         new Date().toISOString()
@@ -1758,95 +1811,36 @@ function App() {
   const [error, setError] =
     useState("");
 
+  const [loading, setLoading] =
+    useState(true);
+
 
   useEffect(() => {
 
-    async function initializeApp() {
+    const saved =
+      loadGame();
 
-      const saved =
-        loadGame();
+    if (saved) {
 
-      const gc =
-        getGameCode();
-
-
-      /*
-       ======================================================
-       HOST REFRESH FIX
-       ======================================================
-
-       If the URL contains ?game=XXXXXX AND the saved
-       host game has the SAME game code, this is the host
-       reopening/refreshing the host control centre.
-
-       In that case:
-
-       - Restore the saved host game
-       - Stay on Host Control Centre
-       - DO NOT load the player invitation
-
-       Only load the player invitation when the URL belongs
-       to a different game or when there is no saved host game.
-       ======================================================
-      */
-
-      if (
-        saved &&
-        gc &&
-        saved.game_code?.toUpperCase() ===
-          gc.toUpperCase()
-      ) {
-
-        setGame(saved);
-
-        setPage("host");
-
-        return;
-      }
-
-
-      /*
-       If there is a saved host game and there is NO game
-       parameter, this is also the host page.
-      */
-
-      if (
-        saved &&
-        !gc
-      ) {
-
-        setGame(saved);
-
-        setPage("host");
-
-        return;
-      }
-
-
-      /*
-       Otherwise, if ?game=XXXXXX exists, this is a player
-       opening a shared game link.
-      */
-
-      if (gc) {
-
-        await loadPlayer(gc);
-
-        return;
-      }
-
-
-      /*
-       No saved game and no invitation link:
-       show Create Game.
-      */
+      setGame(saved);
 
       setPage("host");
 
     }
 
 
-    initializeApp();
+    const gc =
+      getGameCode();
+
+    if (gc) {
+
+      loadPlayer(gc);
+
+    } else {
+
+      setLoading(false);
+
+    }
 
   }, []);
 
@@ -1888,6 +1882,8 @@ function App() {
         "Game not found"
       );
 
+      setLoading(false);
+
       return;
 
     }
@@ -1924,6 +1920,30 @@ function App() {
     setPlayerGame(g);
 
     setPage("invitation");
+
+    setLoading(false);
+
+  }
+
+
+  if (loading) {
+
+    return (
+
+      <main
+        style={{
+          padding: 20,
+          textAlign: "center"
+        }}
+      >
+
+        <h2>
+          Loading...
+        </h2>
+
+      </main>
+
+    );
 
   }
 
