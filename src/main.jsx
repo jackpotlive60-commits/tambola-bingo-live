@@ -3639,7 +3639,6 @@ function HostControlPage({
 
     try {
       const {
-        data,
         error
       } =
         await supabase
@@ -3653,20 +3652,17 @@ function HostControlPage({
           .eq(
             "id",
             game.id
-          )
-          .select()
-          .single();
+          );
 
       if (error) {
         throw error;
       }
 
-      const updatedGame =
-        data || {
-          ...game,
-          status:
-            "ended"
-        };
+      const updatedGame = {
+        ...game,
+        status:
+          "ended"
+      };
 
       saveHostGame(
         updatedGame
