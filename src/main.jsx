@@ -2623,8 +2623,21 @@ function StatusBox({
 ========================================================= */
 
 function App() {
+  const savedHostGame = (() => {
+    try {
+      const saved =
+        localStorage.getItem(GAME_KEY);
+
+      return saved
+        ? JSON.parse(saved)
+        : null;
+    } catch {
+      return null;
+    }
+  })();
+
   const [game, setGame] =
-    useState(null);
+    useState(savedHostGame);
 
   const [
     playerGame,
@@ -2641,32 +2654,31 @@ function App() {
       getGameFromUrl();
 
     /*
-      IMPORTANT ROUTING:
-
-      NORMAL URL:
-      https://your-site.vercel.app/
-
-      = HOST CREATE GAME
-
       PLAYER URL:
-      https://your-site.vercel.app/?game=ABC123
+      ?game=ABC123
 
-      = PLAYER BOOKING PAGE
-
-      The player URL can NEVER open
-      the host dashboard.
+      This always opens the
+      player booking page.
     */
 
     if (code) {
       loadPlayerGame(code);
-    } else {
-      setLoading(false);
+      return;
     }
+
+    /*
+      NORMAL URL:
+
+      If a host game was already
+      created on this device,
+      restore the Host Control Centre
+      after refresh.
+    */
+
+    setLoading(false);
   }, []);
 
-  async function loadPlayerGame(
-    code
-  ) {
+  async function loadPlayerGame(code) {
     try {
       const {
         data,
@@ -2685,26 +2697,22 @@ function App() {
         throw error;
       }
 
-      setPlayerGame(
-        data
-      );
+      setPlayerGame(data);
+
     } catch (err) {
       console.error(err);
 
       setPlayerGame(null);
+
     } finally {
       setLoading(false);
     }
   }
 
-  function handleCreated(
-    newGame
-  ) {
+  function handleCreated(newGame) {
     setGame(newGame);
 
-    saveHostGame(
-      newGame
-    );
+    saveHostGame(newGame);
   }
 
   function handleNewGame() {
@@ -2724,17 +2732,12 @@ function App() {
       <main
         style={{
           ...pageStyle,
-          display:
-            "flex",
-          justifyContent:
-            "center",
-          alignItems:
-            "center"
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center"
         }}
       >
-        <h2>
-          Loading...
-        </h2>
+        <h2>Loading...</h2>
       </main>
     );
   }
@@ -2743,39 +2746,25 @@ function App() {
     PLAYER PAGE
   */
 
-  if (
-    getGameFromUrl()
-  ) {
+  if (getGameFromUrl()) {
     if (!playerGame) {
       return (
-        <main
-          style={
-            pageStyle
-          }
-        >
+        <main style={pageStyle}>
           <div
             style={{
-              maxWidth:
-                600,
-              margin:
-                "60px auto",
-              textAlign:
-                "center"
+              maxWidth: 600,
+              margin: "60px auto",
+              textAlign: "center"
             }}
           >
-            <section
-              style={
-                cardStyle
-              }
-            >
+            <section style={cardStyle}>
               <h2>
                 Game Not Found
               </h2>
 
               <p>
-                This game link is
-                invalid or the
-                game no longer
+                This game link is invalid
+                or the game no longer
                 exists.
               </p>
             </section>
@@ -2786,52 +2775,38 @@ function App() {
 
     return (
       <PlayerBookingPage
-        game={
-          playerGame
-        }
+        game={playerGame}
       />
     );
   }
 
   /*
     HOST CONTROL CENTRE
-    ONLY AFTER HOST CREATES
-    A GAME IN THIS SESSION.
+
+    The game is restored from
+    localStorage after refresh.
   */
 
   if (game) {
     return (
       <HostControlPage
         game={game}
-        onNewGame={
-          handleNewGame
-        }
+        onNewGame={handleNewGame}
       />
     );
   }
-
-  /*
+ 
+   /*
     NORMAL WEBSITE:
-    HOST CREATE GAME PAGE
+    CREATE GAME PAGE
   */
 
   return (
     <CreateGamePage
-      onCreated={
-        handleCreated
-      }
+      onCreated={handleCreated}
     />
   );
 }
-
 /* =========================================================
    START APP
 ========================================================= */
-
-createRoot(
-  document.getElementById(
-    "root"
-  )
-).render(
-  <App />
-);
