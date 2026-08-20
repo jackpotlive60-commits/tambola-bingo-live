@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./lib/supabase";
 
 const NUMBERS = Array.from(
@@ -6,648 +6,999 @@ const NUMBERS = Array.from(
   (_, i) => i + 1
 );
 
-function getTicketRows(ticketNumber) {
-  const masks = [
-    [
-      [1, 0, 1, 0, 1, 0, 1, 1, 0],
-      [0, 1, 0, 1, 0, 1, 0, 1, 1],
-      [1, 0, 1, 0, 1, 1, 0, 0, 1]
-    ],
-    [
-      [1, 0, 0, 1, 1, 0, 1, 0, 1],
-      [0, 1, 1, 0, 0, 1, 0, 1, 1],
-      [1, 0, 1, 0, 1, 1, 0, 1, 0]
-    ],
-    [
-      [1, 1, 0, 1, 0, 1, 0, 1, 0],
-      [0, 0, 1, 0, 1, 0, 1, 0, 1],
-      [1, 1, 1, 0, 1, 0, 1, 1, 0]
-    ]
-  ];
-
-  const rows = masks[
-    (Number(ticketNumber) - 1) %
-      masks.length
-  ].map((row) => [...row]);
-
-  const used = new Set();
-
-  for (let c = 0; c < 9; c++) {
-    const min =
-      c === 0
-        ? 1
-        : c * 10;
-
-    const max =
-      c === 8
-        ? 90
-        : c * 10 + 9;
-
-    const values = Array.from(
-      {
-        length:
-          max - min + 1
-      },
-      (_, i) =>
-        min + i
-    );
-
-    const shift =
-      (
-        Number(ticketNumber) *
-          (c + 3) +
-        c * 7
-      ) %
-      values.length;
-
-    const rotated =
-      values
-        .slice(shift)
-        .concat(
-          values.slice(0, shift)
-        );
-
-    let index = 0;
-
-    for (let r = 0; r < 3; r++) {
-      if (rows[r][c]) {
-        let value =
-          rotated[
-            index %
-              rotated.length
-          ];
-
-        let tries = 0;
-
-        while (
-          used.has(value) &&
-          tries <
-            rotated.length
-        ) {
-          index++;
-
-          value =
-            rotated[
-              index %
-                rotated.length
-            ];
-
-          tries++;
-        }
-
-        rows[r][c] = value;
-
-        used.add(value);
-
-        index++;
-      }
-    }
-  }
-
-  for (let r = 0; r < 3; r++) {
-    let count =
-      rows[r].filter(Boolean)
-        .length;
-
-    for (
-      let c = 0;
-      c < 9 && count < 5;
-      c++
-    ) {
-      if (!rows[r][c]) {
-        const min =
-          c === 0
-            ? 1
-            : c * 10;
-
-        const max =
-          c === 8
-            ? 90
-            : c * 10 + 9;
-
-        for (
-          let value = min;
-          value <= max;
-          value++
-        ) {
-          if (!used.has(value)) {
-            rows[r][c] = value;
-            used.add(value);
-            count++;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  return rows;
+function getGameCode() {
+  return new URLSearchParams(
+    window.location.search
+  )
+    .get("game")
+    ?.trim()
+    .toUpperCase();
 }
 
+function getCalledNumbers(game) {
+  if (Array.isArray(game?.called_numbers)) {
+    return game.called_numbers.map(Number);
+  }
 
-function PlayerTicket({
-  ticketNumber,
-  calledNumbers
-}) {
-  const rows =
-    getTicketRows(
-      ticketNumber
-    );
+  if (Array.isArray(game?.calledNumbers)) {
+    return game.calledNumbers.map(Number);
+  }
 
-  const called =
-    new Set(
-      calledNumbers
-    );
-
-  return (
-    <div
-      style={{
-        border:
-          "2px solid #16a34a",
-        borderRadius: 10,
-        padding: 10,
-        marginBottom: 18,
-        background:
-          "#f0fff4"
-      }}
-    >
-      <div
-        style={{
-          fontWeight: "bold",
-          marginBottom: 8,
-          fontSize: 16
-        }}
-      >
-        Ticket #{ticketNumber}
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(9, minmax(0, 1fr))",
-          border:
-            "1px solid #333"
-        }}
-      >
-        {rows.flat().map(
-          (value, index) => {
-            const isCalled =
-              value &&
-              called.has(
-                value
-              );
-
-            return (
-              <div
-                key={
-                  `ticket-${ticketNumber}-${index}`
-                }
-                style={{
-                  height: 38,
-                  border:
-                    "1px solid #aaa",
-                  display: "flex",
-                  alignItems:
-                    "center",
-                  justifyContent:
-                    "center",
-                  fontWeight:
-                    value
-                      ? "bold"
-                      : "normal",
-                  fontSize: 15,
-                  background:
-                    isCalled
-                      ? "#22c55e"
-                      : "#fff",
-                  color:
-                    isCalled
-                      ? "#fff"
-                      : "#111",
-                  textDecoration:
-                    isCalled
-                      ? "line-through"
-                      : "none"
-                }}
-              >
-                {value || ""}
-              </div>
-            );
-          }
-        )}
-      </div>
-    </div>
-  );
+  return [];
 }
 
+function getLastNumber(game, calledNumbers) {
+  if (game?.last_number !== null &&
+      game?.last_number !== undefined) {
+    return Number(game.last_number);
+  }
 
-export default function LiveGame({
-  game,
-  playerName
-}) {
-  const [
-    calledNumbers,
-    setCalledNumbers
-  ] = useState(
-    Array.isArray(
-      game?.calledNumbers
-    )
-      ? game.calledNumbers
-      : []
+  if (game?.lastNumber !== null &&
+      game?.lastNumber !== undefined) {
+    return Number(game.lastNumber);
+  }
+
+  return calledNumbers.length
+    ? calledNumbers[calledNumbers.length - 1]
+    : null;
+}
+
+function LiveGame() {
+  const [game, setGame] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+  const gameCode = useMemo(
+    () => getGameCode(),
+    []
   );
 
-  const [
-    approvedTickets,
-    setApprovedTickets
-  ] = useState([]);
-
-  const [
-    loading,
-    setLoading
-  ] = useState(true);
-
-  const [
-    error,
-    setError
-  ] = useState("");
-
-
-  async function loadPlayerTickets() {
-    if (
-      !game?.game_code ||
-      !playerName
-    ) {
+  async function loadGame() {
+    if (!gameCode) {
+      setError("No game code was found.");
       setLoading(false);
       return;
     }
 
     const {
       data,
-      error
-    } =
-      await supabase
-        .from(
-          "booking_requests"
-        )
-        .select(
-          "ticket_numbers, player_name, status"
-        )
-        .eq(
-          "game_code",
-          game.game_code
-        )
-        .eq(
-          "status",
-          "approved"
-        )
-        .eq(
-          "player_name",
-          playerName
-        );
+      error: supabaseError
+    } = await supabase
+      .from("games")
+      .select("*")
+      .eq("game_code", gameCode)
+      .maybeSingle();
 
-    if (error) {
+    if (supabaseError) {
       console.error(
-        "Could not load approved tickets:",
-        error
+        "Live game load error:",
+        supabaseError
       );
 
       setError(
-        error.message
+        supabaseError.message ||
+        "Could not load the game."
       );
 
       setLoading(false);
       return;
     }
 
-    const tickets =
-      (data || []).flatMap(
-        (request) =>
-          Array.isArray(
-            request.ticket_numbers
-          )
-            ? request.ticket_numbers
-            : []
+    if (!data) {
+      setError(
+        `Game ${gameCode} was not found.`
       );
 
-    setApprovedTickets(
-      [
-        ...new Set(tickets)
-      ].sort(
-        (a, b) =>
-          a - b
-      )
-    );
+      setLoading(false);
+      return;
+    }
 
+    setGame(data);
+    setLastUpdated(new Date());
     setLoading(false);
+    setError("");
   }
-
-
-  async function loadGame() {
-    if (
-      !game?.game_code
-    ) {
-      return;
-    }
-
-    const {
-      data,
-      error
-    } =
-      await supabase
-        .from("games")
-        .select(
-          "status, calledNumbers"
-        )
-        .eq(
-          "game_code",
-          game.game_code
-        )
-        .maybeSingle();
-
-    if (error) {
-      console.error(
-        "Could not load live game:",
-        error
-      );
-      return;
-    }
-
-    if (data) {
-      setCalledNumbers(
-        Array.isArray(
-          data.calledNumbers
-        )
-          ? data.calledNumbers
-          : []
-      );
-    }
-  }
-
 
   useEffect(() => {
-    loadPlayerTickets();
     loadGame();
 
-    const interval =
-      setInterval(() => {
-        loadPlayerTickets();
-        loadGame();
-      }, 2000);
+    const interval = setInterval(
+      loadGame,
+      2000
+    );
 
-    return () =>
-      clearInterval(
-        interval
-      );
-  }, [
-    game?.game_code,
-    playerName
-  ]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [gameCode]);
 
-
-  if (!game) {
+  if (loading) {
     return (
-      <main
-        style={{
-          padding: 20,
-          textAlign:
-            "center"
-        }}
-      >
-        <h2>
-          Game unavailable
-        </h2>
+      <main style={styles.page}>
+        <div style={styles.centerCard}>
+          <div style={styles.spinner}>
+            ●
+          </div>
+
+          <h2 style={styles.title}>
+            Loading Live Game
+          </h2>
+
+          <p style={styles.muted}>
+            Please wait...
+          </p>
+        </div>
       </main>
     );
   }
 
+  if (error) {
+    return (
+      <main style={styles.page}>
+        <div style={styles.errorCard}>
+          <div style={styles.errorIcon}>
+            !
+          </div>
+
+          <h2 style={styles.title}>
+            Live Game Unavailable
+          </h2>
+
+          <p style={styles.errorText}>
+            {error}
+          </p>
+
+          <button
+            type="button"
+            onClick={loadGame}
+            style={styles.primaryButton}
+          >
+            TRY AGAIN
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (!game) {
+    return null;
+  }
+
+  const calledNumbers =
+    getCalledNumbers(game);
+
+  const calledSet =
+    new Set(calledNumbers);
 
   const lastNumber =
-    calledNumbers[
-      calledNumbers.length - 1
-    ];
+    getLastNumber(
+      game,
+      calledNumbers
+    );
 
+  const status =
+    String(
+      game.status || "upcoming"
+    ).toLowerCase();
+
+  const isLive =
+    status === "live" ||
+    game.gameStarted === true ||
+    game.game_started === true;
+
+  const isFinished =
+    status === "finished" ||
+    status === "completed" ||
+    status === "ended";
 
   return (
-    <main
-      style={{
-        width: "100%",
-        maxWidth: 800,
-        margin: "0 auto",
-        padding: 15,
-        boxSizing:
-          "border-box",
-        background:
-          "#f8fafc"
-      }}
-    >
+    <main style={styles.page}>
 
-      <header
-        style={{
-          textAlign:
-            "center",
-          marginBottom: 20
-        }}
-      >
-        <h1
-          style={{
-            marginBottom: 5
-          }}
-        >
-          {game.game_name ||
-            "TambolaLive"}
-        </h1>
+      {/* HEADER */}
 
-        <p
-          style={{
-            marginTop: 0
-          }}
+      <header style={styles.header}>
+
+        <div>
+          <div style={styles.brand}>
+            TAMBOLA
+            <span style={styles.brandPink}>
+              LIVE
+            </span>
+          </div>
+
+          <h1 style={styles.gameName}>
+            {game.game_name ||
+              "TambolaLive"}
+          </h1>
+        </div>
+
+        <div
+          style={
+            isFinished
+              ? styles.statusFinished
+              : isLive
+                ? styles.statusLive
+                : styles.statusWaiting
+          }
         >
-          Player:{" "}
-          <b>
-            {playerName ||
-              "Player"}
-          </b>
-        </p>
+          <span style={styles.statusDot}>
+            ●
+          </span>
+
+          {isFinished
+            ? "GAME ENDED"
+            : isLive
+              ? "LIVE NOW"
+              : "WAITING"}
+        </div>
+
       </header>
 
 
-      <section
-        style={{
-          textAlign:
-            "center",
-          border:
-            "2px solid #2563eb",
-          borderRadius: 14,
-          padding: 20,
-          background:
-            "#eff6ff",
-          marginBottom: 20
-        }}
-      >
+      {/* GAME INFORMATION */}
 
-        <p
-          style={{
-            margin:
-              "0 0 5px",
-            fontWeight:
-              "bold"
-          }}
-        >
-          CURRENT NUMBER
-        </p>
+      <section style={styles.infoGrid}>
 
-        <div
-          style={{
-            fontSize: 70,
-            fontWeight:
-              "bold",
-            lineHeight: 1
-          }}
-        >
-          {lastNumber ||
-            "—"}
+        <div style={styles.infoCard}>
+          <span style={styles.infoLabel}>
+            DATE
+          </span>
+
+          <strong>
+            {game.game_date || "-"}
+          </strong>
         </div>
 
-        <p>
-          Called:{" "}
-          <b>
-            {calledNumbers.length}
-          </b>
-          /90
-        </p>
+        <div style={styles.infoCard}>
+          <span style={styles.infoLabel}>
+            TIME
+          </span>
 
-      </section>
+          <strong>
+            {game.game_time || "-"}
+          </strong>
+        </div>
 
+        <div style={styles.infoCard}>
+          <span style={styles.infoLabel}>
+            TICKET
+          </span>
 
-      <section
-        style={{
-          marginBottom: 25
-        }}
-      >
+          <strong>
+            ₹{game.ticket_price || 0}
+          </strong>
+        </div>
 
-        <h3>
-          Called Numbers
-        </h3>
+        <div style={styles.infoCard}>
+          <span style={styles.infoLabel}>
+            CALLED
+          </span>
 
-        <div
-          style={{
-            display:
-              "grid",
-            gridTemplateColumns:
-              "repeat(10, 1fr)",
-            gap: 5
-          }}
-        >
-
-          {NUMBERS.map(
-            (number) => {
-
-              const called =
-                calledNumbers.includes(
-                  number
-                );
-
-              return (
-                <div
-                  key={
-                    number
-                  }
-                  style={{
-                    padding:
-                      "8px 3px",
-                    textAlign:
-                      "center",
-                    border:
-                      "1px solid #aaa",
-                    borderRadius:
-                      5,
-                    background:
-                      called
-                        ? "#22c55e"
-                        : "#fff",
-                    color:
-                      called
-                        ? "#fff"
-                        : "#111",
-                    fontWeight:
-                      called
-                        ? "bold"
-                        : "normal"
-                  }}
-                >
-                  {number}
-                </div>
-              );
-            }
-          )}
-
+          <strong>
+            {calledNumbers.length}/90
+          </strong>
         </div>
 
       </section>
 
 
-      <section>
+      {/* WAITING */}
 
-        <h2>
-          My Tickets
-        </h2>
+      {!isLive &&
+        !isFinished && (
 
-        {loading && (
-          <p>
-            Loading your tickets...
+        <section style={styles.waitingCard}>
+
+          <div style={styles.waitingIcon}>
+            ⏳
+          </div>
+
+          <h2 style={styles.waitingTitle}>
+            Game Will Start Soon
+          </h2>
+
+          <p style={styles.muted}>
+            You are in the game.
+            Please wait for the host
+            to start calling numbers.
           </p>
-        )}
 
-        {error && (
-          <p
-            style={{
-              color:
-                "#b91c1c"
-            }}
-          >
-            {error}
-          </p>
-        )}
+          <div style={styles.liveIndicator}>
+            <span>
+              ●
+            </span>
 
-        {!loading &&
-          approvedTickets.length ===
-            0 && (
-            <div
-              style={{
-                padding: 15,
-                border:
-                  "1px solid #f59e0b",
-                borderRadius:
-                  8,
-                background:
-                  "#fff7ed"
-              }}
-            >
-              No approved tickets
-              were found for this
-              player.
+            Waiting for host
+          </div>
+
+        </section>
+
+      )}
+
+
+      {/* LAST NUMBER */}
+
+      {isLive && (
+
+        <section style={styles.liveSection}>
+
+          <div style={styles.liveHeading}>
+
+            <div>
+              <span style={styles.liveBadge}>
+                ● LIVE GAME
+              </span>
+
+              <h2 style={styles.sectionTitle}>
+                Current Number
+              </h2>
             </div>
+
+            <div style={styles.updated}>
+              {lastUpdated
+                ? "Updating automatically"
+                : ""}
+            </div>
+
+          </div>
+
+
+          <div style={styles.numberStage}>
+
+            <div style={styles.numberLabel}>
+              LAST CALLED NUMBER
+            </div>
+
+            <div style={styles.bigBall}>
+              {lastNumber || "—"}
+            </div>
+
+            <div style={styles.calledCount}>
+              {calledNumbers.length}
+              {" "}
+              numbers called
+            </div>
+
+          </div>
+
+
+          {/* NUMBER BOARD */}
+
+          <div style={styles.boardCard}>
+
+            <div style={styles.boardHeader}>
+
+              <div>
+                <h2 style={styles.boardTitle}>
+                  Number Board
+                </h2>
+
+                <p style={styles.mutedSmall}>
+                  Called numbers are highlighted.
+                </p>
+              </div>
+
+              <div style={styles.boardCount}>
+                {calledNumbers.length}/90
+              </div>
+
+            </div>
+
+
+            <div style={styles.board}>
+
+              {NUMBERS.map((number) => {
+
+                const called =
+                  calledSet.has(number);
+
+                const isLast =
+                  lastNumber === number;
+
+                return (
+                  <div
+                    key={number}
+                    style={
+                      isLast
+                        ? styles.numberLast
+                        : called
+                          ? styles.numberCalled
+                          : styles.numberWaiting
+                    }
+                  >
+                    {number}
+                  </div>
+                );
+              })}
+
+            </div>
+
+          </div>
+
+
+          {/* CALL HISTORY */}
+
+          <div style={styles.historyCard}>
+
+            <h2 style={styles.boardTitle}>
+              Called Numbers
+            </h2>
+
+            {calledNumbers.length === 0 ? (
+
+              <p style={styles.muted}>
+                No numbers have been called yet.
+              </p>
+
+            ) : (
+
+              <div style={styles.history}>
+
+                {calledNumbers
+                  .slice()
+                  .reverse()
+                  .map((number, index) => (
+
+                    <div
+                      key={`${number}-${index}`}
+                      style={
+                        index === 0
+                          ? styles.historyLast
+                          : styles.historyNumber
+                      }
+                    >
+                      {number}
+                    </div>
+
+                  ))}
+
+              </div>
+
+            )}
+
+          </div>
+
+        </section>
+
+      )}
+
+
+      {/* FINISHED */}
+
+      {isFinished && (
+
+        <section style={styles.finishedCard}>
+
+          <div style={styles.finishedIcon}>
+            ✓
+          </div>
+
+          <h2 style={styles.waitingTitle}>
+            Game Has Ended
+          </h2>
+
+          <p style={styles.muted}>
+            Thank you for playing
+            {game.game_name
+              ? ` ${game.game_name}`
+              : ""}.
+          </p>
+
+          {calledNumbers.length > 0 && (
+
+            <p style={styles.finishedCount}>
+              {calledNumbers.length}
+              {" "}
+              numbers were called.
+            </p>
+
           )}
 
-        {approvedTickets.map(
-          (ticketNumber) => (
-            <PlayerTicket
-              key={
-                ticketNumber
-              }
-              ticketNumber={
-                ticketNumber
-              }
-              calledNumbers={
-                calledNumbers
-              }
-            />
-          )
-        )}
+        </section>
 
-      </section>
+      )}
+
+
+      {/* FOOTER */}
+
+      <footer style={styles.footer}>
+
+        <div>
+          TAMBOLA
+          <span style={styles.brandPink}>
+            LIVE
+          </span>
+        </div>
+
+        <div style={styles.footerCode}>
+          Game Code: {game.game_code}
+        </div>
+
+      </footer>
 
     </main>
   );
 }
+
+
+/* =========================================================
+   STYLES
+========================================================= */
+
+const styles = {
+
+  page: {
+    minHeight: "100vh",
+    width: "100%",
+    boxSizing: "border-box",
+    background:
+      "linear-gradient(180deg, #090714 0%, #120d24 45%, #090714 100%)",
+    color: "#fff",
+    padding: "20px 14px 40px",
+    fontFamily:
+      "Arial, Helvetica, sans-serif"
+  },
+
+  header: {
+    maxWidth: 900,
+    margin: "0 auto 20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 15,
+    flexWrap: "wrap"
+  },
+
+  brand: {
+    fontSize: 13,
+    fontWeight: 900,
+    letterSpacing: 2,
+    color: "#fff"
+  },
+
+  brandPink: {
+    color: "#ff4fa3",
+    marginLeft: 3
+  },
+
+  gameName: {
+    margin: "6px 0 0",
+    fontSize: 26,
+    fontWeight: 900
+  },
+
+  statusLive: {
+    padding: "8px 13px",
+    borderRadius: 30,
+    background: "#123b28",
+    border: "1px solid #27d17f",
+    color: "#27d17f",
+    fontWeight: 900,
+    fontSize: 12
+  },
+
+  statusWaiting: {
+    padding: "8px 13px",
+    borderRadius: 30,
+    background: "#3a2c12",
+    border: "1px solid #ffc857",
+    color: "#ffc857",
+    fontWeight: 900,
+    fontSize: 12
+  },
+
+  statusFinished: {
+    padding: "8px 13px",
+    borderRadius: 30,
+    background: "#30151b",
+    border: "1px solid #ff5571",
+    color: "#ff5571",
+    fontWeight: 900,
+    fontSize: 12
+  },
+
+  statusDot: {
+    marginRight: 5
+  },
+
+  infoGrid: {
+    maxWidth: 900,
+    margin: "0 auto 20px",
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(140px, 1fr))",
+    gap: 10
+  },
+
+  infoCard: {
+    background:
+      "rgba(255,255,255,0.05)",
+    border:
+      "1px solid rgba(255,255,255,0.10)",
+    borderRadius: 12,
+    padding: 13,
+    display: "flex",
+    flexDirection: "column",
+    gap: 5
+  },
+
+  infoLabel: {
+    fontSize: 10,
+    color: "#aaa",
+    fontWeight: 800,
+    letterSpacing: 1
+  },
+
+  centerCard: {
+    maxWidth: 450,
+    margin: "80px auto",
+    textAlign: "center",
+    background:
+      "rgba(255,255,255,0.05)",
+    border:
+      "1px solid rgba(255,255,255,0.10)",
+    borderRadius: 18,
+    padding: 30
+  },
+
+  spinner: {
+    color: "#ff4fa3",
+    fontSize: 30,
+    marginBottom: 10
+  },
+
+  title: {
+    margin: "5px 0 10px",
+    fontSize: 24
+  },
+
+  muted: {
+    color: "#aaa",
+    lineHeight: 1.6
+  },
+
+  mutedSmall: {
+    color: "#888",
+    margin: "4px 0 0",
+    fontSize: 13
+  },
+
+  errorCard: {
+    maxWidth: 450,
+    margin: "70px auto",
+    textAlign: "center",
+    background:
+      "rgba(255,85,113,0.08)",
+    border:
+      "1px solid rgba(255,85,113,0.35)",
+    borderRadius: 18,
+    padding: 30
+  },
+
+  errorIcon: {
+    width: 52,
+    height: 52,
+    margin: "0 auto 12px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#ff5571",
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: 900
+  },
+
+  errorText: {
+    color: "#ff9aaa",
+    lineHeight: 1.5,
+    marginBottom: 20
+  },
+
+  primaryButton: {
+    border: "none",
+    borderRadius: 10,
+    padding: "11px 20px",
+    background:
+      "linear-gradient(135deg, #6d3df5, #ff4fa3)",
+    color: "#fff",
+    fontWeight: 900,
+    cursor: "pointer"
+  },
+
+  waitingCard: {
+    maxWidth: 700,
+    margin: "25px auto",
+    padding: "35px 20px",
+    textAlign: "center",
+    borderRadius: 20,
+    background:
+      "linear-gradient(145deg, rgba(109,61,245,0.18), rgba(255,79,163,0.08))",
+    border:
+      "1px solid rgba(255,255,255,0.12)"
+  },
+
+  waitingIcon: {
+    fontSize: 48,
+    marginBottom: 8
+  },
+
+  waitingTitle: {
+    fontSize: 24,
+    margin: "5px 0 8px"
+  },
+
+  liveIndicator: {
+    display: "inline-block",
+    marginTop: 10,
+    padding: "8px 14px",
+    borderRadius: 30,
+    color: "#ffc857",
+    background: "rgba(255,200,87,0.10)",
+    border:
+      "1px solid rgba(255,200,87,0.25)",
+    fontWeight: 800,
+    fontSize: 13
+  },
+
+  liveSection: {
+    maxWidth: 900,
+    margin: "0 auto"
+  },
+
+  liveHeading: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "end",
+    gap: 10,
+    marginBottom: 12,
+    flexWrap: "wrap"
+  },
+
+  liveBadge: {
+    display: "inline-block",
+    color: "#27d17f",
+    fontSize: 12,
+    fontWeight: 900,
+    letterSpacing: 1
+  },
+
+  sectionTitle: {
+    margin: "5px 0 0",
+    fontSize: 22
+  },
+
+  updated: {
+    color: "#777",
+    fontSize: 11
+  },
+
+  numberStage: {
+    textAlign: "center",
+    borderRadius: 22,
+    padding: "25px 15px 28px",
+    marginBottom: 18,
+    background:
+      "radial-gradient(circle at center, rgba(109,61,245,0.30), rgba(18,13,36,0.95) 65%)",
+    border:
+      "1px solid rgba(255,255,255,0.12)",
+    boxShadow:
+      "0 15px 45px rgba(0,0,0,0.35)"
+  },
+
+  numberLabel: {
+    color: "#aaa",
+    fontSize: 11,
+    fontWeight: 900,
+    letterSpacing: 2,
+    marginBottom: 12
+  },
+
+  bigBall: {
+    width: 130,
+    height: 130,
+    margin: "0 auto",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 58,
+    fontWeight: 900,
+    color: "#fff",
+    background:
+      "radial-gradient(circle at 32% 25%, #ff8bc2 0%, #ff4fa3 30%, #6d3df5 75%)",
+    boxShadow:
+      "0 0 45px rgba(255,79,163,0.45), 0 12px 30px rgba(0,0,0,0.5)"
+  },
+
+  calledCount: {
+    marginTop: 13,
+    color: "#aaa",
+    fontSize: 13
+  },
+
+  boardCard: {
+    background:
+      "rgba(255,255,255,0.045)",
+    border:
+      "1px solid rgba(255,255,255,0.10)",
+    borderRadius: 18,
+    padding: 15,
+    marginBottom: 15
+  },
+
+  boardHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 15
+  },
+
+  boardTitle: {
+    margin: 0,
+    fontSize: 19
+  },
+
+  boardCount: {
+    color: "#ffc857",
+    fontWeight: 900
+  },
+
+  board: {
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(10, minmax(0, 1fr))",
+    gap: 7
+  },
+
+  numberWaiting: {
+    minHeight: 38,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    background:
+      "rgba(255,255,255,0.045)",
+    border:
+      "1px solid rgba(255,255,255,0.08)",
+    color: "#777",
+    fontWeight: 800,
+    fontSize: 13
+  },
+
+  numberCalled: {
+    minHeight: 38,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    background:
+      "rgba(39,209,127,0.18)",
+    border:
+      "1px solid #27d17f",
+    color: "#27d17f",
+    fontWeight: 900,
+    fontSize: 13,
+    boxShadow:
+      "0 0 10px rgba(39,209,127,0.12)"
+  },
+
+  numberLast: {
+    minHeight: 38,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    background:
+      "linear-gradient(135deg, #6d3df5, #ff4fa3)",
+    border:
+      "2px solid #fff",
+    color: "#fff",
+    fontWeight: 900,
+    fontSize: 13,
+    boxShadow:
+      "0 0 15px rgba(255,79,163,0.45)"
+  },
+
+  historyCard: {
+    background:
+      "rgba(255,255,255,0.045)",
+    border:
+      "1px solid rgba(255,255,255,0.10)",
+    borderRadius: 18,
+    padding: 15
+  },
+
+  history: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 7,
+    marginTop: 14
+  },
+
+  historyNumber: {
+    minWidth: 38,
+    height: 38,
+    padding: "0 7px",
+    borderRadius: 8,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background:
+      "rgba(109,61,245,0.18)",
+    border:
+      "1px solid rgba(109,61,245,0.45)",
+    color: "#ddd",
+    fontWeight: 800
+  },
+
+  historyLast: {
+    minWidth: 42,
+    height: 42,
+    padding: "0 8px",
+    borderRadius: 9,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background:
+      "linear-gradient(135deg, #6d3df5, #ff4fa3)",
+    color: "#fff",
+    fontWeight: 900,
+    boxShadow:
+      "0 0 15px rgba(255,79,163,0.3)"
+  },
+
+  finishedCard: {
+    maxWidth: 700,
+    margin: "25px auto",
+    padding: "35px 20px",
+    textAlign: "center",
+    borderRadius: 20,
+    background:
+      "rgba(39,209,127,0.08)",
+    border:
+      "1px solid rgba(39,209,127,0.25)"
+  },
+
+  finishedIcon: {
+    width: 60,
+    height: 60,
+    margin: "0 auto 12px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#27d17f",
+    color: "#07140d",
+    fontSize: 32,
+    fontWeight: 900
+  },
+
+  finishedCount: {
+    color: "#27d17f",
+    fontWeight: 800
+  },
+
+  footer: {
+    maxWidth: 900,
+    margin: "30px auto 0",
+    paddingTop: 20,
+    borderTop:
+      "1px solid rgba(255,255,255,0.08)",
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 10,
+    flexWrap: "wrap",
+    color: "#777",
+    fontSize: 11,
+    fontWeight: 800
+  },
+
+  footerCode: {
+    color: "#555"
+  }
+};
+
+export default LiveGame;
