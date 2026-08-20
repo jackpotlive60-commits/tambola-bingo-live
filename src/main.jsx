@@ -19,6 +19,9 @@ const GAME_KEY = "tambolalive_host_game";
 const PLAYER_BOOKING_PREFIX =
   "tambolalive_player_booking_";
 
+const PLAYER_ID_PREFIX =
+  "tambolalive_player_id_";
+
 const THEMES = [
   "Classic",
   "Royal",
@@ -118,14 +121,61 @@ function getPlayerBookingKey(gameId) {
   return `${PLAYER_BOOKING_PREFIX}${gameId}`;
 }
 
-function savePlayerBooking(
-  gameId,
-  booking
-) {
+function getPlayerIdKey(gameId) {
+  return `${PLAYER_ID_PREFIX}${gameId}`;
+}
+
+function generatePlayerId() {
   try {
+    if (window.crypto?.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+  } catch {}
+
+  return `player-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 12)}`;
+}
+
+function getPlayerId(gameId) {
+  try {
+    const key = getPlayerIdKey(gameId);
+    let id = localStorage.getItem(key);
+
+    if (!id) {
+      id = generatePlayerId();
+      localStorage.setItem(key, id);
+    }
+
+    return id;
+  } catch (error) {
+    console.error(
+      "Could not restore player identity:",
+      error
+    );
+    return generatePlayerId();
+  }
+}
+
+function savePlayerBooking(gameId, booking) {
+  try {
+    const existing = getPlayerBooking(gameId);
+    const list = Array.isArray(existing)
+      ? existing
+      : existing
+      ? [existing]
+      : [];
+
+    const next = [
+      ...list.filter(
+        (item) => item?.bookingId !== booking?.bookingId
+      ),
+      booking
+    ];
+
     localStorage.setItem(
       getPlayerBookingKey(gameId),
-      JSON.stringify(booking)
+      JSON.stringify(next)
     );
   } catch (error) {
     console.error(
@@ -137,23 +187,28 @@ function savePlayerBooking(
 
 function getPlayerBooking(gameId) {
   try {
-    const saved =
-      localStorage.getItem(
-        getPlayerBookingKey(gameId)
-      );
+    const saved = localStorage.getItem(
+      getPlayerBookingKey(gameId)
+    );
 
     if (!saved) {
-      return null;
+      return [];
     }
 
-    return JSON.parse(saved);
+    const parsed = JSON.parse(saved);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : parsed
+      ? [parsed]
+      : [];
   } catch (error) {
     console.error(
-      "Could not restore player booking:",
+      "Could not restore player bookings:",
       error
     );
 
-    return null;
+    return [];
   }
 }
 
@@ -2221,9 +2276,13 @@ function PlayerBookingPage({
           a - b
       );
 
+    const playerId = getPlayerId(game.id);
+
     const bookingData = {
       game_id:
         game.id,
+      player_id:
+        playerId,
       player_name:
         name,
       ticket_numbers:
@@ -2257,6 +2316,7 @@ function PlayerBookingPage({
           bookingId:
             data?.id ||
             null,
+          playerId,
           playerName:
             name,
           ticketNumbers:
@@ -2842,7 +2902,7 @@ function LiveGamePage({
     try {
       const { data, error } = await supabase
         .from("ticket_bookings")
-        .select("id, player_name, ticket_numbers, status, created_at")
+        .select("id, player_id, player_name, ticket_numbers, status, created_at")
         .eq("game_id", game.id)
         .eq("status", "accepted")
         .order("created_at", { ascending: true });
@@ -2984,18 +3044,34 @@ function LiveGamePage({
     };
   }, [game.id]);
 
-  const myTicketNumbers = useMemo(
-    () =>
-      Array.isArray(playerBooking?.ticketNumbers)
-        ? [...playerBooking.ticketNumbers]
-            .map(Number)
-            .filter(
-              (n) => Number.isInteger(n) && n >= 1 && n <= 100
-            )
-            .sort((a, b) => a - b)
-        : [],
-    [playerBooking?.ticketNumbers]
+  const myBookings = useMemo(
+    () => (Array.isArray(playerBooking) ? playerBooking : []),
+    [playerBooking]
   );
+
+  const myTicketNumbers = useMemo(() => {
+    const numbers = [];
+
+    myBookings.forEach((booking) => {
+      const ticketNumbers = Array.isArray(booking?.ticketNumbers)
+        ? booking.ticketNumbers
+        : [];
+
+      ticketNumbers.forEach((number) => {
+        const n = Number(number);
+        if (Number.isInteger(n) && n >= 1 && n <= 100) {
+          numbers.push(n);
+        }
+      });
+    });
+
+    return [...new Set(numbers)].sort((a, b) => a - b);
+  }, [myBookings]);
+
+  const myPlayerName = useMemo(() => {
+    const latest = [...myBookings].reverse().find((b) => b?.playerName);
+    return latest?.playerName || "Player";
+  }, [myBookings]);
 
   const myTicketCards = useMemo(
     () =>
@@ -3134,11 +3210,11 @@ function LiveGamePage({
           </div>
         </section>
 
-        {playerBooking && (
+        {myBookings.length > 0 && (
           <section style={cardStyle}>
             <h2>Your Tickets</h2>
             <p style={{ color: "#64748b" }}>
-              Player: <b>{playerBooking.playerName}</b>
+              Player: <b>{myPlayerName}</b>
             </p>
 
             <div
@@ -3158,7 +3234,7 @@ function LiveGamePage({
                     selected={false}
                     calledNumbers={calledNumbers}
                     readOnly
-                    ownerName={playerBooking.playerName}
+                    ownerName={myPlayerName}
                   />
                 ))
               ) : (
