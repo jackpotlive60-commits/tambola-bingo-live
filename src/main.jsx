@@ -1,82 +1,63 @@
-import React,{useEffect,useState}from"react";
-import{createRoot}from"react-dom/client";
-import{supabase}from"./lib/supabase";
+import React, { useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { supabase } from "./lib/supabase";
 
-const nums=Array.from({length:90},(_,i)=>i+1);
-const KEY="tambola_bingo_live_host_game";
+const nums = Array.from({ length: 90 }, (_, i) => i + 1);
 
-const themes=[
-"Classic",
-"Royal",
-"Party",
-"Bollywood",
-"Neon",
-"Elegant"
+const KEY = "tambola_bingo_live_host_game";
+
+const themes = [
+  "Classic",
+  "Royal",
+  "Party",
+  "Bollywood",
+  "Neon",
+  "Elegant"
 ];
 
-const defaultPrizes=[
-"First Five",
-"Four Corners",
-"Top Line",
-"Middle Line",
-"Bottom Line",
-"Full House"
-].map(name=>({
-name,
-amount:"",
-approved:false,
-winner:null
+const defaultPrizes = [
+  "First Five",
+  "Four Corners",
+  "Top Line",
+  "Middle Line",
+  "Bottom Line",
+  "Full House"
+].map((name) => ({
+  name,
+  amount: "",
+  approved: false,
+  winner: null
 }));
 
-function code6(){
+function code6() {
+  const s = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-const s="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-return Array.from(
-{length:6},
-()=>s[Math.floor(Math.random()*s.length)]
-).join("");
-
+  return Array.from(
+    { length: 6 },
+    () => s[Math.floor(Math.random() * s.length)]
+  ).join("");
 }
 
-function getGameCode(){
-
-return new URLSearchParams(
-location.search
-).get("game");
-
+function getGameCode() {
+  return new URLSearchParams(location.search).get("game");
 }
 
-function saveGame(g){
-
-if(g)
-localStorage.setItem(
-KEY,
-JSON.stringify(g)
-);
-
-else
-localStorage.removeItem(KEY);
-
+function saveGame(g) {
+  if (g) {
+    localStorage.setItem(KEY, JSON.stringify(g));
+  } else {
+    localStorage.removeItem(KEY);
+  }
 }
 
-function loadGame(){
+function loadGame() {
+  try {
+    const g = JSON.parse(localStorage.getItem(KEY));
 
-try{
-
-const g=
-JSON.parse(
-localStorage.getItem(KEY)
-);
-
-return g?.game_code?g:null;
-
-}catch{
-
-return null;
-
-}
-
+    return g?.game_code ? g : null;
+  } catch {
+    return null;
+  }
 }
 
 
@@ -85,253 +66,232 @@ return null;
 ========================================================= */
 
 function Ticket({
-n,
-name="",
-selected=false,
-onClick
-}){
+  n,
+  name = "",
+  selected = false,
+  onClick
+}) {
 
-const masks=[
+  const masks = [
+    [
+      [1, 0, 1, 0, 1, 0, 1, 1, 0],
+      [0, 1, 0, 1, 0, 1, 0, 1, 1],
+      [1, 0, 1, 0, 1, 1, 0, 0, 1]
+    ],
 
-[
-[1,0,1,0,1,0,1,1,0],
-[0,1,0,1,0,1,0,1,1],
-[1,0,1,0,1,1,0,0,1]
-],
+    [
+      [1, 0, 0, 1, 1, 0, 1, 0, 1],
+      [0, 1, 1, 0, 0, 1, 0, 1, 1],
+      [1, 0, 1, 0, 1, 1, 0, 1, 0]
+    ],
 
-[
-[1,0,0,1,1,0,1,0,1],
-[0,1,1,0,0,1,0,1,1],
-[1,0,1,0,1,1,0,1,0]
-],
+    [
+      [1, 1, 0, 1, 0, 1, 0, 1, 0],
+      [0, 0, 1, 0, 1, 0, 1, 0, 1],
+      [1, 1, 1, 0, 1, 0, 1, 1, 0]
+    ]
+  ];
 
-[
-[1,1,0,1,0,1,0,1,0],
-[0,0,1,0,1,0,1,0,1],
-[1,1,1,0,1,0,1,1,0]
-]
+  const rows =
+    masks[(Number(n) - 1) % masks.length].map(
+      (row) => [...row]
+    );
 
-];
+  const used = new Set();
 
-const rows=
-masks[
-(Number(n)-1)%masks.length
-].map(r=>[...r]);
+  for (let c = 0; c < 9; c++) {
 
-const used=new Set();
+    const min =
+      c === 0
+        ? 1
+        : c * 10;
 
-for(let c=0;c<9;c++){
+    const max =
+      c === 8
+        ? 90
+        : c * 10 + 9;
 
-const min=
-c===0
-?1
-:c*10;
-
-const max=
-c===8
-?90
-:c*10+9;
-
-const values=Array.from(
-{length:max-min+1},
-(_,i)=>min+i
-);
-
-const shift=
-(Number(n)*(c+3)+c*7)%
-values.length;
-
-const rotated=
-values.slice(shift).concat(
-values.slice(0,shift)
-);
-
-let index=0;
-
-for(let r=0;r<3;r++){
-
-if(rows[r][c]){
-
-let value=
-rotated[
-index%rotated.length
-];
-
-let tries=0;
-
-while(
-used.has(value)&&
-tries<rotated.length
-){
-
-index++;
-
-value=
-rotated[
-index%rotated.length
-];
-
-tries++;
-
-}
-
-rows[r][c]=value;
-
-used.add(value);
-
-index++;
-
-}
-
-}
-
-}
-
-
-/* Ensure every row contains five numbers */
-
-for(let r=0;r<3;r++){
-
-let count=
-rows[r].filter(Boolean).length;
-
-for(
-let c=0;
-c<9&&count<5;
-c++
-){
-
-if(!rows[r][c]){
-
-const min=
-c===0
-?1
-:c*10;
-
-const max=
-c===8
-?90
-:c*10+9;
-
-for(
-let value=min;
-value<=max;
-value++
-){
-
-if(!used.has(value)){
-
-rows[r][c]=value;
-
-used.add(value);
-
-count++;
-
-break;
-
-}
-
-}
-
-}
-
-}
-
-}
-
-return(
-
-<div
-onClick={onClick}
-style={{
-width:"100%",
-boxSizing:"border-box",
-border:
-selected
-?"3px solid #16a34a"
-:"1px solid #333",
-padding:8,
-margin:"0 0 18px 0",
-background:"#fff",
-cursor:"pointer",
-borderRadius:8
-}}
->
-
-<div
-style={{
-display:"flex",
-justifyContent:"space-between",
-alignItems:"center",
-marginBottom:8
-}}
->
-
-<b>
-Ticket #{n}
-</b>
-
-{selected&&(
-<span>
-✓ Selected
-</span>
-)}
-
-</div>
-
-{name&&(
-<div
-style={{
-fontSize:13,
-marginBottom:6
-}}
->
-{name}
-</div>
-)}
-
-<div
-style={{
-display:"grid",
-gridTemplateColumns:
-"repeat(9,minmax(0,1fr))",
-border:"1px solid #333",
-width:"100%",
-boxSizing:"border-box"
-}}
->
-
-{rows.flat().map((v,i)=>(
-
-<div
-key={i}
-style={{
-border:"1px solid #aaa",
-height:34,
-display:"flex",
-alignItems:"center",
-justifyContent:"center",
-fontWeight:
-v
-?"bold"
-:"normal",
-fontSize:14,
-boxSizing:"border-box"
-}}
->
-
-{v||""}
-
-</div>
-
-))}
-
-</div>
-
-</div>
-
-);
-
+    const values = Array.from(
+      { length: max - min + 1 },
+      (_, i) => min + i
+    );
+
+    const shift =
+      (Number(n) * (c + 3) + c * 7) %
+      values.length;
+
+    const rotated =
+      values.slice(shift).concat(
+        values.slice(0, shift)
+      );
+
+    let index = 0;
+
+    for (let r = 0; r < 3; r++) {
+
+      if (rows[r][c]) {
+
+        let value =
+          rotated[index % rotated.length];
+
+        let tries = 0;
+
+        while (
+          used.has(value) &&
+          tries < rotated.length
+        ) {
+
+          index++;
+
+          value =
+            rotated[
+              index % rotated.length
+            ];
+
+          tries++;
+        }
+
+        rows[r][c] = value;
+
+        used.add(value);
+
+        index++;
+      }
+    }
+  }
+
+  /* Make sure every row has at least five numbers */
+
+  for (let r = 0; r < 3; r++) {
+
+    let count =
+      rows[r].filter(Boolean).length;
+
+    for (
+      let c = 0;
+      c < 9 && count < 5;
+      c++
+    ) {
+
+      if (!rows[r][c]) {
+
+        const min =
+          c === 0
+            ? 1
+            : c * 10;
+
+        const max =
+          c === 8
+            ? 90
+            : c * 10 + 9;
+
+        for (
+          let value = min;
+          value <= max;
+          value++
+        ) {
+
+          if (!used.has(value)) {
+
+            rows[r][c] = value;
+
+            used.add(value);
+
+            count++;
+
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        width: "100%",
+        boxSizing: "border-box",
+        border: selected
+          ? "3px solid #16a34a"
+          : "1px solid #333",
+        padding: 8,
+        marginBottom: 18,
+        background: "#fff",
+        cursor: "pointer",
+        borderRadius: 8
+      }}
+    >
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 8
+        }}
+      >
+
+        <b>
+          Ticket #{n}
+        </b>
+
+        {selected && (
+          <span>
+            ✓ Selected
+          </span>
+        )}
+
+      </div>
+
+      {name && (
+        <div
+          style={{
+            fontSize: 13,
+            marginBottom: 6
+          }}
+        >
+          {name}
+        </div>
+      )}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(9, minmax(0, 1fr))",
+          border: "1px solid #333",
+          width: "100%",
+          boxSizing: "border-box"
+        }}
+      >
+
+        {rows.flat().map((value, index) => (
+
+          <div
+            key={`cell-${n}-${index}`}
+            style={{
+              border: "1px solid #aaa",
+              height: 34,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: value
+                ? "bold"
+                : "normal",
+              fontSize: 14,
+              boxSizing: "border-box"
+            }}
+          >
+            {value || ""}
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+  );
 }
 
 
@@ -339,761 +299,826 @@ boxSizing:"border-box"
    HOST PAGE
 ========================================================= */
 
-function HostPage({game,setGame}){
-
-const[creating,setCreating]=
-useState(!game);
+function HostPage({ game, setGame }) {
 
-const[name,setName]=
-useState(
-game?.game_name||"TambolaLive"
-);
+  const [creating, setCreating] =
+    useState(!game);
 
-const[limit,setLimit]=
-useState(
-game?.ticket_limit||100
-);
+  const [name, setName] =
+    useState(
+      game?.game_name ||
+      "TambolaLive"
+    );
 
-const[price,setPrice]=
-useState(
-game?.ticket_price||20
-);
+  const [limit, setLimit] =
+    useState(
+      game?.ticket_limit ||
+      100
+    );
 
-const[date,setDate]=
-useState(
-game?.game_date||""
-);
+  const [price, setPrice] =
+    useState(
+      game?.ticket_price ||
+      20
+    );
 
-const[time,setTime]=
-useState(
-game?.game_time||""
-);
+  const [date, setDate] =
+    useState(
+      game?.game_date ||
+      ""
+    );
 
-const[theme,setTheme]=
-useState(
-game?.theme||"Classic"
-);
+  const [time, setTime] =
+    useState(
+      game?.game_time ||
+      ""
+    );
 
-const[prizes,setPrizes]=
-useState(
-game?.prizes?.length
-?game.prizes
-:defaultPrizes
-);
+  const [theme, setTheme] =
+    useState(
+      game?.theme ||
+      "Classic"
+    );
 
-const[custom,setCustom]=
-useState("");
+  const [prizes, setPrizes] =
+    useState(
+      game?.prizes?.length
+        ? game.prizes
+        : defaultPrizes
+    );
 
-const[busy,setBusy]=
-useState(false);
+  const [custom, setCustom] =
+    useState("");
 
-const[err,setErr]=
-useState("");
+  const [busy, setBusy] =
+    useState(false);
 
-function prizeChange(i,value){
+  const [err, setErr] =
+    useState("");
 
-setPrizes(p=>
-p.map((x,j)=>
-j===i
-?{...x,amount:value}
-:x
-)
-);
 
-}
+  function prizeChange(i, value) {
 
-async function createGame(e){
+    setPrizes((p) =>
+      p.map((x, j) =>
+        j === i
+          ? { ...x, amount: value }
+          : x
+      )
+    );
 
-e.preventDefault();
+  }
 
-setBusy(true);
-setErr("");
 
-try{
+  async function createGame(e) {
 
-let gc=code6();
+    e.preventDefault();
 
-while(
-(
-await supabase
-.from("games")
-.select("id")
-.eq("game_code",gc)
-.maybeSingle()
-).data
-){
+    setBusy(true);
 
-gc=code6();
+    setErr("");
 
-}
+    try {
 
-const cleanPrizes=
-prizes.filter(
-p=>
-p.amount!==""&&
-p.amount!==null&&
-p.amount!==undefined
-);
+      let gc = code6();
 
-const{data,error}=
-await supabase
-.from("games")
-.insert({
+      while (
+        (
+          await supabase
+            .from("games")
+            .select("id")
+            .eq("game_code", gc)
+            .maybeSingle()
+        ).data
+      ) {
 
-host_name:"Host",
+        gc = code6();
+      }
 
-game_name:
-name.trim()||"TambolaLive",
 
-status:"upcoming",
+      const cleanPrizes =
+        prizes.filter(
+          (p) =>
+            p.amount !== "" &&
+            p.amount !== null &&
+            p.amount !== undefined
+        );
 
-ticket_limit:
-Number(limit),
 
-ticket_price:
-Number(price),
+      const {
+        data,
+        error
+      } =
+        await supabase
+          .from("games")
+          .insert({
 
-call_interval_seconds:5,
+            host_name: "Host",
 
-game_date:date,
+            game_name:
+              name.trim() ||
+              "TambolaLive",
 
-game_time:time,
+            status: "upcoming",
 
-game_code:gc,
+            ticket_limit:
+              Number(limit),
 
-invite_enabled:true
+            ticket_price:
+              Number(price),
 
-})
-.select()
-.single();
+            call_interval_seconds: 5,
 
-if(error)
-throw error;
+            game_date: date,
 
-const g={
+            game_time: time,
 
-...data,
+            game_code: gc,
 
-host_name:"Host",
+            invite_enabled: true
 
-game_name:
-name.trim()||"TambolaLive",
+          })
+          .select()
+          .single();
 
-theme,
 
-gameStarted:false,
+      if (error) {
+        throw error;
+      }
 
-calledNumbers:[],
 
-prizes:cleanPrizes,
+      const g = {
 
-bookingRequests:[]
+        ...data,
 
-};
+        host_name: "Host",
 
-setGame(g);
+        game_name:
+          name.trim() ||
+          "TambolaLive",
 
-saveGame(g);
+        theme,
 
-setCreating(false);
+        gameStarted: false,
 
-}catch(e){
+        calledNumbers: [],
 
-setErr(
-e.message||
-"Could not create game"
-);
+        prizes: cleanPrizes,
 
-}finally{
+        bookingRequests: []
 
-setBusy(false);
+      };
 
-}
 
-}
+      setGame(g);
 
+      saveGame(g);
 
-async function copyLink(){
+      setCreating(false);
 
-const url=
-`${location.origin}/?game=${game.game_code}`;
+    } catch (e) {
 
-try{
+      setErr(
+        e.message ||
+        "Could not create game"
+      );
 
-await navigator.clipboard.writeText(url);
+    } finally {
 
-alert("Game link copied.");
+      setBusy(false);
 
-}catch{
+    }
 
-prompt(
-"Copy this game link:",
-url
-);
+  }
 
-}
 
-}
+  async function copyLink() {
 
+    const url =
+      `${location.origin}/?game=${game.game_code}`;
 
-async function shareGame(){
+    try {
 
-const url=
-`${location.origin}/?game=${game.game_code}`;
+      await navigator.clipboard.writeText(url);
 
-const message=
+      alert(
+        "Game link copied."
+      );
+
+    } catch {
+
+      prompt(
+        "Copy this game link:",
+        url
+      );
+
+    }
+
+  }
+
+
+  async function shareGame() {
+
+    const url =
+      `${location.origin}/?game=${game.game_code}`;
+
+    const message =
 `Join my Tambola game!
 
-${game.game_name||"TambolaLive"}
+${game.game_name || "TambolaLive"}
 
-Date: ${game.game_date||"-"}
-Time: ${game.game_time||"-"}
-Ticket Price: ₹${game.ticket_price||0}
+Date: ${game.game_date || "-"}
+Time: ${game.game_time || "-"}
+Ticket Price: ₹${game.ticket_price || 0}
 
 Join here:
 ${url}`;
 
-if(navigator.share){
 
-try{
+    if (navigator.share) {
 
-await navigator.share({
+      try {
 
-title:
-game.game_name||"TambolaLive",
+        await navigator.share({
 
-text:message,
+          title:
+            game.game_name ||
+            "TambolaLive",
 
-url
+          text: message,
 
-});
+          url
 
-}catch(e){
+        });
 
-if(e?.name!=="AbortError"){
+      } catch (e) {
 
-console.log(e);
+        if (
+          e?.name !==
+          "AbortError"
+        ) {
 
-}
+          console.log(e);
 
-}
+        }
+      }
 
-}else{
+    } else {
 
-try{
+      try {
 
-await navigator.clipboard.writeText(
-message
-);
+        await navigator.clipboard.writeText(
+          message
+        );
 
-alert(
-"Game details copied."
-);
+        alert(
+          "Game details copied."
+        );
 
-}catch{
+      } catch {
 
-prompt(
-"Copy this:",
-message
-);
+        prompt(
+          "Copy this:",
+          message
+        );
 
-}
+      }
 
-}
+    }
 
-}
+  }
 
 
-if(creating){
+  if (creating) {
 
-return(
+    return (
 
-<main
-style={{
-maxWidth:600,
-margin:"20px auto",
-padding:20
-}}
->
+      <main
+        style={{
+          maxWidth: 600,
+          margin: "20px auto",
+          padding: 20
+        }}
+      >
 
-<h1>
-TAMBOLA LIVE
-</h1>
+        <h1>
+          TAMBOLA LIVE
+        </h1>
 
-<h2>
-Create Game
-</h2>
+        <h2>
+          Create Game
+        </h2>
 
-{err&&(
-<p>
-{err}
-</p>
-)}
+        {err && (
+          <p>
+            {err}
+          </p>
+        )}
 
-<form
-onSubmit={createGame}
->
+        <form
+          onSubmit={createGame}
+        >
 
-<label>
-Game Name
-</label>
+          <label>
+            Game Name
+          </label>
 
-<br/>
+          <br />
 
-<input
-value={name}
-onChange={e=>
-setName(e.target.value)
-}
-placeholder="TambolaLive"
-/>
+          <input
+            value={name}
+            onChange={(e) =>
+              setName(e.target.value)
+            }
+            placeholder="TambolaLive"
+          />
 
-<br/>
-<br/>
+          <br />
+          <br />
+
+          <label>
+            Ticket Limit
+          </label>
+
+          <br />
+
+          <input
+            type="number"
+            min="1"
+            value={limit}
+            onChange={(e) =>
+              setLimit(e.target.value)
+            }
+            required
+          />
+
+          <br />
+          <br />
+
+          <label>
+            Ticket Price
+          </label>
+
+          <br />
+
+          <input
+            type="number"
+            min="0"
+            value={price}
+            onChange={(e) =>
+              setPrice(e.target.value)
+            }
+            required
+          />
+
+          <br />
+          <br />
+
+          <label>
+            Game Date
+          </label>
+
+          <br />
+
+          <input
+            type="date"
+            value={date}
+            onChange={(e) =>
+              setDate(e.target.value)
+            }
+            required
+          />
+
+          <br />
+          <br />
+
+          <label>
+            Game Time
+          </label>
+
+          <br />
+
+          <input
+            type="time"
+            value={time}
+            onChange={(e) =>
+              setTime(e.target.value)
+            }
+            required
+          />
+
+          <br />
+          <br />
+
+          <label>
+            Game Theme
+          </label>
+
+          <br />
+
+          <select
+            value={theme}
+            onChange={(e) =>
+              setTheme(e.target.value)
+            }
+          >
+
+            {themes.map((t) => (
+              <option
+                key={t}
+                value={t}
+              >
+                {t}
+              </option>
+            ))}
+
+          </select>
+
 
-<label>
-Ticket Limit
-</label>
-
-<br/>
-
-<input
-type="number"
-min="1"
-value={limit}
-onChange={e=>
-setLimit(e.target.value)
-}
-required
-/>
-
-<br/>
-<br/>
-
-<label>
-Ticket Price
-</label>
-
-<br/>
-
-<input
-type="number"
-min="0"
-value={price}
-onChange={e=>
-setPrice(e.target.value)
-}
-required
-/>
-
-<br/>
-<br/>
-
-<label>
-Game Date
-</label>
-
-<br/>
-
-<input
-type="date"
-value={date}
-onChange={e=>
-setDate(e.target.value)
-}
-required
-/>
-
-<br/>
-<br/>
-
-<label>
-Game Time
-</label>
-
-<br/>
-
-<input
-type="time"
-value={time}
-onChange={e=>
-setTime(e.target.value)
-}
-required
-/>
-
-<br/>
-<br/>
-
-<label>
-Game Theme
-</label>
-
-<br/>
-
-<select
-value={theme}
-onChange={e=>
-setTheme(e.target.value)
-}
->
-
-{themes.map(t=>(
-<option
-key={t}
-value={t}
->
-{t}
-</option>
-))}
-
-</select>
-
-<h3>
-Prizes
-</h3>
-
-{prizes.map((p,i)=>(
-
-<div
-key={i}
-style={{
-marginBottom:8
-}}
->
+          <h3>
+            Prizes
+          </h3>
 
-<label>
-{p.name}
-</label>
 
-<br/>
-
-<input
-type="number"
-value={p.amount}
-onChange={e=>
-prizeChange(
-i,
-e.target.value
-)
-}
-placeholder="Amount"
-/>
+          {prizes.map((p, i) => (
 
-</div>
+            <div
+              key={i}
+              style={{
+                marginBottom: 8
+              }}
+            >
 
-))}
+              <label>
+                {p.name}
+              </label>
 
-<div>
+              <br />
 
-<input
-placeholder="Custom prize"
-value={custom}
-onChange={e=>
-setCustom(e.target.value)
-}
-/>
+              <input
+                type="number"
+                value={p.amount}
+                onChange={(e) =>
+                  prizeChange(
+                    i,
+                    e.target.value
+                  )
+                }
+                placeholder="Amount"
+              />
 
-<button
-type="button"
-onClick={()=>{
+            </div>
 
-if(!custom.trim())
-return;
-
-setPrizes(p=>[
-...p,
-{
-name:custom.trim(),
-amount:"",
-approved:false,
-winner:null
-}
-]);
-
-setCustom("");
-
-}}
->
-Add
-</button>
+          ))}
 
-</div>
-
-<br/>
 
-<button
-type="submit"
-disabled={busy}
->
-
-{busy
-?"Creating..."
-:"Create Game"}
-
-</button>
-
-</form>
-
-</main>
-
-);
-
-}
-
-
-const inviteUrl=
-`${location.origin}/?game=${game.game_code}`;
-
-function changeTheme(value){
-
-const updated={
-...game,
-theme:value
-};
-
-setGame(updated);
-
-saveGame(updated);
-
-}
-
-function approvePrize(i){
-
-const updatedPrizes=
-(game.prizes||[]).map(
-(p,j)=>
-j===i
-?{...p,approved:!p.approved}
-:p
-);
-
-const updated={
-...game,
-prizes:updatedPrizes
-};
-
-setGame(updated);
-
-saveGame(updated);
-
-}
-
-const visiblePrizes=
-(game.prizes||[]).filter(
-p=>
-p.amount!==""&&
-p.amount!==null&&
-p.amount!==undefined
-);
-
-return(
-
-<main
-style={{
-maxWidth:700,
-margin:"20px auto",
-padding:20
-}}
->
-
-<h1>
-{game.game_name}
-</h1>
-
-<h2>
-Host Control Centre
-</h2>
-
-<p>
-Date: {game.game_date}
-</p>
-
-<p>
-Time: {game.game_time}
-</p>
-
-<p>
-Ticket Price: ₹{game.ticket_price}
-</p>
-
-<p>
-Ticket Limit: {game.ticket_limit}
-</p>
-
-<hr/>
-
-<h3>
-Game Theme
-</h3>
-
-<select
-value={game.theme||"Classic"}
-onChange={e=>
-changeTheme(e.target.value)
-}
->
-
-{themes.map(t=>(
-<option
-key={t}
-value={t}
->
-{t}
-</option>
-))}
-
-</select>
-
-<hr/>
-
-<h3>
-Share Game
-</h3>
-
-<input
-readOnly
-value={inviteUrl}
-style={{
-width:"70%"
-}}
-/>
-
-<button
-onClick={copyLink}
->
-Copy Link
-</button>
-
-<button
-onClick={shareGame}
-style={{
-marginLeft:8
-}}
->
-Share Game
-</button>
-
-<hr/>
-
-<h2>
-Prizes
-</h2>
-
-{!visiblePrizes.length&&(
-<p>
-No prizes added yet.
-</p>
-)}
-
-{visiblePrizes.map(p=>{
-
-const i=
-(game.prizes||[]).indexOf(p);
-
-return(
-
-<div
-key={i}
-style={{
-border:"1px solid #ccc",
-padding:10,
-marginBottom:8
-}}
->
-
-<b>
-{p.name}
-</b>
-
-<p>
-Amount: ₹{p.amount}
-</p>
-
-<p>
-Status:{" "}
-
-<b>
-{p.approved
-?"Approved"
-:"Pending"}
-</b>
-
-</p>
-
-<button
-onClick={()=>
-approvePrize(i)
-}
->
-
-{p.approved
-?"Remove Approval"
-:"Approve Prize"}
-
-</button>
-
-</div>
-
-);
-
-})}
-
-<hr/>
-
-<h2>
-Ticket Bookings
-</h2>
-
-<p>
-Pending booking requests will appear here.
-</p>
-
-<div
-style={{
-border:"1px solid #ccc",
-padding:15
-}}
->
-No pending bookings yet.
-</div>
-
-<hr/>
-
-<h2>
-Live Game
-</h2>
-
-<Live
-game={game}
-setGame={setGame}
-/>
-
-<hr/>
-
-<button
-onClick={()=>{
-
-if(
-confirm(
-"End this game?"
-)
-){
-
-saveGame(null);
-
-setGame(null);
-
-}
-
-}}
->
-End Game
-</button>
-
-</main>
-
-);
+          <div>
+
+            <input
+              placeholder="Custom prize"
+              value={custom}
+              onChange={(e) =>
+                setCustom(e.target.value)
+              }
+            />
+
+            <button
+              type="button"
+              onClick={() => {
+
+                if (!custom.trim()) {
+                  return;
+                }
+
+                setPrizes((p) => [
+                  ...p,
+                  {
+                    name:
+                      custom.trim(),
+                    amount: "",
+                    approved: false,
+                    winner: null
+                  }
+                ]);
+
+                setCustom("");
+
+              }}
+            >
+              Add
+            </button>
+
+          </div>
+
+
+          <br />
+
+          <button
+            type="submit"
+            disabled={busy}
+          >
+            {busy
+              ? "Creating..."
+              : "Create Game"}
+          </button>
+
+        </form>
+
+      </main>
+
+    );
+
+  }
+
+
+  const inviteUrl =
+    `${location.origin}/?game=${game.game_code}`;
+
+
+  function changeTheme(value) {
+
+    const updated = {
+      ...game,
+      theme: value
+    };
+
+    setGame(updated);
+
+    saveGame(updated);
+
+  }
+
+
+  function approvePrize(i) {
+
+    const updatedPrizes =
+      (game.prizes || []).map(
+        (p, j) =>
+          j === i
+            ? {
+                ...p,
+                approved:
+                  !p.approved
+              }
+            : p
+      );
+
+
+    const updated = {
+      ...game,
+      prizes: updatedPrizes
+    };
+
+    setGame(updated);
+
+    saveGame(updated);
+
+  }
+
+
+  const visiblePrizes =
+    (game.prizes || []).filter(
+      (p) =>
+        p.amount !== "" &&
+        p.amount !== null &&
+        p.amount !== undefined
+    );
+
+
+  return (
+
+    <main
+      style={{
+        maxWidth: 700,
+        margin: "20px auto",
+        padding: 20
+      }}
+    >
+
+      <h1>
+        {game.game_name}
+      </h1>
+
+      <h2>
+        Host Control Centre
+      </h2>
+
+      <p>
+        Date: {game.game_date}
+      </p>
+
+      <p>
+        Time: {game.game_time}
+      </p>
+
+      <p>
+        Ticket Price:
+        {" "}
+        ₹{game.ticket_price}
+      </p>
+
+      <p>
+        Ticket Limit:
+        {" "}
+        {game.ticket_limit}
+      </p>
+
+
+      <hr />
+
+
+      <h3>
+        Game Theme
+      </h3>
+
+      <select
+        value={
+          game.theme ||
+          "Classic"
+        }
+        onChange={(e) =>
+          changeTheme(
+            e.target.value
+          )
+        }
+      >
+
+        {themes.map((t) => (
+          <option
+            key={t}
+            value={t}
+          >
+            {t}
+          </option>
+        ))}
+
+      </select>
+
+
+      <hr />
+
+
+      <h3>
+        Share Game
+      </h3>
+
+      <input
+        readOnly
+        value={inviteUrl}
+        style={{
+          width: "70%"
+        }}
+      />
+
+      <button
+        onClick={copyLink}
+      >
+        Copy Link
+      </button>
+
+      <button
+        onClick={shareGame}
+        style={{
+          marginLeft: 8
+        }}
+      >
+        Share Game
+      </button>
+
+
+      <hr />
+
+
+      <h2>
+        Prizes
+      </h2>
+
+
+      {!visiblePrizes.length && (
+        <p>
+          No prizes added yet.
+        </p>
+      )}
+
+
+      {visiblePrizes.map((p) => {
+
+        const i =
+          (game.prizes || [])
+            .indexOf(p);
+
+        return (
+
+          <div
+            key={i}
+            style={{
+              border:
+                "1px solid #ccc",
+              padding: 10,
+              marginBottom: 8
+            }}
+          >
+
+            <b>
+              {p.name}
+            </b>
+
+            <p>
+              Amount:
+              {" "}
+              ₹{p.amount}
+            </p>
+
+            <p>
+              Status:
+              {" "}
+
+              <b>
+                {p.approved
+                  ? "Approved"
+                  : "Pending"}
+              </b>
+            </p>
+
+            <button
+              onClick={() =>
+                approvePrize(i)
+              }
+            >
+              {p.approved
+                ? "Remove Approval"
+                : "Approve Prize"}
+            </button>
+
+          </div>
+
+        );
+
+      })}
+
+
+      <hr />
+
+
+      <h2>
+        Ticket Bookings
+      </h2>
+
+      <p>
+        Pending booking requests
+        will appear here.
+      </p>
+
+      <div
+        style={{
+          border:
+            "1px solid #ccc",
+          padding: 15
+        }}
+      >
+        No pending bookings yet.
+      </div>
+
+
+      <hr />
+
+
+      <h2>
+        Live Game
+      </h2>
+
+      <Live
+        game={game}
+        setGame={setGame}
+      />
+
+
+      <hr />
+
+
+      <button
+        onClick={() => {
+
+          if (
+            confirm(
+              "End this game?"
+            )
+          ) {
+
+            saveGame(null);
+
+            setGame(null);
+
+          }
+
+        }}
+      >
+        End Game
+      </button>
+
+    </main>
+
+  );
 
 }
 
@@ -1102,141 +1127,136 @@ End Game
    LIVE GAME
 ========================================================= */
 
-function Live({game,setGame}){
+function Live({ game, setGame }) {
 
-const called=
-game.calledNumbers||[];
+  const called =
+    game.calledNumbers || [];
 
-const last=
-called.at(-1);
+  const last =
+    called.at(-1);
 
-const remaining=
-nums.filter(
-n=>!called.includes(n)
-);
+  const remaining =
+    nums.filter(
+      (n) =>
+        !called.includes(n)
+    );
 
-function start(){
 
-setGame({
+  function start() {
 
-...game,
+    setGame({
+      ...game,
+      gameStarted: true,
+      status: "live",
+      calledNumbers: []
+    });
 
-gameStarted:true,
+  }
 
-status:"live",
 
-calledNumbers:[]
+  function callNext() {
 
-});
+    if (!game.gameStarted) {
+      return;
+    }
 
-}
+    if (!remaining.length) {
+      return;
+    }
 
-function callNext(){
+    const n =
+      remaining[
+        Math.floor(
+          Math.random() *
+          remaining.length
+        )
+      ];
 
-if(!game.gameStarted)
-return;
 
-if(!remaining.length)
-return;
+    setGame({
+      ...game,
+      status: "live",
+      calledNumbers: [
+        ...called,
+        n
+      ]
+    });
 
-const n=
-remaining[
-Math.floor(
-Math.random()*
-remaining.length
-)
-];
+  }
 
-setGame({
 
-...game,
+  function reset() {
 
-status:"live",
+    setGame({
+      ...game,
+      gameStarted: false,
+      status: "upcoming",
+      calledNumbers: []
+    });
 
-calledNumbers:[
-...called,
-n
-]
+  }
 
-});
 
-}
+  return (
 
-function reset(){
+    <section>
 
-setGame({
+      <p>
+        Current Number:
+        {" "}
+        <b>
+          {last || "—"}
+        </b>
+      </p>
 
-...game,
+      <p>
+        Called:
+        {" "}
+        {called.length}/90
+      </p>
 
-gameStarted:false,
 
-status:"upcoming",
+      {!game.gameStarted ? (
 
-calledNumbers:[]
+        <button
+          onClick={start}
+        >
+          Start Game
+        </button>
 
-});
+      ) : (
 
-}
+        <>
 
-return(
+          <button
+            onClick={callNext}
+          >
+            Call Next Number
+          </button>
 
-<section>
+          <button
+            onClick={reset}
+            style={{
+              marginLeft: 8
+            }}
+          >
+            Reset
+          </button>
 
-<p>
-Current Number:
-{" "}
-<b>
-{last||"—"}
-</b>
-</p>
+        </>
 
-<p>
-Called:
-{" "}
-{called.length}/90
-</p>
+      )}
 
-{!game.gameStarted?
 
-<button
-onClick={start}
->
-Start Game
-</button>
+      <p>
+        {called.length
+          ? called.join(", ")
+          : "No numbers called."}
+      </p>
 
-:
+    </section>
 
-<>
-
-<button
-onClick={callNext}
->
-Call Next Number
-</button>
-
-<button
-onClick={reset}
-style={{
-marginLeft:8
-}}
->
-Reset
-</button>
-
-</>
-}
-
-<p>
-
-{called.length
-?called.join(", ")
-:"No numbers called."}
-
-</p>
-
-</section>
-
-);
+  );
 
 }
 
@@ -1245,78 +1265,90 @@ Reset
    PLAYER INVITATION
 ========================================================= */
 
-function Invitation({game,accept}){
+function Invitation({
+  game,
+  accept
+}) {
 
-const prizes=
-(game.prizes||[]).filter(
-p=>
-p.amount!==""&&
-p.amount!==null&&
-p.amount!==undefined
-);
+  const prizes =
+    (game.prizes || []).filter(
+      (p) =>
+        p.amount !== "" &&
+        p.amount !== null &&
+        p.amount !== undefined
+    );
 
-return(
 
-<main
-style={{
-maxWidth:600,
-margin:"20px auto",
-padding:20
-}}
->
+  return (
 
-<h1>
-{game.game_name}
-</h1>
+    <main
+      style={{
+        maxWidth: 600,
+        margin: "20px auto",
+        padding: 20
+      }}
+    >
 
-<p>
-<b>Date:</b>{" "}
-{game.game_date}
-</p>
+      <h1>
+        {game.game_name}
+      </h1>
 
-<p>
-<b>Time:</b>{" "}
-{game.game_time}
-</p>
+      <p>
+        <b>Date:</b>
+        {" "}
+        {game.game_date}
+      </p>
 
-<p>
-<b>Ticket Price:</b>{" "}
-₹{game.ticket_price}
-</p>
+      <p>
+        <b>Time:</b>
+        {" "}
+        {game.game_time}
+      </p>
 
-<p>
-<b>Available Tickets:</b>{" "}
-{game.ticket_limit}
-</p>
+      <p>
+        <b>Ticket Price:</b>
+        {" "}
+        ₹{game.ticket_price}
+      </p>
 
-<p>
-<b>Status:</b>{" "}
-{game.status}
-</p>
+      <p>
+        <b>Available Tickets:</b>
+        {" "}
+        {game.ticket_limit}
+      </p>
 
-<h3>
-Prize List
-</h3>
+      <p>
+        <b>Status:</b>
+        {" "}
+        {game.status}
+      </p>
 
-{prizes.map((p,i)=>(
 
-<p key={i}>
+      <h3>
+        Prize List
+      </h3>
 
-{p.name}: ₹{p.amount}
 
-</p>
+      {prizes.map((p, i) => (
 
-))}
+        <p key={i}>
+          {p.name}:
+          {" "}
+          ₹{p.amount}
+        </p>
 
-<button
-onClick={accept}
->
-I ACCEPT
-</button>
+      ))}
 
-</main>
 
-);
+      <button
+        onClick={accept}
+      >
+        I ACCEPT
+      </button>
+
+    </main>
+
+  );
 
 }
 
@@ -1325,400 +1357,454 @@ I ACCEPT
    PLAYER BOOKING
 ========================================================= */
 
-function Booking({game}){
+function Booking({ game }) {
 
-const[player,setPlayer]=
-useState("");
+  const [player, setPlayer] =
+    useState("");
 
-const[selected,setSelected]=
-useState([]);
+  const [selected, setSelected] =
+    useState([]);
 
-const[sent,setSent]=
-useState(false);
+  const [sent, setSent] =
+    useState(false);
 
 
-/*
-   IMPORTANT:
+  /*
+     IMPORTANT
 
-   If host sets ticket limit to 10,
-   this creates exactly:
+     The ticket limit is used in BOTH places:
 
-   #1 #2 #3 #4 #5 #6 #7 #8 #9 #10
+     1. Ticket number buttons
+     2. Actual 3x9 tickets
 
-   And below it:
+     Example:
 
-   Ticket #1
-   Ticket #2
-   Ticket #3
-   ...
-   Ticket #10
-*/
+     limit = 10
 
-const ticketLimit=
-Math.max(
-1,
-Number(
-game.ticket_limit||100
-)
-);
+     numbers:
+     #1 #2 #3 #4 #5 #6 #7 #8 #9 #10
 
-const ticketNumbers=
-Array.from(
-{
-length:ticketLimit
-},
-(_,i)=>i+1
-);
+     actual tickets:
+     Ticket #1
+     Ticket #2
+     Ticket #3
+     ...
+     Ticket #10
+  */
 
+  const ticketLimit =
+    Math.max(
+      1,
+      Number(
+        game.ticket_limit || 100
+      )
+    );
 
-/* Select / unselect ticket */
 
-function toggle(n){
+  const ticketNumbers =
+    Array.from(
+      {
+        length: ticketLimit
+      },
+      (_, i) => i + 1
+    );
 
-if(sent)
-return;
 
-setSelected(current=>{
+  function toggleTicket(ticketNumber) {
 
-if(
-current.includes(n)
-){
+    if (sent) {
+      return;
+    }
 
-return current.filter(
-x=>x!==n
-);
+    setSelected((current) => {
 
-}
+      if (
+        current.includes(
+          ticketNumber
+        )
+      ) {
 
-return[
-...current,
-n
-];
+        return current.filter(
+          (x) =>
+            x !== ticketNumber
+        );
 
-});
+      }
 
-}
+      return [
+        ...current,
+        ticketNumber
+      ];
 
+    });
 
-/* Send booking request */
+  }
 
-function send(){
 
-if(
-!player.trim()||
-selected.length===0
-){
+  function send() {
 
-alert(
-"Enter your name and select tickets."
-);
+    if (
+      !player.trim() ||
+      selected.length === 0
+    ) {
 
-return;
+      alert(
+        "Enter your name and select tickets."
+      );
 
-}
+      return;
+    }
 
-const sorted=
-[...selected].sort(
-(a,b)=>a-b
-);
 
-const text=
-`Hi ${game.host_name||"Host"}, `+
-`${player.trim()} wants to book `+
-`${sorted.map(n=>`#${n}`).join(", ")}`+
-` for ${game.game_name}. `+
-`Please approve my booking.`;
+    const sorted =
+      [...selected].sort(
+        (a, b) => a - b
+      );
 
-const request={
 
-id:Date.now(),
+    const text =
+`Hi ${game.host_name || "Host"}, ${player.trim()} wants to book ${sorted.map((n) => `#${n}`).join(", ")} for ${game.game_name}. Please approve my booking.`;
 
-playerName:
-player.trim(),
 
-ticketNumbers:
-sorted,
+    const request = {
 
-status:"pending",
+      id: Date.now(),
 
-createdAt:
-new Date().toISOString()
-
-};
-
-localStorage.setItem(
-
-"tambola_player_request_"+
-game.game_code,
-
-JSON.stringify(request)
-
-);
-
-setSent(true);
-
-location.href=
-`https://wa.me/?text=${
-encodeURIComponent(text)
-}`;
-
-}
-
-
-/* =========================================================
-   PLAYER BOOKING PAGE
-========================================================= */
+      playerName:
+        player.trim(),
 
-return(
+      ticketNumbers:
+        sorted,
 
-<main
-style={{
-maxWidth:700,
-margin:"20px auto",
-padding:20,
-boxSizing:"border-box"
-}}
->
+      status: "pending",
 
-<h1>
-Ticket Booking
-</h1>
+      createdAt:
+        new Date().toISOString()
 
-<p>
-<b>
-{game.game_name}
-</b>
-</p>
+    };
 
 
-<h3>
-Player Name
-</h3>
+    localStorage.setItem(
+      "tambola_player_request_" +
+        game.game_code,
 
-<input
-type="text"
-placeholder="Enter your name"
-value={player}
-onChange={e=>
-setPlayer(e.target.value)
-}
-disabled={sent}
-style={{
-width:"100%",
-maxWidth:400,
-padding:10,
-boxSizing:"border-box"
-}}
-/>
+      JSON.stringify(request)
+    );
 
 
-{/* =====================================================
-    TICKET NUMBER ROW
-===================================================== */}
-
-<h3>
-Select Ticket
-</h3>
-
-<div
-style={{
-display:"flex",
-flexWrap:"wrap",
-gap:5,
-marginBottom:25
-}}
->
-
-{ticketNumbers.map(n=>(
-
-<button
-key={`number-${n}`}
-type="button"
-onClick={()=>
-toggle(n)
-}
-disabled={sent}
-style={{
-padding:"7px 10px",
-border:"1px solid #555",
-borderRadius:5,
-background:
-selected.includes(n)
-?"#90ee90"
-:"#fff",
-fontWeight:
-selected.includes(n)
-?"bold"
-:"normal"
-}}
->
-
-{selected.includes(n)
-?"✓ "
-:""}
-
-#{n}
-
-</button>
+    setSent(true);
 
-))}
-
-</div>
-
-
-{/* =====================================================
-    ALL ACTUAL TICKETS
-===================================================== */}
 
-<h3>
-All Actual 3 × 9 Tambola Tickets
-</h3>
+    location.href =
+      `https://wa.me/?text=${encodeURIComponent(
+        text
+      )}`;
 
-<p>
-Tap any actual ticket to select or unselect it.
-</p>
+  }
 
 
-<div
-style={{
-display:"block",
-width:"100%"
-}}
->
+  /*
+     CREATE THE ACTUAL TICKETS FIRST.
 
-{
+     This is deliberately separate from
+     the number-button section.
 
-/*
-   THIS MAP IS IMPORTANT.
-
-   It renders EVERY ticket.
+     It guarantees that the actual-ticket
+     section receives one Ticket component
+     for EVERY ticket number.
+  */
 
-   If limit = 10:
+  const actualTickets =
+    ticketNumbers.map(
+      (ticketNumber) => (
 
-   Ticket #1
-   Ticket #2
-   Ticket #3
-   Ticket #4
-   Ticket #5
-   Ticket #6
-   Ticket #7
-   Ticket #8
-   Ticket #9
-   Ticket #10
-*/
+        <Ticket
+          key={
+            "actual-ticket-" +
+            ticketNumber
+          }
 
-ticketNumbers.map(n=>(
+          n={ticketNumber}
 
-<div
-key={`actual-ticket-${n}`}
-style={{
-display:"block",
-width:"100%",
-marginBottom:20
-}}
->
+          name={player}
 
-<Ticket
-n={n}
-name={player}
-selected={
-selected.includes(n)
-}
-onClick={()=>
-toggle(n)
-}
-/>
+          selected={
+            selected.includes(
+              ticketNumber
+            )
+          }
 
-</div>
+          onClick={() =>
+            toggleTicket(
+              ticketNumber
+            )
+          }
+        />
 
-))
+      )
+    );
 
-}
 
-</div>
+  return (
 
+    <main
+      style={{
+        width: "100%",
+        maxWidth: 700,
+        margin: "20px auto",
+        padding: 20,
+        boxSizing: "border-box"
+      }}
+    >
 
-{/* =====================================================
-    SELECTED TICKETS
-===================================================== */}
+      <h1>
+        Ticket Booking
+      </h1>
 
-{selected.length>0&&(
+      <p>
+        <b>
+          {game.game_name}
+        </b>
+      </p>
 
-<div
-style={{
-border:"1px solid #16a34a",
-borderRadius:8,
-padding:12,
-marginTop:10,
-marginBottom:15
-}}
->
 
-<b>
-Selected Tickets
-</b>
+      <h3>
+        Player Name
+      </h3>
 
-<p>
+      <input
+        type="text"
+        placeholder="Player name"
+        value={player}
+        onChange={(e) =>
+          setPlayer(
+            e.target.value
+          )
+        }
+        disabled={sent}
+        style={{
+          width: "100%",
+          maxWidth: 400,
+          padding: 10,
+          boxSizing: "border-box"
+        }}
+      />
 
-{selected
-.slice()
-.sort((a,b)=>a-b)
-.map(n=>`#${n}`)
-.join(", ")}
 
-</p>
+      <h3>
+        Select Ticket
+      </h3>
 
-</div>
 
-)}
+      {/* =================================================
+          TICKET NUMBER BUTTONS
+      ================================================= */}
 
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 5,
+          marginBottom: 30
+        }}
+      >
 
-{/* =====================================================
-    BOOK BUTTON
-===================================================== */}
+        {ticketNumbers.map(
+          (ticketNumber) => (
 
-{!sent&&(
+            <button
+              key={
+                "ticket-number-" +
+                ticketNumber
+              }
 
-<button
-type="button"
-onClick={send}
-disabled={
-!player.trim()||
-selected.length===0
-}
-style={{
-padding:"10px 18px",
-fontWeight:"bold"
-}}
->
+              type="button"
 
-BOOK TICKETS
+              onClick={() =>
+                toggleTicket(
+                  ticketNumber
+                )
+              }
 
-</button>
+              disabled={sent}
 
-)}
+              style={{
+                padding:
+                  "7px 10px",
 
-{sent&&(
+                border:
+                  "1px solid #555",
 
-<div>
+                borderRadius: 5,
 
-<p>
-<b>
-Booking request sent.
-</b>
-</p>
+                background:
+                  selected.includes(
+                    ticketNumber
+                  )
+                    ? "#90ee90"
+                    : "#fff",
 
-<p>
-Waiting for host approval.
-</p>
+                fontWeight:
+                  selected.includes(
+                    ticketNumber
+                  )
+                    ? "bold"
+                    : "normal"
+              }}
+            >
 
-</div>
+              {selected.includes(
+                ticketNumber
+              )
+                ? "✓ "
+                : ""}
 
-)}
+              #{ticketNumber}
 
-</main>
+            </button>
 
-);
+          )
+        )}
+
+      </div>
+
+
+      {/* =================================================
+          ALL ACTUAL TICKETS
+      ================================================= */}
+
+      <h3>
+        All Actual 3 × 9 Tambola Tickets
+      </h3>
+
+      <p>
+        Tap any actual ticket to
+        select or unselect it.
+      </p>
+
+
+      <div
+        style={{
+          width: "100%",
+          display: "block",
+          boxSizing: "border-box"
+        }}
+      >
+
+        {/*
+           THIS IS THE IMPORTANT FIX.
+
+           actualTickets already contains
+           one Ticket component for EVERY
+           ticket number.
+
+           If ticket limit = 10:
+
+           Ticket #1
+           Ticket #2
+           Ticket #3
+           Ticket #4
+           Ticket #5
+           Ticket #6
+           Ticket #7
+           Ticket #8
+           Ticket #9
+           Ticket #10
+        */}
+
+        {actualTickets}
+
+      </div>
+
+
+      {/* =================================================
+          SELECTED TICKETS
+      ================================================= */}
+
+      {selected.length > 0 && (
+
+        <div
+          style={{
+            border:
+              "1px solid #16a34a",
+
+            borderRadius: 8,
+
+            padding: 12,
+
+            marginTop: 10,
+
+            marginBottom: 15,
+
+            background:
+              "#f0fff4"
+          }}
+        >
+
+          <b>
+            Selected Tickets
+          </b>
+
+          <p>
+            {selected
+              .slice()
+              .sort(
+                (a, b) => a - b
+              )
+              .map(
+                (n) =>
+                  `#${n}`
+              )
+              .join(", ")}
+          </p>
+
+        </div>
+
+      )}
+
+
+      {!sent ? (
+
+        <button
+          type="button"
+          onClick={send}
+          disabled={
+            !player.trim() ||
+            selected.length === 0
+          }
+          style={{
+            padding:
+              "10px 18px",
+
+            fontWeight: "bold",
+
+            marginBottom: 30
+          }}
+        >
+          BOOK TICKETS
+        </button>
+
+      ) : (
+
+        <div>
+
+          <p>
+            <b>
+              Booking request sent.
+            </b>
+          </p>
+
+          <p>
+            Waiting for host approval.
+          </p>
+
+        </div>
+
+      )}
+
+    </main>
+
+  );
 
 }
 
@@ -1727,185 +1813,198 @@ Waiting for host approval.
    APP
 ========================================================= */
 
-function App(){
+function App() {
 
-const[game,setGame]=
-useState(null);
+  const [game, setGame] =
+    useState(null);
 
-const[playerGame,setPlayerGame]=
-useState(null);
+  const [playerGame, setPlayerGame] =
+    useState(null);
 
-const[page,setPage]=
-useState("host");
+  const [page, setPage] =
+    useState("host");
 
-const[error,setError]=
-useState("");
-
-useEffect(()=>{
-
-const saved=
-loadGame();
-
-if(saved){
-
-setGame(saved);
-
-setPage("host");
-
-}
-
-const gc=
-getGameCode();
-
-if(gc){
-
-loadPlayer(gc);
-
-}
-
-},[]);
+  const [error, setError] =
+    useState("");
 
 
-useEffect(()=>{
+  useEffect(() => {
 
-if(game){
+    const saved =
+      loadGame();
 
-saveGame(game);
+    if (saved) {
 
-}
+      setGame(saved);
 
-},[game]);
+      setPage("host");
 
-
-async function loadPlayer(gc){
-
-const{data,error}=
-await supabase
-.from("games")
-.select("*")
-.eq(
-"game_code",
-gc.toUpperCase()
-)
-.maybeSingle();
-
-if(error||!data){
-
-setError(
-error?.message||
-"Game not found"
-);
-
-return;
-
-}
-
-const g={
-
-...data,
-
-prizes:
-Array.isArray(data.prizes)
-?data.prizes
-:defaultPrizes,
-
-calledNumbers:
-Array.isArray(
-data.calledNumbers
-)
-?data.calledNumbers
-:[],
-
-bookingRequests:
-Array.isArray(
-data.bookingRequests
-)
-?data.bookingRequests
-:[]
-
-};
-
-setPlayerGame(g);
-
-setPage("invitation");
-
-}
+    }
 
 
-if(error){
+    const gc =
+      getGameCode();
 
-return(
+    if (gc) {
 
-<main
-style={{
-padding:20
-}}
->
+      loadPlayer(gc);
 
-<h2>
-Game Not Found
-</h2>
+    }
 
-<p>
-{error}
-</p>
-
-</main>
-
-);
-
-}
+  }, []);
 
 
-if(
-playerGame&&
-page==="invitation"
-){
+  useEffect(() => {
 
-return(
+    if (game) {
 
-<Invitation
-game={playerGame}
-accept={()=>
-setPage("booking")
-}
-/>
+      saveGame(game);
 
-);
+    }
 
-}
+  }, [game]);
 
 
-if(
-playerGame&&
-page==="booking"
-){
+  async function loadPlayer(gc) {
 
-return(
+    const {
+      data,
+      error
+    } =
+      await supabase
+        .from("games")
+        .select("*")
+        .eq(
+          "game_code",
+          gc.toUpperCase()
+        )
+        .maybeSingle();
 
-<Booking
-game={playerGame}
-/>
 
-);
+    if (
+      error ||
+      !data
+    ) {
 
-}
+      setError(
+        error?.message ||
+        "Game not found"
+      );
+
+      return;
+
+    }
 
 
-return(
+    const g = {
 
-<HostPage
-game={game}
-setGame={setGame}
-/>
+      ...data,
 
-);
+      prizes:
+        Array.isArray(
+          data.prizes
+        )
+          ? data.prizes
+          : defaultPrizes,
+
+      calledNumbers:
+        Array.isArray(
+          data.calledNumbers
+        )
+          ? data.calledNumbers
+          : [],
+
+      bookingRequests:
+        Array.isArray(
+          data.bookingRequests
+        )
+          ? data.bookingRequests
+          : []
+
+    };
+
+
+    setPlayerGame(g);
+
+    setPage("invitation");
+
+  }
+
+
+  if (error) {
+
+    return (
+
+      <main
+        style={{
+          padding: 20
+        }}
+      >
+
+        <h2>
+          Game Not Found
+        </h2>
+
+        <p>
+          {error}
+        </p>
+
+      </main>
+
+    );
+
+  }
+
+
+  if (
+    playerGame &&
+    page === "invitation"
+  ) {
+
+    return (
+
+      <Invitation
+        game={playerGame}
+        accept={() =>
+          setPage("booking")
+        }
+      />
+
+    );
+
+  }
+
+
+  if (
+    playerGame &&
+    page === "booking"
+  ) {
+
+    return (
+
+      <Booking
+        game={playerGame}
+      />
+
+    );
+
+  }
+
+
+  return (
+
+    <HostPage
+      game={game}
+      setGame={setGame}
+    />
+
+  );
 
 }
 
 
 createRoot(
-document.getElementById("root")
+  document.getElementById("root")
 ).render(
-<App/>
+  <App />
 );
