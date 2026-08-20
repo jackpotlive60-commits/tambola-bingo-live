@@ -3762,21 +3762,16 @@ function HostControlPage({
     setCallIntervalSeconds
   ] = useState(5);
 
+  // Caller mode: Classic, Indian/Hinglish, or Fun
+  const [
+    callerMode,
+    setCallerMode
+  ] = useState("fun");
+
   const [
     callingNumber,
     setCallingNumber
   ] = useState(false);
-
-  const [
-    callerMode,
-    setCallerMode
-  ] = useState(() => {
-    try {
-      return localStorage.getItem("tambolalive_caller_mode") || "fun";
-    } catch {
-      return "fun";
-    }
-  });
 
   const callingRef = useRef(false);
 
@@ -3794,17 +3789,6 @@ function HostControlPage({
       game.called_numbers
     ]
   );
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "tambolalive_caller_mode",
-        callerMode
-      );
-    } catch {
-      // Ignore localStorage errors.
-    }
-  }, [callerMode]);
 
   async function loadBookings() {
     setLoadingBookings(
@@ -4323,107 +4307,97 @@ ${inviteUrl}`;
     90: "Top of the house, number 90"
   };
 
-  const CLASSIC_CALLER_PHRASES = Object.fromEntries(
-    Array.from(
-      { length: 90 },
-      (_, index) => {
-        const number = index + 1;
-        return [number, `Number ${number}`];
-      }
-    )
-  );
-
   const INDIAN_CALLER_PHRASES = {
-    1: "Shuruat ka number, one",
-    2: "Do ka dum, number two",
-    3: "Teen tigada, number three",
-    4: "Chaar ka jadoo, number four",
-    5: "Paanch ka punch, number five",
-    6: "Chhe ka chakkar, number six",
-    7: "Lucky seven",
-    8: "Aath ka saath, number eight",
-    9: "Nau ka swag, number nine",
-    10: "Das number, number ten",
-    11: "Gyarah, legs eleven",
-    12: "Ek dozen, number twelve",
-    13: "Tera number, number thirteen",
-    14: "Valentine wala fourteen",
-    15: "Pandrah, number fifteen",
-    16: "Sweet sixteen",
-    17: "Satrah, dancing queen",
-    18: "Atharah, coming of age",
-    19: "Unnis, goodbye teens",
-    20: "Bees ka score, number twenty",
-    21: "Ikkis, key to the door",
-    22: "Do chhote ducks, number twenty two",
-    23: "Teis, you and me",
-    24: "Do dozen, number twenty four",
-    25: "Silver jubilee, twenty five",
-    26: "Republic Day, twenty six",
-    27: "Sattais, gateway to heaven",
-    28: "Athais, duck and its mate",
-    29: "Untees, rise and shine",
-    30: "Flirty thirty",
-    31: "Ikattis, get up and run",
-    32: "Battiis, buckle my shoe",
-    33: "All the threes, thirty three",
-    34: "Dil maange more, thirty four",
-    35: "Paintees, jump and jive",
-    36: "Teen dozen, thirty six",
-    37: "Saintis, mixed luck",
-    38: "Adtees, Christmas cake",
-    39: "Thirty nine steps",
-    40: "Life begins at forty",
-    41: "Iktaalis, time for fun",
-    42: "The answer to life, forty two",
-    43: "Taintalis, down on your knees",
-    44: "All the fours, forty four",
-    45: "Halfway there, forty five",
-    46: "Chhiyaalis, up to tricks",
-    47: "Saintalis, number forty seven",
-    48: "Chaar dozen, forty eight",
-    49: "Unchaas, rise and shine",
-    50: "Half a century, fifty",
-    51: "Ikyavan, charity begins at fifty one",
-    52: "Pack of cards, fifty two",
-    53: "Tirpan, stuck in the tree",
-    54: "Chauvan, clean the floor",
-    55: "Snakes alive, fifty five",
-    56: "Chhappan, pick up sticks",
-    57: "Sattavan, fifty seven varieties",
-    58: "Athavan, make them wait",
-    59: "Unsath, Brighton line",
-    60: "Diamond jubilee, sixty",
-    61: "Iksath, baker's bun",
-    62: "Baasath, turn the screw",
-    63: "Tirsath, tickle me",
-    64: "Chaunsath, almost retired",
-    65: "Painsath, retirement time",
-    66: "Chhiyaasath, clickety click",
-    67: "Sadsath, stairway to heaven",
-    68: "Arsath, pick a mate",
-    69: "Ulta pulta, sixty nine",
-    70: "Sattar, three score and ten",
-    71: "Ikhattar, bang on the drum",
-    72: "Chhe dozen, seventy two",
-    73: "Tihattar, queen bee",
-    74: "Chauhattar, hit the floor",
-    75: "Pachattar, strive and strive",
-    76: "Chhihattar, seventy six trombones",
-    77: "Double lucky seven",
-    78: "Athattar, lucky seth",
-    79: "Unasi, one more time",
-    80: "Assi, eight and zero",
-    81: "Ikyasi, stop and run",
-    82: "Bayaasi, straight on through",
-    83: "Tiraasi, time for tea",
-    84: "Chaurasi, seven dozen",
-    85: "Pachasi, staying alive",
-    86: "Chhiyaasi, between the sticks",
-    87: "Sattaasi, last of luck",
-    88: "Two fat ladies, eighty eight",
-    89: "Navasi, nearly there",
-    90: "Top of the house, ninety"
+    1: "Chalo shuru karte hain, number 1",
+    2: "Do ka dum, number 2",
+    3: "Teen ka scene, number 3",
+    4: "Chaar ka vaar, number 4",
+    5: "Paanch pe punch, number 5",
+    6: "Chhe ka jadoo, number 6",
+    7: "Saat samundar paar, number 7",
+    8: "Aath ka saath, number 8",
+    9: "Nau nau, mast nau, number 9",
+    10: "Das ka dhamaka, number 10",
+    11: "Gyarah, lucky legs eleven, number 11",
+    12: "Barah ka joda, number 12",
+    13: "Tera kya kehna, number 13",
+    14: "Chaudah, pyaar wala number, number 14",
+    15: "Pandrah pe full josh, number 15",
+    16: "Solah, sweet sixteen, number 16",
+    17: "Satrah, dancing queen, number 17",
+    18: "Atharah, coming of age, number 18",
+    19: "Unnees, goodbye teens, number 19",
+    20: "Bees ka score, number 20",
+    21: "Ikkis, key to the door, number 21",
+    22: "Do chhote ducks, number 22",
+    23: "Teis, you and me, number 23",
+    24: "Do dozen, number 24",
+    25: "Pachis, quarter century, number 25",
+    26: "Chhabbees, Republic Day style, number 26",
+    27: "Sattais, gateway to heaven, number 27",
+    28: "Athais, duck aur mate, number 28",
+    29: "Untis, rise and shine, number 29",
+    30: "Tees, flirty thirty, number 30",
+    31: "Ikattis, get up and run, number 31",
+    32: "Battis, buckle my shoe, number 32",
+    33: "Teintees, all the threes, number 33",
+    34: "Chautis, dil maange more, number 34",
+    35: "Paintis, jump and jive, number 35",
+    36: "Chhattis, teen dozen, number 36",
+    37: "Saintees, mixed luck, number 37",
+    38: "Adtees, Christmas cake, number 38",
+    39: "Untalis, number 39",
+    40: "Chalis, life begins at forty, number 40",
+    41: "Iktalis, time for fun, number 41",
+    42: "Bayalis, answer to life, number 42",
+    43: "Taintalis, down on your knees, number 43",
+    44: "Chavalis, all the fours, number 44",
+    45: "Paintalis, halfway there, number 45",
+    46: "Chiyalis, up to tricks, number 46",
+    47: "Saintalis, four and seven, number 47",
+    48: "Adtalis, four dozen, number 48",
+    49: "Unchaas, rise and shine, number 49",
+    50: "Pachaas, half a century, number 50",
+    51: "Ikyaavan, charity begins, number 51",
+    52: "Baavan, pack of cards, number 52",
+    53: "Tirpan, stuck in the tree, number 53",
+    54: "Chauvan, clean the floor, number 54",
+    55: "Pachpan, snakes alive, number 55",
+    56: "Chhappan, pick up sticks, number 56",
+    57: "Sattavan, fifty-seven varieties, number 57",
+    58: "Athavan, make them wait, number 58",
+    59: "Unsath, bright and lively, number 59",
+    60: "Saath, diamond jubilee, number 60",
+    61: "Iksath, baker's bun, number 61",
+    62: "Baasath, turn the screw, number 62",
+    63: "Tirsath, tickle me, number 63",
+    64: "Chaunsath, almost retired, number 64",
+    65: "Painsath, retirement time, number 65",
+    66: "Chhiyasath, clickety click, number 66",
+    67: "Sadsath, stairway to heaven, number 67",
+    68: "Adsath, pick a mate, number 68",
+    69: "Unhattar, ulta pulta, number 69",
+    70: "Sattar, three score and ten, number 70",
+    71: "Ikhattar, bang on the drum, number 71",
+    72: "Bahattar, six dozen, number 72",
+    73: "Tihattar, queen bee, number 73",
+    74: "Chauhattar, hit the floor, number 74",
+    75: "Pachattar, strive and strive, number 75",
+    76: "Chihattar, seventy-six trombones, number 76",
+    77: "Sattaattar, double lucky seven, number 77",
+    78: "Athattar, lucky seth, number 78",
+    79: "Unaasi, one more time, number 79",
+    80: "Assi, eight and zero, number 80",
+    81: "Ikyasi, stop and run, number 81",
+    82: "Bayaasi, straight on through, number 82",
+    83: "Tirasi, time for tea, number 83",
+    84: "Chaurasi, seven dozen, number 84",
+    85: "Pachasi, staying alive, number 85",
+    86: "Chhiyaasi, between the sticks, number 86",
+    87: "Sataasi, last of luck, number 87",
+    88: "Athasi, two fat ladies, number 88",
+    89: "Navasi, nearly there, number 89",
+    90: "Nabbe, top of the house, number 90"
   };
 
   function announceNumber(number) {
@@ -4432,42 +4406,30 @@ ${inviteUrl}`;
 
       window.speechSynthesis.cancel();
 
-      const phraseMap =
-        callerMode === "classic"
-          ? CLASSIC_CALLER_PHRASES
-          : callerMode === "indian"
-          ? INDIAN_CALLER_PHRASES
-          : CALLER_PHRASES;
+      let phrase;
 
-      const phrase =
-        phraseMap[number] ||
-        `Number ${number}`;
+      if (callerMode === "classic") {
+        phrase = `Number ${number}`;
+      } else if (callerMode === "indian") {
+        phrase =
+          INDIAN_CALLER_PHRASES[number] ||
+          `Number ${number}`;
+      } else {
+        phrase =
+          CALLER_PHRASES[number] ||
+          `Number ${number}`;
+      }
 
-      const utterance =
-        new SpeechSynthesisUtterance(
-          phrase
-        );
-
-      utterance.rate =
-        callerMode === "classic"
-          ? 0.95
-          : 0.88;
-
-      utterance.pitch =
-        callerMode === "fun"
-          ? 1.04
-          : 1;
-
+      const utterance = new SpeechSynthesisUtterance(
+        phrase
+      );
+      utterance.rate = 0.88;
+      utterance.pitch = 1.02;
       utterance.volume = 1;
 
-      window.speechSynthesis.speak(
-        utterance
-      );
+      window.speechSynthesis.speak(utterance);
     } catch (err) {
-      console.error(
-        "Could not announce number:",
-        err
-      );
+      console.error("Could not announce number:", err);
     }
   }
 
@@ -5411,127 +5373,6 @@ ${inviteUrl}`;
               style={{
                 display: "grid",
                 gridTemplateColumns:
-                  "repeat(auto-fit,minmax(180px,1fr))",
-                gap: 10,
-                marginBottom: 16
-              }}
-            >
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  padding: "10px 12px",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 10,
-                  background: "#f8fafc",
-                  fontWeight: "bold"
-                }}
-              >
-                🎙️ Caller Mode
-                <select
-                  value={callerMode}
-                  onChange={(e) =>
-                    setCallerMode(e.target.value)
-                  }
-                  disabled={callingNumber}
-                  style={{
-                    padding: "7px 8px",
-                    borderRadius: 8,
-                    border: "1px solid #cbd5e1",
-                    background: "#fff"
-                  }}
-                >
-                  <option value="classic">Classic</option>
-                  <option value="indian">Indian / Hinglish</option>
-                  <option value="fun">Fun</option>
-                </select>
-              </label>
-
-              <div
-                style={{
-                  padding: "10px 12px",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 10,
-                  background: "#f8fafc",
-                  color: "#475569",
-                  textAlign: "center",
-                  fontWeight: "bold"
-                }}
-              >
-                {callerMode === "classic"
-                  ? "🔊 Classic: Number 24"
-                  : callerMode === "indian"
-                  ? "🇮🇳 Indian: Do dozen, number 24"
-                  : "🎉 Fun: Two dozen, number 24"}
-              </div>
-            </div>
-
-            <div
-              style={{
-                marginBottom: 16,
-                padding: "12px 14px",
-                borderRadius: 10,
-                background: "#eff6ff",
-                border: "1px solid #bfdbfe"
-              }}
-            >
-              <div
-                style={{
-                  fontWeight: "bold",
-                  color: "#1e3a8a",
-                  marginBottom: 8
-                }}
-              >
-                📜 CALL HISTORY — {calledNumbers.length} / 90
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 7,
-                  maxHeight: 130,
-                  overflowY: "auto"
-                }}
-              >
-                {calledNumbers.length ? (
-                  calledNumbers.map((number, index) => (
-                    <span
-                      key={`${number}-${index}`}
-                      style={{
-                        minWidth: 34,
-                        padding: "6px 8px",
-                        borderRadius: 8,
-                        background:
-                          index === calledNumbers.length - 1
-                            ? "#2563eb"
-                            : "#fff",
-                        color:
-                          index === calledNumbers.length - 1
-                            ? "#fff"
-                            : "#1e293b",
-                        border: "1px solid #bfdbfe",
-                        fontWeight: "bold",
-                        textAlign: "center"
-                      }}
-                    >
-                      {number}
-                    </span>
-                  ))
-                ) : (
-                  <span style={{ color: "#64748b" }}>
-                    No numbers called yet.
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
                   "repeat(auto-fit,minmax(140px,1fr))",
                 gap: 10,
                 marginBottom: 18
@@ -5621,6 +5462,36 @@ ${inviteUrl}`;
                   <option value={15}>15 sec</option>
                 </select>
               </label>
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "10px 12px",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 10,
+                  background: "#f8fafc",
+                  fontWeight: "bold"
+                }}
+              >
+                🎙️ Caller
+                <select
+                  value={callerMode}
+                  onChange={(e) => setCallerMode(e.target.value)}
+                  disabled={callingNumber}
+                  style={{
+                    padding: "7px 8px",
+                    borderRadius: 8,
+                    border: "1px solid #cbd5e1"
+                  }}
+                >
+                  <option value="classic">Classic</option>
+                  <option value="indian">Indian / Hinglish</option>
+                  <option value="fun">Fun</option>
+                </select>
+              </label>
             </div>
 
             <div
@@ -5647,6 +5518,70 @@ ${inviteUrl}`;
                 : autoCall
                 ? `🔊 AUTO CALL ACTIVE — every ${callIntervalSeconds} seconds`
                 : "AUTO CALL OFF — use CALL NEXT or select a number manually"}
+            </div>
+
+            <div
+              style={{
+                marginBottom: 18,
+                padding: 14,
+                borderRadius: 12,
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0"
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 10
+                }}
+              >
+                <b>📜 CALL HISTORY</b>
+                <span style={{ color: "#64748b", fontSize: 13 }}>
+                  {calledNumbers.length ? "Oldest → Newest" : "No numbers called yet"}
+                </span>
+              </div>
+
+              {calledNumbers.length > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 7
+                  }}
+                >
+                  {calledNumbers.map((number, index) => (
+                    <div
+                      key={`history-${number}-${index}`}
+                      style={{
+                        minWidth: 40,
+                        padding: "7px 8px",
+                        borderRadius: 8,
+                        background:
+                          index === calledNumbers.length - 1
+                            ? "#2563eb"
+                            : "#e2e8f0",
+                        color:
+                          index === calledNumbers.length - 1
+                            ? "#fff"
+                            : "#1e293b",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        boxShadow:
+                          index === calledNumbers.length - 1
+                            ? "0 4px 12px rgba(37,99,235,.22)"
+                            : "none"
+                      }}
+                      title={`Call ${index + 1}`}
+                    >
+                      {number}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div
@@ -6131,5 +6066,37 @@ function App() {
       if (!code) {
         setPlayerGame(
           null
-  
+        );
+
+        return;
+      }
+
+      const {
+        data,
+        error
+      } =
+        await supabase
+          .from(
+            "games"
+          )
+          .select("*")
+          .eq(
+            "game_code",
+            code
+          )
+          .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      setPlayerGame((current) => {
+        if (!data) {
+          return null;
+        }
+
+        if (
+          current &&
+          current.id === data.id &&
+          current.status === d
 Preview truncated for large file
