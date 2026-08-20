@@ -1093,8 +1093,8 @@ function TicketGrid({
 
 /* =========================================================
    PLAYER BOOKING PAGE
-========================================================= */
-
+========================================================= *
+            
 function PlayerBookingPage({
   game
 }) {
@@ -1123,6 +1123,156 @@ function PlayerBookingPage({
   const [messageType, setMessageType] =
     useState("info");
 
+  const [
+    unavailableTickets,
+    setUnavailableTickets
+  ] = useState([]);
+
+  const [
+    loadingUnavailable,
+    setLoadingUnavailable
+  ] = useState(true);
+
+  /*
+    =========================================================
+    LOAD PENDING + ACCEPTED TICKETS
+    =========================================================
+  */
+
+  async function loadUnavailableTickets() {
+    try {
+      const {
+        data,
+        error
+      } = await supabase
+        .from("ticket_bookings")
+        .select(
+          "ticket_numbers, status"
+        )
+        .eq(
+          "game_id",
+          game.id
+        )
+        .in(
+          "status",
+          [
+            "pending",
+            "accepted"
+          ]
+        );
+
+      if (error) {
+        throw error;
+      }
+
+      const numbers = [];
+
+      (data || []).forEach(
+        booking => {
+          const ticketNumbers =
+            Array.isArray(
+              booking.ticket_numbers
+            )
+              ? booking.ticket_numbers
+              : [];
+
+          ticketNumbers.forEach(
+            number => {
+              const n =
+                Number(number);
+
+              if (
+                Number.isInteger(n) &&
+                n >= 1 &&
+                n <= limit
+              ) {
+                numbers.push(n);
+              }
+            }
+          );
+        }
+      );
+
+      setUnavailableTickets(
+        [...new Set(numbers)].sort(
+          (a, b) => a - b
+        )
+      );
+    } catch (err) {
+      console.error(
+        "Could not load unavailable tickets:",
+        err
+      );
+    } finally {
+      setLoadingUnavailable(
+        false
+      );
+    }
+  }
+
+  /*
+    =========================================================
+    INITIAL LOAD + REALTIME UPDATES + BACKUP REFRESH
+    =========================================================
+  */
+
+  useEffect(() => {
+    loadUnavailableTickets();
+
+    const channel =
+      supabase
+        .channel(
+          `player-bookings-${game.id}`
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table:
+              "ticket_bookings",
+            filter:
+              `game_id=eq.${game.id}`
+          },
+          () => {
+            loadUnavailableTickets();
+          }
+        )
+        .subscribe();
+
+    /*
+      Backup refresh every 5 seconds.
+      This helps even if realtime is unavailable.
+    */
+
+    const interval =
+      setInterval(
+        () => {
+          loadUnavailableTickets();
+        },
+        5000
+      );
+
+    return () => {
+      clearInterval(
+        interval
+      );
+
+      supabase.removeChannel(
+        channel
+      );
+    };
+  }, [
+    game.id,
+    limit
+  ]);
+
+  /*
+    =========================================================
+    GENERATE ALL TICKETS
+    =========================================================
+  */
+
   const tickets = useMemo(() => {
     return Array.from(
       { length: limit },
@@ -1139,30 +1289,46 @@ function PlayerBookingPage({
     limit
   ]);
 
+  /*
+    =========================================================
+    TICKET SELECTION
+    =========================================================
+  */
+
   function toggleTicket(
     number
   ) {
-    setSelected(
-      (current) => {
-        if (
-          current.includes(
-            number
-          )
-        ) {
-          return current.filter(
-            (n) =>
-              n !== number
-          );
-        }
+    /*
+      Never allow selection of a
+      pending or accepted ticket.
+    */
 
-        return [
-          ...current,
+    if (
+      unavailableTickets.includes(
+        number
+      )
+    ) {
+      return;
+    }
+
+    setSelected(current => {
+      if (
+        current.includes(
           number
-        ].sort(
-          (a, b) => a - b
+        )
+      ) {
+        return current.filter(
+          n => n !== number
         );
       }
-    );
+
+      return [
+        ...current,
+        number
+      ].sort(
+        (a, b) => a - b
+      );
+    });
 
     setMessage("");
   }
@@ -1170,6 +1336,12 @@ function PlayerBookingPage({
   function clearSelection() {
     setSelected([]);
   }
+
+  /*
+    =========================================================
+    BOOK TICKETS
+    =========================================================
+  */
 
   async function bookTickets() {
     const name =
@@ -1195,6 +1367,59 @@ function PlayerBookingPage({
       return;
     }
 
+    /*
+      Check again immediately before
+      submitting, in case another player
+      booked one of the selected tickets.
+    */
+
+    await loadUnavailableTickets();
+
+    const conflictingTickets =
+      selected.filter(
+        number =>
+          unavailableTickets.includes(
+            number
+          )
+      );
+
+    if (
+      conflictingTickets.length
+    ) {
+      setSelected(current =>
+        current.filter(
+          number =>
+            !conflictingTickets.includes(
+              number
+            )
+        )
+      );
+
+      setMessageType("error");
+
+      setMessage(
+        `Ticket${
+          conflictingTickets.length ===
+          1
+            ? ""
+            : "s"
+        } ${
+          conflictingTickets
+            .map(
+              n => `#${n}`
+            )
+            .join(", ")
+        } ${
+          conflictingTickets.length ===
+          1
+            ? "is"
+            : "are"
+        } no longer available. Please select another ticket.`
+      );
+
+      return;
+    }
+
     setBooking(true);
     setMessage("");
 
@@ -1202,6 +1427,12 @@ function PlayerBookingPage({
       [...selected].sort(
         (a, b) => a - b
       );
+
+    /*
+      IMPORTANT:
+      This uses the same booking structure
+      that is already working in your app.
+    */
 
     const bookingData = {
       game_id: game.id,
@@ -1214,28 +1445,24 @@ function PlayerBookingPage({
     try {
       const {
         error
-      } =
-        await supabase
-          .from(
-            "ticket_bookings"
-          )
-          .insert(
-            bookingData
-          );
+      } = await supabase
+        .from(
+          "ticket_bookings"
+        )
+        .insert(
+          bookingData
+        );
 
       if (error) {
         throw error;
       }
 
-      setMessageType(
-        "success"
-      );
+      setMessageType("success");
 
       setMessage(
         `Booking submitted successfully for ${sortedTickets
           .map(
-            (n) =>
-              `#${n}`
+            n => `#${n}`
           )
           .join(
             ", "
@@ -1244,21 +1471,32 @@ function PlayerBookingPage({
 
       setSelected([]);
 
+      /*
+        Immediately mark the newly booked
+        tickets as unavailable.
+      */
+
+      await loadUnavailableTickets();
+
     } catch (err) {
       console.error(err);
 
-      setMessageType(
-        "error"
-      );
+      setMessageType("error");
 
       setMessage(
         err?.message ||
-          "Could not submit booking."
+        "Could not submit booking."
       );
     } finally {
       setBooking(false);
     }
   }
+
+  /*
+    =========================================================
+    RENDER
+    =========================================================
+  */
 
   return (
     <main style={pageStyle}>
@@ -1268,9 +1506,13 @@ function PlayerBookingPage({
           margin: "0 auto"
         }}
       >
+
+        {/* HEADER */}
+
         <div
           style={{
-            textAlign: "center",
+            textAlign:
+              "center",
             marginBottom: 20
           }}
         >
@@ -1289,6 +1531,8 @@ function PlayerBookingPage({
           </p>
         </div>
 
+        {/* GAME DETAILS */}
+
         <section
           style={cardStyle}
         >
@@ -1298,7 +1542,8 @@ function PlayerBookingPage({
 
           <div
             style={{
-              display: "grid",
+              display:
+                "grid",
               gridTemplateColumns:
                 "repeat(auto-fit,minmax(180px,1fr))",
               gap: 12
@@ -1337,6 +1582,10 @@ function PlayerBookingPage({
           </div>
         </section>
 
+        {/* =================================================
+            TICKET NUMBERS
+        ================================================= */}
+
         <section
           style={cardStyle}
         >
@@ -1350,24 +1599,42 @@ function PlayerBookingPage({
                 "#64748b"
             }}
           >
-            Select one or more
-            tickets. You can select
-            multiple tickets before
-            booking.
+            Pending and approved
+            tickets are unavailable.
+            Rejected tickets become
+            available again.
           </p>
+
+          {loadingUnavailable && (
+            <p
+              style={{
+                color:
+                  "#64748b"
+              }}
+            >
+              Checking ticket
+              availability...
+            </p>
+          )}
 
           <div
             style={{
-              display: "grid",
+              display:
+                "grid",
               gridTemplateColumns:
                 "repeat(5, minmax(0,1fr))",
               gap: 10
             }}
           >
             {tickets.map(
-              (ticket) => {
+              ticket => {
                 const active =
                   selected.includes(
+                    ticket.number
+                  );
+
+                const unavailable =
+                  unavailableTickets.includes(
                     ticket.number
                   );
 
@@ -1377,40 +1644,83 @@ function PlayerBookingPage({
                       ticket.number
                     }
                     type="button"
+                    disabled={
+                      unavailable
+                    }
                     onClick={() =>
                       toggleTicket(
                         ticket.number
                       )
                     }
                     style={{
-                      minHeight: 55,
+                      minHeight: 65,
+
                       border:
                         active
                           ? "3px solid #2563eb"
+                          : unavailable
+                          ? "2px solid #94a3b8"
                           : "1px solid #cbd5e1",
+
                       borderRadius:
                         11,
+
                       background:
                         active
                           ? "#2563eb"
+                          : unavailable
+                          ? "#e2e8f0"
                           : "#fff",
+
                       color:
                         active
                           ? "#fff"
+                          : unavailable
+                          ? "#64748b"
                           : "#111827",
+
                       fontWeight:
                         "bold",
+
                       fontSize: 17,
+
                       cursor:
-                        "pointer"
+                        unavailable
+                          ? "not-allowed"
+                          : "pointer",
+
+                      opacity:
+                        unavailable
+                          ? 0.75
+                          : 1,
+
+                      position:
+                        "relative"
                     }}
                   >
-                    #{ticket.number}
+                    <div>
+                      #{ticket.number}
+                    </div>
+
+                    {unavailable && (
+                      <div
+                        style={{
+                          fontSize: 10,
+                          marginTop: 3,
+                          fontWeight:
+                            "bold"
+                        }}
+                      >
+                        BOOKED
+                      </div>
+                    )}
                   </button>
                 );
               }
             )}
           </div>
+
+          {/* SELECTED SUMMARY */}
 
           <div
             style={{
@@ -1440,10 +1750,11 @@ function PlayerBookingPage({
                 <b>
                   Selected Tickets:
                 </b>{" "}
+
                 {selected.length
                   ? selected
                       .map(
-                        (n) =>
+                        n =>
                           `#${n}`
                       )
                       .join(
@@ -1488,6 +1799,10 @@ function PlayerBookingPage({
           </div>
         </section>
 
+        {/* =================================================
+            ACTUAL 3 × 9 TICKETS
+        ================================================= */}
+
         <section
           style={cardStyle}
         >
@@ -1501,39 +1816,86 @@ function PlayerBookingPage({
                 "#64748b"
             }}
           >
-            All tickets are shown
-            below. Tap any ticket to
-            select or unselect it.
+            Tickets marked BOOKED
+            are currently pending or
+            already approved.
           </p>
 
           <div
             style={{
-              display: "grid",
+              display:
+                "grid",
               gap: 18
             }}
           >
             {tickets.map(
-              (ticket) => (
-                <TicketGrid
-                  key={
+              ticket => {
+                const unavailable =
+                  unavailableTickets.includes(
                     ticket.number
-                  }
-                  ticket={
-                    ticket
-                  }
-                  selected={selected.includes(
-                    ticket.number
-                  )}
-                  onSelect={() =>
-                    toggleTicket(
+                  );
+
+                return (
+                  <div
+                    key={
                       ticket.number
-                    )
-                  }
-                />
-              )
+                    }
+                    style={{
+                      position:
+                        "relative"
+                    }}
+                  >
+                    <TicketGrid
+                      ticket={
+                        ticket
+                      }
+                      selected={selected.includes(
+                        ticket.number
+                      )}
+                      onSelect={() => {
+                        if (
+                          !unavailable
+                        ) {
+                          toggleTicket(
+                            ticket.number
+                          );
+                        }
+                      }}
+                    />
+
+                    {unavailable && (
+                      <div
+                        style={{
+                          position:
+                            "absolute",
+                          top: 12,
+                          right: 12,
+                          padding:
+                            "7px 11px",
+                          borderRadius:
+                            8,
+                          background:
+                            "#64748b",
+                          color:
+                            "#fff",
+                          fontSize: 12,
+                          fontWeight:
+                            "bold"
+                        }}
+                      >
+                        BOOKED
+                      </div>
+                    )}
+                  </div>
+                );
+              }
             )}
           </div>
         </section>
+
+        {/* =================================================
+            BOOKING
+        ================================================= */}
 
         <section
           style={{
@@ -1558,7 +1920,7 @@ function PlayerBookingPage({
             value={
               playerName
             }
-            onChange={(e) =>
+            onChange={e =>
               setPlayerName(
                 e.target.value
               )
@@ -1581,7 +1943,8 @@ function PlayerBookingPage({
             }
             style={{
               ...primaryButton,
-              width: "100%",
+              width:
+                "100%",
               marginTop: 14,
               fontSize: 18,
               opacity:
@@ -1593,10 +1956,7 @@ function PlayerBookingPage({
           >
             {booking
               ? "SUBMITTING..."
-              : `BOOK ${
-                  selected.length ||
-                  ""
-                } SELECTED TICKET${
+              : `BOOK ${selected.length || ""} SELECTED TICKET${
                   selected.length ===
                   1
                     ? ""
@@ -1629,12 +1989,12 @@ function PlayerBookingPage({
                   messageType ===
                   "success"
                     ? "#ecfdf5"
-                    : "#fef2f2",
+                    : "#eff6ff",
                 color:
                   messageType ===
                   "success"
                     ? "#047857"
-                    : "#b91c1c",
+                    : "#1d4ed8",
                 textAlign:
                   "center",
                 fontWeight:
@@ -1649,7 +2009,6 @@ function PlayerBookingPage({
     </main>
   );
 }
-
 /* =========================================================
    HOST CONTROL CENTRE
 ========================================================= */
