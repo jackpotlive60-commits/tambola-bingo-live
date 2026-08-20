@@ -42,12 +42,11 @@ function generateGameCode() {
   let result = "";
 
   for (let i = 0; i < 6; i++) {
-    result +=
-      characters[
-        Math.floor(
-          Math.random() * characters.length
-        )
-      ];
+    result += characters[
+      Math.floor(
+        Math.random() * characters.length
+      )
+    ];
   }
 
   return result;
@@ -70,9 +69,7 @@ function loadHostGame() {
     const saved =
       localStorage.getItem(GAME_KEY);
 
-    if (!saved) {
-      return null;
-    }
+    if (!saved) return null;
 
     const parsed = JSON.parse(saved);
 
@@ -91,7 +88,7 @@ function getGameCodeFromUrl() {
 }
 
 /* =========================================================
-   COMMON STYLES
+   STYLES
 ========================================================= */
 
 const pageStyle = {
@@ -115,7 +112,7 @@ const cardStyle = {
 
 const inputStyle = {
   width: "100%",
-  padding: "11px 12px",
+  padding: "12px",
   border: "1px solid #cbd5e1",
   borderRadius: "8px",
   boxSizing: "border-box",
@@ -123,7 +120,7 @@ const inputStyle = {
 };
 
 const primaryButton = {
-  padding: "12px 20px",
+  padding: "13px 20px",
   border: "none",
   borderRadius: "8px",
   background: "#2563eb",
@@ -134,7 +131,7 @@ const primaryButton = {
 };
 
 const secondaryButton = {
-  padding: "10px 16px",
+  padding: "11px 16px",
   border: "1px solid #cbd5e1",
   borderRadius: "8px",
   background: "#ffffff",
@@ -143,6 +140,541 @@ const secondaryButton = {
   fontSize: "14px",
   cursor: "pointer"
 };
+
+/* =========================================================
+   PLAYER PAGE
+========================================================= */
+
+function PlayerPage({ gameCode }) {
+  const [game, setGame] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [playerName, setPlayerName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  const [booking, setBooking] = useState(false);
+  const [booked, setBooked] = useState(false);
+
+  useEffect(() => {
+    loadGame();
+  }, [gameCode]);
+
+  async function loadGame() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const { data, error } =
+        await supabase
+          .from("games")
+          .select("*")
+          .eq("game_code", gameCode)
+          .single();
+
+      if (error) {
+        throw error;
+      }
+
+      setGame(data);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        "Game not found. Please check the game link."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function bookTickets(e) {
+    e.preventDefault();
+
+    if (booking) return;
+
+    if (!playerName.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
+
+    if (!mobile.trim()) {
+      alert("Please enter your mobile number.");
+      return;
+    }
+
+    if (!game) return;
+
+    /*
+      IMPORTANT:
+      Once the host starts the game,
+      players cannot book new tickets.
+    */
+
+    if (
+      game.status === "started" ||
+      game.status === "live" ||
+      game.status === "ended"
+    ) {
+      alert(
+        game.status === "ended"
+          ? "This game has ended. Ticket booking is closed."
+          : "The game has already started. Ticket booking is closed."
+      );
+
+      return;
+    }
+
+    setBooking(true);
+
+    try {
+      /*
+        STEP 2 FOUNDATION
+
+        For now we only validate the
+        booking information.
+
+        The actual bookings table will
+        be connected in the next booking
+        step after this interface is tested.
+      */
+
+      setBooked(true);
+    } catch (err) {
+      console.error(err);
+
+      alert(
+        err?.message ||
+          "Could not book tickets."
+      );
+    } finally {
+      setBooking(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <main
+        style={{
+          ...pageStyle,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <h2>Loading game...</h2>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main style={pageStyle}>
+        <div
+          style={{
+            maxWidth: 600,
+            margin: "50px auto"
+          }}
+        >
+          <section
+            style={{
+              ...cardStyle,
+              textAlign: "center",
+              border: "1px solid #ef4444"
+            }}
+          >
+            <h2>Game Not Found</h2>
+
+            <p
+              style={{
+                color: "#b91c1c"
+              }}
+            >
+              {error}
+            </p>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  if (booked) {
+    return (
+      <main style={pageStyle}>
+        <div
+          style={{
+            maxWidth: 600,
+            margin: "30px auto"
+          }}
+        >
+          <section
+            style={{
+              ...cardStyle,
+              textAlign: "center"
+            }}
+          >
+            <div
+              style={{
+                fontSize: 55,
+                marginBottom: 10
+              }}
+            >
+              ✓
+            </div>
+
+            <h1>
+              Booking Request Received
+            </h1>
+
+            <p
+              style={{
+                color: "#64748b"
+              }}
+            >
+              Your ticket request has
+              been recorded.
+            </p>
+
+            <div
+              style={{
+                marginTop: 20,
+                padding: 16,
+                borderRadius: 10,
+                background: "#f8fafc"
+              }}
+            >
+              <b>{game.game_name}</b>
+
+              <div
+                style={{
+                  marginTop: 8
+                }}
+              >
+                Player: {playerName}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 5
+                }}
+              >
+                Tickets: {quantity}
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  const isClosed =
+    game.status === "started" ||
+    game.status === "live" ||
+    game.status === "ended";
+
+  const total =
+    Number(game.ticket_price || 0) *
+    Number(quantity);
+
+  return (
+    <main style={pageStyle}>
+      <div
+        style={{
+          maxWidth: 600,
+          margin: "0 auto"
+        }}
+      >
+        <header
+          style={{
+            textAlign: "center",
+            marginBottom: 20
+          }}
+        >
+          <h1
+            style={{
+              marginBottom: 5
+            }}
+          >
+            {game.game_name}
+          </h1>
+
+          <p
+            style={{
+              marginTop: 0,
+              color: "#64748b"
+            }}
+          >
+            Player Booking
+          </p>
+        </header>
+
+        <section style={cardStyle}>
+          <h2>Game Details</h2>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(2,1fr)",
+              gap: 10
+            }}
+          >
+            <InfoBox
+              title="Date"
+              value={
+                game.game_date || "-"
+              }
+            />
+
+            <InfoBox
+              title="Time"
+              value={
+                game.game_time || "-"
+              }
+            />
+
+            <InfoBox
+              title="Ticket Price"
+              value={`₹${
+                game.ticket_price || 0
+              }`}
+            />
+
+            <InfoBox
+              title="Game Code"
+              value={
+                game.game_code
+              }
+            />
+          </div>
+        </section>
+
+        {isClosed && (
+          <section
+            style={{
+              ...cardStyle,
+              background: "#fef2f2",
+              border:
+                "1px solid #ef4444",
+              color: "#991b1b",
+              textAlign: "center"
+            }}
+          >
+            <h2>
+              Ticket Booking Closed
+            </h2>
+
+            <p>
+              This game has already
+              started or ended.
+            </p>
+          </section>
+        )}
+
+        {!isClosed && (
+          <form
+            onSubmit={bookTickets}
+          >
+            <section style={cardStyle}>
+              <h2>
+                Book Your Tickets
+              </h2>
+
+              <div
+                style={{
+                  marginBottom: 15
+                }}
+              >
+                <label>
+                  <b>
+                    Player Name
+                  </b>
+                </label>
+
+                <input
+                  value={playerName}
+                  onChange={(e) =>
+                    setPlayerName(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Enter your name"
+                  style={{
+                    ...inputStyle,
+                    marginTop: 7
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  marginBottom: 15
+                }}
+              >
+                <label>
+                  <b>
+                    Mobile Number
+                  </b>
+                </label>
+
+                <input
+                  type="tel"
+                  value={mobile}
+                  onChange={(e) =>
+                    setMobile(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Enter mobile number"
+                  style={{
+                    ...inputStyle,
+                    marginTop: 7
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  marginBottom: 15
+                }}
+              >
+                <label>
+                  <b>
+                    Number of Tickets
+                  </b>
+                </label>
+
+                <input
+                  type="number"
+                  min="1"
+                  max={
+                    game.ticket_limit ||
+                    1
+                  }
+                  value={quantity}
+                  onChange={(e) =>
+                    setQuantity(
+                      Math.max(
+                        1,
+                        Number(
+                          e.target.value
+                        )
+                      )
+                    )
+                  }
+                  style={{
+                    ...inputStyle,
+                    marginTop: 7
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  padding: 15,
+                  background:
+                    "#f8fafc",
+                  borderRadius: 10,
+                  marginBottom: 15
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent:
+                      "space-between"
+                  }}
+                >
+                  <span>
+                    Ticket Price
+                  </span>
+
+                  <b>
+                    ₹
+                    {
+                      game.ticket_price
+                    }
+                  </b>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent:
+                      "space-between",
+                    marginTop: 8
+                  }}
+                >
+                  <span>
+                    Tickets
+                  </span>
+
+                  <b>
+                    {quantity}
+                  </b>
+                </div>
+
+                <hr
+                  style={{
+                    border: 0,
+                    borderTop:
+                      "1px solid #e5e7eb",
+                    margin:
+                      "12px 0"
+                  }}
+                />
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent:
+                      "space-between",
+                    fontSize: 18
+                  }}
+                >
+                  <b>
+                    Total
+                  </b>
+
+                  <b>
+                    ₹{total}
+                  </b>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={booking}
+                style={{
+                  ...primaryButton,
+                  width: "100%",
+                  fontSize: 17,
+                  opacity:
+                    booking ? 0.7 : 1
+                }}
+              >
+                {booking
+                  ? "Processing..."
+                  : "BOOK TICKETS"}
+              </button>
+            </section>
+          </form>
+        )}
+
+        <p
+          style={{
+            textAlign: "center",
+            color: "#94a3b8",
+            fontSize: 13
+          }}
+        >
+          Powered by TambolaLive
+        </p>
+      </div>
+    </main>
+  );
+}
 
 /* =========================================================
    CREATE GAME PAGE
@@ -183,10 +715,7 @@ function CreateGamePage({ onGameCreated }) {
     setPrizes((current) =>
       current.map((prize, i) =>
         i === index
-          ? {
-              ...prize,
-              amount
-            }
+          ? { ...prize, amount }
           : prize
       )
     );
@@ -196,9 +725,7 @@ function CreateGamePage({ onGameCreated }) {
     const cleanName =
       customPrize.trim();
 
-    if (!cleanName) {
-      return;
-    }
+    if (!cleanName) return;
 
     setPrizes((current) => [
       ...current,
@@ -222,9 +749,7 @@ function CreateGamePage({ onGameCreated }) {
   async function createGame(event) {
     event.preventDefault();
 
-    if (creating) {
-      return;
-    }
+    if (creating) return;
 
     setCreating(true);
     setError("");
@@ -246,9 +771,7 @@ function CreateGamePage({ onGameCreated }) {
             )
             .limit(1);
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         if (
           !data ||
@@ -267,7 +790,8 @@ function CreateGamePage({ onGameCreated }) {
             (prize) =>
               prize.amount !== "" &&
               prize.amount !== null &&
-              prize.amount !== undefined
+              prize.amount !==
+                undefined
           )
           .map((prize) => ({
             name: prize.name,
@@ -319,9 +843,7 @@ function CreateGamePage({ onGameCreated }) {
           .select()
           .single();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const hostGame = {
         ...data,
@@ -345,10 +867,7 @@ function CreateGamePage({ onGameCreated }) {
 
       onGameCreated(hostGame);
     } catch (err) {
-      console.error(
-        "Create game error:",
-        err
-      );
+      console.error(err);
 
       setError(
         err?.message ||
@@ -373,18 +892,11 @@ function CreateGamePage({ onGameCreated }) {
             marginBottom: 25
           }}
         >
-          <h1
-            style={{
-              marginBottom: 6
-            }}
-          >
-            TAMBOLA LIVE
-          </h1>
+          <h1>TAMBOLA LIVE</h1>
 
           <p
             style={{
-              color: "#64748b",
-              marginTop: 0
+              color: "#64748b"
             }}
           >
             Host Dashboard
@@ -394,16 +906,14 @@ function CreateGamePage({ onGameCreated }) {
         <form
           onSubmit={createGame}
         >
-          <section
-            style={cardStyle}
-          >
+          <section style={cardStyle}>
             <h2>
               Create New Game
             </h2>
 
             <div
               style={{
-                marginBottom: 16
+                marginBottom: 15
               }}
             >
               <label>
@@ -419,7 +929,6 @@ function CreateGamePage({ onGameCreated }) {
                     e.target.value
                   )
                 }
-                placeholder="TambolaLive"
                 style={{
                   ...inputStyle,
                   marginTop: 7
@@ -479,15 +988,15 @@ function CreateGamePage({ onGameCreated }) {
 
               <div>
                 <label>
-                  <b>Ticket Limit</b>
+                  <b>
+                    Ticket Limit
+                  </b>
                 </label>
 
                 <input
                   type="number"
                   min="1"
-                  value={
-                    ticketLimit
-                  }
+                  value={ticketLimit}
                   onChange={(e) =>
                     setTicketLimit(
                       e.target.value
@@ -503,15 +1012,15 @@ function CreateGamePage({ onGameCreated }) {
 
               <div>
                 <label>
-                  <b>Ticket Price</b>
+                  <b>
+                    Ticket Price
+                  </b>
                 </label>
 
                 <input
                   type="number"
                   min="0"
-                  value={
-                    ticketPrice
-                  }
+                  value={ticketPrice}
                   onChange={(e) =>
                     setTicketPrice(
                       e.target.value
@@ -528,7 +1037,7 @@ function CreateGamePage({ onGameCreated }) {
 
             <div
               style={{
-                marginTop: 16
+                marginTop: 15
               }}
             >
               <label>
@@ -561,40 +1070,26 @@ function CreateGamePage({ onGameCreated }) {
             </div>
           </section>
 
-          <section
-            style={cardStyle}
-          >
+          <section style={cardStyle}>
             <h2>Prizes</h2>
-
-            <p
-              style={{
-                color: "#64748b"
-              }}
-            >
-              Set an amount for the
-              prizes you want to use.
-            </p>
 
             {prizes.map(
               (prize, index) => (
                 <div
                   key={`${prize.name}-${index}`}
                   style={{
-                    display:
-                      "grid",
+                    display: "grid",
                     gridTemplateColumns:
-                      "1fr 150px auto",
+                      "1fr 140px auto",
                     gap: 10,
                     alignItems:
                       "center",
                     marginBottom: 10
                   }}
                 >
-                  <div>
-                    <b>
-                      {prize.name}
-                    </b>
-                  </div>
+                  <b>
+                    {prize.name}
+                  </b>
 
                   <input
                     type="number"
@@ -621,11 +1116,9 @@ function CreateGamePage({ onGameCreated }) {
                         index
                       )
                     }
-                    style={{
-                      ...secondaryButton,
-                      padding:
-                        "9px 12px"
-                    }}
+                    style={
+                      secondaryButton
+                    }
                   >
                     Remove
                   </button>
@@ -637,25 +1130,20 @@ function CreateGamePage({ onGameCreated }) {
               style={{
                 display: "flex",
                 gap: 8,
-                marginTop: 18,
-                flexWrap: "wrap"
+                marginTop: 15
               }}
             >
               <input
-                value={
-                  customPrize
-                }
+                value={customPrize}
                 onChange={(e) =>
                   setCustomPrize(
                     e.target.value
                   )
                 }
                 placeholder="Customize prize"
-                style={{
-                  ...inputStyle,
-                  flex: 1,
-                  minWidth: 200
-                }}
+                style={
+                  inputStyle
+                }
               />
 
               <button
@@ -673,15 +1161,11 @@ function CreateGamePage({ onGameCreated }) {
           </section>
 
           {error && (
-            <div
+            <section
               style={{
                 ...cardStyle,
-                border:
-                  "1px solid #ef4444",
-                background:
-                  "#fef2f2",
-                color:
-                  "#b91c1c"
+                background: "#fef2f2",
+                color: "#b91c1c"
               }}
             >
               <b>
@@ -689,7 +1173,7 @@ function CreateGamePage({ onGameCreated }) {
               </b>
 
               <p>{error}</p>
-            </div>
+            </section>
           )}
 
           <button
@@ -699,11 +1183,8 @@ function CreateGamePage({ onGameCreated }) {
               ...primaryButton,
               width: "100%",
               fontSize: 17,
-              padding: 15,
               opacity:
-                creating
-                  ? 0.7
-                  : 1
+                creating ? 0.7 : 1
             }}
           >
             {creating
@@ -774,7 +1255,6 @@ function HostControlPage({
 📅 Date: ${game.game_date || "-"}
 ⏰ Time: ${game.game_time || "-"}
 🎫 Ticket Price: ₹${game.ticket_price || 0}
-🎟️ Tickets: ${game.ticket_limit || 0}
 
 🏆 PRIZES
 ${prizeText}
@@ -782,13 +1262,10 @@ ${prizeText}
 Join the game:
 ${inviteUrl}`;
 
-    if (
-      navigator.share
-    ) {
+    if (navigator.share) {
       try {
         await navigator.share({
-          title:
-            game.game_name,
+          title: game.game_name,
           text: message,
           url: inviteUrl
         });
@@ -847,9 +1324,7 @@ ${inviteUrl}`;
           </p>
         </div>
 
-        <section
-          style={cardStyle}
-        >
+        <section style={cardStyle}>
           <h2>
             Game Details
           </h2>
@@ -865,32 +1340,28 @@ ${inviteUrl}`;
             <InfoBox
               title="Date"
               value={
-                game.game_date ||
-                "-"
+                game.game_date || "-"
               }
             />
 
             <InfoBox
               title="Time"
               value={
-                game.game_time ||
-                "-"
+                game.game_time || "-"
               }
             />
 
             <InfoBox
               title="Ticket Price"
               value={`₹${
-                game.ticket_price ||
-                0
+                game.ticket_price || 0
               }`}
             />
 
             <InfoBox
               title="Ticket Limit"
               value={
-                game.ticket_limit ||
-                0
+                game.ticket_limit || 0
               }
             />
           </div>
@@ -900,8 +1371,7 @@ ${inviteUrl}`;
               marginTop: 18,
               padding: 14,
               borderRadius: 10,
-              background:
-                "#fff7ed",
+              background: "#fff7ed",
               border:
                 "1px solid #f59e0b"
             }}
@@ -914,8 +1384,7 @@ ${inviteUrl}`;
               style={{
                 marginTop: 5,
                 fontSize: 20,
-                fontWeight:
-                  "bold"
+                fontWeight: "bold"
               }}
             >
               {String(
@@ -926,9 +1395,7 @@ ${inviteUrl}`;
           </div>
         </section>
 
-        <section
-          style={cardStyle}
-        >
+        <section style={cardStyle}>
           <h2>
             Share Game
           </h2>
@@ -945,14 +1412,11 @@ ${inviteUrl}`;
           <div
             style={{
               display: "flex",
-              gap: 8,
-              flexWrap: "wrap"
+              gap: 8
             }}
           >
             <button
-              onClick={
-                copyLink
-              }
+              onClick={copyLink}
               style={
                 secondaryButton
               }
@@ -963,9 +1427,7 @@ ${inviteUrl}`;
             </button>
 
             <button
-              onClick={
-                shareGame
-              }
+              onClick={shareGame}
               style={
                 primaryButton
               }
@@ -973,23 +1435,9 @@ ${inviteUrl}`;
               Share Game
             </button>
           </div>
-
-          <p
-            style={{
-              color: "#64748b",
-              fontSize: 13,
-              marginBottom: 0
-            }}
-          >
-            Poster generation will
-            be added in the next
-            stages.
-          </p>
         </section>
 
-        <section
-          style={cardStyle}
-        >
+        <section style={cardStyle}>
           <h2>
             Ticket Bookings
           </h2>
@@ -1017,22 +1465,9 @@ ${inviteUrl}`;
               value="0"
             />
           </div>
-
-          <p
-            style={{
-              color: "#64748b",
-              marginBottom: 0
-            }}
-          >
-            Booking management
-            will be connected in
-            the next stage.
-          </p>
         </section>
 
-        <section
-          style={cardStyle}
-        >
+        <section style={cardStyle}>
           <h2>Prizes</h2>
 
           {prizes.length === 0 ? (
@@ -1045,8 +1480,7 @@ ${inviteUrl}`;
                 <div
                   key={index}
                   style={{
-                    display:
-                      "flex",
+                    display: "flex",
                     justifyContent:
                       "space-between",
                     padding:
@@ -1060,10 +1494,7 @@ ${inviteUrl}`;
                   </b>
 
                   <span>
-                    ₹
-                    {
-                      prize.amount
-                    }
+                    ₹{prize.amount}
                   </span>
                 </div>
               )
@@ -1071,9 +1502,7 @@ ${inviteUrl}`;
           )}
         </section>
 
-        <section
-          style={cardStyle}
-        >
+        <section style={cardStyle}>
           <h2>
             Game Control
           </h2>
@@ -1081,8 +1510,7 @@ ${inviteUrl}`;
           <div
             style={{
               display: "flex",
-              gap: 10,
-              flexWrap: "wrap"
+              gap: 10
             }}
           >
             <button
@@ -1112,10 +1540,8 @@ ${inviteUrl}`;
               fontSize: 13
             }}
           >
-            Live game control is
-            intentionally being added
-            separately so we can test
-            each stage correctly.
+            Live game control will be
+            added separately.
           </p>
         </section>
 
@@ -1134,247 +1560,7 @@ ${inviteUrl}`;
 }
 
 /* =========================================================
-   PLAYER BOOKING PAGE
-========================================================= */
-
-function PlayerBookingPage({
-  gameCode
-}) {
-  const [game, setGame] =
-    useState(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-  useEffect(() => {
-    async function loadGame() {
-      setLoading(true);
-      setError("");
-
-      const cleanCode =
-        gameCode
-          ?.trim()
-          .toUpperCase();
-
-      if (!cleanCode) {
-        setError(
-          "Invalid game link."
-        );
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } =
-          await supabase
-            .from("games")
-            .select("*")
-            .eq(
-              "game_code",
-              cleanCode
-            )
-            .limit(1)
-            .maybeSingle();
-
-        if (error) {
-          throw error;
-        }
-
-        if (!data) {
-          setError(
-            "Game not found."
-          );
-          setLoading(false);
-          return;
-        }
-
-        setGame(data);
-      } catch (err) {
-        console.error(
-          "Player game error:",
-          err
-        );
-
-        setError(
-          err?.message ||
-            "Could not load game."
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadGame();
-  }, [gameCode]);
-
-  if (loading) {
-    return (
-      <main
-        style={{
-          ...pageStyle,
-          display: "flex",
-          justifyContent:
-            "center",
-          alignItems:
-            "center"
-        }}
-      >
-        <h2>
-          Loading Game...
-        </h2>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main style={pageStyle}>
-        <div
-          style={{
-            maxWidth: 600,
-            margin: "40px auto"
-          }}
-        >
-          <section
-            style={{
-              ...cardStyle,
-              textAlign: "center",
-              border:
-                "1px solid #ef4444"
-            }}
-          >
-            <h1>
-              TAMBOLA LIVE
-            </h1>
-
-            <h2>
-              Game Unavailable
-            </h2>
-
-            <p
-              style={{
-                color: "#b91c1c"
-              }}
-            >
-              {error}
-            </p>
-          </section>
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main style={pageStyle}>
-      <div
-        style={{
-          maxWidth: 760,
-          margin: "0 auto"
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: 20
-          }}
-        >
-          <h1>
-            TAMBOLA LIVE
-          </h1>
-
-          <p
-            style={{
-              color: "#64748b"
-            }}
-          >
-            Player Booking
-          </p>
-        </div>
-
-        <section
-          style={cardStyle}
-        >
-          <h2>
-            {game.game_name}
-          </h2>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit,minmax(200px,1fr))",
-              gap: 12
-            }}
-          >
-            <InfoBox
-              title="Game Code"
-              value={
-                game.game_code
-              }
-            />
-
-            <InfoBox
-              title="Date"
-              value={
-                game.game_date ||
-                "-"
-              }
-            />
-
-            <InfoBox
-              title="Time"
-              value={
-                game.game_time ||
-                "-"
-              }
-            />
-
-            <InfoBox
-              title="Ticket Price"
-              value={`₹${
-                game.ticket_price ||
-                0
-              }`}
-            />
-          </div>
-
-          <div
-            style={{
-              marginTop: 18,
-              padding: 15,
-              borderRadius: 10,
-              background:
-                "#eff6ff",
-              border:
-                "1px solid #93c5fd"
-            }}
-          >
-            <b>
-              Player page loaded successfully.
-            </b>
-
-            <p
-              style={{
-                marginBottom: 0,
-                color: "#475569"
-              }}
-            >
-              Ticket booking interface
-              will be added in the next
-              step.
-            </p>
-          </div>
-        </section>
-      </div>
-    </main>
-  );
-}
-
-/* =========================================================
-   SMALL UI COMPONENTS
+   SMALL COMPONENTS
 ========================================================= */
 
 function InfoBox({
@@ -1388,8 +1574,7 @@ function InfoBox({
         border:
           "1px solid #e5e7eb",
         borderRadius: 10,
-        background:
-          "#f8fafc"
+        background: "#f8fafc"
       }}
     >
       <div
@@ -1402,9 +1587,7 @@ function InfoBox({
         {title}
       </div>
 
-      <b>
-        {value}
-      </b>
+      <b>{value}</b>
     </div>
   );
 }
@@ -1421,8 +1604,7 @@ function StatusBox({
         border:
           "1px solid #e5e7eb",
         borderRadius: 10,
-        background:
-          "#f8fafc"
+        background: "#f8fafc"
       }}
     >
       <div
@@ -1455,18 +1637,33 @@ function App() {
   const [hostGame, setHostGame] =
     useState(null);
 
+  const [playerCode, setPlayerCode] =
+    useState(null);
+
   const [loading, setLoading] =
     useState(true);
 
-  /*
-    IMPORTANT:
-    Read the game code directly
-    from the URL.
-  */
-  const playerGameCode =
-    getGameCodeFromUrl();
-
   useEffect(() => {
+    const code =
+      getGameCodeFromUrl();
+
+    /*
+      IMPORTANT:
+      If ?game=XXXX exists,
+      this is ALWAYS the player page.
+      It must never use the host
+      localStorage game.
+    */
+
+    if (code) {
+      setPlayerCode(
+        code.toUpperCase()
+      );
+
+      setLoading(false);
+      return;
+    }
+
     const saved =
       loadHostGame();
 
@@ -1487,9 +1684,7 @@ function App() {
     saveHostGame(null);
     setHostGame(null);
 
-    if (
-      window.location.search
-    ) {
+    if (window.location.search) {
       window.history.replaceState(
         {},
         "",
@@ -1504,47 +1699,29 @@ function App() {
         style={{
           ...pageStyle,
           display: "flex",
-          justifyContent:
-            "center",
-          alignItems:
-            "center"
+          justifyContent: "center",
+          alignItems: "center"
         }}
       >
-        <h2>
-          Loading...
-        </h2>
+        <h2>Loading...</h2>
       </main>
     );
   }
 
   /*
-    ========================================================
-    PLAYER HAS PRIORITY
-    ========================================================
-
-    If URL is:
-
-    ?game=AVE79V
-
-    ALWAYS show PlayerBookingPage.
-
-    This check happens BEFORE
-    localStorage/hostGame.
+    PLAYER ROUTE
   */
-  if (playerGameCode) {
+
+  if (playerCode) {
     return (
-      <PlayerBookingPage
-        gameCode={
-          playerGameCode
-        }
+      <PlayerPage
+        gameCode={playerCode}
       />
     );
   }
 
   /*
-    ========================================================
-    HOST
-    ========================================================
+    HOST ROUTE
   */
 
   if (hostGame) {
@@ -1557,12 +1734,6 @@ function App() {
       />
     );
   }
-
-  /*
-    ========================================================
-    CREATE GAME
-    ========================================================
-  */
 
   return (
     <CreateGamePage
@@ -1578,9 +1749,7 @@ function App() {
 ========================================================= */
 
 createRoot(
-  document.getElementById(
-    "root"
-  )
+  document.getElementById("root")
 ).render(
   <App />
 );
