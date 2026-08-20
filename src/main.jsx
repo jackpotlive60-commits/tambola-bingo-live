@@ -4208,17 +4208,114 @@ ${inviteUrl}`;
     }
   }
 
+  const CALLER_PHRASES = {
+    1: "First on the board, number 1",
+    2: "One little duck, number 2",
+    3: "Cup of tea, number 3",
+    4: "Knock at the door, number 4",
+    5: "Man alive, number 5",
+    6: "Half a dozen, number 6",
+    7: "Lucky seven, number 7",
+    8: "Garden gate, number 8",
+    9: "Doctor's orders, number 9",
+    10: "Big fat hen, number 10",
+    11: "Legs eleven, number 11",
+    12: "One dozen, number 12",
+    13: "Unlucky for some, number 13",
+    14: "Valentine's Day, number 14",
+    15: "Young and keen, number 15",
+    16: "Sweet sixteen, number 16",
+    17: "Dancing queen, number 17",
+    18: "Coming of age, number 18",
+    19: "Goodbye teens, number 19",
+    20: "One score, number 20",
+    21: "Key to the door, number 21",
+    22: "Two little ducks, number 22",
+    23: "You and me, number 23",
+    24: "Two dozen, number 24",
+    25: "Silver jubilee, number 25",
+    26: "Republic Day, number 26",
+    27: "Gateway to heaven, number 27",
+    28: "Duck and its mate, number 28",
+    29: "Rise and shine, number 29",
+    30: "Flirty thirty, number 30",
+    31: "Get up and run, number 31",
+    32: "Buckle my shoe, number 32",
+    33: "All the threes, number 33",
+    34: "Dil maange more, number 34",
+    35: "Jump and jive, number 35",
+    36: "Three dozen, number 36",
+    37: "Mixed luck, number 37",
+    38: "Christmas cake, number 38",
+    39: "The thirty-nine steps, number 39",
+    40: "Life begins at forty, number 40",
+    41: "Time for fun, number 41",
+    42: "The answer to life, number 42",
+    43: "Down on your knees, number 43",
+    44: "All the fours, number 44",
+    45: "Halfway there, number 45",
+    46: "Up to tricks, number 46",
+    47: "Four and seven, number 47",
+    48: "Four dozen, number 48",
+    49: "Rise and shine, number 49",
+    50: "Half a century, number 50",
+    51: "Charity begins at fifty-one, number 51",
+    52: "Pack of cards, number 52",
+    53: "Stuck in the tree, number 53",
+    54: "Clean the floor, number 54",
+    55: "Snakes alive, number 55",
+    56: "Pick up sticks, number 56",
+    57: "Fifty-seven varieties, number 57",
+    58: "Make them wait, number 58",
+    59: "Brighton line, number 59",
+    60: "Diamond jubilee, number 60",
+    61: "Baker's bun, number 61",
+    62: "Turn the screw, number 62",
+    63: "Tickle me, number 63",
+    64: "Almost retired, number 64",
+    65: "Retirement time, number 65",
+    66: "Clickety click, number 66",
+    67: "Stairway to heaven, number 67",
+    68: "Pick a mate, number 68",
+    69: "Ulta pulta, number 69",
+    70: "Three score and ten, number 70",
+    71: "Bang on the drum, number 71",
+    72: "Six dozen, number 72",
+    73: "Queen bee, number 73",
+    74: "Hit the floor, number 74",
+    75: "Strive and strive, number 75",
+    76: "Seventy-six trombones, number 76",
+    77: "Double lucky seven, number 77",
+    78: "Lucky seth, number 78",
+    79: "One more time, number 79",
+    80: "Eight and zero, number 80",
+    81: "Stop and run, number 81",
+    82: "Straight on through, number 82",
+    83: "Time for tea, number 83",
+    84: "Seven dozen, number 84",
+    85: "Staying alive, number 85",
+    86: "Between the sticks, number 86",
+    87: "Last of luck, number 87",
+    88: "Two fat ladies, number 88",
+    89: "Nearly there, number 89",
+    90: "Top of the house, number 90"
+  };
+
   function announceNumber(number) {
     try {
       if (!("speechSynthesis" in window)) return;
 
       window.speechSynthesis.cancel();
 
+      const phrase =
+        CALLER_PHRASES[number] ||
+        `Number ${number}`;
+
       const utterance = new SpeechSynthesisUtterance(
-        `Number ${number}`
+        phrase
       );
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
+      utterance.rate = 0.88;
+      utterance.pitch = 1.02;
       utterance.volume = 1;
 
       window.speechSynthesis.speak(utterance);
