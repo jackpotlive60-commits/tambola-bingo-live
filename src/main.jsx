@@ -1,11 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { createRoot } from "react-dom/client";
-import { supabase } from "./lib/supabase";
-import LiveGame from "./LiveGame";
+import React, {
+  useEffect,
+  useState
+} from "react";
 
-const nums = Array.from({ length: 90 }, (_, i) => i + 1);
+import {
+  createRoot
+} from "react-dom/client";
 
-const KEY = "tambola_bingo_live_host_game";
+import {
+  supabase
+} from "./lib/supabase";
+
+const nums = Array.from(
+  { length: 90 },
+  (_, i) => i + 1
+);
+
+const KEY =
+  "tambola_bingo_live_host_game";
 
 const themes = [
   "Classic",
@@ -35,21 +47,32 @@ const defaultPrizes = [
 ========================================================= */
 
 function code6() {
-  const s = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const s =
+    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
   return Array.from(
     { length: 6 },
-    () => s[Math.floor(Math.random() * s.length)]
+    () =>
+      s[
+        Math.floor(
+          Math.random() * s.length
+        )
+      ]
   ).join("");
 }
 
 function getGameCode() {
-  return new URLSearchParams(location.search).get("game");
+  return new URLSearchParams(
+    location.search
+  ).get("game");
 }
 
-function saveGame(g) {
-  if (g) {
-    localStorage.setItem(KEY, JSON.stringify(g));
+function saveGame(game) {
+  if (game) {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify(game)
+    );
   } else {
     localStorage.removeItem(KEY);
   }
@@ -57,19 +80,32 @@ function saveGame(g) {
 
 function loadGame() {
   try {
-    const g = JSON.parse(localStorage.getItem(KEY));
-    return g?.game_code ? g : null;
+    const game = JSON.parse(
+      localStorage.getItem(KEY)
+    );
+
+    return game?.game_code
+      ? game
+      : null;
   } catch {
     return null;
   }
 }
 
 function getCalledNumbers(game) {
-  if (Array.isArray(game?.called_numbers)) {
+  if (
+    Array.isArray(
+      game?.called_numbers
+    )
+  ) {
     return game.called_numbers;
   }
 
-  if (Array.isArray(game?.calledNumbers)) {
+  if (
+    Array.isArray(
+      game?.calledNumbers
+    )
+  ) {
     return game.calledNumbers;
   }
 
@@ -106,77 +142,142 @@ function Ticket({
   ];
 
   const rows =
-    masks[(Number(n) - 1) % masks.length].map(
-      (row) => [...row]
-    );
+    masks[
+      (Number(n) - 1) %
+        masks.length
+    ].map((row) => [
+      ...row
+    ]);
 
   const used = new Set();
 
-  for (let c = 0; c < 9; c++) {
-    const min = c === 0 ? 1 : c * 10;
-    const max = c === 8 ? 90 : c * 10 + 9;
+  for (
+    let c = 0;
+    c < 9;
+    c++
+  ) {
+    const min =
+      c === 0
+        ? 1
+        : c * 10;
 
-    const values = Array.from(
-      { length: max - min + 1 },
-      (_, i) => min + i
-    );
+    const max =
+      c === 8
+        ? 90
+        : c * 10 + 9;
+
+    const values =
+      Array.from(
+        {
+          length:
+            max - min + 1
+        },
+        (_, i) =>
+          min + i
+      );
 
     const shift =
-      (Number(n) * (c + 3) + c * 7) %
+      (
+        Number(n) *
+          (c + 3) +
+        c * 7
+      ) %
       values.length;
 
-    const rotated = values
-      .slice(shift)
-      .concat(values.slice(0, shift));
+    const rotated =
+      values
+        .slice(shift)
+        .concat(
+          values.slice(
+            0,
+            shift
+          )
+        );
 
     let index = 0;
 
-    for (let r = 0; r < 3; r++) {
+    for (
+      let r = 0;
+      r < 3;
+      r++
+    ) {
       if (rows[r][c]) {
-        let value = rotated[index % rotated.length];
+        let value =
+          rotated[
+            index %
+              rotated.length
+          ];
 
         let tries = 0;
 
         while (
           used.has(value) &&
-          tries < rotated.length
+          tries <
+            rotated.length
         ) {
           index++;
 
           value =
-            rotated[index % rotated.length];
+            rotated[
+              index %
+                rotated.length
+            ];
 
           tries++;
         }
 
-        rows[r][c] = value;
+        rows[r][c] =
+          value;
+
         used.add(value);
+
         index++;
       }
     }
   }
 
-  for (let r = 0; r < 3; r++) {
-    let count = rows[r].filter(Boolean).length;
+  for (
+    let r = 0;
+    r < 3;
+    r++
+  ) {
+    let count =
+      rows[r].filter(
+        Boolean
+      ).length;
 
     for (
       let c = 0;
-      c < 9 && count < 5;
+      c < 9 &&
+      count < 5;
       c++
     ) {
       if (!rows[r][c]) {
-        const min = c === 0 ? 1 : c * 10;
-        const max = c === 8 ? 90 : c * 10 + 9;
+        const min =
+          c === 0
+            ? 1
+            : c * 10;
+
+        const max =
+          c === 8
+            ? 90
+            : c * 10 + 9;
 
         for (
           let value = min;
           value <= max;
           value++
         ) {
-          if (!used.has(value)) {
-            rows[r][c] = value;
+          if (
+            !used.has(value)
+          ) {
+            rows[r][c] =
+              value;
+
             used.add(value);
+
             count++;
+
             break;
           }
         }
@@ -184,41 +285,68 @@ function Ticket({
     }
   }
 
-  const isPending = status === "pending";
-  const isApproved = status === "approved";
+  const isPending =
+    status === "pending";
 
-  let borderColor = "#333";
-  let background = "#fff";
-  let label = "Available";
+  const isApproved =
+    status === "approved";
+
+  let borderColor =
+    "#333";
+
+  let background =
+    "#fff";
+
+  let label =
+    "Available";
 
   if (isPending) {
-    borderColor = "#f59e0b";
-    background = "#fff7ed";
-    label = "⏳ Pending";
+    borderColor =
+      "#f59e0b";
+
+    background =
+      "#fff7ed";
+
+    label =
+      "⏳ Pending";
   }
 
   if (isApproved) {
-    borderColor = "#16a34a";
-    background = "#f0fff4";
-    label = `✓ ${name || "Booked"}`;
+    borderColor =
+      "#16a34a";
+
+    background =
+      "#f0fff4";
+
+    label =
+      `✓ ${
+        name || "Booked"
+      }`;
   }
 
   if (selected) {
-    borderColor = "#2563eb";
-    background = "#eff6ff";
-    label = "✓ Selected";
+    borderColor =
+      "#2563eb";
+
+    background =
+      "#eff6ff";
+
+    label =
+      "✓ Selected";
   }
 
   return (
     <div
       onClick={
-        status === "available"
+        status ===
+        "available"
           ? onClick
           : undefined
       }
       style={{
         width: "100%",
-        boxSizing: "border-box",
+        boxSizing:
+          "border-box",
         border: selected
           ? "3px solid #2563eb"
           : `2px solid ${borderColor}`,
@@ -226,26 +354,31 @@ function Ticket({
         marginBottom: 18,
         background,
         cursor:
-          status === "available"
+          status ===
+          "available"
             ? "pointer"
             : "not-allowed",
-        borderRadius: 8,
-        opacity: isApproved ? 0.95 : 1
+        borderRadius: 8
       }}
     >
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          justifyContent:
+            "space-between",
+          alignItems:
+            "center",
           marginBottom: 8
         }}
       >
-        <b>Ticket #{n}</b>
+        <b>
+          Ticket #{n}
+        </b>
 
         <span
           style={{
-            fontWeight: "bold",
+            fontWeight:
+              "bold",
             fontSize: 13
           }}
         >
@@ -257,10 +390,12 @@ function Ticket({
         <div
           style={{
             fontSize: 14,
-            fontWeight: "bold",
-            color: isApproved
-              ? "#15803d"
-              : "#b45309",
+            fontWeight:
+              "bold",
+            color:
+              isApproved
+                ? "#15803d"
+                : "#b45309",
             marginBottom: 6
           }}
         >
@@ -274,32 +409,48 @@ function Ticket({
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(9, minmax(0, 1fr))",
-          border: "1px solid #333",
+            "repeat(9,minmax(0,1fr))",
+          border:
+            "1px solid #333",
           width: "100%",
-          boxSizing: "border-box"
+          boxSizing:
+            "border-box"
         }}
       >
-        {rows.flat().map(
-          (value, index) => (
-            <div
-              key={`cell-${n}-${index}`}
-              style={{
-                border: "1px solid #aaa",
-                height: 34,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight:
-                  value ? "bold" : "normal",
-                fontSize: 14,
-                boxSizing: "border-box"
-              }}
-            >
-              {value || ""}
-            </div>
-          )
-        )}
+        {rows
+          .flat()
+          .map(
+            (
+              value,
+              index
+            ) => (
+              <div
+                key={
+                  `cell-${n}-${index}`
+                }
+                style={{
+                  border:
+                    "1px solid #aaa",
+                  height: 34,
+                  display:
+                    "flex",
+                  alignItems:
+                    "center",
+                  justifyContent:
+                    "center",
+                  fontWeight:
+                    value
+                      ? "bold"
+                      : "normal",
+                  fontSize: 14,
+                  boxSizing:
+                    "border-box"
+                }}
+              >
+                {value || ""}
+              </div>
+            )
+          )}
       </div>
     </div>
   );
@@ -316,7 +467,8 @@ function getTicketStatus(
   const approved =
     requests.find(
       (request) =>
-        request.status === "approved" &&
+        request.status ===
+          "approved" &&
         Array.isArray(
           request.ticket_numbers
         ) &&
@@ -327,16 +479,19 @@ function getTicketStatus(
 
   if (approved) {
     return {
-      status: "approved",
+      status:
+        "approved",
       player:
-        approved.player_name || ""
+        approved.player_name ||
+        ""
     };
   }
 
   const pending =
     requests.find(
       (request) =>
-        request.status === "pending" &&
+        request.status ===
+          "pending" &&
         Array.isArray(
           request.ticket_numbers
         ) &&
@@ -347,14 +502,17 @@ function getTicketStatus(
 
   if (pending) {
     return {
-      status: "pending",
+      status:
+        "pending",
       player:
-        pending.player_name || ""
+        pending.player_name ||
+        ""
     };
   }
 
   return {
-    status: "available",
+    status:
+      "available",
     player: ""
   };
 }
@@ -370,34 +528,37 @@ function HostPage({
   const [name, setName] =
     useState(
       game?.game_name ||
-      "TambolaLive"
+        "TambolaLive"
     );
 
   const [limit, setLimit] =
     useState(
       game?.ticket_limit ||
-      100
+        100
     );
 
   const [price, setPrice] =
     useState(
       game?.ticket_price ||
-      20
+        20
     );
 
   const [date, setDate] =
     useState(
-      game?.game_date || ""
+      game?.game_date ||
+        ""
     );
 
   const [time, setTime] =
     useState(
-      game?.game_time || ""
+      game?.game_time ||
+        ""
     );
 
   const [theme, setTheme] =
     useState(
-      game?.theme || "Classic"
+      game?.theme ||
+        "Classic"
     );
 
   const [prizes, setPrizes] =
@@ -427,18 +588,24 @@ function HostPage({
   ] = useState(false);
 
   async function loadBookingRequests() {
-    if (!game?.game_code) {
+    if (
+      !game?.game_code
+    ) {
       return;
     }
 
-    setBookingLoading(true);
+    setBookingLoading(
+      true
+    );
 
     const {
       data,
       error
     } =
       await supabase
-        .from("booking_requests")
+        .from(
+          "booking_requests"
+        )
         .select("*")
         .eq(
           "game_code",
@@ -447,7 +614,8 @@ function HostPage({
         .order(
           "created_at",
           {
-            ascending: true
+            ascending:
+              true
           }
         );
 
@@ -457,7 +625,10 @@ function HostPage({
         error
       );
 
-      setBookingLoading(false);
+      setBookingLoading(
+        false
+      );
+
       return;
     }
 
@@ -465,11 +636,15 @@ function HostPage({
       data || []
     );
 
-    setBookingLoading(false);
+    setBookingLoading(
+      false
+    );
   }
 
   useEffect(() => {
-    if (!game?.game_code) {
+    if (
+      !game?.game_code
+    ) {
       return;
     }
 
@@ -482,56 +657,81 @@ function HostPage({
       );
 
     return () =>
-      clearInterval(interval);
-  }, [game?.game_code]);
+      clearInterval(
+        interval
+      );
+  }, [
+    game?.game_code
+  ]);
 
   function prizeChange(
-    i,
+    index,
     value
   ) {
-    setPrizes((p) =>
-      p.map(
-        (x, j) =>
-          j === i
-            ? {
-                ...x,
-                amount: value
-              }
-            : x
-      )
+    setPrizes(
+      (current) =>
+        current.map(
+          (item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  amount:
+                    value
+                }
+              : item
+        )
     );
   }
 
-  async function createGame(e) {
-    e.preventDefault();
+  async function createGame(
+    event
+  ) {
+    event.preventDefault();
 
     setBusy(true);
     setErr("");
 
     try {
-      let gc = code6();
+      let gameCode =
+        code6();
 
-      while (
-        (
+      let exists = true;
+
+      while (exists) {
+        const {
+          data
+        } =
           await supabase
             .from("games")
             .select("id")
             .eq(
               "game_code",
-              gc
+              gameCode
             )
-            .maybeSingle()
-        ).data
-      ) {
-        gc = code6();
+            .limit(1);
+
+        exists =
+          Array.isArray(
+            data
+          ) &&
+          data.length >
+            0;
+
+        if (exists) {
+          gameCode =
+            code6();
+        }
       }
 
       const cleanPrizes =
         prizes.filter(
           (p) =>
-            p.amount !== "" &&
-            p.amount !== null &&
-            p.amount !== undefined
+            p.amount !==
+              "" &&
+            p.amount !==
+              null &&
+            p.amount !==
+              undefined
         );
 
       const {
@@ -541,21 +741,39 @@ function HostPage({
         await supabase
           .from("games")
           .insert({
-            host_name: "Host",
+            host_name:
+              "Host",
+
             game_name:
               name.trim() ||
               "TambolaLive",
-            status: "upcoming",
+
+            status:
+              "upcoming",
+
             ticket_limit:
               Number(limit),
+
             ticket_price:
               Number(price),
-            call_interval_seconds: 5,
-            game_date: date,
-            game_time: time,
-            game_code: gc,
-            invite_enabled: true,
-            called_numbers: []
+
+            call_interval_seconds:
+              5,
+
+            game_date:
+              date,
+
+            game_time:
+              time,
+
+            game_code:
+              gameCode,
+
+            invite_enabled:
+              true,
+
+            called_numbers:
+              []
           })
           .select()
           .single();
@@ -564,25 +782,42 @@ function HostPage({
         throw error;
       }
 
-      const g = {
+      const newGame = {
         ...data,
-        host_name: "Host",
+
+        host_name:
+          "Host",
+
         game_name:
           name.trim() ||
           "TambolaLive",
+
         theme,
-        gameStarted: false,
-        calledNumbers: [],
-        prizes: cleanPrizes
+
+        gameStarted:
+          false,
+
+        calledNumbers:
+          [],
+
+        called_numbers:
+          [],
+
+        prizes:
+          cleanPrizes
       };
 
-      setGame(g);
-      saveGame(g);
+      setGame(
+        newGame
+      );
 
-    } catch (e) {
+      saveGame(
+        newGame
+      );
+    } catch (error) {
       setErr(
-        e.message ||
-        "Could not create game"
+        error?.message ||
+          "Could not create game"
       );
     } finally {
       setBusy(false);
@@ -592,34 +827,38 @@ function HostPage({
   async function approveBooking(
     request
   ) {
-    if (!request?.id) {
+    if (
+      !request?.id
+    ) {
       return;
     }
 
-    const ticketNumbers =
+    const tickets =
       Array.isArray(
         request.ticket_numbers
       )
         ? request.ticket_numbers
         : [];
 
-    const approvedRequests =
+    const otherApproved =
       bookingRequests.filter(
-        (r) =>
-          r.status === "approved" &&
-          r.id !== request.id
+        (item) =>
+          item.status ===
+            "approved" &&
+          item.id !==
+            request.id
       );
 
     const alreadyBooked =
-      ticketNumbers.filter(
+      tickets.filter(
         (ticket) =>
-          approvedRequests.some(
-            (r) => {
+          otherApproved.some(
+            (item) => {
               const otherTickets =
                 Array.isArray(
-                  r.ticket_numbers
+                  item.ticket_numbers
                 )
-                  ? r.ticket_numbers
+                  ? item.ticket_numbers
                   : [];
 
               return otherTickets.includes(
@@ -629,16 +868,22 @@ function HostPage({
           )
       );
 
-    if (alreadyBooked.length) {
+    if (
+      alreadyBooked.length
+    ) {
       alert(
         `Cannot approve. Ticket(s) ${alreadyBooked
           .map(
-            (n) => `#${n}`
+            (n) =>
+              `#${n}`
           )
-          .join(", ")} are already booked.`
+          .join(
+            ", "
+          )} are already booked.`
       );
 
       await loadBookingRequests();
+
       return;
     }
 
@@ -646,9 +891,12 @@ function HostPage({
       error
     } =
       await supabase
-        .from("booking_requests")
+        .from(
+          "booking_requests"
+        )
         .update({
-          status: "approved"
+          status:
+            "approved"
         })
         .eq(
           "id",
@@ -658,7 +906,7 @@ function HostPage({
     if (error) {
       alert(
         "Could not approve booking: " +
-        error.message
+          error.message
       );
 
       return;
@@ -670,7 +918,9 @@ function HostPage({
   async function rejectBooking(
     request
   ) {
-    if (!request?.id) {
+    if (
+      !request?.id
+    ) {
       return;
     }
 
@@ -679,9 +929,13 @@ function HostPage({
         `Reject booking request from ${
           request.player_name
         } for ${
-          (request.ticket_numbers || [])
+          (
+            request.ticket_numbers ||
+            []
+          )
             .map(
-              (n) => `#${n}`
+              (n) =>
+                `#${n}`
             )
             .join(", ")
         }?`
@@ -695,9 +949,12 @@ function HostPage({
       error
     } =
       await supabase
-        .from("booking_requests")
+        .from(
+          "booking_requests"
+        )
         .update({
-          status: "rejected"
+          status:
+            "rejected"
         })
         .eq(
           "id",
@@ -707,7 +964,7 @@ function HostPage({
     if (error) {
       alert(
         "Could not reject booking: " +
-        error.message
+          error.message
       );
 
       return;
@@ -721,9 +978,13 @@ function HostPage({
       `${location.origin}/?game=${game.game_code}`;
 
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(
+        url
+      );
 
-      alert("Game link copied.");
+      alert(
+        "Game link copied."
+      );
     } catch {
       prompt(
         "Copy this game link:",
@@ -748,21 +1009,28 @@ Ticket Price: ₹${game.ticket_price || 0}
 Join here:
 ${url}`;
 
-    if (navigator.share) {
+    if (
+      navigator.share
+    ) {
       try {
         await navigator.share({
           title:
             game.game_name ||
             "TambolaLive",
-          text: message,
+          text:
+            message,
           url
         });
-      } catch (e) {
+      } catch (
+        error
+      ) {
         if (
-          e?.name !==
+          error?.name !==
           "AbortError"
         ) {
-          console.log(e);
+          console.log(
+            error
+          );
         }
       }
     } else {
@@ -787,19 +1055,29 @@ ${url}`;
     return (
       <main
         style={{
-          maxWidth: 600,
-          margin: "20px auto",
-          padding: 20
+          maxWidth:
+            600,
+          margin:
+            "20px auto",
+          padding:
+            20,
+          boxSizing:
+            "border-box"
         }}
       >
-        <h1>TAMBOLA LIVE</h1>
+        <h1>
+          TAMBOLA LIVE
+        </h1>
 
-        <h2>Create Game</h2>
+        <h2>
+          Create Game
+        </h2>
 
         {err && (
           <p
             style={{
-              color: "red"
+              color:
+                "red"
             }}
           >
             {err}
@@ -807,7 +1085,9 @@ ${url}`;
         )}
 
         <form
-          onSubmit={createGame}
+          onSubmit={
+            createGame
+          }
         >
           <label>
             Game Name
@@ -823,6 +1103,16 @@ ${url}`;
               )
             }
             placeholder="TambolaLive"
+            style={{
+              width:
+                "100%",
+              maxWidth:
+                400,
+              padding:
+                10,
+              boxSizing:
+                "border-box"
+            }}
           />
 
           <br />
@@ -844,6 +1134,10 @@ ${url}`;
               )
             }
             required
+            style={{
+              padding:
+                10
+            }}
           />
 
           <br />
@@ -865,6 +1159,10 @@ ${url}`;
               )
             }
             required
+            style={{
+              padding:
+                10
+            }}
           />
 
           <br />
@@ -885,6 +1183,10 @@ ${url}`;
               )
             }
             required
+            style={{
+              padding:
+                10
+            }}
           />
 
           <br />
@@ -905,6 +1207,10 @@ ${url}`;
               )
             }
             required
+            style={{
+              padding:
+                10
+            }}
           />
 
           <br />
@@ -923,45 +1229,66 @@ ${url}`;
                 e.target.value
               )
             }
+            style={{
+              padding:
+                10
+            }}
           >
             {themes.map(
-              (t) => (
+              (item) => (
                 <option
-                  key={t}
-                  value={t}
+                  key={item}
+                  value={item}
                 >
-                  {t}
+                  {item}
                 </option>
               )
             )}
           </select>
 
-          <h3>Prizes</h3>
+          <h3>
+            Prizes
+          </h3>
 
           {prizes.map(
-            (p, i) => (
+            (
+              prize,
+              index
+            ) => (
               <div
-                key={i}
+                key={index}
                 style={{
-                  marginBottom: 8
+                  marginBottom:
+                    10
                 }}
               >
                 <label>
-                  {p.name}
+                  {
+                    prize.name
+                  }
                 </label>
 
                 <br />
 
                 <input
                   type="number"
-                  value={p.amount}
-                  onChange={(e) =>
+                  value={
+                    prize.amount
+                  }
+                  onChange={(
+                    e
+                  ) =>
                     prizeChange(
-                      i,
-                      e.target.value
+                      index,
+                      e.target
+                        .value
                     )
                   }
                   placeholder="Amount"
+                  style={{
+                    padding:
+                      8
+                  }}
                 />
               </div>
             )
@@ -976,6 +1303,10 @@ ${url}`;
                   e.target.value
                 )
               }
+              style={{
+                padding:
+                  8
+              }}
             />
 
             <button
@@ -988,19 +1319,26 @@ ${url}`;
                 }
 
                 setPrizes(
-                  (p) => [
-                    ...p,
+                  (current) => [
+                    ...current,
                     {
                       name:
                         custom.trim(),
-                      amount: "",
-                      approved: false,
-                      winner: null
+                      amount:
+                        "",
+                      approved:
+                        false,
+                      winner:
+                        null
                     }
                   ]
                 );
 
                 setCustom("");
+              }}
+              style={{
+                marginLeft:
+                  6
               }}
             >
               Add
@@ -1011,7 +1349,15 @@ ${url}`;
 
           <button
             type="submit"
-            disabled={busy}
+            disabled={
+              busy
+            }
+            style={{
+              padding:
+                "10px 18px",
+              fontWeight:
+                "bold"
+            }}
           >
             {busy
               ? "Creating..."
@@ -1030,24 +1376,38 @@ ${url}`;
   ) {
     const updated = {
       ...game,
-      theme: value
+      theme:
+        value
     };
 
-    setGame(updated);
-    saveGame(updated);
+    setGame(
+      updated
+    );
+
+    saveGame(
+      updated
+    );
   }
 
-  function approvePrize(i) {
+  function approvePrize(
+    index
+  ) {
     const updatedPrizes =
-      (game.prizes || []).map(
-        (p, j) =>
-          j === i
+      (
+        game.prizes ||
+        []
+      ).map(
+        (
+          prize,
+          i
+        ) =>
+          i === index
             ? {
-                ...p,
+                ...prize,
                 approved:
-                  !p.approved
+                  !prize.approved
               }
-            : p
+            : prize
       );
 
     const updated = {
@@ -1056,42 +1416,61 @@ ${url}`;
         updatedPrizes
     };
 
-    setGame(updated);
-    saveGame(updated);
+    setGame(
+      updated
+    );
+
+    saveGame(
+      updated
+    );
   }
 
   const visiblePrizes =
-    (game.prizes || []).filter(
-      (p) =>
-        p.amount !== "" &&
-        p.amount !== null &&
-        p.amount !== undefined
+    (
+      game.prizes ||
+      []
+    ).filter(
+      (prize) =>
+        prize.amount !==
+          "" &&
+        prize.amount !==
+          null &&
+        prize.amount !==
+          undefined
     );
 
   const pendingRequests =
     bookingRequests.filter(
-      (r) =>
-        r.status === "pending"
+      (item) =>
+        item.status ===
+        "pending"
     );
 
   const approvedRequests =
     bookingRequests.filter(
-      (r) =>
-        r.status === "approved"
+      (item) =>
+        item.status ===
+        "approved"
     );
 
   const rejectedRequests =
     bookingRequests.filter(
-      (r) =>
-        r.status === "rejected"
+      (item) =>
+        item.status ===
+        "rejected"
     );
 
   return (
     <main
       style={{
-        maxWidth: 700,
-        margin: "20px auto",
-        padding: 20
+        maxWidth:
+          700,
+        margin:
+          "20px auto",
+        padding:
+          20,
+        boxSizing:
+          "border-box"
       }}
     >
       <h1>
@@ -1103,34 +1482,48 @@ ${url}`;
       </h2>
 
       <p>
-        Date: {game.game_date}
+        Date:{" "}
+        {game.game_date}
       </p>
 
       <p>
-        Time: {game.game_time}
+        Time:{" "}
+        {game.game_time}
       </p>
 
       <p>
-        Ticket Price: ₹
-        {game.ticket_price}
+        Ticket Price:
+        {" "}
+        ₹
+        {
+          game.ticket_price
+        }
       </p>
 
       <p>
-        Ticket Limit:{" "}
-        {game.ticket_limit}
+        Ticket Limit:
+        {" "}
+        {
+          game.ticket_limit
+        }
       </p>
 
       <p>
-        Game Status:{" "}
+        Game Status:
+        {" "}
         <b>
-          {game.status ||
-            "upcoming"}
+          {
+            game.status ||
+            "upcoming"
+          }
         </b>
       </p>
 
       <hr />
 
-      <h3>Game Theme</h3>
+      <h3>
+        Game Theme
+      </h3>
 
       <select
         value={
@@ -1144,12 +1537,12 @@ ${url}`;
         }
       >
         {themes.map(
-          (t) => (
+          (item) => (
             <option
-              key={t}
-              value={t}
+              key={item}
+              value={item}
             >
-              {t}
+              {item}
             </option>
           )
         )}
@@ -1157,26 +1550,42 @@ ${url}`;
 
       <hr />
 
-      <h3>Share Game</h3>
+      <h3>
+        Share Game
+      </h3>
 
       <input
         readOnly
-        value={inviteUrl}
+        value={
+          inviteUrl
+        }
         style={{
-          width: "70%"
+          width:
+            "100%",
+          padding:
+            10,
+          boxSizing:
+            "border-box",
+          marginBottom:
+            8
         }}
       />
 
       <button
-        onClick={copyLink}
+        onClick={
+          copyLink
+        }
       >
         Copy Link
       </button>
 
       <button
-        onClick={shareGame}
+        onClick={
+          shareGame
+        }
         style={{
-          marginLeft: 8
+          marginLeft:
+            8
         }}
       >
         Share Game
@@ -1184,7 +1593,9 @@ ${url}`;
 
       <hr />
 
-      <h2>Prizes</h2>
+      <h2>
+        Prizes
+      </h2>
 
       {!visiblePrizes.length && (
         <p>
@@ -1193,47 +1604,70 @@ ${url}`;
       )}
 
       {visiblePrizes.map(
-        (p) => {
-          const i =
-            (game.prizes || [])
-              .indexOf(p);
+        (
+          prize
+        ) => {
+          const index =
+            (
+              game.prizes ||
+              []
+            ).indexOf(
+              prize
+            );
 
           return (
             <div
-              key={i}
+              key={index}
               style={{
                 border:
                   "1px solid #ccc",
-                padding: 10,
-                marginBottom: 8
+                padding:
+                  10,
+                marginBottom:
+                  8,
+                borderRadius:
+                  8
               }}
             >
               <b>
-                {p.name}
+                {
+                  prize.name
+                }
               </b>
 
               <p>
-                Amount: ₹
-                {p.amount}
+                Amount:
+                {" "}
+                ₹
+                {
+                  prize.amount
+                }
               </p>
 
               <p>
-                Status:{" "}
+                Status:
+                {" "}
                 <b>
-                  {p.approved
-                    ? "Approved"
-                    : "Pending"}
+                  {
+                    prize.approved
+                      ? "Approved"
+                      : "Pending"
+                  }
                 </b>
               </p>
 
               <button
                 onClick={() =>
-                  approvePrize(i)
+                  approvePrize(
+                    index
+                  )
                 }
               >
-                {p.approved
-                  ? "Remove Approval"
-                  : "Approve Prize"}
+                {
+                  prize.approved
+                    ? "Remove Approval"
+                    : "Approve Prize"
+                }
               </button>
             </div>
           );
@@ -1248,85 +1682,112 @@ ${url}`;
 
       <div
         style={{
-          display: "flex",
+          display:
+            "flex",
           gap: 8,
-          flexWrap: "wrap",
-          marginBottom: 15
+          flexWrap:
+            "wrap",
+          marginBottom:
+            15
         }}
       >
         <span
           style={{
-            padding: "6px 10px",
+            padding:
+              "6px 10px",
             background:
               "#fff7ed",
             border:
               "1px solid #f59e0b",
-            borderRadius: 6
+            borderRadius:
+              6
           }}
         >
-          Pending:{" "}
+          Pending:
+          {" "}
           <b>
-            {pendingRequests.length}
+            {
+              pendingRequests.length
+            }
           </b>
         </span>
 
         <span
           style={{
-            padding: "6px 10px",
+            padding:
+              "6px 10px",
             background:
               "#f0fff4",
             border:
               "1px solid #16a34a",
-            borderRadius: 6
+            borderRadius:
+              6
           }}
         >
-          Approved:{" "}
+          Approved:
+          {" "}
           <b>
-            {approvedRequests.length}
+            {
+              approvedRequests.length
+            }
           </b>
         </span>
 
         <span
           style={{
-            padding: "6px 10px",
+            padding:
+              "6px 10px",
             background:
               "#fef2f2",
             border:
               "1px solid #ef4444",
-            borderRadius: 6
+            borderRadius:
+              6
           }}
         >
-          Rejected:{" "}
+          Rejected:
+          {" "}
           <b>
-            {rejectedRequests.length}
+            {
+              rejectedRequests.length
+            }
           </b>
         </span>
       </div>
 
       {bookingLoading && (
         <p>
-          Checking booking requests...
+          Checking booking
+          requests...
         </p>
       )}
 
       {!bookingLoading &&
-        bookingRequests.length === 0 && (
+        bookingRequests.length ===
+          0 && (
           <div
             style={{
               border:
                 "1px solid #ccc",
-              padding: 15,
-              borderRadius: 8
+              padding:
+                15,
+              borderRadius:
+                8
             }}
           >
-            No booking requests yet.
+            No booking
+            requests yet.
           </div>
         )}
 
       {bookingRequests.map(
-        (request) => (
+        (
+          request
+        ) => (
           <div
-            key={request.id}
+            key={
+              request.id
+            }
             style={{
               border:
                 request.status ===
@@ -1336,9 +1797,16 @@ ${url}`;
                     "pending"
                     ? "2px solid #f59e0b"
                     : "1px solid #ccc",
-              padding: 15,
-              marginBottom: 12,
-              borderRadius: 8,
+
+              padding:
+                15,
+
+              marginBottom:
+                12,
+
+              borderRadius:
+                8,
+
               background:
                 request.status ===
                 "approved"
@@ -1351,28 +1819,40 @@ ${url}`;
           >
             <h3
               style={{
-                marginTop: 0
+                marginTop:
+                  0
               }}
             >
-              {request.player_name}
+              {
+                request.player_name
+              }
             </h3>
 
             <p>
-              Tickets:{" "}
+              Tickets:
+              {" "}
               <b>
-                {(request.ticket_numbers || [])
+                {(
+                  request.ticket_numbers ||
+                  []
+                )
                   .map(
                     (n) =>
                       `#${n}`
                   )
-                  .join(", ")}
+                  .join(
+                    ", "
+                  )}
               </b>
             </p>
 
             <p>
-              Status:{" "}
+              Status:
+              {" "}
               <b>
-                {request.status.toUpperCase()}
+                {
+                  request.status.toUpperCase()
+                }
               </b>
             </p>
 
@@ -1386,7 +1866,8 @@ ${url}`;
                     )
                   }
                   style={{
-                    marginRight: 8,
+                    marginRight:
+                      8,
                     padding:
                       "8px 14px",
                     fontWeight:
@@ -1424,7 +1905,9 @@ ${url}`;
               >
                 ✓ Tickets assigned
                 to{" "}
-                {request.player_name}
+                {
+                  request.player_name
+                }
               </p>
             )}
 
@@ -1447,11 +1930,15 @@ ${url}`;
 
       <hr />
 
-      <h2>Live Game</h2>
+      <h2>
+        Live Game
+      </h2>
 
       <Live
         game={game}
-        setGame={setGame}
+        setGame={
+          setGame
+        }
       />
 
       <hr />
@@ -1463,8 +1950,13 @@ ${url}`;
               "End this game?"
             )
           ) {
-            saveGame(null);
-            setGame(null);
+            saveGame(
+              null
+            );
+
+            setGame(
+              null
+            );
           }
         }}
       >
@@ -1475,242 +1967,702 @@ ${url}`;
 }
 
 /* =========================================================
-   HOST LIVE CONTROLS
+   LIVE GAME
 ========================================================= */
 
 function Live({
   game,
   setGame
 }) {
+  const [
+    autoCalling,
+    setAutoCalling
+  ] = useState(false);
+
+  const [
+    actionBusy,
+    setActionBusy
+  ] = useState(false);
+
   const called =
-    getCalledNumbers(game);
+    getCalledNumbers(
+      game
+    );
 
   const last =
-    called.at(-1);
+    called[
+      called.length - 1
+    ];
 
   const remaining =
     nums.filter(
-      (n) =>
-        !called.includes(n)
+      (number) =>
+        !called.includes(
+          number
+        )
     );
 
-  async function start() {
-    const updated = {
-      ...game,
-      gameStarted: true,
-      status: "live",
-      calledNumbers: called,
-      called_numbers: called
-    };
+  const intervalSeconds =
+    Math.max(
+      2,
+      Number(
+        game.call_interval_seconds ||
+          5
+      )
+    );
 
-    const {
-      data,
-      error
-    } =
-      await supabase
-        .from("games")
-        .update({
-          status: "live",
-          called_numbers: called
-        })
-        .eq(
-          "game_code",
-          game.game_code
-        )
-        .select()
-        .single();
+  /* =======================================================
+     START GAME
+  ======================================================= */
 
-    if (error) {
-      alert(
-        "Could not start game: " +
-        error.message
+  async function startGame() {
+    if (
+      actionBusy
+    ) {
+      return;
+    }
+
+    setActionBusy(
+      true
+    );
+
+    try {
+      /*
+        IMPORTANT FIX:
+
+        We update using the unique
+        database ID instead of using
+        game_code + .single().
+
+        This prevents:
+
+        "Cannot coerce the result
+        to a single JSON object"
+      */
+
+      let query =
+        supabase
+          .from("games")
+          .update({
+            status:
+              "live",
+            called_numbers:
+              called
+          });
+
+      if (game.id) {
+        query =
+          query.eq(
+            "id",
+            game.id
+          );
+      } else {
+        query =
+          query.eq(
+            "game_code",
+            game.game_code
+          );
+      }
+
+      const {
+        error
+      } =
+        await query;
+
+      if (error) {
+        throw error;
+      }
+
+      const updated = {
+        ...game,
+
+        status:
+          "live",
+
+        gameStarted:
+          true,
+
+        calledNumbers:
+          called,
+
+        called_numbers:
+          called
+      };
+
+      setGame(
+        updated
       );
 
+      saveGame(
+        updated
+      );
+
+    } catch (error) {
       console.error(
         "Start game error:",
         error
       );
 
-      return;
+      alert(
+        "Could not start game: " +
+          (
+            error?.message ||
+            "Unknown error"
+          )
+      );
+    } finally {
+      setActionBusy(
+        false
+      );
     }
-
-    const finalGame = {
-      ...updated,
-      ...data,
-      gameStarted: true,
-      calledNumbers:
-        Array.isArray(
-          data?.called_numbers
-        )
-          ? data.called_numbers
-          : called
-    };
-
-    setGame(finalGame);
-    saveGame(finalGame);
   }
 
-  async function callNext() {
+  /* =======================================================
+     CALL NEXT NUMBER
+  ======================================================= */
+
+  async function callNextNumber() {
     if (
-      !game.gameStarted &&
-      game.status !== "live"
+      actionBusy ||
+      remaining.length ===
+        0
     ) {
       return;
     }
 
-    if (!remaining.length) {
-      return;
-    }
+    setActionBusy(
+      true
+    );
 
-    const n =
-      remaining[
-        Math.floor(
-          Math.random() *
-          remaining.length
-        )
-      ];
+    try {
+      const number =
+        remaining[
+          Math.floor(
+            Math.random() *
+              remaining.length
+          )
+        ];
 
-    const nextCalled = [
-      ...called,
-      n
-    ];
+      const nextCalled =
+        [
+          ...called,
+          number
+        ];
 
-    const {
-      data,
-      error
-    } =
-      await supabase
-        .from("games")
-        .update({
-          status: "live",
-          called_numbers:
-            nextCalled
-        })
-        .eq(
-          "game_code",
-          game.game_code
-        )
-        .select()
-        .single();
+      let query =
+        supabase
+          .from("games")
+          .update({
+            status:
+              "live",
+            called_numbers:
+              nextCalled
+          });
 
-    if (error) {
-      alert(
-        "Could not call number: " +
-        error.message
+      if (game.id) {
+        query =
+          query.eq(
+            "id",
+            game.id
+          );
+      } else {
+        query =
+          query.eq(
+            "game_code",
+            game.game_code
+          );
+      }
+
+      const {
+        error
+      } =
+        await query;
+
+      if (error) {
+        throw error;
+      }
+
+      const updated = {
+        ...game,
+
+        status:
+          "live",
+
+        gameStarted:
+          true,
+
+        calledNumbers:
+          nextCalled,
+
+        called_numbers:
+          nextCalled
+      };
+
+      setGame(
+        updated
       );
 
+      saveGame(
+        updated
+      );
+
+    } catch (error) {
       console.error(
         "Call number error:",
         error
       );
 
+      alert(
+        "Could not call number: " +
+          (
+            error?.message ||
+            "Unknown error"
+          )
+      );
+    } finally {
+      setActionBusy(
+        false
+      );
+    }
+  }
+
+  /* =======================================================
+     AUTO CALL
+  ======================================================= */
+
+  useEffect(() => {
+    if (
+      !autoCalling ||
+      !game.gameStarted ||
+      remaining.length ===
+        0
+    ) {
       return;
     }
 
-    const updated = {
-      ...game,
-      ...data,
-      status: "live",
-      gameStarted: true,
-      calledNumbers:
-        Array.isArray(
-          data?.called_numbers
-        )
-          ? data.called_numbers
-          : nextCalled
-    };
-
-    setGame(updated);
-    saveGame(updated);
-  }
-
-  async function reset() {
-    const {
-      data,
-      error
-    } =
-      await supabase
-        .from("games")
-        .update({
-          status: "upcoming",
-          called_numbers: []
-        })
-        .eq(
-          "game_code",
-          game.game_code
-        )
-        .select()
-        .single();
-
-    if (error) {
-      alert(
-        "Could not reset game: " +
-        error.message
+    const timer =
+      setInterval(
+        () => {
+          callNextNumber();
+        },
+        intervalSeconds *
+          1000
       );
 
+    return () =>
+      clearInterval(
+        timer
+      );
+  }, [
+    autoCalling,
+    game.gameStarted,
+    game.id,
+    called.length,
+    intervalSeconds
+  ]);
+
+  /* =======================================================
+     STOP AUTO CALL WHEN 90 NUMBERS ARE CALLED
+  ======================================================= */
+
+  useEffect(() => {
+    if (
+      called.length >=
+      90
+    ) {
+      setAutoCalling(
+        false
+      );
+    }
+  }, [
+    called.length
+  ]);
+
+  /* =======================================================
+     RESET
+  ======================================================= */
+
+  async function resetGame() {
+    if (
+      actionBusy
+    ) {
       return;
     }
 
-    const updated = {
-      ...game,
-      ...data,
-      gameStarted: false,
-      status: "upcoming",
-      calledNumbers: [],
-      called_numbers: []
-    };
+    if (
+      !confirm(
+        "Reset the game and clear all called numbers?"
+      )
+    ) {
+      return;
+    }
 
-    setGame(updated);
-    saveGame(updated);
+    setActionBusy(
+      true
+    );
+
+    setAutoCalling(
+      false
+    );
+
+    try {
+      let query =
+        supabase
+          .from("games")
+          .update({
+            status:
+              "upcoming",
+            called_numbers:
+              []
+          });
+
+      if (game.id) {
+        query =
+          query.eq(
+            "id",
+            game.id
+          );
+      } else {
+        query =
+          query.eq(
+            "game_code",
+            game.game_code
+          );
+      }
+
+      const {
+        error
+      } =
+        await query;
+
+      if (error) {
+        throw error;
+      }
+
+      const updated = {
+        ...game,
+
+        status:
+          "upcoming",
+
+        gameStarted:
+          false,
+
+        calledNumbers:
+          [],
+
+        called_numbers:
+          []
+      };
+
+      setGame(
+        updated
+      );
+
+      saveGame(
+        updated
+      );
+
+    } catch (error) {
+      console.error(
+        "Reset game error:",
+        error
+      );
+
+      alert(
+        "Could not reset game: " +
+          (
+            error?.message ||
+            "Unknown error"
+          )
+      );
+    } finally {
+      setActionBusy(
+        false
+      );
+    }
   }
+
+  const buttonStyle = {
+    padding:
+      "12px 16px",
+    marginRight:
+      8,
+    marginBottom:
+      8,
+    fontWeight:
+      "bold",
+    borderRadius:
+      7,
+    border:
+      "1px solid #555"
+  };
 
   return (
     <section>
-      <p>
-        Current Number:{" "}
-        <b>
-          {last || "—"}
-        </b>
-      </p>
+      <div
+        style={{
+          border:
+            "2px solid #2563eb",
+          borderRadius:
+            12,
+          padding:
+            18,
+          background:
+            "#eff6ff",
+          marginBottom:
+            15
+        }}
+      >
+        <p
+          style={{
+            marginTop:
+              0
+          }}
+        >
+          Current Number
+        </p>
 
-      <p>
-        Called:{" "}
-        <b>
-          {called.length}/90
-        </b>
-      </p>
+        <div
+          style={{
+            fontSize:
+              64,
+            fontWeight:
+              "bold",
+            textAlign:
+              "center",
+            margin:
+              "10px 0"
+          }}
+        >
+          {last ||
+            "—"}
+        </div>
+
+        <p>
+          Called:
+          {" "}
+          <b>
+            {
+              called.length
+            }
+            /90
+          </b>
+        </p>
+
+        <p>
+          Auto call interval:
+          {" "}
+          <b>
+            {
+              intervalSeconds
+            } seconds
+          </b>
+        </p>
+      </div>
 
       {!game.gameStarted &&
-      game.status !== "live" ? (
-        <button
-          onClick={start}
-        >
-          Start Game
-        </button>
-      ) : (
+        game.status !==
+          "live" && (
+          <button
+            onClick={
+              startGame
+            }
+            disabled={
+              actionBusy
+            }
+            style={
+              buttonStyle
+            }
+          >
+            {
+              actionBusy
+                ? "Starting..."
+                : "START GAME"
+            }
+          </button>
+        )}
+
+      {game.gameStarted && (
         <>
           <button
-            onClick={callNext}
+            onClick={
+              callNextNumber
+            }
+            disabled={
+              actionBusy ||
+              remaining.length ===
+                0
+            }
+            style={
+              buttonStyle
+            }
           >
-            Call Next Number
+            {actionBusy
+              ? "Calling..."
+              : "CALL NEXT NUMBER"}
           </button>
 
+          {!autoCalling ? (
+            <button
+              onClick={() =>
+                setAutoCalling(
+                  true
+                )
+              }
+              disabled={
+                actionBusy ||
+                remaining.length ===
+                  0
+              }
+              style={{
+                ...buttonStyle,
+                background:
+                  "#16a34a",
+                color:
+                  "#fff"
+              }}
+            >
+              ▶ AUTO CALL
+            </button>
+          ) : (
+            <button
+              onClick={() =>
+                setAutoCalling(
+                  false
+                )
+              }
+              style={{
+                ...buttonStyle,
+                background:
+                  "#f59e0b",
+                color:
+                  "#fff"
+              }}
+            >
+              ⏸ PAUSE AUTO CALL
+            </button>
+          )}
+
           <button
-            onClick={reset}
-            style={{
-              marginLeft: 8
-            }}
+            onClick={
+              resetGame
+            }
+            disabled={
+              actionBusy
+            }
+            style={
+              buttonStyle
+            }
           >
-            Reset
+            RESET GAME
           </button>
         </>
       )}
 
-      <p>
-        {called.length
-          ? called.join(", ")
-          : "No numbers called."}
-      </p>
+      {game.gameStarted && (
+        <div
+          style={{
+            marginTop:
+              10,
+            padding:
+              10,
+            borderRadius:
+              8,
+            background:
+              autoCalling
+                ? "#dcfce7"
+                : "#fff7ed",
+            border:
+              autoCalling
+                ? "1px solid #16a34a"
+                : "1px solid #f59e0b",
+            fontWeight:
+              "bold"
+          }}
+        >
+          {autoCalling
+            ? `🟢 AUTO CALLING — next number in about ${intervalSeconds} seconds`
+            : "⏸ AUTO CALL PAUSED"}
+        </div>
+      )}
+
+      <h3>
+        Called Numbers
+      </h3>
+
+      <div
+        style={{
+          display:
+            "flex",
+          flexWrap:
+            "wrap",
+          gap:
+            6
+        }}
+      >
+        {nums.map(
+          (number) => {
+            const wasCalled =
+              called.includes(
+                number
+              );
+
+            return (
+              <span
+                key={
+                  number
+                }
+                style={{
+                  minWidth:
+                    34,
+                  padding:
+                    "6px 4px",
+                  textAlign:
+                    "center",
+                  border:
+                    "1px solid #aaa",
+                  borderRadius:
+                    5,
+                  background:
+                    wasCalled
+                      ? "#111827"
+                      : "#fff",
+                  color:
+                    wasCalled
+                      ? "#fff"
+                      : "#111",
+                  fontWeight:
+                    wasCalled
+                      ? "bold"
+                      : "normal"
+                }}
+              >
+                {
+                  number
+                }
+              </span>
+            );
+          }
+        )}
+      </div>
+
+      {called.length >=
+        90 && (
+        <p
+          style={{
+            marginTop:
+              15,
+            color:
+              "#15803d",
+            fontWeight:
+              "bold"
+          }}
+        >
+          🎉 All 90 numbers
+          have been called!
+        </p>
+      )}
     </section>
   );
 }
@@ -1721,66 +2673,75 @@ function Live({
 
 function Invitation({
   game,
-  accept,
-  goLive
+  accept
 }) {
   const prizes =
-    (game.prizes || []).filter(
-      (p) =>
-        p.amount !== "" &&
-        p.amount !== null &&
-        p.amount !== undefined
+    (
+      game.prizes ||
+      defaultPrizes
+    ).filter(
+      (prize) =>
+        prize.amount !==
+          "" &&
+        prize.amount !==
+          null &&
+        prize.amount !==
+          undefined
     );
-
-  const isLive =
-    game.status === "live";
 
   return (
     <main
       style={{
-        maxWidth: 600,
-        margin: "20px auto",
-        padding: 20
+        maxWidth:
+          600,
+        margin:
+          "20px auto",
+        padding:
+          20,
+        boxSizing:
+          "border-box"
       }}
     >
       <h1>
-        {game.game_name}
+        {
+          game.game_name
+        }
       </h1>
 
       <p>
         <b>Date:</b>{" "}
-        {game.game_date}
+        {
+          game.game_date
+        }
       </p>
 
       <p>
         <b>Time:</b>{" "}
-        {game.game_time}
+        {
+          game.game_time
+        }
       </p>
 
       <p>
         <b>Ticket Price:</b>{" "}
-        ₹{game.ticket_price}
+        ₹
+        {
+          game.ticket_price
+        }
       </p>
 
       <p>
         <b>Available Tickets:</b>{" "}
-        {game.ticket_limit}
+        {
+          game.ticket_limit
+        }
       </p>
 
       <p>
         <b>Status:</b>{" "}
-        <span
-          style={{
-            fontWeight: "bold",
-            color: isLive
-              ? "#15803d"
-              : "#b45309"
-          }}
-        >
-          {isLive
-            ? "LIVE"
-            : game.status}
-        </span>
+        {
+          game.status
+        }
       </p>
 
       <h3>
@@ -1788,53 +2749,37 @@ function Invitation({
       </h3>
 
       {prizes.map(
-        (p, i) => (
-          <p key={i}>
-            {p.name}: ₹
-            {p.amount}
+        (
+          prize,
+          index
+        ) => (
+          <p
+            key={index}
+          >
+            {
+              prize.name
+            }
+            : ₹
+            {
+              prize.amount
+            }
           </p>
         )
       )}
 
-      {!isLive && (
-        <button
-          onClick={accept}
-        >
-          I ACCEPT
-        </button>
-      )}
-
-      {isLive && (
-        <>
-          <button
-            onClick={goLive}
-            style={{
-              padding:
-                "12px 20px",
-              background:
-                "#16a34a",
-              color:
-                "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontWeight:
-                "bold",
-              fontSize: 16
-            }}
-          >
-            ENTER LIVE GAME
-          </button>
-
-          <br />
-          <br />
-
-          <button
-            onClick={accept}
-          >
-            GO TO TICKET BOOKING
-          </button>
-        </>
-      )}
+      <button
+        onClick={
+          accept
+        }
+        style={{
+          padding:
+            "12px 20px",
+          fontWeight:
+            "bold"
+        }}
+      >
+        I ACCEPT
+      </button>
     </main>
   );
 }
@@ -1844,17 +2789,22 @@ function Invitation({
 ========================================================= */
 
 function Booking({
-  game,
-  goLive
+  game
 }) {
-  const [player, setPlayer] =
-    useState("");
+  const [
+    player,
+    setPlayer
+  ] = useState("");
 
-  const [selected, setSelected] =
-    useState([]);
+  const [
+    selected,
+    setSelected
+  ] = useState([]);
 
-  const [sent, setSent] =
-    useState(false);
+  const [
+    sent,
+    setSent
+  ] = useState(false);
 
   const [
     bookingRequests,
@@ -1876,7 +2826,7 @@ function Booking({
       1,
       Number(
         game.ticket_limit ||
-        100
+          100
       )
     );
 
@@ -1891,7 +2841,9 @@ function Booking({
     );
 
   async function loadRequests() {
-    if (!game?.game_code) {
+    if (
+      !game?.game_code
+    ) {
       return;
     }
 
@@ -1900,7 +2852,9 @@ function Booking({
       error
     } =
       await supabase
-        .from("booking_requests")
+        .from(
+          "booking_requests"
+        )
         .select("*")
         .eq(
           "game_code",
@@ -1909,7 +2863,8 @@ function Booking({
         .order(
           "created_at",
           {
-            ascending: true
+            ascending:
+              true
           }
         );
 
@@ -1923,7 +2878,10 @@ function Booking({
         error.message
       );
 
-      setLoadingRequests(false);
+      setLoadingRequests(
+        false
+      );
+
       return;
     }
 
@@ -1931,7 +2889,9 @@ function Booking({
       data || []
     );
 
-    setLoadingRequests(false);
+    setLoadingRequests(
+      false
+    );
   }
 
   useEffect(() => {
@@ -1944,8 +2904,12 @@ function Booking({
       );
 
     return () =>
-      clearInterval(interval);
-  }, [game?.game_code]);
+      clearInterval(
+        interval
+      );
+  }, [
+    game?.game_code
+  ]);
 
   function ticketInfo(
     ticketNumber
@@ -1959,13 +2923,10 @@ function Booking({
   function canSelect(
     ticketNumber
   ) {
-    const info =
+    return (
       ticketInfo(
         ticketNumber
-      );
-
-    return (
-      info.status ===
+      ).status ===
       "available"
     );
   }
@@ -1993,8 +2954,8 @@ function Booking({
           )
         ) {
           return current.filter(
-            (x) =>
-              x !==
+            (item) =>
+              item !==
               ticketNumber
           );
         }
@@ -2010,7 +2971,8 @@ function Booking({
   async function send() {
     if (
       !player.trim() ||
-      selected.length === 0
+      selected.length ===
+        0
     ) {
       alert(
         "Enter your name and select tickets."
@@ -2041,17 +3003,20 @@ function Booking({
       alert(
         `Ticket(s) ${unavailable
           .map(
-            (n) => `#${n}`
+            (n) =>
+              `#${n}`
           )
-          .join(", ")} are no longer available.`
+          .join(
+            ", "
+          )} are no longer available.`
       );
 
       setSelected(
         (current) =>
           current.filter(
-            (n) =>
+            (number) =>
               !unavailable.includes(
-                n
+                number
               )
           )
       );
@@ -2060,7 +3025,6 @@ function Booking({
     }
 
     const {
-      data,
       error
     } =
       await supabase
@@ -2070,42 +3034,45 @@ function Booking({
         .insert({
           game_code:
             game.game_code,
+
           player_name:
             player.trim(),
+
           ticket_numbers:
             sorted,
+
           status:
             "pending"
-        })
-        .select()
-        .single();
+        });
 
     if (error) {
       alert(
         "Could not send booking request: " +
-        error.message
+          error.message
       );
 
       return;
     }
 
-    console.log(
-      "Booking request created:",
-      data
+    setSent(
+      true
     );
 
-    setSent(true);
-    setSelected([]);
+    setSelected(
+      []
+    );
 
     await loadRequests();
 
     const text =
 `Hi ${game.host_name || "Host"}, ${player.trim()} wants to book ${sorted
-      .map(
-        (n) =>
-          `#${n}`
-      )
-      .join(", ")} for ${game.game_name}. Please approve my booking.`;
+        .map(
+          (n) =>
+            `#${n}`
+        )
+        .join(
+          ", "
+        )} for ${game.game_name}. Please approve my booking.`;
 
     try {
       window.open(
@@ -2121,67 +3088,24 @@ function Booking({
     }
   }
 
-  const actualTickets =
-    ticketNumbers.map(
-      (ticketNumber) => {
-        const info =
-          ticketInfo(
-            ticketNumber
-          );
-
-        const isSelected =
-          selected.includes(
-            ticketNumber
-          );
-
-        return (
-          <Ticket
-            key={
-              "actual-ticket-" +
-              ticketNumber
-            }
-            n={
-              ticketNumber
-            }
-            name={
-              info.player
-            }
-            selected={
-              isSelected
-            }
-            status={
-              isSelected
-                ? "available"
-                : info.status
-            }
-            onClick={() =>
-              toggleTicket(
-                ticketNumber
-              )
-            }
-          />
-        );
-      }
-    );
-
   const approvedTicketCount =
     bookingRequests
       .filter(
-        (r) =>
-          r.status ===
+        (item) =>
+          item.status ===
           "approved"
       )
       .reduce(
         (
           total,
-          r
+          item
         ) =>
           total +
           (
             Array.isArray(
-              r.ticket_numbers
+              item.ticket_numbers
             )
-              ? r.ticket_numbers.length
+              ? item.ticket_numbers.length
               : 0
           ),
         0
@@ -2190,21 +3114,21 @@ function Booking({
   const pendingTicketCount =
     bookingRequests
       .filter(
-        (r) =>
-          r.status ===
+        (item) =>
+          item.status ===
           "pending"
       )
       .reduce(
         (
           total,
-          r
+          item
         ) =>
           total +
           (
             Array.isArray(
-              r.ticket_numbers
+              item.ticket_numbers
             )
-              ? r.ticket_numbers.length
+              ? item.ticket_numbers.length
               : 0
           ),
         0
@@ -2213,10 +3137,14 @@ function Booking({
   return (
     <main
       style={{
-        width: "100%",
-        maxWidth: 700,
-        margin: "20px auto",
-        padding: 20,
+        width:
+          "100%",
+        maxWidth:
+          700,
+        margin:
+          "20px auto",
+        padding:
+          20,
         boxSizing:
           "border-box"
       }}
@@ -2227,52 +3155,11 @@ function Booking({
 
       <p>
         <b>
-          {game.game_name}
+          {
+            game.game_name
+          }
         </b>
       </p>
-
-      {game.status ===
-        "live" && (
-        <div
-          style={{
-            border:
-              "2px solid #16a34a",
-            background:
-              "#f0fff4",
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 15
-          }}
-        >
-          <b>
-            🔴 GAME IS LIVE
-          </b>
-
-          <br />
-          <br />
-
-          <button
-            type="button"
-            onClick={goLive}
-            style={{
-              padding:
-                "10px 16px",
-              background:
-                "#16a34a",
-              color:
-                "#fff",
-              border:
-                "none",
-              borderRadius:
-                6,
-              fontWeight:
-                "bold"
-            }}
-          >
-            ENTER LIVE GAME
-          </button>
-        </div>
-      )}
 
       <h3>
         Ticket Availability
@@ -2280,10 +3167,14 @@ function Booking({
 
       <div
         style={{
-          display: "flex",
-          gap: 8,
-          flexWrap: "wrap",
-          marginBottom: 20
+          display:
+            "flex",
+          gap:
+            8,
+          flexWrap:
+            "wrap",
+          marginBottom:
+            20
         }}
       >
         <span
@@ -2294,12 +3185,16 @@ function Booking({
               "#f0fff4",
             border:
               "1px solid #16a34a",
-            borderRadius: 6
+            borderRadius:
+              6
           }}
         >
-          ✓ Booked:{" "}
+          ✓ Booked:
+          {" "}
           <b>
-            {approvedTicketCount}
+            {
+              approvedTicketCount
+            }
           </b>
         </span>
 
@@ -2311,19 +3206,24 @@ function Booking({
               "#fff7ed",
             border:
               "1px solid #f59e0b",
-            borderRadius: 6
+            borderRadius:
+              6
           }}
         >
-          ⏳ Pending:{" "}
+          ⏳ Pending:
+          {" "}
           <b>
-            {pendingTicketCount}
+            {
+              pendingTicketCount
+            }
           </b>
         </span>
       </div>
 
       {loadingRequests && (
         <p>
-          Checking ticket availability...
+          Checking ticket
+          availability...
         </p>
       )}
 
@@ -2334,9 +3234,12 @@ function Booking({
               "#b91c1c"
           }}
         >
-          Could not refresh ticket
-          status:{" "}
-          {requestError}
+          Could not refresh
+          ticket status:
+          {" "}
+          {
+            requestError
+          }
         </p>
       )}
 
@@ -2347,17 +3250,24 @@ function Booking({
       <input
         type="text"
         placeholder="Player name"
-        value={player}
+        value={
+          player
+        }
         onChange={(e) =>
           setPlayer(
             e.target.value
           )
         }
-        disabled={sent}
+        disabled={
+          sent
+        }
         style={{
-          width: "100%",
-          maxWidth: 400,
-          padding: 10,
+          width:
+            "100%",
+          maxWidth:
+            400,
+          padding:
+            10,
           boxSizing:
             "border-box"
         }}
@@ -2369,24 +3279,34 @@ function Booking({
 
       <div
         style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 5,
-          marginBottom: 30
+          display:
+            "flex",
+          flexWrap:
+            "wrap",
+          gap:
+            5,
+          marginBottom:
+            30
         }}
       >
         {ticketNumbers.map(
-          (ticketNumber) => {
+          (
+            ticketNumber
+          ) => {
             const info =
               ticketInfo(
+                ticketNumber
+              );
+
+            const isSelected =
+              selected.includes(
                 ticketNumber
               );
 
             return (
               <button
                 key={
-                  "ticket-number-" +
-                  ticketNumber
+                  `ticket-${ticketNumber}`
                 }
                 type="button"
                 onClick={() =>
@@ -2404,11 +3324,10 @@ function Booking({
                     "7px 10px",
                   border:
                     "1px solid #555",
-                  borderRadius: 5,
+                  borderRadius:
+                    5,
                   background:
-                    selected.includes(
-                      ticketNumber
-                    )
+                    isSelected
                       ? "#bfdbfe"
                       : info.status ===
                         "approved"
@@ -2418,17 +3337,10 @@ function Booking({
                           ? "#fed7aa"
                           : "#fff",
                   fontWeight:
-                    "bold",
-                  cursor:
-                    info.status ===
-                    "available"
-                      ? "pointer"
-                      : "not-allowed"
+                    "bold"
                 }}
               >
-                {selected.includes(
-                  ticketNumber
-                )
+                {isSelected
                   ? "✓ "
                   : info.status ===
                     "approved"
@@ -2438,7 +3350,10 @@ function Booking({
                       ? "⏳ "
                       : ""}
 
-                #{ticketNumber}
+                #
+                {
+                  ticketNumber
+                }
               </button>
             );
           }
@@ -2450,30 +3365,72 @@ function Booking({
       </h3>
 
       <p>
-        Green = booked • Orange =
-        pending • White = available
+        Green = booked
+        {" • "}
+        Orange = pending
+        {" • "}
+        White = available
       </p>
 
       <div
         style={{
-          width: "100%",
-          display: "block",
-          boxSizing:
-            "border-box"
+          width:
+            "100%"
         }}
       >
-        {actualTickets}
+        {ticketNumbers.map(
+          (
+            ticketNumber
+          ) => {
+            const info =
+              ticketInfo(
+                ticketNumber
+              );
+
+            return (
+              <Ticket
+                key={
+                  `actual-${ticketNumber}`
+                }
+                n={
+                  ticketNumber
+                }
+                name={
+                  info.player
+                }
+                selected={selected.includes(
+                  ticketNumber
+                )}
+                status={
+                  selected.includes(
+                    ticketNumber
+                  )
+                    ? "available"
+                    : info.status
+                }
+                onClick={() =>
+                  toggleTicket(
+                    ticketNumber
+                  )
+                }
+              />
+            );
+          }
+        )}
       </div>
 
-      {selected.length > 0 && (
+      {selected.length >
+        0 && (
         <div
           style={{
             border:
               "1px solid #2563eb",
-            borderRadius: 8,
-            padding: 12,
-            marginTop: 10,
-            marginBottom: 15,
+            borderRadius:
+              8,
+            padding:
+              12,
+            marginBottom:
+              15,
             background:
               "#eff6ff"
           }}
@@ -2493,7 +3450,9 @@ function Booking({
                 (n) =>
                   `#${n}`
               )
-              .join(", ")}
+              .join(
+                ", "
+              )}
           </p>
         </div>
       )}
@@ -2501,7 +3460,9 @@ function Booking({
       {!sent ? (
         <button
           type="button"
-          onClick={send}
+          onClick={
+            send
+          }
           disabled={
             !player.trim() ||
             selected.length ===
@@ -2523,28 +3484,35 @@ function Booking({
           style={{
             border:
               "2px solid #f59e0b",
-            padding: 15,
-            borderRadius: 8,
+            padding:
+              15,
+            borderRadius:
+              8,
             background:
               "#fff7ed"
           }}
         >
           <p>
             <b>
-              Booking request sent.
+              Booking request
+              sent.
             </b>
           </p>
 
           <p>
-            Your selected tickets
-            are now pending host
+            Your selected
+            tickets are now
+            pending host
             approval.
           </p>
 
           <p>
-            This page will automatically
-            update when the host approves
-            or rejects your request.
+            This page will
+            automatically
+            update when the
+            host approves or
+            rejects your
+            request.
           </p>
         </div>
       )}
@@ -2555,62 +3523,67 @@ function Booking({
         Ticket Status
       </h3>
 
-      {bookingRequests.length ===
-        0 && (
-        <p>
-          No booking requests yet.
-        </p>
-      )}
-
       {bookingRequests
         .filter(
-          (r) =>
-            r.status ===
+          (item) =>
+            item.status ===
               "approved" ||
-            r.status ===
+            item.status ===
               "pending"
         )
         .map(
-          (r) => (
+          (item) => (
             <div
-              key={r.id}
+              key={
+                item.id
+              }
               style={{
                 border:
-                  r.status ===
+                  item.status ===
                   "approved"
                     ? "1px solid #16a34a"
                     : "1px solid #f59e0b",
-                padding: 10,
-                marginBottom: 8,
-                borderRadius: 6,
+                padding:
+                  10,
+                marginBottom:
+                  8,
+                borderRadius:
+                  6,
                 background:
-                  r.status ===
+                  item.status ===
                   "approved"
                     ? "#f0fff4"
                     : "#fff7ed"
               }}
             >
               <b>
-                {r.player_name}
+                {
+                  item.player_name
+                }
               </b>
 
-              {" "}—{" "}
+              {" — "}
 
-              {r.status ===
+              {item.status ===
               "approved"
                 ? "Booked"
                 : "Pending"}
 
               <br />
 
-              Tickets:{" "}
-
-              {(r.ticket_numbers || [])
+              Tickets:
+              {" "}
+              {(
+                item.ticket_numbers ||
+                []
+              )
                 .map(
                   (n) =>
                     `#${n}`
                 )
-                .join(", ")}
+                .join(
+                  ", "
+                )}
             </div>
           )
         )}
@@ -2623,48 +3596,73 @@ function Booking({
 ========================================================= */
 
 function App() {
-  const [game, setGame] =
-    useState(null);
+  const [
+    game,
+    setGame
+  ] = useState(null);
 
-  const [playerGame, setPlayerGame] =
-    useState(null);
+  const [
+    playerGame,
+    setPlayerGame
+  ] = useState(null);
 
-  const [page, setPage] =
-    useState("host");
+  const [
+    page,
+    setPage
+  ] = useState(
+    "host"
+  );
 
-  const [error, setError] =
-    useState("");
+  const [
+    error,
+    setError
+  ] = useState("");
 
-  const [loading, setLoading] =
-    useState(true);
+  const [
+    loading,
+    setLoading
+  ] = useState(true);
 
   useEffect(() => {
     const saved =
       loadGame();
 
     if (saved) {
-      setGame(saved);
-      setPage("host");
+      setGame(
+        saved
+      );
+
+      setPage(
+        "host"
+      );
     }
 
-    const gc =
+    const gameCode =
       getGameCode();
 
-    if (gc) {
-      loadPlayer(gc);
+    if (gameCode) {
+      loadPlayer(
+        gameCode
+      );
     } else {
-      setLoading(false);
+      setLoading(
+        false
+      );
     }
   }, []);
 
   useEffect(() => {
     if (game) {
-      saveGame(game);
+      saveGame(
+        game
+      );
     }
-  }, [game]);
+  }, [
+    game
+  ]);
 
   async function loadPlayer(
-    gc
+    gameCode
   ) {
     const {
       data,
@@ -2675,140 +3673,71 @@ function App() {
         .select("*")
         .eq(
           "game_code",
-          gc.toUpperCase()
+          gameCode.toUpperCase()
         )
-        .maybeSingle();
+        .limit(1);
 
     if (
       error ||
-      !data
+      !data ||
+      data.length ===
+        0
     ) {
       setError(
         error?.message ||
-        "Game not found"
+          "Game not found"
       );
 
-      setLoading(false);
+      setLoading(
+        false
+      );
+
       return;
     }
 
-    const g = {
-      ...data,
+    const row =
+      data[0];
 
-      prizes:
-        Array.isArray(
-          data.prizes
-        )
-          ? data.prizes
-          : defaultPrizes,
+    const player =
+      {
+        ...row,
 
-      calledNumbers:
-        Array.isArray(
-          data.called_numbers
-        )
-          ? data.called_numbers
-          : Array.isArray(
-              data.calledNumbers
-            )
-            ? data.calledNumbers
-            : [],
+        prizes:
+          Array.isArray(
+            row.prizes
+          )
+            ? row.prizes
+            : defaultPrizes,
 
-      gameStarted:
-        data.status === "live"
-    };
+        calledNumbers:
+          Array.isArray(
+            row.called_numbers
+          )
+            ? row.called_numbers
+            : []
+      };
 
-    setPlayerGame(g);
+    setPlayerGame(
+      player
+    );
 
-    setPage("invitation");
+    setPage(
+      "invitation"
+    );
 
-    setLoading(false);
+    setLoading(
+      false
+    );
   }
-
-  /*
-     PLAYER GAME STATUS POLLING
-
-     This is the important connection between
-     the host and player.
-
-     When the host presses START GAME,
-     Supabase status becomes "live".
-
-     Every player checks the row every
-     2 seconds and receives the live status.
-  */
-
-  useEffect(() => {
-    if (
-      !playerGame?.game_code
-    ) {
-      return;
-    }
-
-    const interval =
-      setInterval(
-        async () => {
-          const {
-            data,
-            error
-          } =
-            await supabase
-              .from("games")
-              .select("*")
-              .eq(
-                "game_code",
-                playerGame.game_code
-              )
-              .maybeSingle();
-
-          if (
-            error ||
-            !data
-          ) {
-            return;
-          }
-
-          setPlayerGame(
-            (current) => ({
-              ...current,
-              ...data,
-
-              prizes:
-                Array.isArray(
-                  data.prizes
-                )
-                  ? data.prizes
-                  : current?.prizes ||
-                    defaultPrizes,
-
-              calledNumbers:
-                Array.isArray(
-                  data.called_numbers
-                )
-                  ? data.called_numbers
-                  : current?.calledNumbers ||
-                    [],
-
-              gameStarted:
-                data.status ===
-                "live"
-            })
-          );
-        },
-        2000
-      );
-
-    return () =>
-      clearInterval(interval);
-  }, [
-    playerGame?.game_code
-  ]);
 
   if (loading) {
     return (
       <main
         style={{
-          padding: 20,
-          textAlign: "center"
+          padding:
+            20,
+          textAlign:
+            "center"
         }}
       >
         <h2>
@@ -2822,7 +3751,8 @@ function App() {
     return (
       <main
         style={{
-          padding: 20
+          padding:
+            20
         }}
       >
         <h2>
@@ -2830,20 +3760,11 @@ function App() {
         </h2>
 
         <p>
-          {error}
+          {
+            error
+          }
         </p>
       </main>
-    );
-  }
-
-  if (
-    playerGame &&
-    page === "live"
-  ) {
-    return (
-      <LiveGame
-        game={playerGame}
-      />
     );
   }
 
@@ -2862,28 +3783,19 @@ function App() {
             "booking"
           )
         }
-        goLive={() =>
-          setPage(
-            "live"
-          )
-        }
       />
     );
   }
 
   if (
     playerGame &&
-    page === "booking"
+    page ===
+      "booking"
   ) {
     return (
       <Booking
         game={
           playerGame
-        }
-        goLive={() =>
-          setPage(
-            "live"
-          )
         }
       />
     );
@@ -2891,8 +3803,12 @@ function App() {
 
   return (
     <HostPage
-      game={game}
-      setGame={setGame}
+      game={
+        game
+      }
+      setGame={
+        setGame
+      }
     />
   );
 }
