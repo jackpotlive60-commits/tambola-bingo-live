@@ -3763,6 +3763,11 @@ function HostControlPage({
   ] = useState(5);
 
   const [
+    callerMode,
+    setCallerMode
+  ] = useState("fun");
+
+  const [
     callingNumber,
     setCallingNumber
   ] = useState(false);
@@ -4301,15 +4306,68 @@ ${inviteUrl}`;
     90: "Top of the house, number 90"
   };
 
+  const INDIAN_CALLER_PHRASES = {
+    1: "Ek number, shuruaat zabardast",
+    2: "Do chhote ducks, number 2",
+    3: "Cup of chai, number 3",
+    4: "Darwaze par knock, number 4",
+    5: "Paanch ka punch, number 5",
+    6: "Chhe, aadha dozen",
+    7: "Lucky saat, number 7",
+    8: "Aath ka aath, number 8",
+    9: "Nau, doctor ka number",
+    10: "Das ka dum, number 10",
+    11: "Gyarah, legs eleven",
+    12: "Ek dozen, baarah",
+    13: "Terah, unlucky for some",
+    14: "Chaudah, Valentine special",
+    15: "Pandrah, quarter century ki taraf",
+    16: "Solah, sweet sixteen",
+    17: "Satrah, dancing queen ke kareeb",
+    18: "Atharah, coming of age",
+    19: "Unnis, almost twenty",
+    20: "Bees, score number 20",
+    21: "Ikkis, key of the door",
+    22: "Baais, do little ducks",
+    23: "Teis, you and me",
+    24: "Chaubees, two dozen",
+    25: "Pachchees, quarter century",
+    30: "Tees, dirty thirty",
+    40: "Chalees, life begins at forty",
+    50: "Pachaas, half century",
+    60: "Saath, sixty on the board",
+    66: "Chhiyaasath, clickety click",
+    69: "Unhattar, ulta pulta",
+    77: "Sattaattar, double lucky seven",
+    88: "Athaasi, two fat ladies",
+    90: "Nabbe, top of the house"
+  };
+
+  function getCallerPhrase(number) {
+    if (callerMode === "classic") {
+      return `Number ${number}`;
+    }
+
+    if (callerMode === "indian") {
+      return (
+        INDIAN_CALLER_PHRASES[number] ||
+        `Agla number hai ${number}, dhyaan se dekhiye!`
+      );
+    }
+
+    return (
+      CALLER_PHRASES[number] ||
+      `Number ${number}`
+    );
+  }
+
   function announceNumber(number) {
     try {
       if (!("speechSynthesis" in window)) return;
 
       window.speechSynthesis.cancel();
 
-      const phrase =
-        CALLER_PHRASES[number] ||
-        `Number ${number}`;
+      const phrase = getCallerPhrase(number);
 
       const utterance = new SpeechSynthesisUtterance(
         phrase
@@ -5351,6 +5409,47 @@ ${inviteUrl}`;
                   <option value={7}>7 sec</option>
                   <option value={10}>10 sec</option>
                   <option value={15}>15 sec</option>
+                </select>
+              </label>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: 8,
+                marginBottom: 12
+              }}
+            >
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  padding: "10px 12px",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 10,
+                  background: "#f8fafc",
+                  fontWeight: "bold"
+                }}
+              >
+                <span>🎙️ Caller Style</span>
+                <select
+                  value={callerMode}
+                  onChange={(e) => setCallerMode(e.target.value)}
+                  disabled={callingNumber}
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 8,
+                    border: "1px solid #cbd5e1",
+                    background: "#fff",
+                    fontWeight: "bold"
+                  }}
+                >
+                  <option value="classic">Classic</option>
+                  <option value="indian">🇮🇳 Indian / Hinglish</option>
+                  <option value="fun">🎉 Fun</option>
                 </select>
               </label>
             </div>
