@@ -246,6 +246,25 @@ function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber,
   return unique;
 }
 
+function calculateWinnerShares(amount, winnerCount) {
+  const total = Number(amount) || 0;
+  const count = Math.max(1, Number(winnerCount) || 1);
+
+  const totalCents = Math.round(total * 100);
+  const baseCents = Math.floor(totalCents / count);
+  const remainderCents = totalCents % count;
+
+  return Array.from({ length: count }, (_, index) => {
+    const cents = baseCents + (index < remainderCents ? 1 : 0);
+    return cents / 100;
+  });
+}
+
+function formatPrizeAmount(amount) {
+  const value = Number(amount) || 0;
+  return `INR ${value.toFixed(2)}`;
+}
+
 function getPrizeVoiceName(name) {
   const pattern = getPrizePattern(name);
 
@@ -274,6 +293,12 @@ function speakWinnerAnnouncement(events) {
         winnersText = `${names[0]} and ${names[1]}`;
       } else if (names.length > 2) {
         winnersText = `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+      }
+
+      if (event.winners.length > 1) {
+        return `${voicePrizeName} won by ${winnersText}. Prize of ${formatPrizeAmount(
+          event.prizeAmount
+        )} split equally among ${event.winners.length} winners.`;
       }
 
       return `${voicePrizeName} won by ${winnersText}`;
@@ -3938,7 +3963,18 @@ function LivePrizeList({ game }) {
                           fontWeight: "bold"
                         }}
                       >
-                        [WINNER] {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
+                        <div>
+                          [WINNER] {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            color: "#166534",
+                            fontSize: 13
+                          }}
+                        >
+                          Prize Share: {formatPrizeAmount(winner.prizeShare)}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -4749,11 +4785,28 @@ ${inviteUrl}`;
       );
 
       if (winners.length) {
+        const prizeAmount = Number(prize.amount) || 0;
+        const shares = calculateWinnerShares(
+          prizeAmount,
+          winners.length
+        );
+
+        const winnersWithShares = winners.map(
+          (winner, winnerIndex) => ({
+            ...winner,
+            prizeAmount,
+            winnerCount: winners.length,
+            prizeShare: shares[winnerIndex]
+          })
+        );
+
         events.push({
           prizeIndex,
           prizeName: prize.name || `Prize ${prizeIndex + 1}`,
+          prizeAmount,
           winningNumber: nextNumber,
-          winners
+          winnerCount: winnersWithShares.length,
+          winners: winnersWithShares
         });
       }
     });
@@ -6105,7 +6158,18 @@ ${inviteUrl}`;
                             fontWeight: "bold"
                           }}
                         >
-                          [PLAYER] {winner.playerName} - [TICKET] Ticket #{winner.ticketNumber}
+                          <div>
+                            [PLAYER] {winner.playerName} - [TICKET] Ticket #{winner.ticketNumber}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 4,
+                              color: "#166534",
+                              fontSize: 13
+                            }}
+                          >
+                            Share: {formatPrizeAmount(winner.prizeShare)}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -6118,6 +6182,23 @@ ${inviteUrl}`;
                       }}
                     >
                       Winning call: #{event.winningNumber}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 10,
+                        padding: 10,
+                        borderRadius: 10,
+                        background: "#f0fdf4",
+                        color: "#166534",
+                        fontWeight: "bold",
+                        fontSize: 13
+                      }}
+                    >
+                      Prize Pool: {formatPrizeAmount(event.prizeAmount)}
+                      {event.winnerCount > 1
+                        ? ` - Split equally among ${event.winnerCount} winners`
+                        : " - Single winner"}
                     </div>
                   </div>
                 ))}
