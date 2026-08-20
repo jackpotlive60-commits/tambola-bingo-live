@@ -11,6 +11,8 @@ import {
   supabase
 } from "./lib/supabase";
 
+import LiveGame from "./LiveGame";
+
 const nums = Array.from(
   { length: 90 },
   (_, i) => i + 1
@@ -2011,10 +2013,6 @@ function Live({
       )
     );
 
-  /* =======================================================
-     START GAME
-  ======================================================= */
-
   async function startGame() {
     if (
       actionBusy
@@ -2027,19 +2025,6 @@ function Live({
     );
 
     try {
-      /*
-        IMPORTANT FIX:
-
-        We update using the unique
-        database ID instead of using
-        game_code + .single().
-
-        This prevents:
-
-        "Cannot coerce the result
-        to a single JSON object"
-      */
-
       let query =
         supabase
           .from("games")
@@ -2116,10 +2101,6 @@ function Live({
       );
     }
   }
-
-  /* =======================================================
-     CALL NEXT NUMBER
-  ======================================================= */
 
   async function callNextNumber() {
     if (
@@ -2226,10 +2207,6 @@ function Live({
     }
   }
 
-  /* =======================================================
-     AUTO CALL
-  ======================================================= */
-
   useEffect(() => {
     if (
       !autoCalling ||
@@ -2261,10 +2238,6 @@ function Live({
     intervalSeconds
   ]);
 
-  /* =======================================================
-     STOP AUTO CALL WHEN 90 NUMBERS ARE CALLED
-  ======================================================= */
-
   useEffect(() => {
     if (
       called.length >=
@@ -2277,10 +2250,6 @@ function Live({
   }, [
     called.length
   ]);
-
-  /* =======================================================
-     RESET
-  ======================================================= */
 
   async function resetGame() {
     if (
@@ -3661,6 +3630,139 @@ function App() {
     game
   ]);
 
+  /*
+   * ---------------------------------------------------------
+   * PLAYER GAME STATUS WATCHER
+   *
+   * This checks Supabase every 2 seconds.
+   *
+   * When the host starts the game, the games table gets:
+   *
+   * status = "live"
+   *
+   * The player is then automatically moved from Booking
+   * to LiveGame.
+   * ---------------------------------------------------------
+   */
+
+  useEffect(() => {
+    if (
+      !playerGame?.game_code
+    ) {
+      return;
+    }
+
+    checkPlayerGameStatus();
+
+    const interval =
+      setInterval(
+        checkPlayerGameStatus,
+        2000
+      );
+
+    return () =>
+      clearInterval(
+        interval
+      );
+  }, [
+    playerGame?.game_code,
+    page
+  ]);
+
+  async function checkPlayerGameStatus() {
+    if (
+      !playerGame?.game_code
+    ) {
+      return;
+    }
+
+    const {
+      data,
+      error
+    } =
+      await supabase
+        .from("games")
+        .select("*")
+        .eq(
+          "game_code",
+          playerGame.game_code
+        )
+        .maybeSingle();
+
+    if (error) {
+      console.error(
+        "Player game status error:",
+        error
+      );
+
+      return;
+    }
+
+    if (!data) {
+      return;
+    }
+
+    const updatedPlayerGame = {
+      ...playerGame,
+
+      ...data,
+
+      prizes:
+        Array.isArray(
+          data.prizes
+        )
+          ? data.prizes
+          : (
+              playerGame.prizes ||
+              defaultPrizes
+            ),
+
+      calledNumbers:
+        Array.isArray(
+          data.called_numbers
+        )
+          ? data.called_numbers
+          : []
+    };
+
+    setPlayerGame(
+      updatedPlayerGame
+    );
+
+    /*
+     * Host starts game by setting status = "live".
+     *
+     * Support the other possible flags too so this remains
+     * compatible if LiveGame uses them later.
+     */
+
+    const status =
+      String(
+        data.status ||
+          "upcoming"
+      ).toLowerCase();
+
+    const gameIsLive =
+      status ===
+        "live" ||
+      status ===
+        "started" ||
+      data.game_started ===
+        true ||
+      data.gameStarted ===
+        true;
+
+    if (
+      gameIsLive &&
+      page !==
+        "live"
+    ) {
+      setPage(
+        "live"
+      );
+    }
+  }
+
   async function loadPlayer(
     gameCode
   ) {
@@ -3721,9 +3823,38 @@ function App() {
       player
     );
 
-    setPage(
-      "invitation"
-    );
+    /*
+     * If player opens the link after the host has already
+     * started the game, go directly to LiveGame.
+     */
+
+    const status =
+      String(
+        row.status ||
+          "upcoming"
+      ).toLowerCase();
+
+    const gameIsLive =
+      status ===
+        "live" ||
+      status ===
+        "started" ||
+      row.game_started ===
+        true ||
+      row.gameStarted ===
+        true;
+
+    if (
+      gameIsLive
+    ) {
+      setPage(
+        "live"
+      );
+    } else {
+      setPage(
+        "invitation"
+      );
+    }
 
     setLoading(
       false
@@ -3794,6 +3925,28 @@ function App() {
   ) {
     return (
       <Booking
+        game={
+          playerGame
+        }
+      />
+    );
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * PLAYER LIVE GAME
+   *
+   * The existing LiveGame component is rendered here.
+   * ---------------------------------------------------------
+   */
+
+  if (
+    playerGame &&
+    page ===
+      "live"
+  ) {
+    return (
+      <LiveGame
         game={
           playerGame
         }
