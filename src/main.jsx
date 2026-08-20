@@ -1154,7 +1154,6 @@ function PlayerBookingPage({
 
     const bookingData = {
       game_id: game.id,
-      game_code: game.game_code,
       player_name: name,
       ticket_numbers:
         sortedTickets,
