@@ -2992,104 +2992,122 @@ function PlayerBookingPage({
    LIVE GAME PAGE
 ========================================================= */
 
-function LiveGamePage({
-  game
-}) {
+function LiveGamePage({ game }) {
   const [calledNumbers, setCalledNumbers] = useState(
     Array.isArray(game.called_numbers) ? game.called_numbers : []
   );
-
   const [liveGame, setLiveGame] = useState(game);
 
   const [playerBooking, setPlayerBooking] = useState(
     () => getPlayerBooking(game.id)
   );
+  const [playerBookings, setPlayerBookings] = useState([]);
+  const [loadingPlayerBookings, setLoadingPlayerBookings] = useState(true);
 
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [searchText, setSearchText] = useState("");
 
+  async function loadMyBookings() {
+    const playerKey = getOrCreatePlayerKey(game.id);
+
+    try {
+      let savedBooking = getPlayerBooking(game.id);
+      let playerId = savedBooking?.playerId || null;
+
+      if (!playerId) {
+        const { data: player, error: playerError } = await supabase
+          .from("players")
+          .select("id, player_name, player_key")
+          .eq("game_id", game.id)
+          .eq("player_key", playerKey)
+          .maybeSingle();
+
+        if (playerError) throw playerError;
+        playerId = player?.id || null;
+      }
+
+      if (!playerId) {
+        setPlayerBookings([]);
+        setPlayerBooking(savedBooking || null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("ticket_bookings")
+        .select(
+          "id, player_id, player_name, ticket_numbers, status, created_at"
+        )
+        .eq("game_id", game.id)
+        .eq("player_id", playerId)
+        .eq("status", "accepted")
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      const acceptedBookings = data || [];
+      setPlayerBookings(acceptedBookings);
+
+      const allTickets = [];
+      acceptedBookings.forEach((booking) => {
+        const numbers = Array.isArray(booking.ticket_numbers)
+          ? booking.ticket_numbers
+          : [];
+
+        numbers.forEach((n) => {
+          const number = Number(n);
+          if (
+            Number.isInteger(number) &&
+            number >= 1 &&
+            number <= 100
+          ) {
+            allTickets.push(number);
+          }
+        });
+      });
+
+      const uniqueTickets = [...new Set(allTickets)].sort(
+        (a, b) => a - b
+      );
+
+      const displayName =
+        acceptedBookings[acceptedBookings.length - 1]?.player_name ||
+        savedBooking?.playerName ||
+        getSavedPlayerName(game.id) ||
+        "";
+
+      const updatedPlayerBooking = {
+        ...(savedBooking || {}),
+        playerId,
+        playerKey,
+        playerName: displayName,
+        ticketNumbers: uniqueTickets
+      };
+
+      setPlayerBooking(updatedPlayerBooking);
+      savePlayerBooking(game.id, updatedPlayerBooking);
+    } catch (err) {
+      console.error("Could not load this player's bookings:", err);
+      setPlayerBookings([]);
+    } finally {
+      setLoadingPlayerBookings(false);
+    }
+  }
+
   async function loadLiveBookings() {
     try {
       const { data, error } = await supabase
         .from("ticket_bookings")
-        .select("id, player_id, player_name, ticket_numbers, status, created_at")
+        .select(
+          "id, player_id, player_name, ticket_numbers, status, created_at"
+        )
         .eq("game_id", game.id)
         .eq("status", "accepted")
         .order("created_at", { ascending: true });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       setBookings(data || []);
-
-      // Rebuild this player's ticket list from ALL accepted bookings.
-      // This keeps ticket #1 and #2 (and any later tickets) together.
-      try {
-        const playerKey = getOrCreatePlayerKey(game.id);
-        let playerId = playerBooking?.playerId || null;
-
-        if (!playerId) {
-          const {
-            data: player,
-            error: playerError
-          } = await supabase
-            .from("players")
-            .select("id, player_name, player_key")
-            .eq("game_id", game.id)
-            .eq("player_key", playerKey)
-            .maybeSingle();
-
-          if (playerError) {
-            throw playerError;
-          }
-
-          playerId = player?.id || null;
-        }
-
-        if (playerId) {
-          const myBookings = (data || []).filter(
-            (booking) => booking.player_id === playerId
-          );
-
-          const allMyTickets = [];
-          myBookings.forEach((booking) => {
-            (Array.isArray(booking.ticket_numbers)
-              ? booking.ticket_numbers
-              : []
-            ).forEach((number) => {
-              const n = Number(number);
-              if (Number.isInteger(n) && n >= 1 && n <= 100) {
-                allMyTickets.push(n);
-              }
-            });
-          });
-
-          const uniqueMyTickets = [...new Set(allMyTickets)].sort(
-            (x, y) => x - y
-          );
-
-          const displayName =
-            myBookings[myBookings.length - 1]?.player_name ||
-            playerBooking?.playerName ||
-            getSavedPlayerName(game.id) ||
-            "Player";
-
-          const updatedBooking = {
-            ...(playerBooking || {}),
-            playerId,
-            playerKey,
-            playerName: displayName,
-            ticketNumbers: uniqueMyTickets
-          };
-
-          setPlayerBooking(updatedBooking);
-          savePlayerBooking(game.id, updatedBooking);
-        }
-      } catch (playerErr) {
-        console.error("Could not rebuild player tickets:", playerErr);
-      }
     } catch (err) {
       console.error("Could not load live game bookings:", err);
       setBookings([]);
@@ -3109,7 +3127,6 @@ function LiveGamePage({
       ) {
         return current;
       }
-
       return game;
     });
 
@@ -3117,13 +3134,13 @@ function LiveGamePage({
       const next = Array.isArray(game.called_numbers)
         ? game.called_numbers
         : [];
-
       return JSON.stringify(current) === JSON.stringify(next)
         ? current
         : next;
     });
 
     setPlayerBooking(getPlayerBooking(game.id));
+    loadMyBookings();
   }, [game.id, game.status, game.called_numbers]);
 
   useEffect(() => {
@@ -3147,7 +3164,6 @@ function LiveGamePage({
           ) {
             return current;
           }
-
           return data;
         });
 
@@ -3155,7 +3171,6 @@ function LiveGamePage({
           const next = Array.isArray(data.called_numbers)
             ? data.called_numbers
             : [];
-
           return JSON.stringify(current) === JSON.stringify(next)
             ? current
             : next;
@@ -3196,6 +3211,7 @@ function LiveGamePage({
   }, [game.id]);
 
   useEffect(() => {
+    loadMyBookings();
     loadLiveBookings();
 
     const channel = supabase
@@ -3209,12 +3225,16 @@ function LiveGamePage({
           filter: `game_id=eq.${game.id}`
         },
         () => {
+          loadMyBookings();
           loadLiveBookings();
         }
       )
       .subscribe();
 
-    const interval = setInterval(loadLiveBookings, 5000);
+    const interval = setInterval(() => {
+      loadMyBookings();
+      loadLiveBookings();
+    }, 5000);
 
     return () => {
       clearInterval(interval);
@@ -3222,18 +3242,39 @@ function LiveGamePage({
     };
   }, [game.id]);
 
-  const myTicketNumbers = useMemo(
-    () =>
-      Array.isArray(playerBooking?.ticketNumbers)
-        ? [...playerBooking.ticketNumbers]
-            .map(Number)
-            .filter(
-              (n) => Number.isInteger(n) && n >= 1 && n <= 100
-            )
-            .sort((a, b) => a - b)
-        : [],
-    [playerBooking?.ticketNumbers]
-  );
+  const myTicketNumbers = useMemo(() => {
+    const numbers = [];
+
+    playerBookings.forEach((booking) => {
+      const ticketNumbers = Array.isArray(booking.ticket_numbers)
+        ? booking.ticket_numbers
+        : [];
+
+      ticketNumbers.forEach((n) => {
+        const number = Number(n);
+        if (
+          Number.isInteger(number) &&
+          number >= 1 &&
+          number <= 100
+        ) {
+          numbers.push(number);
+        }
+      });
+    });
+
+    if (!numbers.length && Array.isArray(playerBooking?.ticketNumbers)) {
+      numbers.push(...playerBooking.ticketNumbers.map(Number));
+    }
+
+    return [...new Set(numbers)]
+      .filter(
+        (n) =>
+          Number.isInteger(n) &&
+          n >= 1 &&
+          n <= 100
+      )
+      .sort((a, b) => a - b);
+  }, [playerBookings, playerBooking?.ticketNumbers]);
 
   const myTicketCards = useMemo(
     () =>
@@ -3276,17 +3317,16 @@ function LiveGamePage({
   const filteredBookedTickets = useMemo(() => {
     const query = searchText.trim().toLowerCase();
 
-    if (!query) {
-      return allBookedTickets;
-    }
+    if (!query) return allBookedTickets;
 
     return allBookedTickets.filter((ticket) => {
       const player = ticket.playerName.toLowerCase();
       const number = String(ticket.number);
+      const normalizedQuery = query.replace(/^#/, "");
 
       return (
         player.includes(query) ||
-        number === query.replace(/^#/, "") ||
+        number === normalizedQuery ||
         `#${number}`.includes(query)
       );
     });
@@ -3379,32 +3419,39 @@ function LiveGamePage({
               Player: <b>{playerBooking.playerName}</b>
             </p>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-                gap: 16,
-                alignItems: "start",
-                contain: "layout"
-              }}
-            >
-              {myTicketCards.length ? (
-                myTicketCards.map((ticket) => (
-                  <TicketGrid
-                    key={`mine-${ticket.number}`}
-                    ticket={ticket}
-                    selected={false}
-                    calledNumbers={calledNumbers}
-                    readOnly
-                    ownerName={playerBooking.playerName}
-                  />
-                ))
-              ) : (
-                <p style={{ color: "#64748b" }}>
-                  No booked tickets found for this device yet.
-                </p>
-              )}
-            </div>
+            {loadingPlayerBookings ? (
+              <p style={{ color: "#64748b" }}>
+                Loading your tickets...
+              </p>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit,minmax(250px,1fr))",
+                  gap: 16,
+                  alignItems: "start",
+                  contain: "layout"
+                }}
+              >
+                {myTicketCards.length ? (
+                  myTicketCards.map((ticket) => (
+                    <TicketGrid
+                      key={`mine-${ticket.number}`}
+                      ticket={ticket}
+                      selected={false}
+                      calledNumbers={calledNumbers}
+                      readOnly
+                      ownerName={playerBooking.playerName}
+                    />
+                  ))
+                ) : (
+                  <p style={{ color: "#64748b" }}>
+                    No accepted tickets found for this player yet.
+                  </p>
+                )}
+              </div>
+            )}
           </section>
         )}
 
@@ -3488,7 +3535,8 @@ function LiveGamePage({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+                gridTemplateColumns:
+                  "repeat(auto-fit,minmax(280px,1fr))",
                 gap: 18,
                 marginTop: 18,
                 contain: "layout"
@@ -3544,17 +3592,88 @@ function LiveGamePage({
 
         <LivePrizeList game={liveGame} />
 
-      <div
-        style={{
-          textAlign: "center",
-          color: "#64748b",
-          padding: "10px 0 30px"
-        }}
-      >
-        Stay on this page. The game board will update automatically when the host calls a number.
-      </div>
+        <div
+          style={{
+            textAlign: "center",
+            color: "#64748b",
+            padding: "10px 0 30px"
+          }}
+        >
+          Stay on this page. The game board will update automatically when
+          the host calls a number.
+        </div>
       </div>
     </main>
+  );
+}
+
+/* =========================================================
+   LIVE PRIZE LIST
+========================================================= */
+
+function LivePrizeList({ game }) {
+  const prizes = Array.isArray(game.selected_prizes)
+    ? game.selected_prizes
+    : [];
+
+  return (
+    <section style={cardStyle}>
+      <h2>🏆 Prizes & Winners</h2>
+
+      {prizes.length === 0 ? (
+        <p style={{ color: "#64748b" }}>
+          No prizes have been configured for this game.
+        </p>
+      ) : (
+        <div style={{ display: "grid", gap: 10 }}>
+          {prizes.map((prize, index) => (
+            <div
+              key={`${prize.name || "prize"}-${index}`}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 10,
+                alignItems: "center",
+                padding: 12,
+                borderRadius: 10,
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0"
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: "bold" }}>
+                  {prize.name || `Prize ${index + 1}`}
+                </div>
+                {prize.description && (
+                  <div
+                    style={{
+                      color: "#64748b",
+                      fontSize: 13,
+                      marginTop: 3
+                    }}
+                  >
+                    {prize.description}
+                  </div>
+                )}
+              </div>
+
+              <div
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  background: "#fff",
+                  border: "1px solid #cbd5e1",
+                  fontWeight: "bold",
+                  color: "#64748b"
+                }}
+              >
+                Winner: —
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
