@@ -24,7 +24,9 @@ const DEFAULT_PRIZES = [
   "Middle Line",
   "Bottom Line",
   "Full House"
-].map((name) => ({ name, amount: "" }));
+].map(name => ({ name, amount: "" }));
+
+const GAME_KEY = "tambolalive_host_game";
 
 /* =========================================================
    HELPERS
@@ -32,149 +34,264 @@ const DEFAULT_PRIZES = [
 
 function generateGameCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from(
-    { length: 6 },
-    () => chars[Math.floor(Math.random() * chars.length)]
-  ).join("");
+  let code = "";
+
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+
+  return code;
+}
+
+function saveHostGame(game) {
+  if (!game) {
+    localStorage.removeItem(GAME_KEY);
+    return;
+  }
+
+  localStorage.setItem(GAME_KEY, JSON.stringify(game));
+}
+
+function loadHostGame() {
+  try {
+    const value = localStorage.getItem(GAME_KEY);
+    if (!value) return null;
+
+    const game = JSON.parse(value);
+    return game?.game_code ? game : null;
+  } catch {
+    return null;
+  }
 }
 
 function getGameCodeFromUrl() {
   return new URLSearchParams(window.location.search).get("game");
 }
 
-function makeTicket(number) {
-  /*
-    Deterministic 3x9 ticket.
-    Same ticket number always produces
-    the same ticket on the player page.
-  */
+/* =========================================================
+   DETERMINISTIC RANDOM
+   Same game + ticket number = same ticket
+========================================================= */
 
-  const seed = number * 7919;
+function seededRandom(seed) {
+  let x = seed >>> 0;
 
-  const nums = [];
+  return function () {
+    x += 0x6D2B79F5;
+    let t = x;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
 
-  for (let i = 1; i <= 90; i++) nums.push(i);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
-  let value = seed;
+function seedFromText(text) {
+  let hash = 2166136261;
 
-  function random() {
-    value = (value * 9301 + 49297) % 233280;
-    return value / 233280;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
   }
 
-  for (let i = nums.length - 1; i > 0; i--) {
+  return hash >>> 0;
+}
+
+function shuffle(array, random) {
+  const a = [...array];
+
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
-    [nums[i], nums[j]] = [nums[j], nums[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
 
-  const columns = Array.from({ length: 9 }, () => []);
+  return a;
+}
 
-  for (const n of nums) {
-    const col = Math.min(8, Math.floor(n / 10));
-    if (columns[col].length < 3) columns[col].push(n);
-  }
+/* =========================================================
+   TAMBOLA TICKET GENERATOR
+========================================================= */
 
-  const ticket = Array.from({ length: 3 }, () =>
-    Array(9).fill(null)
+function makeTicket(gameCode, ticketNumber) {
+  const random = seededRandom(
+    seedFromText(`${gameCode}-${ticketNumber}`)
   );
 
-  for (let c = 0; c < 9; c++) {
-    const col = columns[c].slice(0, 3);
+  /*
+    Column ranges:
+    1-9
+    10-19
+    20-29
+    ...
+    80-90
+  */
 
-    col.forEach((n, r) => {
-      ticket[r][c] = n;
-    });
-  }
+  const ranges = [
+    [1, 9],
+    [10, 19],
+    [20, 29],
+    [30, 39],
+    [40, 49],
+    [50, 59],
+    [60, 69],
+    [70, 79],
+    [80, 90]
+  ];
 
-  /* Ensure each row has 5 numbers */
+  /*
+    Start with a valid 3x9 pattern.
+    Every row gets exactly 5 numbers.
+    Every column gets at least 1 number.
+  */
+
+  let positions = [];
+
   for (let r = 0; r < 3; r++) {
-    let count = ticket[r].filter(Boolean).length;
+    const row = shuffle(
+      [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      random
+    ).slice(0, 5);
 
-    while (count < 5) {
-      const empty = [];
-
-      for (let c = 0; c < 9; c++) {
-        if (!ticket[r][c]) empty.push(c);
-      }
-
-      if (!empty.length) break;
-
-      const c =
-        empty[Math.floor(random() * empty.length)];
-
-      const min = c * 10 + (c === 0 ? 1 : 0);
-      const max = c === 8 ? 90 : c * 10 + 9;
-
-      let n = min + Math.floor(random() * (max - min + 1));
-
-      if (
-        ticket.some((row) => row.includes(n))
-      ) {
-        continue;
-      }
-
-      ticket[r][c] = n;
-      count++;
-    }
+    row.forEach(c => positions.push([r, c]));
   }
 
-  return ticket;
+  /*
+    Ensure every column has at least one number.
+  */
+
+  const count = Array(9).fill(0);
+
+  positions.forEach(([, c]) => {
+    count[c]++;
+  });
+
+  for (let c = 0; c < 9; c++) {
+    if (count[c] > 0) continue;
+
+    const candidates = positions
+      .map(([r, col], index) => ({
+        r,
+        col,
+        index
+      }))
+      .filter(item => count[item.col] > 1);
+
+    const chosen =
+      candidates[
+        Math.floor(random() * candidates.length)
+      ];
+
+    positions[chosen.index] = [chosen.r, c];
+
+    count[chosen.col]--;
+    count[c]++;
+  }
+
+  /*
+    Remove accidental duplicates.
+    If a row gets duplicate column positions,
+    rebuild from a simple known-valid pattern.
+  */
+
+  const unique = new Set(
+    positions.map(([r, c]) => `${r}-${c}`)
+  );
+
+  if (unique.size !== 15) {
+    positions = [
+      [0, 0], [0, 1], [0, 3], [0, 5], [0, 7],
+      [1, 1], [1, 2], [1, 4], [1, 6], [1, 8],
+      [2, 0], [2, 2], [2, 4], [2, 6], [2, 8]
+    ];
+  }
+
+  const grid = Array.from(
+    { length: 3 },
+    () => Array(9).fill(null)
+  );
+
+  /*
+    Generate numbers for each column.
+  */
+
+  for (let c = 0; c < 9; c++) {
+    const rows = positions
+      .map(([r, col]) => (col === c ? r : null))
+      .filter(r => r !== null);
+
+    if (!rows.length) continue;
+
+    const [min, max] = ranges[c];
+
+    const numbers = [];
+
+    for (let n = min; n <= max; n++) {
+      numbers.push(n);
+    }
+
+    const selected = shuffle(
+      numbers,
+      random
+    ).slice(0, rows.length).sort((a, b) => a - b);
+
+    rows
+      .sort((a, b) => a - b)
+      .forEach((row, i) => {
+        grid[row][c] = selected[i];
+      });
+  }
+
+  return grid;
 }
 
 /* =========================================================
    STYLES
 ========================================================= */
 
-const page = {
+const pageStyle = {
   minHeight: "100vh",
   background: "#f5f7fb",
-  padding: 18,
+  padding: 20,
   boxSizing: "border-box",
   fontFamily: "Arial, Helvetica, sans-serif"
 };
 
-const wrap = {
-  maxWidth: 900,
-  margin: "0 auto"
-};
-
-const card = {
+const cardStyle = {
   background: "#fff",
   border: "1px solid #e5e7eb",
   borderRadius: 16,
   padding: 20,
   marginBottom: 18,
-  boxShadow: "0 3px 12px rgba(0,0,0,.05)"
+  boxShadow: "0 3px 10px rgba(0,0,0,.05)"
 };
 
-const input = {
+const inputStyle = {
   width: "100%",
-  boxSizing: "border-box",
   padding: "12px",
   border: "1px solid #cbd5e1",
   borderRadius: 9,
+  boxSizing: "border-box",
   fontSize: 16
 };
 
-const blueButton = {
-  border: 0,
+const primaryButton = {
+  padding: "13px 18px",
+  border: "none",
   borderRadius: 9,
-  padding: "12px 18px",
   background: "#2563eb",
   color: "#fff",
   fontWeight: "bold",
-  fontSize: 15,
+  fontSize: 16,
   cursor: "pointer"
 };
 
-const whiteButton = {
+const secondaryButton = {
+  padding: "11px 16px",
   border: "1px solid #cbd5e1",
   borderRadius: 9,
-  padding: "11px 17px",
   background: "#fff",
   color: "#111827",
   fontWeight: "bold",
-  fontSize: 14,
   cursor: "pointer"
 };
 
@@ -182,15 +299,24 @@ const whiteButton = {
    CREATE GAME
 ========================================================= */
 
-function CreateGamePage({ onCreated }) {
+function CreateGamePage({ onGameCreated }) {
   const [gameName, setGameName] =
     useState(DEFAULT_GAME_NAME);
 
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [limit, setLimit] = useState(100);
-  const [price, setPrice] = useState(20);
-  const [theme, setTheme] = useState("Classic");
+  const [gameDate, setGameDate] =
+    useState("");
+
+  const [gameTime, setGameTime] =
+    useState("");
+
+  const [ticketLimit, setTicketLimit] =
+    useState(100);
+
+  const [ticketPrice, setTicketPrice] =
+    useState(20);
+
+  const [theme, setTheme] =
+    useState("Classic");
 
   const [prizes, setPrizes] =
     useState(DEFAULT_PRIZES);
@@ -201,32 +327,35 @@ function CreateGamePage({ onCreated }) {
   const [creating, setCreating] =
     useState(false);
 
-  const [error, setError] = useState("");
+  const [error, setError] =
+    useState("");
 
-  function updatePrize(i, amount) {
-    setPrizes((old) =>
-      old.map((p, index) =>
-        index === i ? { ...p, amount } : p
+  function updatePrize(index, amount) {
+    setPrizes(current =>
+      current.map((p, i) =>
+        i === index
+          ? { ...p, amount }
+          : p
       )
     );
   }
 
-  function addPrize() {
+  function addCustomPrize() {
     const name = customPrize.trim();
 
     if (!name) return;
 
-    setPrizes((old) => [
-      ...old,
+    setPrizes(current => [
+      ...current,
       { name, amount: "" }
     ]);
 
     setCustomPrize("");
   }
 
-  function removePrize(i) {
-    setPrizes((old) =>
-      old.filter((_, index) => index !== i)
+  function removePrize(index) {
+    setPrizes(current =>
+      current.filter((_, i) => i !== index)
     );
   }
 
@@ -239,31 +368,26 @@ function CreateGamePage({ onCreated }) {
     setError("");
 
     try {
-      let code = generateGameCode();
+      let gameCode = generateGameCode();
 
-      for (;;) {
+      while (true) {
         const { data, error } =
           await supabase
             .from("games")
             .select("id")
-            .eq("game_code", code)
+            .eq("game_code", gameCode)
             .limit(1);
 
         if (error) throw error;
 
         if (!data?.length) break;
 
-        code = generateGameCode();
+        gameCode = generateGameCode();
       }
 
       const selectedPrizes = prizes
-        .filter(
-          (p) =>
-            p.amount !== "" &&
-            p.amount !== null &&
-            p.amount !== undefined
-        )
-        .map((p) => ({
+        .filter(p => p.amount !== "")
+        .map(p => ({
           name: p.name,
           amount: Number(p.amount)
         }));
@@ -273,13 +397,13 @@ function CreateGamePage({ onCreated }) {
         game_name:
           gameName.trim() || DEFAULT_GAME_NAME,
         status: "upcoming",
-        ticket_limit: Number(limit),
-        ticket_price: Number(price),
+        ticket_limit: Number(ticketLimit),
+        ticket_price: Number(ticketPrice),
         call_interval_seconds: 5,
-        game_date: date || null,
-        game_time: time || null,
+        game_date: gameDate || null,
+        game_time: gameTime || null,
         theme,
-        game_code: code,
+        game_code: gameCode,
         invite_enabled: true,
         selected_prizes: selectedPrizes,
         called_numbers: []
@@ -294,12 +418,14 @@ function CreateGamePage({ onCreated }) {
 
       if (error) throw error;
 
-      onCreated(data);
+      saveHostGame(data);
+      onGameCreated(data);
+
     } catch (err) {
       console.error(err);
       setError(
         err?.message ||
-          "Could not create game."
+        "Could not create game."
       );
     } finally {
       setCreating(false);
@@ -307,22 +433,22 @@ function CreateGamePage({ onCreated }) {
   }
 
   return (
-    <main style={page}>
-      <div style={wrap}>
-        <header
-          style={{
-            textAlign: "center",
-            marginBottom: 25
-          }}
-        >
+    <main style={pageStyle}>
+      <div style={{ maxWidth: 760, margin: "auto" }}>
+
+        <div style={{
+          textAlign: "center",
+          marginBottom: 25
+        }}>
           <h1>TAMBOLA LIVE</h1>
           <p style={{ color: "#64748b" }}>
             Host Create Game
           </p>
-        </header>
+        </div>
 
         <form onSubmit={createGame}>
-          <section style={card}>
+
+          <section style={cardStyle}>
             <h2>Create New Game</h2>
 
             <label>
@@ -331,34 +457,30 @@ function CreateGamePage({ onCreated }) {
 
             <input
               value={gameName}
-              onChange={(e) =>
+              onChange={e =>
                 setGameName(e.target.value)
               }
-              style={{ ...input, marginTop: 7 }}
+              style={{ ...inputStyle, marginTop: 7 }}
             />
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit,minmax(200px,1fr))",
-                gap: 14,
-                marginTop: 15
-              }}
-            >
+            <div style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit,minmax(210px,1fr))",
+              gap: 14,
+              marginTop: 16
+            }}>
+
               <div>
                 <b>Date</b>
                 <input
                   type="date"
                   required
-                  value={date}
-                  onChange={(e) =>
-                    setDate(e.target.value)
+                  value={gameDate}
+                  onChange={e =>
+                    setGameDate(e.target.value)
                   }
-                  style={{
-                    ...input,
-                    marginTop: 7
-                  }}
+                  style={{ ...inputStyle, marginTop: 7 }}
                 />
               </div>
 
@@ -367,14 +489,11 @@ function CreateGamePage({ onCreated }) {
                 <input
                   type="time"
                   required
-                  value={time}
-                  onChange={(e) =>
-                    setTime(e.target.value)
+                  value={gameTime}
+                  onChange={e =>
+                    setGameTime(e.target.value)
                   }
-                  style={{
-                    ...input,
-                    marginTop: 7
-                  }}
+                  style={{ ...inputStyle, marginTop: 7 }}
                 />
               </div>
 
@@ -383,15 +502,11 @@ function CreateGamePage({ onCreated }) {
                 <input
                   type="number"
                   min="1"
-                  required
-                  value={limit}
-                  onChange={(e) =>
-                    setLimit(e.target.value)
+                  value={ticketLimit}
+                  onChange={e =>
+                    setTicketLimit(e.target.value)
                   }
-                  style={{
-                    ...input,
-                    marginTop: 7
-                  }}
+                  style={{ ...inputStyle, marginTop: 7 }}
                 />
               </div>
 
@@ -400,52 +515,47 @@ function CreateGamePage({ onCreated }) {
                 <input
                   type="number"
                   min="0"
-                  required
-                  value={price}
-                  onChange={(e) =>
-                    setPrice(e.target.value)
+                  value={ticketPrice}
+                  onChange={e =>
+                    setTicketPrice(e.target.value)
                   }
-                  style={{
-                    ...input,
-                    marginTop: 7
-                  }}
+                  style={{ ...inputStyle, marginTop: 7 }}
                 />
               </div>
+
             </div>
 
-            <div style={{ marginTop: 15 }}>
+            <div style={{ marginTop: 16 }}>
               <b>Game Theme</b>
 
               <select
                 value={theme}
-                onChange={(e) =>
+                onChange={e =>
                   setTheme(e.target.value)
                 }
-                style={{
-                  ...input,
-                  marginTop: 7
-                }}
+                style={{ ...inputStyle, marginTop: 7 }}
               >
-                {THEMES.map((t) => (
+                {THEMES.map(t => (
                   <option key={t}>{t}</option>
                 ))}
               </select>
             </div>
+
           </section>
 
-          <section style={card}>
+          <section style={cardStyle}>
             <h2>Prizes</h2>
 
-            {prizes.map((p, i) => (
+            {prizes.map((p, index) => (
               <div
-                key={`${p.name}-${i}`}
+                key={`${p.name}-${index}`}
                 style={{
                   display: "grid",
                   gridTemplateColumns:
                     "1fr 130px auto",
                   gap: 8,
-                  marginBottom: 9,
-                  alignItems: "center"
+                  alignItems: "center",
+                  marginBottom: 10
                 }}
               >
                 <b>{p.name}</b>
@@ -455,49 +565,45 @@ function CreateGamePage({ onCreated }) {
                   min="0"
                   placeholder="Amount"
                   value={p.amount}
-                  onChange={(e) =>
+                  onChange={e =>
                     updatePrize(
-                      i,
+                      index,
                       e.target.value
                     )
                   }
-                  style={input}
+                  style={inputStyle}
                 />
 
                 <button
                   type="button"
                   onClick={() =>
-                    removePrize(i)
+                    removePrize(index)
                   }
-                  style={whiteButton}
+                  style={secondaryButton}
                 >
                   Remove
                 </button>
               </div>
             ))}
 
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                marginTop: 15
-              }}
-            >
+            <div style={{
+              display: "flex",
+              gap: 8,
+              marginTop: 15
+            }}>
               <input
                 placeholder="Customize prize"
                 value={customPrize}
-                onChange={(e) =>
-                  setCustomPrize(
-                    e.target.value
-                  )
+                onChange={e =>
+                  setCustomPrize(e.target.value)
                 }
-                style={input}
+                style={inputStyle}
               />
 
               <button
                 type="button"
-                onClick={addPrize}
-                style={whiteButton}
+                onClick={addCustomPrize}
+                style={secondaryButton}
               >
                 + Add
               </button>
@@ -505,32 +611,29 @@ function CreateGamePage({ onCreated }) {
           </section>
 
           {error && (
-            <div
-              style={{
-                ...card,
-                color: "#b91c1c",
-                background: "#fef2f2"
-              }}
-            >
-              {error}
-            </div>
+            <section style={{
+              ...cardStyle,
+              background: "#fef2f2",
+              color: "#b91c1c"
+            }}>
+              <b>Could not create game</b>
+              <p>{error}</p>
+            </section>
           )}
 
           <button
-            type="submit"
             disabled={creating}
             style={{
-              ...blueButton,
+              ...primaryButton,
               width: "100%",
-              fontSize: 17,
-              padding: 15,
-              opacity: creating ? 0.6 : 1
+              opacity: creating ? .6 : 1
             }}
           >
             {creating
               ? "Creating Game..."
               : "CREATE GAME"}
           </button>
+
         </form>
       </div>
     </main>
@@ -542,432 +645,389 @@ function CreateGamePage({ onCreated }) {
 ========================================================= */
 
 function HostControlPage({ game, onNewGame }) {
-  const [status, setStatus] =
-    useState(game.status || "upcoming");
-
-  const [copied, setCopied] =
-    useState(false);
-
-  const [called, setCalled] =
-    useState(
-      Array.isArray(game.called_numbers)
-        ? game.called_numbers
-        : []
-    );
-
-  const [current, setCurrent] =
-    useState(null);
-
   const [bookings, setBookings] =
     useState([]);
 
-  const prizes = Array.isArray(
-    game.selected_prizes
-  )
-    ? game.selected_prizes
-    : [];
+  const [loadingBookings, setLoadingBookings] =
+    useState(true);
 
-  const invite =
+  const [message, setMessage] =
+    useState("");
+
+  const inviteUrl =
     `${window.location.origin}/?game=${game.game_code}`;
 
-  async function copyLink() {
-    await navigator.clipboard.writeText(invite);
-    setCopied(true);
-
-    setTimeout(
-      () => setCopied(false),
-      1500
-    );
-  }
-
-  async function updateStatus(next) {
-    const { error } =
-      await supabase
-        .from("games")
-        .update({ status: next })
-        .eq("id", game.id);
-
-    if (!error) setStatus(next);
-  }
-
-  async function callNumber() {
-    if (status !== "live") return;
-
-    const remaining = [];
-
-    for (let n = 1; n <= 90; n++) {
-      if (!called.includes(n)) {
-        remaining.push(n);
-      }
-    }
-
-    if (!remaining.length) return;
-
-    const n =
-      remaining[
-        Math.floor(
-          Math.random() *
-            remaining.length
-        )
-      ];
-
-    const next = [...called, n];
-
-    setCalled(next);
-    setCurrent(n);
-
-    await supabase
-      .from("games")
-      .update({
-        called_numbers: next
-      })
-      .eq("id", game.id);
-  }
+  const prizes =
+    Array.isArray(game.selected_prizes)
+      ? game.selected_prizes
+      : [];
 
   async function loadBookings() {
-    /*
-      Reads bookings if the bookings table
-      exists. If it is not created yet,
-      the rest of the host page still works.
-    */
+    setLoadingBookings(true);
 
-    const { data } =
-      await supabase
-        .from("bookings")
-        .select("*")
-        .eq("game_id", game.id)
-        .order("created_at", {
-          ascending: false
-        });
+    try {
+      const { data, error } =
+        await supabase
+          .from("booking_requests")
+          .select("*")
+          .eq("game_id", game.id)
+          .order("created_at", {
+            ascending: false
+          });
 
-    if (data) setBookings(data);
+      if (error) throw error;
+
+      setBookings(data || []);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingBookings(false);
+    }
   }
 
   useEffect(() => {
     loadBookings();
-  }, []);
+  }, [game.id]);
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(inviteUrl);
+    setMessage("Game link copied!");
+    setTimeout(() => setMessage(""), 2000);
+  }
+
+  async function shareGame() {
+    const text =
+`🎟️ ${game.game_name}
+
+📅 ${game.game_date || "-"}
+⏰ ${game.game_time || "-"}
+🎫 Ticket: ₹${game.ticket_price || 0}
+
+Join here:
+${inviteUrl}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: game.game_name,
+          text
+        });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      setMessage("Game details copied!");
+      setTimeout(() => setMessage(""), 2000);
+    }
+  }
+
+  async function updateBooking(id, status) {
+    const { error } =
+      await supabase
+        .from("booking_requests")
+        .update({ status })
+        .eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    loadBookings();
+  }
 
   return (
-    <main style={page}>
-      <div style={wrap}>
-        <header
-          style={{
-            textAlign: "center",
-            marginBottom: 20
-          }}
-        >
+    <main style={pageStyle}>
+      <div style={{ maxWidth: 850, margin: "auto" }}>
+
+        <div style={{
+          textAlign: "center",
+          marginBottom: 20
+        }}>
           <h1>{game.game_name}</h1>
 
           <p style={{ color: "#64748b" }}>
             Host Control Centre
           </p>
 
-          <div
-            style={{
-              display: "inline-block",
-              padding: "7px 13px",
-              borderRadius: 20,
-              background: "#eff6ff",
-              color: "#1d4ed8",
-              fontWeight: "bold"
-            }}
-          >
-            GAME CODE: {game.game_code}
+          <div style={{
+            fontSize: 28,
+            fontWeight: "bold"
+          }}>
+            {game.game_code}
           </div>
-        </header>
+        </div>
 
-        <section style={card}>
+        <section style={cardStyle}>
           <h2>Game Details</h2>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit,minmax(170px,1fr))",
-              gap: 10
-            }}
-          >
-            <Info
+          <div style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit,minmax(170px,1fr))",
+            gap: 10
+          }}>
+            <InfoBox
               title="Game Name"
               value={game.game_name}
             />
 
-            <Info
+            <InfoBox
               title="Date"
               value={game.game_date || "-"}
             />
 
-            <Info
+            <InfoBox
               title="Time"
               value={game.game_time || "-"}
             />
 
-            <Info
+            <InfoBox
+              title="Status"
+              value={String(
+                game.status || "upcoming"
+              ).toUpperCase()}
+            />
+
+            <InfoBox
               title="Ticket Price"
               value={`₹${game.ticket_price || 0}`}
             />
 
-            <Info
+            <InfoBox
               title="Ticket Limit"
               value={game.ticket_limit || 0}
             />
 
-            <Info
+            <InfoBox
               title="Theme"
-              value={game.theme || "Classic"}
+              value={game.theme || "-"}
             />
 
-            <Info
-              title="Status"
-              value={String(status).toUpperCase()}
+            <InfoBox
+              title="Call Interval"
+              value={`${game.call_interval_seconds || 5}s`}
             />
           </div>
         </section>
 
-        <section style={card}>
+        <section style={cardStyle}>
           <h2>Share Game</h2>
 
           <input
             readOnly
-            value={invite}
-            style={input}
+            value={inviteUrl}
+            style={{
+              ...inputStyle,
+              marginBottom: 10
+            }}
           />
 
-          <div
+          <button
+            onClick={copyLink}
+            style={secondaryButton}
+          >
+            Copy Link
+          </button>
+
+          <button
+            onClick={shareGame}
             style={{
-              display: "flex",
-              gap: 8,
-              marginTop: 10,
-              flexWrap: "wrap"
+              ...primaryButton,
+              marginLeft: 8
             }}
           >
-            <button
-              onClick={copyLink}
-              style={whiteButton}
-            >
-              {copied
-                ? "✓ Copied"
-                : "Copy Player Link"}
-            </button>
+            Share Game
+          </button>
 
-            <button
-              onClick={() =>
-                navigator.share
-                  ? navigator.share({
-                      title:
-                        game.game_name,
-                      text:
-                        `Join ${game.game_name}`,
-                      url: invite
-                    })
-                  : copyLink()
-              }
-              style={blueButton}
-            >
-              Share Game
-            </button>
-          </div>
+          {message && (
+            <p style={{
+              color: "#16a34a",
+              fontWeight: "bold"
+            }}>
+              {message}
+            </p>
+          )}
         </section>
 
-        <section style={card}>
-          <h2>Current Number</h2>
-
-          <div
-            style={{
-              fontSize: 70,
-              fontWeight: "bold",
-              textAlign: "center",
-              padding: 15
-            }}
-          >
-            {current || "-"}
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              justifyContent: "center",
-              flexWrap: "wrap"
-            }}
-          >
-            {status !== "live" ? (
-              <button
-                onClick={() =>
-                  updateStatus("live")
-                }
-                style={blueButton}
-              >
-                START GAME
-              </button>
-            ) : (
-              <button
-                onClick={callNumber}
-                style={blueButton}
-              >
-                CALL NEXT NUMBER
-              </button>
-            )}
-
-            <button
-              onClick={() =>
-                updateStatus("ended")
-              }
-              style={whiteButton}
-            >
-              END GAME
-            </button>
-          </div>
-        </section>
-
-        <section style={card}>
-          <h2>Numbers 1–90</h2>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(10,1fr)",
-              gap: 5
-            }}
-          >
-            {Array.from(
-              { length: 90 },
-              (_, i) => i + 1
-            ).map((n) => (
-              <div
-                key={n}
-                style={{
-                  padding: "8px 2px",
-                  textAlign: "center",
-                  borderRadius: 6,
-                  background:
-                    called.includes(n)
-                      ? "#2563eb"
-                      : "#f1f5f9",
-                  color:
-                    called.includes(n)
-                      ? "#fff"
-                      : "#111827",
-                  fontWeight: "bold"
-                }}
-              >
-                {n}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section style={card}>
-          <h2>Called Numbers</h2>
-
-          <p>
-            {called.length
-              ? called.join(" • ")
-              : "No numbers called yet."}
-          </p>
-        </section>
-
-        <section style={card}>
+        <section style={cardStyle}>
           <h2>Ticket Bookings</h2>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(3,1fr)",
-              gap: 8
-            }}
-          >
-            <Info
+          <div style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(3,1fr)",
+            gap: 8
+          }}>
+            <StatusBox
               title="Pending"
-              value={
-                bookings.filter(
-                  (b) =>
-                    b.status === "pending"
-                ).length
-              }
+              value={bookings.filter(
+                b => b.status === "pending"
+              ).length}
             />
 
-            <Info
+            <StatusBox
               title="Approved"
-              value={
-                bookings.filter(
-                  (b) =>
-                    b.status === "approved"
-                ).length
-              }
+              value={bookings.filter(
+                b => b.status === "approved"
+              ).length}
             />
 
-            <Info
+            <StatusBox
               title="Rejected"
-              value={
-                bookings.filter(
-                  (b) =>
-                    b.status === "rejected"
-                ).length
-              }
+              value={bookings.filter(
+                b => b.status === "rejected"
+              ).length}
             />
           </div>
-
-          {bookings.map((b) => (
-            <div
-              key={b.id}
-              style={{
-                marginTop: 10,
-                padding: 12,
-                border:
-                  "1px solid #e5e7eb",
-                borderRadius: 9
-              }}
-            >
-              <b>
-                {b.player_name ||
-                  "Player"}
-              </b>
-
-              <div>
-                Ticket #{b.ticket_number}
-              </div>
-
-              <div>
-                Status:{" "}
-                {b.status || "pending"}
-              </div>
-            </div>
-          ))}
         </section>
 
-        <section style={card}>
-          <h2>Prize Winners</h2>
+        <section style={cardStyle}>
+          <h2>Player Requests</h2>
 
-          {prizes.map((p, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                justifyContent:
-                  "space-between",
-                padding: "11px 0",
-                borderBottom:
-                  "1px solid #e5e7eb"
-              }}
-            >
-              <b>{p.name}</b>
-              <span>₹{p.amount}</span>
-            </div>
-          ))}
+          {loadingBookings ? (
+            <p>Loading bookings...</p>
+          ) : bookings.length === 0 ? (
+            <p style={{ color: "#64748b" }}>
+              No ticket booking requests yet.
+            </p>
+          ) : (
+            bookings.map(booking => (
+              <div
+                key={booking.id}
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 12,
+                  padding: 15,
+                  marginBottom: 12
+                }}
+              >
+                <b>
+                  {booking.player_name ||
+                    "Player"}
+                </b>
+
+                <p>
+                  Tickets:{" "}
+                  <b>
+                    {Array.isArray(
+                      booking.ticket_numbers
+                    )
+                      ? booking.ticket_numbers
+                          .map(n => `#${n}`)
+                          .join(", ")
+                      : booking.ticket_number
+                        ? `#${booking.ticket_number}`
+                        : "-"}
+                  </b>
+                </p>
+
+                <p>
+                  Status:{" "}
+                  <b>
+                    {String(
+                      booking.status ||
+                        "pending"
+                    ).toUpperCase()}
+                  </b>
+                </p>
+
+                {booking.status ===
+                  "pending" && (
+                  <div style={{
+                    display: "flex",
+                    gap: 8
+                  }}>
+                    <button
+                      onClick={() =>
+                        updateBooking(
+                          booking.id,
+                          "approved"
+                        )
+                      }
+                      style={primaryButton}
+                    >
+                      Approve
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        updateBooking(
+                          booking.id,
+                          "rejected"
+                        )
+                      }
+                      style={secondaryButton}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </section>
+
+        <section style={cardStyle}>
+          <h2>Prizes</h2>
+
+          {prizes.length === 0 ? (
+            <p>No prizes selected.</p>
+          ) : (
+            prizes.map((p, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  padding: "10px 0",
+                  borderBottom:
+                    "1px solid #e5e7eb"
+                }}
+              >
+                <b>{p.name}</b>
+                <span>₹{p.amount}</span>
+              </div>
+            ))
+          )}
+        </section>
+
+        <section style={cardStyle}>
+          <h2>Game Control</h2>
+
+          <button
+            disabled
+            style={{
+              ...primaryButton,
+              opacity: .5
+            }}
+          >
+            START GAME
+          </button>
+
+          <button
+            disabled
+            style={{
+              ...secondaryButton,
+              marginLeft: 8,
+              opacity: .5
+            }}
+          >
+            END GAME
+          </button>
         </section>
 
         <button
           onClick={onNewGame}
           style={{
-            ...whiteButton,
+            ...secondaryButton,
             width: "100%"
           }}
         >
-          CREATE ANOTHER GAME
+          Create Another Game
         </button>
+
       </div>
     </main>
   );
@@ -978,84 +1038,103 @@ function HostControlPage({ game, onNewGame }) {
 ========================================================= */
 
 function PlayerBookingPage({ game }) {
-  const limit = Math.max(
-    1,
-    Number(game.ticket_limit || 100)
+  const limit = Math.min(
+    Number(game.ticket_limit) || 100,
+    100
   );
 
   const [selected, setSelected] =
-    useState(1);
+    useState([]);
 
-  const [name, setName] =
-    useState("");
-
-  const [message, setMessage] =
+  const [playerName, setPlayerName] =
     useState("");
 
   const [booking, setBooking] =
     useState(false);
 
-  const tickets = useMemo(
-    () =>
-      Array.from(
-        { length: limit },
-        (_, i) => ({
-          number: i + 1,
-          grid: makeTicket(i + 1)
-        })
-      ),
-    [limit]
-  );
+  const [success, setSuccess] =
+    useState("");
 
-  function selectTicket(n) {
-    setSelected(n);
+  const [error, setError] =
+    useState("");
 
-    document
-      .getElementById(
-        `ticket-${n}`
-      )
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
+  const tickets = useMemo(() => {
+    return Array.from(
+      { length: limit },
+      (_, i) => ({
+        number: i + 1,
+        grid: makeTicket(
+          game.game_code,
+          i + 1
+        )
+      })
+    );
+  }, [game.game_code, limit]);
+
+  function toggleTicket(number) {
+    setSelected(current =>
+      current.includes(number)
+        ? current.filter(n => n !== number)
+        : [...current, number].sort(
+            (a, b) => a - b
+          )
+    );
   }
 
-  async function bookTicket(n) {
-    const playerName =
-      name.trim();
+  async function bookTickets() {
+    if (!playerName.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
 
-    if (!playerName) {
-      setMessage(
-        "Please enter your name."
+    if (!selected.length) {
+      setError(
+        "Please select at least one ticket."
       );
       return;
     }
 
     setBooking(true);
-    setMessage("");
+    setError("");
+    setSuccess("");
 
     try {
+      /*
+        ONE booking request.
+        All selected ticket numbers
+        are stored together.
+      */
+
       const { error } =
         await supabase
-          .from("bookings")
+          .from("booking_requests")
           .insert({
             game_id: game.id,
-            ticket_number: n,
-            player_name: playerName,
+            player_name:
+              playerName.trim(),
+            ticket_numbers:
+              selected,
             status: "pending"
           });
 
       if (error) throw error;
 
-      setMessage(
-        `Ticket #${n} booking sent to the host for approval.`
+      setSuccess(
+        `Booking request sent for ${selected.length} ticket${
+          selected.length > 1 ? "s" : ""
+        }: ${selected
+          .map(n => `#${n}`)
+          .join(", ")}`
       );
+
+      setSelected([]);
+
     } catch (err) {
       console.error(err);
 
-      setMessage(
+      setError(
         err?.message ||
-          "Booking could not be submitted."
+        "Could not send booking request."
       );
     } finally {
       setBooking(false);
@@ -1063,57 +1142,55 @@ function PlayerBookingPage({ game }) {
   }
 
   return (
-    <main style={page}>
-      <div style={wrap}>
-        <header
-          style={{
-            textAlign: "center",
-            marginBottom: 20
-          }}
-        >
+    <main style={pageStyle}>
+      <div style={{
+        maxWidth: 900,
+        margin: "auto"
+      }}>
+
+        <div style={{
+          textAlign: "center",
+          marginBottom: 20
+        }}>
           <h1>TAMBOLA LIVE</h1>
 
-          <h2>
-            {game.game_name}
-          </h2>
-
-          <p style={{ color: "#64748b" }}>
-            Player Ticket Booking
+          <p style={{
+            color: "#64748b"
+          }}>
+            Player Booking
           </p>
-        </header>
+        </div>
 
-        <section style={card}>
-          <h2>Game Details</h2>
+        <section style={cardStyle}>
+          <h2>{game.game_name}</h2>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit,minmax(160px,1fr))",
-              gap: 10
-            }}
-          >
-            <Info
+          <div style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit,minmax(170px,1fr))",
+            gap: 10
+          }}>
+            <InfoBox
               title="Game Code"
               value={game.game_code}
             />
 
-            <Info
+            <InfoBox
               title="Date"
               value={game.game_date || "-"}
             />
 
-            <Info
+            <InfoBox
               title="Time"
               value={game.game_time || "-"}
             />
 
-            <Info
+            <InfoBox
               title="Ticket Price"
               value={`₹${game.ticket_price || 0}`}
             />
 
-            <Info
+            <InfoBox
               title="Status"
               value={String(
                 game.status || "upcoming"
@@ -1123,119 +1200,187 @@ function PlayerBookingPage({ game }) {
         </section>
 
         {/* =================================================
-            ALL TICKET NUMBERS AT TOP
+            ALL TICKET NUMBERS
         ================================================= */}
 
-        <section style={card}>
-          <h2>Select Ticket</h2>
+        <section style={cardStyle}>
+          <h2>Select Tickets</h2>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fill,minmax(65px,1fr))",
-              gap: 8
-            }}
-          >
-            {Array.from(
-              { length: limit },
-              (_, i) => i + 1
-            ).map((n) => (
-              <button
-                key={n}
-                onClick={() =>
-                  selectTicket(n)
-                }
-                style={{
-                  padding: "12px 5px",
-                  borderRadius: 9,
-                  border:
-                    selected === n
-                      ? "2px solid #2563eb"
-                      : "1px solid #cbd5e1",
-                  background:
-                    selected === n
-                      ? "#2563eb"
-                      : "#fff",
-                  color:
-                    selected === n
-                      ? "#fff"
-                      : "#111827",
-                  fontWeight: "bold",
-                  fontSize: 15
-                }}
-              >
-                #{n}
-              </button>
-            ))}
+          <p style={{
+            color: "#64748b"
+          }}>
+            You can select multiple tickets.
+            Selected tickets are highlighted.
+          </p>
+
+          <div style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(5,1fr)",
+            gap: 9
+          }}>
+            {tickets.map(ticket => {
+              const isSelected =
+                selected.includes(
+                  ticket.number
+                );
+
+              return (
+                <button
+                  key={ticket.number}
+                  onClick={() =>
+                    toggleTicket(
+                      ticket.number
+                    )
+                  }
+                  style={{
+                    padding: "13px 5px",
+                    borderRadius: 9,
+                    border:
+                      isSelected
+                        ? "2px solid #2563eb"
+                        : "1px solid #cbd5e1",
+                    background:
+                      isSelected
+                        ? "#2563eb"
+                        : "#fff",
+                    color:
+                      isSelected
+                        ? "#fff"
+                        : "#111827",
+                    fontWeight: "bold",
+                    fontSize: 15
+                  }}
+                >
+                  #{ticket.number}
+                </button>
+              );
+            })}
           </div>
         </section>
 
         {/* =================================================
-            ALL ACTUAL 3x9 TICKETS BELOW
+            SELECTED TICKETS
         ================================================= */}
 
-        <section style={card}>
-          <h2>
-            All Tambola Tickets
-          </h2>
+        {selected.length > 0 && (
+          <section style={cardStyle}>
+            <h2>
+              Selected Tickets (
+              {selected.length})
+            </h2>
 
-          <p
-            style={{
-              color: "#64748b"
-            }}
-          >
-            Select a ticket number above,
-            or scroll through all tickets
-            below.
-          </p>
+            {selected.map(number => {
+              const ticket =
+                tickets[number - 1];
 
-          {tickets.map((ticket) => (
-            <TicketCard
-              key={ticket.number}
-              ticket={ticket}
-              selected={
-                selected ===
-                ticket.number
-              }
-              playerName={name}
-              setPlayerName={setName}
-              onSelect={() =>
-                selectTicket(
-                  ticket.number
-                )
-              }
-              onBook={() =>
-                bookTicket(
-                  ticket.number
-                )
-              }
-              booking={booking}
-            />
-          ))}
-        </section>
-
-        {message && (
-          <section
-            style={{
-              ...card,
-              background:
-                message.includes(
-                  "sent"
-                )
-                  ? "#ecfdf5"
-                  : "#fff7ed",
-              color:
-                message.includes(
-                  "sent"
-                )
-                  ? "#047857"
-                  : "#9a3412"
-            }}
-          >
-            <b>{message}</b>
+              return (
+                <TicketCard
+                  key={number}
+                  number={number}
+                  grid={ticket.grid}
+                  selected
+                  onRemove={() =>
+                    toggleTicket(number)
+                  }
+                />
+              );
+            })}
           </section>
         )}
+
+        {/* =================================================
+            PLAYER DETAILS
+        ================================================= */}
+
+        <section style={cardStyle}>
+          <h2>Booking Details</h2>
+
+          <label>
+            <b>Player Name</b>
+          </label>
+
+          <input
+            value={playerName}
+            onChange={e =>
+              setPlayerName(e.target.value)
+            }
+            placeholder="Enter your name"
+            style={{
+              ...inputStyle,
+              marginTop: 8
+            }}
+          />
+
+          {selected.length > 0 && (
+            <p>
+              Selected:{" "}
+              <b>
+                {selected
+                  .map(n => `#${n}`)
+                  .join(", ")}
+              </b>
+            </p>
+          )}
+
+          {error && (
+            <div style={{
+              marginTop: 12,
+              padding: 12,
+              borderRadius: 9,
+              background: "#fef2f2",
+              color: "#b91c1c"
+            }}>
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div style={{
+              marginTop: 12,
+              padding: 12,
+              borderRadius: 9,
+              background: "#ecfdf5",
+              color: "#047857",
+              fontWeight: "bold"
+            }}>
+              {success}
+            </div>
+          )}
+
+          <button
+            onClick={bookTickets}
+            disabled={
+              booking ||
+              selected.length === 0
+            }
+            style={{
+              ...primaryButton,
+              width: "100%",
+              marginTop: 15,
+              fontSize: 17,
+              opacity:
+                booking ||
+                selected.length === 0
+                  ? .55
+                  : 1
+            }}
+          >
+            {booking
+              ? "SENDING REQUEST..."
+              : "BOOK SELECTED TICKETS"}
+          </button>
+
+          <p style={{
+            color: "#64748b",
+            fontSize: 13,
+            textAlign: "center"
+          }}>
+            Your booking will remain
+            pending until the host approves it.
+          </p>
+        </section>
+
       </div>
     </main>
   );
@@ -1246,166 +1391,146 @@ function PlayerBookingPage({ game }) {
 ========================================================= */
 
 function TicketCard({
-  ticket,
+  number,
+  grid,
   selected,
-  playerName,
-  setPlayerName,
-  onSelect,
-  onBook,
-  booking
+  onRemove
 }) {
   return (
-    <div
-      id={`ticket-${ticket.number}`}
-      style={{
-        ...card,
-        border: selected
-          ? "3px solid #2563eb"
-          : "1px solid #e5e7eb"
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center",
-          marginBottom: 14
-        }}
-      >
+    <div style={{
+      border: selected
+        ? "3px solid #2563eb"
+        : "1px solid #cbd5e1",
+      borderRadius: 14,
+      padding: 15,
+      marginBottom: 16,
+      background: "#fff"
+    }}>
+
+      <div style={{
+        display: "flex",
+        justifyContent:
+          "space-between",
+        alignItems: "center",
+        marginBottom: 12
+      }}>
         <h2 style={{ margin: 0 }}>
-          Ticket #{ticket.number}
+          Ticket #{number}
         </h2>
 
         <button
-          onClick={onSelect}
-          style={
-            selected
-              ? blueButton
-              : whiteButton
-          }
+          onClick={onRemove}
+          style={{
+            ...secondaryButton,
+            color: "#2563eb"
+          }}
         >
-          {selected
-            ? "Selected"
-            : "Select"}
+          Selected ✓
         </button>
       </div>
 
-      {/* ACTUAL 3 x 9 TAMBOLA TICKET */}
-
-      <div
-        style={{
-          overflowX: "auto"
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(9,1fr)",
-            minWidth: 450,
-            border:
-              "2px solid #111827",
-            borderRadius: 8,
-            overflow: "hidden"
-          }}
-        >
-          {ticket.grid.map(
-            (row, r) =>
-              row.map((num, c) => (
-                <div
-                  key={`${r}-${c}`}
-                  style={{
-                    minHeight: 48,
-                    display: "flex",
-                    alignItems:
-                      "center",
-                    justifyContent:
-                      "center",
-                    border:
-                      "1px solid #cbd5e1",
-                    background:
-                      num
-                        ? "#fff"
-                        : "#f1f5f9",
-                    fontSize: 18,
-                    fontWeight:
-                      num
-                        ? "bold"
-                        : "normal"
-                  }}
-                >
-                  {num || ""}
-                </div>
-              ))
-          )}
-        </div>
-      </div>
-
-      <div style={{ marginTop: 18 }}>
-        <label>
-          <b>Player Name</b>
-        </label>
-
-        <input
-          value={playerName}
-          onChange={(e) =>
-            setPlayerName(
-              e.target.value
-            )
-          }
-          placeholder="Enter your name"
-          style={{
-            ...input,
-            marginTop: 7
-          }}
-        />
-
-        <button
-          onClick={onBook}
-          disabled={booking}
-          style={{
-            ...blueButton,
-            width: "100%",
-            marginTop: 10,
-            opacity: booking ? 0.6 : 1
-          }}
-        >
-          {booking
-            ? "BOOKING..."
-            : `BOOK TICKET #${ticket.number}`}
-        </button>
-      </div>
+      <TambolaGrid grid={grid} />
     </div>
   );
 }
 
 /* =========================================================
-   SMALL COMPONENT
+   3x9 TAMBOLA GRID
 ========================================================= */
 
-function Info({ title, value }) {
+function TambolaGrid({ grid }) {
   return (
-    <div
-      style={{
-        padding: 13,
-        border:
-          "1px solid #e5e7eb",
-        borderRadius: 10,
-        background: "#f8fafc"
-      }}
-    >
-      <div
-        style={{
-          color: "#64748b",
-          fontSize: 13,
-          marginBottom: 5
-        }}
-      >
+    <div style={{
+      border: "2px solid #111827",
+      borderRadius: 8,
+      overflow: "hidden",
+      display: "grid",
+      gridTemplateColumns:
+        "repeat(9,1fr)",
+      width: "100%",
+      boxSizing: "border-box"
+    }}>
+      {grid.flatMap((row, r) =>
+        row.map((value, c) => (
+          <div
+            key={`${r}-${c}`}
+            style={{
+              height: 48,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRight:
+                c === 8
+                  ? "none"
+                  : "1px solid #94a3b8",
+              borderBottom:
+                r === 2
+                  ? "none"
+                  : "1px solid #94a3b8",
+              background:
+                value
+                  ? "#fff"
+                  : "#f1f5f9",
+              fontWeight: "bold",
+              fontSize: 18
+            }}
+          >
+            {value || ""}
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   SMALL COMPONENTS
+========================================================= */
+
+function InfoBox({ title, value }) {
+  return (
+    <div style={{
+      padding: 14,
+      border: "1px solid #e5e7eb",
+      borderRadius: 10,
+      background: "#f8fafc"
+    }}>
+      <div style={{
+        color: "#64748b",
+        fontSize: 13,
+        marginBottom: 5
+      }}>
         {title}
       </div>
 
       <b>{value}</b>
+    </div>
+  );
+}
+
+function StatusBox({ title, value }) {
+  return (
+    <div style={{
+      padding: 14,
+      textAlign: "center",
+      border: "1px solid #e5e7eb",
+      borderRadius: 10,
+      background: "#f8fafc"
+    }}>
+      <div style={{
+        color: "#64748b",
+        fontSize: 13
+      }}>
+        {title}
+      </div>
+
+      <div style={{
+        fontSize: 24,
+        fontWeight: "bold",
+        marginTop: 5
+      }}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -1415,116 +1540,143 @@ function Info({ title, value }) {
 ========================================================= */
 
 function App() {
-  /*
-    VERY IMPORTANT:
-
-    ?game=XXXXXX ALWAYS means PLAYER.
-
-    No ?game= means HOST CREATE PAGE.
-
-    We DO NOT read localStorage here.
-    Therefore refreshing "/" can NEVER
-    accidentally send the user to the
-    old Host Control Centre.
-  */
-
-  const gameCode =
-    getGameCodeFromUrl();
-
   const [hostGame, setHostGame] =
     useState(null);
 
   const [playerGame, setPlayerGame] =
     useState(null);
 
-  const [loadingPlayer, setLoadingPlayer] =
-    useState(Boolean(gameCode));
+  const [loading, setLoading] =
+    useState(true);
 
-  const [playerError, setPlayerError] =
+  const [error, setError] =
     useState("");
 
-  /* PLAYER ROUTE */
-
   useEffect(() => {
-    if (!gameCode) {
-      setLoadingPlayer(false);
-      return;
-    }
+    async function start() {
+      /*
+        IMPORTANT:
+        Check ?game FIRST.
 
-    let active = true;
+        This prevents a player link from
+        opening the host dashboard because
+        a host game exists in localStorage.
+      */
 
-    async function loadGame() {
-      setLoadingPlayer(true);
-      setPlayerError("");
+      const code =
+        getGameCodeFromUrl();
 
-      const { data, error } =
-        await supabase
-          .from("games")
-          .select("*")
-          .eq("game_code", gameCode)
-          .maybeSingle();
+      if (code) {
+        try {
+          const { data, error } =
+            await supabase
+              .from("games")
+              .select("*")
+              .eq(
+                "game_code",
+                code.toUpperCase()
+              )
+              .maybeSingle();
 
-      if (!active) return;
+          if (error) throw error;
 
-      if (error) {
-        setPlayerError(
-          error.message
-        );
-      } else if (!data) {
-        setPlayerError(
-          "Game not found."
-        );
-      } else {
-        setPlayerGame(data);
+          if (!data) {
+            setError(
+              "Game not found."
+            );
+          } else {
+            setPlayerGame(data);
+          }
+
+        } catch (err) {
+          console.error(err);
+          setError(
+            "Could not load this game."
+          );
+        }
+
+        setLoading(false);
+        return;
       }
 
-      setLoadingPlayer(false);
+      /*
+        No ?game= means this is the
+        host side.
+      */
+
+      const saved =
+        loadHostGame();
+
+      if (saved) {
+        setHostGame(saved);
+      }
+
+      setLoading(false);
     }
 
-    loadGame();
+    start();
+  }, []);
 
-    return () => {
-      active = false;
-    };
-  }, [gameCode]);
+  function handleGameCreated(game) {
+    saveHostGame(game);
+    setHostGame(game);
+  }
 
-  /* =======================================================
-     PLAYER PAGE
-  ======================================================= */
+  function handleNewGame() {
+    saveHostGame(null);
+    setHostGame(null);
 
-  if (gameCode) {
-    if (loadingPlayer) {
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname
+    );
+  }
+
+  if (loading) {
+    return (
+      <main style={{
+        ...pageStyle,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center"
+      }}>
+        <h2>Loading...</h2>
+      </main>
+    );
+  }
+
+  /*
+    PLAYER HAS PRIORITY WHEN ?game EXISTS
+  */
+
+  if (getGameCodeFromUrl()) {
+    if (error) {
       return (
-        <main
-          style={{
-            ...page,
-            display: "flex",
-            justifyContent:
-              "center",
-            alignItems:
-              "center"
-          }}
-        >
-          <h2>
-            Loading game...
-          </h2>
+        <main style={pageStyle}>
+          <div style={{
+            ...cardStyle,
+            maxWidth: 600,
+            margin: "50px auto",
+            textAlign: "center"
+          }}>
+            <h2>Game Not Found</h2>
+            <p>{error}</p>
+          </div>
         </main>
       );
     }
 
-    if (playerError) {
+    if (!playerGame) {
       return (
-        <main style={page}>
-          <div style={wrap}>
-            <section style={card}>
-              <h2>
-                Game unavailable
-              </h2>
-
-              <p>
-                {playerError}
-              </p>
-            </section>
+        <main style={pageStyle}>
+          <div style={{
+            ...cardStyle,
+            maxWidth: 600,
+            margin: "50px auto",
+            textAlign: "center"
+          }}>
+            <h2>Loading Game...</h2>
           </div>
         </main>
       );
@@ -1537,25 +1689,23 @@ function App() {
     );
   }
 
-  /* =======================================================
-     HOST ROUTE
-  ======================================================= */
+  /*
+    HOST SIDE
+  */
 
   if (hostGame) {
     return (
       <HostControlPage
         game={hostGame}
-        onNewGame={() =>
-          setHostGame(null)
-        }
+        onNewGame={handleNewGame}
       />
     );
   }
 
   return (
     <CreateGamePage
-      onCreated={(game) =>
-        setHostGame(game)
+      onGameCreated={
+        handleGameCreated
       }
     />
   );
