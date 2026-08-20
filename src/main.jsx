@@ -1,6 +1,7 @@
 import React, {
   useEffect,
   useMemo,
+  useRef,
   useState
 } from "react";
 
@@ -227,6 +228,160 @@ function shuffle(array, random) {
   }
 
   return result;
+}
+
+/* =========================================================
+   AUTOMATIC PRIZE DETECTION
+========================================================= */
+
+function normalizePrizeName(name) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getAutomaticPrizeRule(name) {
+  const normalized = normalizePrizeName(name);
+
+  if (normalized.includes("first five")) {
+    return "first_five";
+  }
+
+  if (normalized.includes("four corners")) {
+    return "four_corners";
+  }
+
+  if (normalized.includes("top line")) {
+    return "top_line";
+  }
+
+  if (normalized.includes("middle line")) {
+    return "middle_line";
+  }
+
+  if (normalized.includes("bottom line")) {
+    return "bottom_line";
+  }
+
+  if (normalized.includes("full house")) {
+    return "full_house";
+  }
+
+  return null;
+}
+
+function getTicketNumbers(grid) {
+  return grid.flatMap((row) =>
+    row.filter((value) => Number.isInteger(value))
+  );
+}
+
+function getTicketRows(grid) {
+  return grid.map((row) =>
+    row.filter((value) => Number.isInteger(value))
+  );
+}
+
+function getTicketCorners(grid) {
+  const corners = [];
+
+  const top = grid[0].filter((value) => Number.isInteger(value));
+  const bottom = grid[2].filter((value) => Number.isInteger(value));
+
+  if (top.length) {
+    corners.push(top[0], top[top.length - 1]);
+  }
+
+  if (bottom.length) {
+    corners.push(bottom[0], bottom[bottom.length - 1]);
+  }
+
+  return [...new Set(corners)];
+}
+
+function ticketQualifiesForPrize(grid, calledNumbers, rule) {
+  const called = new Set(
+    calledNumbers.map((number) => Number(number))
+  );
+
+  const numbers = getTicketNumbers(grid);
+
+  if (rule === "first_five") {
+    return numbers.filter((number) => called.has(number)).length >= 5;
+  }
+
+  if (rule === "four_corners") {
+    const corners = getTicketCorners(grid);
+    return corners.length === 4 && corners.every((number) => called.has(number));
+  }
+
+  if (rule === "top_line") {
+    const row = getTicketRows(grid)[0] || [];
+    return row.length === 5 && row.every((number) => called.has(number));
+  }
+
+  if (rule === "middle_line") {
+    const row = getTicketRows(grid)[1] || [];
+    return row.length === 5 && row.every((number) => called.has(number));
+  }
+
+  if (rule === "bottom_line") {
+    const row = getTicketRows(grid)[2] || [];
+    return row.length === 5 && row.every((number) => called.has(number));
+  }
+
+  if (rule === "full_house") {
+    return numbers.length === 15 && numbers.every((number) => called.has(number));
+  }
+
+  return false;
+}
+
+function findAutomaticPrizeWinners(bookings, gameCode, calledNumbers, rule) {
+  const winners = [];
+
+  const sortedBookings = [...bookings].sort((a, b) => {
+    const aTime = new Date(a.created_at || 0).getTime();
+    const bTime = new Date(b.created_at || 0).getTime();
+
+    if (aTime !== bTime) {
+      return aTime - bTime;
+    }
+
+    return String(a.id || "").localeCompare(String(b.id || ""));
+  });
+
+  sortedBookings.forEach((booking) => {
+    const playerName = String(booking.player_name || "Player").trim() || "Player";
+    const ticketNumbers = Array.isArray(booking.ticket_numbers)
+      ? booking.ticket_numbers
+      : [];
+
+    let qualifies = false;
+
+    for (const ticketNumber of ticketNumbers) {
+      const number = Number(ticketNumber);
+
+      if (!Number.isInteger(number) || number < 1 || number > 100) {
+        continue;
+      }
+
+      const grid = makeTicket(gameCode, number);
+
+      if (ticketQualifiesForPrize(grid, calledNumbers, rule)) {
+        qualifies = true;
+        break;
+      }
+    }
+
+    if (qualifies && !winners.includes(playerName)) {
+      winners.push(playerName);
+    }
+  });
+
+  return winners;
 }
 
 /* =========================================================
@@ -3422,6 +3577,18 @@ function PrizeWinnerColumns({ prizes }) {
           >
             {prize.winner_name || "Winner: —"}
           </div>
+
+          {prize.auto_detected && prize.winner_name && (
+            <div
+              style={{
+                marginTop: 7,
+                fontSize: 12,
+                color: "#047857"
+              }}
+            >
+              ✓ Automatically detected
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -3620,6 +3787,95 @@ function HostControlPage({
         "rejected"
     );
 
+  async function autoDetectPrizeWinners() {
+    if (game.status !== "live" || autoWinnerBusy.current) {
+      return;
+    }
+
+    if (!calledNumbers.length || !accepted.length || !prizes.length) {
+      return;
+    }
+
+    const currentPrizes = Array.isArray(game.selected_prizes)
+      ? game.selected_prizes
+      : [];
+
+    const nextPrizes = currentPrizes.map((prize) => ({ ...prize }));
+    let changed = false;
+
+    currentPrizes.forEach((prize, prizeIndex) => {
+      if (prize.winner_name) {
+        return;
+      }
+
+      const rule = getAutomaticPrizeRule(prize.name);
+
+      // Custom/unknown prize names remain available for manual winner selection.
+      if (!rule) {
+        return;
+      }
+
+      const winners = findAutomaticPrizeWinners(
+        accepted,
+        game.game_code,
+        calledNumbers,
+        rule
+      );
+
+      if (winners.length) {
+        nextPrizes[prizeIndex] = {
+          ...prize,
+          winner_name: winners.join(", "),
+          winner_names: winners,
+          auto_detected: true
+        };
+        changed = true;
+      }
+    });
+
+    if (!changed) {
+      return;
+    }
+
+    autoWinnerBusy.current = true;
+
+    try {
+      const { error } = await supabase
+        .from("games")
+        .update({
+          selected_prizes: nextPrizes
+        })
+        .eq("id", game.id);
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedGame = {
+        ...game,
+        selected_prizes: nextPrizes
+      };
+
+      saveHostGame(updatedGame);
+      onGameUpdated(updatedGame);
+    } catch (err) {
+      console.error("Automatic winner detection failed:", err);
+    } finally {
+      autoWinnerBusy.current = false;
+    }
+  }
+
+  useEffect(() => {
+    autoDetectPrizeWinners();
+  }, [
+    game.status,
+    game.id,
+    game.game_code,
+    game.called_numbers,
+    game.selected_prizes,
+    bookings
+  ]);
+
   async function updatePrizeWinner(prizeIndex, winnerName) {
     if (game.status !== "live") {
       return;
@@ -3633,7 +3889,9 @@ function HostControlPage({
       index === prizeIndex
         ? {
             ...prize,
-            winner_name: winnerName || ""
+            winner_name: winnerName || "",
+            winner_names: winnerName ? [winnerName] : [],
+            auto_detected: false
           }
         : prize
     );
