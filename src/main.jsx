@@ -160,8 +160,6 @@ function Ticket({
     }
   }
 
-  /* Make sure every row has at least five numbers */
-
   for (let r = 0; r < 3; r++) {
 
     let count =
@@ -1369,29 +1367,6 @@ function Booking({ game }) {
     useState(false);
 
 
-  /*
-     IMPORTANT
-
-     The ticket limit is used in BOTH places:
-
-     1. Ticket number buttons
-     2. Actual 3x9 tickets
-
-     Example:
-
-     limit = 10
-
-     numbers:
-     #1 #2 #3 #4 #5 #6 #7 #8 #9 #10
-
-     actual tickets:
-     Ticket #1
-     Ticket #2
-     Ticket #3
-     ...
-     Ticket #10
-  */
-
   const ticketLimit =
     Math.max(
       1,
@@ -1503,17 +1478,6 @@ function Booking({ game }) {
   }
 
 
-  /*
-     CREATE THE ACTUAL TICKETS FIRST.
-
-     This is deliberately separate from
-     the number-button section.
-
-     It guarantees that the actual-ticket
-     section receives one Ticket component
-     for EVERY ticket number.
-  */
-
   const actualTickets =
     ticketNumbers.map(
       (ticketNumber) => (
@@ -1596,10 +1560,6 @@ function Booking({ game }) {
       </h3>
 
 
-      {/* =================================================
-          TICKET NUMBER BUTTONS
-      ================================================= */}
-
       <div
         style={{
           display: "flex",
@@ -1669,10 +1629,6 @@ function Booking({ game }) {
       </div>
 
 
-      {/* =================================================
-          ALL ACTUAL TICKETS
-      ================================================= */}
-
       <h3>
         All Actual 3 × 9 Tambola Tickets
       </h3>
@@ -1691,35 +1647,10 @@ function Booking({ game }) {
         }}
       >
 
-        {/*
-           THIS IS THE IMPORTANT FIX.
-
-           actualTickets already contains
-           one Ticket component for EVERY
-           ticket number.
-
-           If ticket limit = 10:
-
-           Ticket #1
-           Ticket #2
-           Ticket #3
-           Ticket #4
-           Ticket #5
-           Ticket #6
-           Ticket #7
-           Ticket #8
-           Ticket #9
-           Ticket #10
-        */}
-
         {actualTickets}
 
       </div>
 
-
-      {/* =================================================
-          SELECTED TICKETS
-      ================================================= */}
 
       {selected.length > 0 && (
 
@@ -1830,26 +1761,92 @@ function App() {
 
   useEffect(() => {
 
-    const saved =
-      loadGame();
+    async function initializeApp() {
 
-    if (saved) {
+      const saved =
+        loadGame();
 
-      setGame(saved);
+      const gc =
+        getGameCode();
+
+
+      /*
+       ======================================================
+       HOST REFRESH FIX
+       ======================================================
+
+       If the URL contains ?game=XXXXXX AND the saved
+       host game has the SAME game code, this is the host
+       reopening/refreshing the host control centre.
+
+       In that case:
+
+       - Restore the saved host game
+       - Stay on Host Control Centre
+       - DO NOT load the player invitation
+
+       Only load the player invitation when the URL belongs
+       to a different game or when there is no saved host game.
+       ======================================================
+      */
+
+      if (
+        saved &&
+        gc &&
+        saved.game_code?.toUpperCase() ===
+          gc.toUpperCase()
+      ) {
+
+        setGame(saved);
+
+        setPage("host");
+
+        return;
+      }
+
+
+      /*
+       If there is a saved host game and there is NO game
+       parameter, this is also the host page.
+      */
+
+      if (
+        saved &&
+        !gc
+      ) {
+
+        setGame(saved);
+
+        setPage("host");
+
+        return;
+      }
+
+
+      /*
+       Otherwise, if ?game=XXXXXX exists, this is a player
+       opening a shared game link.
+      */
+
+      if (gc) {
+
+        await loadPlayer(gc);
+
+        return;
+      }
+
+
+      /*
+       No saved game and no invitation link:
+       show Create Game.
+      */
 
       setPage("host");
 
     }
 
 
-    const gc =
-      getGameCode();
-
-    if (gc) {
-
-      loadPlayer(gc);
-
-    }
+    initializeApp();
 
   }, []);
 
