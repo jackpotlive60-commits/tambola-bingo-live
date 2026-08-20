@@ -1,69 +1,94 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "./lib/supabase";
 
-const NUMBERS = Array.from(
-  { length: 90 },
-  (_, i) => i + 1
-);
+const NUMBERS = Array.from({ length: 90 }, (_, i) => i + 1);
 
 function getGameCode() {
-  return new URLSearchParams(
-    window.location.search
-  )
+  return new URLSearchParams(window.location.search)
     .get("game")
     ?.trim()
     .toUpperCase();
 }
 
+function normalizeNumbers(value) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map(Number)
+    .filter((number) => Number.isInteger(number) && number >= 1 && number <= 90);
+}
+
 function getCalledNumbers(game) {
-  if (Array.isArray(game?.called_numbers)) {
-    return game.called_numbers.map(Number);
-  }
-
-  if (Array.isArray(game?.calledNumbers)) {
-    return game.calledNumbers.map(Number);
-  }
-
-  return [];
+  return normalizeNumbers(game?.called_numbers);
 }
 
 function getLastNumber(game, calledNumbers) {
-  if (game?.last_number !== null &&
-      game?.last_number !== undefined) {
-    return Number(game.last_number);
+  if (
+    game?.last_number !== null &&
+    game?.last_number !== undefined
+  ) {
+    const number = Number(game.last_number);
+
+    if (Number.isInteger(number) && number >= 1 && number <= 90) {
+      return number;
+    }
   }
 
-  if (game?.lastNumber !== null &&
-      game?.lastNumber !== undefined) {
-    return Number(game.lastNumber);
+  if (calledNumbers.length > 0) {
+    return calledNumbers[calledNumbers.length - 1];
   }
 
-  return calledNumbers.length
-    ? calledNumbers[calledNumbers.length - 1]
-    : null;
+  return null;
+}
+
+function getGameStatus(game) {
+  return String(game?.status || "upcoming").toLowerCase();
+}
+
+function isGameLive(game) {
+  const status = getGameStatus(game);
+
+  return (
+    status === "live" ||
+    status === "started" ||
+    game?.game_started === true ||
+    game?.gameStarted === true
+  );
+}
+
+function isGameFinished(game) {
+  const status = getGameStatus(game);
+
+  return (
+    status === "finished" ||
+    status === "completed" ||
+    status === "ended"
+  );
 }
 
 function LiveGame() {
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const gameCode = useMemo(
-    () => getGameCode(),
-    []
-  );
+  const gameCode = useMemo(() => getGameCode(), []);
 
-  async function loadGame() {
+  async function loadGame(showRefreshing = false) {
     if (!gameCode) {
-      setError("No game code was found.");
+      setError("No game code was found in the URL.");
       setLoading(false);
       return;
     }
 
+    if (showRefreshing) {
+      setRefreshing(true);
+    }
+
     const {
       data,
-      error: supabaseError
+      error: supabaseError,
     } = await supabase
       .from("games")
       .select("*")
@@ -71,42 +96,38 @@ function LiveGame() {
       .maybeSingle();
 
     if (supabaseError) {
-      console.error(
-        "Live game load error:",
-        supabaseError
-      );
+      console.error("Live game load error:", supabaseError);
 
       setError(
-        supabaseError.message ||
-        "Could not load the game."
+        supabaseError.message || "Could not load the game."
       );
 
       setLoading(false);
+      setRefreshing(false);
       return;
     }
 
     if (!data) {
-      setError(
-        `Game ${gameCode} was not found.`
-      );
-
+      setGame(null);
+      setError(`Game ${gameCode} was not found.`);
       setLoading(false);
+      setRefreshing(false);
       return;
     }
 
     setGame(data);
-    setLastUpdated(new Date());
-    setLoading(false);
     setError("");
+    setLoading(false);
+    setRefreshing(false);
+    setLastUpdated(new Date());
   }
 
   useEffect(() => {
     loadGame();
 
-    const interval = setInterval(
-      loadGame,
-      2000
-    );
+    const interval = setInterval(() => {
+      loadGame(true);
+    }, 2000);
 
     return () => {
       clearInterval(interval);
@@ -117,16 +138,14 @@ function LiveGame() {
     return (
       <main style={styles.page}>
         <div style={styles.centerCard}>
-          <div style={styles.spinner}>
-            ●
-          </div>
+          <div style={styles.spinner}>●</div>
 
           <h2 style={styles.title}>
             Loading Live Game
           </h2>
 
           <p style={styles.muted}>
-            Please wait...
+            Connecting to the game...
           </p>
         </div>
       </main>
@@ -137,9 +156,7 @@ function LiveGame() {
     return (
       <main style={styles.page}>
         <div style={styles.errorCard}>
-          <div style={styles.errorIcon}>
-            !
-          </div>
+          <div style={styles.errorIcon}>!</div>
 
           <h2 style={styles.title}>
             Live Game Unavailable
@@ -151,7 +168,7 @@ function LiveGame() {
 
           <button
             type="button"
-            onClick={loadGame}
+            onClick={() => loadGame(true)}
             style={styles.primaryButton}
           >
             TRY AGAIN
@@ -165,37 +182,23 @@ function LiveGame() {
     return null;
   }
 
-  const calledNumbers =
-    getCalledNumbers(game);
+  const calledNumbers = getCalledNumbers(game);
+  const calledSet = new Set(calledNumbers);
 
-  const calledSet =
-    new Set(calledNumbers);
+  const lastNumber = getLastNumber(
+    game,
+    calledNumbers
+  );
 
-  const lastNumber =
-    getLastNumber(
-      game,
-      calledNumbers
-    );
-
-  const status =
-    String(
-      game.status || "upcoming"
-    ).toLowerCase();
-
-  const isLive =
-    status === "live" ||
-    game.gameStarted === true ||
-    game.game_started === true;
-
-  const isFinished =
-    status === "finished" ||
-    status === "completed" ||
-    status === "ended";
+  const live = isGameLive(game);
+  const finished = isGameFinished(game);
 
   return (
     <main style={styles.page}>
 
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <header style={styles.header}>
 
@@ -208,16 +211,19 @@ function LiveGame() {
           </div>
 
           <h1 style={styles.gameName}>
-            {game.game_name ||
-              "TambolaLive"}
+            {game.game_name || "TambolaLive"}
           </h1>
+
+          <div style={styles.gameCode}>
+            GAME CODE: {game.game_code || gameCode}
+          </div>
         </div>
 
         <div
           style={
-            isFinished
+            finished
               ? styles.statusFinished
-              : isLive
+              : live
                 ? styles.statusLive
                 : styles.statusWaiting
           }
@@ -226,9 +232,9 @@ function LiveGame() {
             ●
           </span>
 
-          {isFinished
+          {finished
             ? "GAME ENDED"
-            : isLive
+            : live
               ? "LIVE NOW"
               : "WAITING"}
         </div>
@@ -236,7 +242,9 @@ function LiveGame() {
       </header>
 
 
-      {/* GAME INFORMATION */}
+      {/* =====================================================
+          GAME INFORMATION
+      ===================================================== */}
 
       <section style={styles.infoGrid}>
 
@@ -266,7 +274,7 @@ function LiveGame() {
           </span>
 
           <strong>
-            ₹{game.ticket_price || 0}
+            ₹{game.ticket_price ?? 0}
           </strong>
         </div>
 
@@ -283,10 +291,11 @@ function LiveGame() {
       </section>
 
 
-      {/* WAITING */}
+      {/* =====================================================
+          WAITING
+      ===================================================== */}
 
-      {!isLive &&
-        !isFinished && (
+      {!live && !finished && (
 
         <section style={styles.waitingCard}>
 
@@ -299,16 +308,13 @@ function LiveGame() {
           </h2>
 
           <p style={styles.muted}>
-            You are in the game.
-            Please wait for the host
-            to start calling numbers.
+            You are connected to the game.
+            <br />
+            Please wait for the host to start calling numbers.
           </p>
 
           <div style={styles.liveIndicator}>
-            <span>
-              ●
-            </span>
-
+            <span>●</span>
             Waiting for host
           </div>
 
@@ -317,11 +323,15 @@ function LiveGame() {
       )}
 
 
-      {/* LAST NUMBER */}
+      {/* =====================================================
+          LIVE GAME
+      ===================================================== */}
 
-      {isLive && (
+      {live && (
 
         <section style={styles.liveSection}>
+
+          {/* LIVE HEADER */}
 
           <div style={styles.liveHeading}>
 
@@ -336,13 +346,19 @@ function LiveGame() {
             </div>
 
             <div style={styles.updated}>
-              {lastUpdated
-                ? "Updating automatically"
-                : ""}
+              {refreshing
+                ? "Updating..."
+                : lastUpdated
+                  ? `Updated ${lastUpdated.toLocaleTimeString()}`
+                  : ""}
             </div>
 
           </div>
 
+
+          {/* =================================================
+              CURRENT NUMBER
+          ================================================= */}
 
           <div style={styles.numberStage}>
 
@@ -355,15 +371,15 @@ function LiveGame() {
             </div>
 
             <div style={styles.calledCount}>
-              {calledNumbers.length}
-              {" "}
-              numbers called
+              {calledNumbers.length} numbers called
             </div>
 
           </div>
 
 
-          {/* NUMBER BOARD */}
+          {/* =================================================
+              NUMBER BOARD
+          ================================================= */}
 
           <div style={styles.boardCard}>
 
@@ -390,22 +406,22 @@ function LiveGame() {
 
               {NUMBERS.map((number) => {
 
-                const called =
-                  calledSet.has(number);
+                const called = calledSet.has(number);
+                const isLast = lastNumber === number;
 
-                const isLast =
-                  lastNumber === number;
+                let numberStyle =
+                  styles.numberWaiting;
+
+                if (isLast) {
+                  numberStyle = styles.numberLast;
+                } else if (called) {
+                  numberStyle = styles.numberCalled;
+                }
 
                 return (
                   <div
                     key={number}
-                    style={
-                      isLast
-                        ? styles.numberLast
-                        : called
-                          ? styles.numberCalled
-                          : styles.numberWaiting
-                    }
+                    style={numberStyle}
                   >
                     {number}
                   </div>
@@ -417,19 +433,36 @@ function LiveGame() {
           </div>
 
 
-          {/* CALL HISTORY */}
+          {/* =================================================
+              CALL HISTORY
+          ================================================= */}
 
           <div style={styles.historyCard}>
 
-            <h2 style={styles.boardTitle}>
-              Called Numbers
-            </h2>
+            <div style={styles.historyHeader}>
+
+              <div>
+                <h2 style={styles.boardTitle}>
+                  Called Numbers
+                </h2>
+
+                <p style={styles.mutedSmall}>
+                  Most recent number appears first.
+                </p>
+              </div>
+
+              <div style={styles.historyTotal}>
+                {calledNumbers.length}
+              </div>
+
+            </div>
+
 
             {calledNumbers.length === 0 ? (
 
-              <p style={styles.muted}>
+              <div style={styles.emptyHistory}>
                 No numbers have been called yet.
-              </p>
+              </div>
 
             ) : (
 
@@ -464,9 +497,11 @@ function LiveGame() {
       )}
 
 
-      {/* FINISHED */}
+      {/* =====================================================
+          FINISHED
+      ===================================================== */}
 
-      {isFinished && (
+      {finished && (
 
         <section style={styles.finishedCard}>
 
@@ -485,22 +520,40 @@ function LiveGame() {
               : ""}.
           </p>
 
-          {calledNumbers.length > 0 && (
+          <div style={styles.finishedStats}>
 
-            <p style={styles.finishedCount}>
-              {calledNumbers.length}
-              {" "}
-              numbers were called.
-            </p>
+            <div>
+              <strong>
+                {calledNumbers.length}
+              </strong>
 
-          )}
+              <span>
+                Numbers Called
+              </span>
+            </div>
+
+            <div>
+              <strong>
+                {calledNumbers.length === 90
+                  ? "90/90"
+                  : `${calledNumbers.length}/90`}
+              </strong>
+
+              <span>
+                Board Progress
+              </span>
+            </div>
+
+          </div>
 
         </section>
 
       )}
 
 
-      {/* FOOTER */}
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
 
       <footer style={styles.footer}>
 
@@ -512,7 +565,7 @@ function LiveGame() {
         </div>
 
         <div style={styles.footerCode}>
-          Game Code: {game.game_code}
+          Game Code: {game.game_code || gameCode}
         </div>
 
       </footer>
@@ -563,9 +616,16 @@ const styles = {
   },
 
   gameName: {
-    margin: "6px 0 0",
+    margin: "6px 0 2px",
     fontSize: 26,
     fontWeight: 900
+  },
+
+  gameCode: {
+    color: "#777",
+    fontSize: 10,
+    fontWeight: 800,
+    letterSpacing: 1
   },
 
   statusLive: {
@@ -735,7 +795,8 @@ const styles = {
     padding: "8px 14px",
     borderRadius: 30,
     color: "#ffc857",
-    background: "rgba(255,200,87,0.10)",
+    background:
+      "rgba(255,200,87,0.10)",
     border:
       "1px solid rgba(255,200,87,0.25)",
     fontWeight: 800,
@@ -911,6 +972,38 @@ const styles = {
     padding: 15
   },
 
+  historyHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10
+  },
+
+  historyTotal: {
+    minWidth: 40,
+    height: 40,
+    borderRadius: 10,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background:
+      "rgba(255,200,87,0.10)",
+    border:
+      "1px solid rgba(255,200,87,0.25)",
+    color: "#ffc857",
+    fontWeight: 900
+  },
+
+  emptyHistory: {
+    marginTop: 15,
+    padding: 15,
+    borderRadius: 10,
+    background:
+      "rgba(255,255,255,0.03)",
+    color: "#777",
+    textAlign: "center"
+  },
+
   history: {
     display: "flex",
     flexWrap: "wrap",
@@ -974,6 +1067,18 @@ const styles = {
     color: "#07140d",
     fontSize: 32,
     fontWeight: 900
+  },
+
+  finishedStats: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 12,
+    flexWrap: "wrap",
+    marginTop: 20
+  },
+
+  finishedStatsItem: {
+    minWidth: 130
   },
 
   finishedCount: {
