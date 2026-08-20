@@ -3569,7 +3569,10 @@ function HostControlPage({
     setGameError("");
 
     try {
-      const { error } =
+      const {
+        data,
+        error
+      } =
         await supabase
           .from("games")
           .update({
@@ -3578,24 +3581,25 @@ function HostControlPage({
           .eq(
             "id",
             game.id
-          );
+          )
+          .select("*")
+          .maybeSingle();
 
       if (error) {
         throw error;
       }
 
-      const updatedGame = {
-        ...game,
-        status: "live"
-      };
+      if (
+        !data ||
+        data.status !== "live"
+      ) {
+        throw new Error(
+          "The game status could not be saved as LIVE. Please check the games table permissions in Supabase."
+        );
+      }
 
-      saveHostGame(
-        updatedGame
-      );
-
-      onGameUpdated(
-        updatedGame
-      );
+      saveHostGame(data);
+      onGameUpdated(data);
 
     } catch (err) {
       console.error(
@@ -3639,6 +3643,7 @@ function HostControlPage({
 
     try {
       const {
+        data,
         error
       } =
         await supabase
@@ -3652,17 +3657,20 @@ function HostControlPage({
           .eq(
             "id",
             game.id
-          );
+          )
+          .select()
+          .single();
 
       if (error) {
         throw error;
       }
 
-      const updatedGame = {
-        ...game,
-        status:
-          "ended"
-      };
+      const updatedGame =
+        data || {
+          ...game,
+          status:
+            "ended"
+        };
 
       saveHostGame(
         updatedGame
@@ -5066,12 +5074,26 @@ function App() {
               if (
                 payload?.new
               ) {
+                const incomingGame =
+                  payload.new;
+
+                // Never let a stale realtime event
+                // move an already-live host game
+                // backwards to "upcoming".
+                if (
+                  game?.status === "live" &&
+                  incomingGame.status ===
+                    "upcoming"
+                ) {
+                  return;
+                }
+
                 setGame(
-                  payload.new
+                  incomingGame
                 );
 
                 saveHostGame(
-                  payload.new
+                  incomingGame
                 );
               }
             }
@@ -5100,13 +5122,23 @@ function App() {
               !error &&
               data
             ) {
-              setGame(
-                data
-              );
+              // Never overwrite a locally confirmed LIVE game
+              // with an older/stale UPCOMING response.
+              if (
+                !(
+                  game?.status === "live" &&
+                  data.status ===
+                    "upcoming"
+                )
+              ) {
+                setGame(
+                  data
+                );
 
-              saveHostGame(
-                data
-              );
+                saveHostGame(
+                  data
+                );
+              }
             }
           },
           3000
