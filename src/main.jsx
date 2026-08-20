@@ -3304,20 +3304,20 @@ function LiveGamePage({
           </div>
         </section>
 
-        <div
-          style={{
-            textAlign: "center",
-            color: "#64748b",
-            padding: "10px 0 30px"
-          }}
-        >
-          Stay on this page. The game board will update automatically when the host calls a number.
-        </div>
+        <LivePrizeList game={liveGame} />
+
+      <div
+        style={{
+          textAlign: "center",
+          color: "#64748b",
+          padding: "10px 0 30px"
+        }}
+      >
+        Stay on this page. The game board will update automatically when the host calls a number.
+      </div>
       </div>
     </main>
   );
-        <LivePrizeList game={liveGame} />
-
 }
 
 /* =========================================================
