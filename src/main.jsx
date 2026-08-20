@@ -3762,12 +3762,6 @@ function HostControlPage({
     setCallIntervalSeconds
   ] = useState(5);
 
-  // Caller mode: Classic, Indian/Hinglish, or Fun
-  const [
-    callerMode,
-    setCallerMode
-  ] = useState("fun");
-
   const [
     callingNumber,
     setCallingNumber
@@ -4307,118 +4301,15 @@ ${inviteUrl}`;
     90: "Top of the house, number 90"
   };
 
-  const INDIAN_CALLER_PHRASES = {
-    1: "Chalo shuru karte hain, number 1",
-    2: "Do ka dum, number 2",
-    3: "Teen ka scene, number 3",
-    4: "Chaar ka vaar, number 4",
-    5: "Paanch pe punch, number 5",
-    6: "Chhe ka jadoo, number 6",
-    7: "Saat samundar paar, number 7",
-    8: "Aath ka saath, number 8",
-    9: "Nau nau, mast nau, number 9",
-    10: "Das ka dhamaka, number 10",
-    11: "Gyarah, lucky legs eleven, number 11",
-    12: "Barah ka joda, number 12",
-    13: "Tera kya kehna, number 13",
-    14: "Chaudah, pyaar wala number, number 14",
-    15: "Pandrah pe full josh, number 15",
-    16: "Solah, sweet sixteen, number 16",
-    17: "Satrah, dancing queen, number 17",
-    18: "Atharah, coming of age, number 18",
-    19: "Unnees, goodbye teens, number 19",
-    20: "Bees ka score, number 20",
-    21: "Ikkis, key to the door, number 21",
-    22: "Do chhote ducks, number 22",
-    23: "Teis, you and me, number 23",
-    24: "Do dozen, number 24",
-    25: "Pachis, quarter century, number 25",
-    26: "Chhabbees, Republic Day style, number 26",
-    27: "Sattais, gateway to heaven, number 27",
-    28: "Athais, duck aur mate, number 28",
-    29: "Untis, rise and shine, number 29",
-    30: "Tees, flirty thirty, number 30",
-    31: "Ikattis, get up and run, number 31",
-    32: "Battis, buckle my shoe, number 32",
-    33: "Teintees, all the threes, number 33",
-    34: "Chautis, dil maange more, number 34",
-    35: "Paintis, jump and jive, number 35",
-    36: "Chhattis, teen dozen, number 36",
-    37: "Saintees, mixed luck, number 37",
-    38: "Adtees, Christmas cake, number 38",
-    39: "Untalis, number 39",
-    40: "Chalis, life begins at forty, number 40",
-    41: "Iktalis, time for fun, number 41",
-    42: "Bayalis, answer to life, number 42",
-    43: "Taintalis, down on your knees, number 43",
-    44: "Chavalis, all the fours, number 44",
-    45: "Paintalis, halfway there, number 45",
-    46: "Chiyalis, up to tricks, number 46",
-    47: "Saintalis, four and seven, number 47",
-    48: "Adtalis, four dozen, number 48",
-    49: "Unchaas, rise and shine, number 49",
-    50: "Pachaas, half a century, number 50",
-    51: "Ikyaavan, charity begins, number 51",
-    52: "Baavan, pack of cards, number 52",
-    53: "Tirpan, stuck in the tree, number 53",
-    54: "Chauvan, clean the floor, number 54",
-    55: "Pachpan, snakes alive, number 55",
-    56: "Chhappan, pick up sticks, number 56",
-    57: "Sattavan, fifty-seven varieties, number 57",
-    58: "Athavan, make them wait, number 58",
-    59: "Unsath, bright and lively, number 59",
-    60: "Saath, diamond jubilee, number 60",
-    61: "Iksath, baker's bun, number 61",
-    62: "Baasath, turn the screw, number 62",
-    63: "Tirsath, tickle me, number 63",
-    64: "Chaunsath, almost retired, number 64",
-    65: "Painsath, retirement time, number 65",
-    66: "Chhiyasath, clickety click, number 66",
-    67: "Sadsath, stairway to heaven, number 67",
-    68: "Adsath, pick a mate, number 68",
-    69: "Unhattar, ulta pulta, number 69",
-    70: "Sattar, three score and ten, number 70",
-    71: "Ikhattar, bang on the drum, number 71",
-    72: "Bahattar, six dozen, number 72",
-    73: "Tihattar, queen bee, number 73",
-    74: "Chauhattar, hit the floor, number 74",
-    75: "Pachattar, strive and strive, number 75",
-    76: "Chihattar, seventy-six trombones, number 76",
-    77: "Sattaattar, double lucky seven, number 77",
-    78: "Athattar, lucky seth, number 78",
-    79: "Unaasi, one more time, number 79",
-    80: "Assi, eight and zero, number 80",
-    81: "Ikyasi, stop and run, number 81",
-    82: "Bayaasi, straight on through, number 82",
-    83: "Tirasi, time for tea, number 83",
-    84: "Chaurasi, seven dozen, number 84",
-    85: "Pachasi, staying alive, number 85",
-    86: "Chhiyaasi, between the sticks, number 86",
-    87: "Sataasi, last of luck, number 87",
-    88: "Athasi, two fat ladies, number 88",
-    89: "Navasi, nearly there, number 89",
-    90: "Nabbe, top of the house, number 90"
-  };
-
   function announceNumber(number) {
     try {
       if (!("speechSynthesis" in window)) return;
 
       window.speechSynthesis.cancel();
 
-      let phrase;
-
-      if (callerMode === "classic") {
-        phrase = `Number ${number}`;
-      } else if (callerMode === "indian") {
-        phrase =
-          INDIAN_CALLER_PHRASES[number] ||
-          `Number ${number}`;
-      } else {
-        phrase =
-          CALLER_PHRASES[number] ||
-          `Number ${number}`;
-      }
+      const phrase =
+        CALLER_PHRASES[number] ||
+        `Number ${number}`;
 
       const utterance = new SpeechSynthesisUtterance(
         phrase
@@ -5462,36 +5353,6 @@ ${inviteUrl}`;
                   <option value={15}>15 sec</option>
                 </select>
               </label>
-
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  padding: "10px 12px",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 10,
-                  background: "#f8fafc",
-                  fontWeight: "bold"
-                }}
-              >
-                🎙️ Caller
-                <select
-                  value={callerMode}
-                  onChange={(e) => setCallerMode(e.target.value)}
-                  disabled={callingNumber}
-                  style={{
-                    padding: "7px 8px",
-                    borderRadius: 8,
-                    border: "1px solid #cbd5e1"
-                  }}
-                >
-                  <option value="classic">Classic</option>
-                  <option value="indian">Indian / Hinglish</option>
-                  <option value="fun">Fun</option>
-                </select>
-              </label>
             </div>
 
             <div
@@ -5518,70 +5379,6 @@ ${inviteUrl}`;
                 : autoCall
                 ? `🔊 AUTO CALL ACTIVE — every ${callIntervalSeconds} seconds`
                 : "AUTO CALL OFF — use CALL NEXT or select a number manually"}
-            </div>
-
-            <div
-              style={{
-                marginBottom: 18,
-                padding: 14,
-                borderRadius: 12,
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0"
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  marginBottom: 10
-                }}
-              >
-                <b>📜 CALL HISTORY</b>
-                <span style={{ color: "#64748b", fontSize: 13 }}>
-                  {calledNumbers.length ? "Oldest → Newest" : "No numbers called yet"}
-                </span>
-              </div>
-
-              {calledNumbers.length > 0 && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 7
-                  }}
-                >
-                  {calledNumbers.map((number, index) => (
-                    <div
-                      key={`history-${number}-${index}`}
-                      style={{
-                        minWidth: 40,
-                        padding: "7px 8px",
-                        borderRadius: 8,
-                        background:
-                          index === calledNumbers.length - 1
-                            ? "#2563eb"
-                            : "#e2e8f0",
-                        color:
-                          index === calledNumbers.length - 1
-                            ? "#fff"
-                            : "#1e293b",
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        boxShadow:
-                          index === calledNumbers.length - 1
-                            ? "0 4px 12px rgba(37,99,235,.22)"
-                            : "none"
-                      }}
-                      title={`Call ${index + 1}`}
-                    >
-                      {number}
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div
@@ -6098,5 +5895,260 @@ function App() {
         if (
           current &&
           current.id === data.id &&
-          current.status === d
-Preview truncated for large file
+          current.status === data.status &&
+          JSON.stringify(current.called_numbers || []) ===
+            JSON.stringify(data.called_numbers || []) &&
+          current.game_name === data.game_name &&
+          current.game_code === data.game_code
+        ) {
+          return current;
+        }
+
+        return data;
+      });
+    } catch (err) {
+      console.error(
+        "Could not load player game:",
+        err
+      );
+
+      setPlayerGame(
+        null
+      );
+    } finally {
+      setLoading(
+        false
+      );
+    }
+  }
+
+  function handleCreated(
+    newGame
+  ) {
+    setGame(
+      newGame
+    );
+
+    saveHostGame(
+      newGame
+    );
+
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname
+    );
+  }
+
+  function handleGameUpdated(
+    updatedGame
+  ) {
+    setGame(
+      updatedGame
+    );
+
+    saveHostGame(
+      updatedGame
+    );
+  }
+
+  function handleNewGame() {
+    saveHostGame(
+      null
+    );
+
+    setGame(
+      null
+    );
+
+    setPlayerGame(
+      null
+    );
+
+    window.history.replaceState(
+      {},
+      "",
+      window.location.pathname
+    );
+  }
+
+  if (loading) {
+    return (
+      <main
+        style={{
+          ...pageStyle,
+          display:
+            "flex",
+          justifyContent:
+            "center",
+          alignItems:
+            "center"
+        }}
+      >
+        <h2>
+          Loading...
+        </h2>
+      </main>
+    );
+  }
+
+  /* -------------------------------------------------------
+     PLAYER ROUTING
+  ------------------------------------------------------- */
+
+  if (
+    playerCode
+  ) {
+    if (
+      !playerGame
+    ) {
+      return (
+        <main
+          style={
+            pageStyle
+          }
+        >
+          <div
+            style={{
+              maxWidth:
+                600,
+              margin:
+                "60px auto",
+              textAlign:
+                "center"
+            }}
+          >
+            <section
+              style={
+                cardStyle
+              }
+            >
+              <h2>
+                Game Not Found
+              </h2>
+
+              <p>
+                This game link is
+                invalid or the game
+                no longer exists.
+              </p>
+
+              <p
+                style={{
+                  color:
+                    "#64748b",
+                  fontSize:
+                    13
+                }}
+              >
+                Game Code:
+                {" "}
+                {
+                  playerCode
+                }
+              </p>
+            </section>
+          </div>
+        </main>
+      );
+    }
+
+    /* -----------------------------------------------------
+       THIS IS THE IMPORTANT PART.
+
+       UPCOMING = BOOKING PAGE
+       LIVE     = LIVE GAME PAGE
+       ENDED    = LIVE PAGE'S END SCREEN
+    ----------------------------------------------------- */
+
+    if (
+      playerGame.status ===
+      "live"
+    ) {
+      return (
+        <LiveGamePage
+          game={
+            playerGame
+          }
+        />
+      );
+    }
+
+    if (
+      playerGame.status ===
+      "ended"
+    ) {
+      return (
+        <LiveGamePage
+          game={
+            playerGame
+          }
+        />
+      );
+    }
+
+    return (
+      <PlayerBookingPage
+        game={
+          playerGame
+        }
+      />
+    );
+  }
+
+  /* -------------------------------------------------------
+     HOST ROUTING
+  ------------------------------------------------------- */
+
+  if (game) {
+    return (
+      <HostControlPage
+        game={
+          game
+        }
+        onNewGame={
+          handleNewGame
+        }
+        onGameUpdated={
+          handleGameUpdated
+        }
+      />
+    );
+  }
+
+  return (
+    <CreateGamePage
+      onCreated={
+        handleCreated
+      }
+    />
+  );
+}
+
+/* =========================================================
+   START APP
+========================================================= */
+
+const rootElement =
+  document.getElementById(
+    "root"
+  );
+
+if (
+  !rootElement
+) {
+  throw new Error(
+    'Could not find the root element. Make sure index.html contains <div id="root"></div>.'
+  );
+}
+
+const root =
+  createRoot(
+    rootElement
+  );
+
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
