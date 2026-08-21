@@ -3264,6 +3264,7 @@ function LiveGamePage({ game }) {
   );
   const [liveGame, setLiveGame] = useState(game);
   const finalAnnouncementSpokenRef = useRef(false);
+  const [showFinalResults, setShowFinalResults] = useState(true);
 
   useEffect(() => {
     if (
@@ -3276,7 +3277,7 @@ function LiveGamePage({ game }) {
     finalAnnouncementSpokenRef.current = true;
 
     const message =
-      "All prizes have been claimed. Thank you for joining the game. See you on the next game!";
+      "And that's the game! All prizes have been claimed! Thank you everyone for joining us and making this game special. We hope you enjoyed the fun - see you in the next game!";
 
     if (
       "speechSynthesis" in window
@@ -3660,11 +3661,8 @@ function LiveGamePage({ game }) {
           <section style={{ ...cardStyle, textAlign: "center" }}>
             <div style={{ fontSize: 44 }}>[WINNER]</div>
             <h1 style={{ marginBottom: 8 }}>FINAL GAME RESULTS</h1>
-            <p style={{ color: "#166534", fontSize: 18, marginTop: 0, fontWeight: "bold" }}>
-              All prizes have been claimed. Thank you for joining the game. See you on the next game!
-            </p>
             <p style={{ color: "#64748b", fontSize: 15, marginTop: 8 }}>
-              Here is the complete game summary and final results.
+              Game complete. Your final results are shown below.
             </p>
 
             <div
@@ -3691,6 +3689,123 @@ function LiveGamePage({ game }) {
               </div>
             </div>
           </section>
+
+          {showFinalResults && (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 9999,
+                background: "rgba(15,23,42,0.72)",
+                padding: 16,
+                boxSizing: "border-box",
+                overflowY: "auto"
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: 760,
+                  margin: "30px auto",
+                  background: "#fff",
+                  borderRadius: 18,
+                  padding: 20,
+                  boxShadow: "0 20px 60px rgba(0,0,0,.25)"
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", fontWeight: "bold" }}>
+                      GAME COMPLETE
+                    </div>
+                    <h2 style={{ margin: "5px 0 0" }}>FINAL GAME SUMMARY</h2>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowFinalResults(false)}
+                    style={{
+                      ...secondaryButton,
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    VIEW GAME HISTORY
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: 14,
+                    borderRadius: 12,
+                    background: "#f0fdf4",
+                    color: "#166534",
+                    fontWeight: "bold"
+                  }}
+                >
+                  All prizes have been claimed.
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 14,
+                    display: "grid",
+                    gap: 10
+                  }}
+                >
+                  {finalPrizes.map((prize, prizeIndex) => {
+                    const winners = Array.isArray(prize?.winners)
+                      ? prize.winners
+                      : [];
+
+                    return (
+                      <div
+                        key={`summary-${prizeIndex}`}
+                        style={{
+                          padding: 13,
+                          borderRadius: 12,
+                          background: "#f8fafc",
+                          border: "1px solid #e2e8f0"
+                        }}
+                      >
+                        <div style={{ fontWeight: "bold" }}>
+                          {prize.name || `Prize ${prizeIndex + 1}`}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 4,
+                            color: prize.locked ? "#166534" : "#64748b",
+                            fontWeight: "bold"
+                          }}
+                        >
+                          {prize.locked ? "WON" : "NOT WON"}
+                        </div>
+
+                        {winners.length > 0 && (
+                          <div style={{ marginTop: 8, display: "grid", gap: 5 }}>
+                            {winners.map((winner, winnerIndex) => (
+                              <div key={`summary-winner-${prizeIndex}-${winnerIndex}`}>
+                                {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
+                                {" | "}
+                                {formatPrizeAmount(winner.prizeShare)}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
           <section style={cardStyle}>
             <h2>Prize Results</h2>
@@ -3732,6 +3847,126 @@ function LiveGamePage({ game }) {
                   </div>
                 );
               })}
+            </div>
+          </section>
+
+          <section style={cardStyle}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 10,
+                flexWrap: "wrap"
+              }}
+            >
+              <div>
+                <h2 style={{ marginBottom: 4 }}>LIVE GAME HISTORY</h2>
+                <div style={{ color: "#64748b", fontSize: 14 }}>
+                  Read-only history of the game that just finished.
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowFinalResults(true)}
+                style={primaryButton}
+              >
+                OPEN FINAL SUMMARY
+              </button>
+            </div>
+
+            <div
+              style={{
+                marginTop: 14,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+                gap: 10
+              }}
+            >
+              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+                <b>Numbers Called</b>
+                <div style={{ fontSize: 28, fontWeight: "bold", marginTop: 6 }}>
+                  {calledNumbers.length}
+                </div>
+              </div>
+
+              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+                <b>Last Call</b>
+                <div style={{ fontSize: 28, fontWeight: "bold", marginTop: 6 }}>
+                  {lastCalled ?? "-"}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14 }}>
+              <h3>Called Number History</h3>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill,minmax(48px,1fr))",
+                  gap: 7
+                }}
+              >
+                {calledNumbers.map((number, index) => (
+                  <div
+                    key={`history-number-${index}-${number}`}
+                    style={{
+                      padding: "9px 5px",
+                      borderRadius: 9,
+                      background:
+                        index === calledNumbers.length - 1
+                          ? "#2563eb"
+                          : "#eff6ff",
+                      color:
+                        index === calledNumbers.length - 1
+                          ? "#fff"
+                          : "#1d4ed8",
+                      textAlign: "center",
+                      fontWeight: "bold"
+                    }}
+                  >
+                    {number}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginTop: 18 }}>
+              <h3>Final Winners</h3>
+              {finalWinners.length ? (
+                <div style={{ display: "grid", gap: 8 }}>
+                  {finalWinners.map((winner, index) => (
+                    <div
+                      key={`history-winner-${index}`}
+                      style={{
+                        padding: 11,
+                        borderRadius: 10,
+                        background: "#f0fdf4",
+                        border: "1px solid #bbf7d0"
+                      }}
+                    >
+                      <b>{winner.prizeName}</b>
+                      <div style={{ marginTop: 3 }}>
+                        {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 3,
+                          color: "#166534",
+                          fontWeight: "bold"
+                        }}
+                      >
+                        Share: {formatPrizeAmount(winner.prizeShare)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ color: "#64748b" }}>
+                  No confirmed winners recorded.
+                </div>
+              )}
             </div>
           </section>
         </div>
