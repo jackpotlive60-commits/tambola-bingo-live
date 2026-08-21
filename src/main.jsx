@@ -3603,26 +3603,95 @@ function LiveGamePage({ game }) {
     : null;
 
   if (liveGame.status === "ended") {
+    const finalPrizes = Array.isArray(liveGame.selected_prizes)
+      ? liveGame.selected_prizes
+      : [];
+
+    const finalWinners = finalPrizes.flatMap((prize, prizeIndex) =>
+      (Array.isArray(prize?.winners) ? prize.winners : []).map((winner, winnerIndex) => ({
+        ...winner,
+        prizeName: prize.name || `Prize ${prizeIndex + 1}`,
+        prizeAmount: prize.amount,
+        prizeIndex,
+        winnerIndex
+      }))
+    );
+
     return (
       <main style={pageStyle}>
-        <div style={{ maxWidth: 700, margin: "60px auto" }}>
+        <div style={{ maxWidth: 800, margin: "40px auto" }}>
           <section style={{ ...cardStyle, textAlign: "center" }}>
-            <h1>GAME ENDED</h1>
-            <p style={{ color: "#64748b", fontSize: 18 }}>
-              Thank you for playing TambolaLive.
+            <div style={{ fontSize: 44 }}>[WINNER]</div>
+            <h1 style={{ marginBottom: 8 }}>FINAL GAME RESULTS</h1>
+            <p style={{ color: "#64748b", fontSize: 17, marginTop: 0 }}>
+              The game has ended. Congratulations to all confirmed winners!
             </p>
+
             <div
               style={{
                 marginTop: 20,
-                padding: 20,
-                borderRadius: 14,
-                background: "#f8fafc"
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+                gap: 10
               }}
             >
-              <b>Total Numbers Called</b>
-              <div style={{ fontSize: 35, fontWeight: "bold", marginTop: 8 }}>
-                {calledNumbers.length}
+              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+                <b>Numbers Called</b>
+                <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>{calledNumbers.length}</div>
               </div>
+              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+                <b>Prizes Won</b>
+                <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>
+                  {finalPrizes.filter((prize) => prize?.locked).length}
+                </div>
+              </div>
+              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+                <b>Winner Entries</b>
+                <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>{finalWinners.length}</div>
+              </div>
+            </div>
+          </section>
+
+          <section style={cardStyle}>
+            <h2>Prize Results</h2>
+            <div style={{ display: "grid", gap: 12 }}>
+              {finalPrizes.map((prize, prizeIndex) => {
+                const winners = Array.isArray(prize?.winners) ? prize.winners : [];
+                return (
+                  <div
+                    key={prizeIndex}
+                    style={{
+                      padding: 15,
+                      borderRadius: 12,
+                      background: prize.locked ? "#f0fdf4" : "#f8fafc",
+                      border: `1px solid ${prize.locked ? "#bbf7d0" : "#e2e8f0"}`
+                    }}
+                  >
+                    <div style={{ fontWeight: "bold", fontSize: 17 }}>
+                      {prize.name || `Prize ${prizeIndex + 1}`}
+                    </div>
+                    <div style={{ marginTop: 5, color: prize.locked ? "#166534" : "#64748b", fontWeight: "bold" }}>
+                      {prize.locked ? "WON" : "NOT WON"}
+                      {prize.amount !== "" && prize.amount != null ? ` - ${formatPrizeAmount(prize.amount)}` : ""}
+                    </div>
+                    {winners.length > 0 ? (
+                      <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                        {winners.map((winner, winnerIndex) => (
+                          <div
+                            key={`${prizeIndex}-${winner.bookingId || ""}-${winner.ticketNumber || ""}-${winnerIndex}`}
+                            style={{ padding: 9, borderRadius: 9, background: "#fff" }}
+                          >
+                            <b>{winner.playerName || "Player"}</b> - Ticket #{winner.ticketNumber}
+                            {winner.prizeShare != null ? ` - ${formatPrizeAmount(winner.prizeShare)}` : ""}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: 8, color: "#64748b" }}>No confirmed winner.</div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         </div>
@@ -4175,6 +4244,11 @@ function HostControlPage({
     winnerHistory,
     setWinnerHistory
   ] = useState([]);
+
+  const [
+    showGameSummary,
+    setShowGameSummary
+  ] = useState(false);
 
   const callingRef = useRef(false);
 
@@ -4951,6 +5025,21 @@ ${inviteUrl}`;
         ...entries
       ];
     });
+  }
+
+  function getConfirmedPrizeResults() {
+    const prizes = Array.isArray(game.selected_prizes) ? game.selected_prizes : [];
+    return prizes.map((prize, index) => ({
+      ...prize,
+      index,
+      winners: Array.isArray(prize?.winners) ? prize.winners : []
+    }));
+  }
+
+  function hasConfirmedFullHouse() {
+    return getConfirmedPrizeResults().some(
+      (prize) => getPrizePattern(prize?.name) === "full_house" && prize?.locked
+    );
   }
 
   async function confirmWinnerEvents() {
@@ -6360,6 +6449,107 @@ ${inviteUrl}`;
                 }}
               >
                 Remaining prizes stay OPEN and highlighted until they are won.
+              </div>
+            </section>
+          </div>
+        )}
+
+        {hasConfirmedFullHouse() && game.status === "live" && (
+          <button
+            type="button"
+            onClick={() => setShowGameSummary(true)}
+            style={{
+              ...primaryButton,
+              width: "100%",
+              marginBottom: 12,
+              background: "#7c3aed"
+            }}
+          >
+            VIEW GAME SUMMARY
+          </button>
+        )}
+
+        {showGameSummary && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(15,23,42,0.72)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 18,
+              zIndex: 10000
+            }}
+          >
+            <section
+              style={{
+                width: "100%",
+                maxWidth: 720,
+                maxHeight: "90vh",
+                overflowY: "auto",
+                background: "#fff",
+                borderRadius: 22,
+                padding: 24,
+                boxShadow: "0 25px 70px rgba(0,0,0,0.35)"
+              }}
+            >
+              <div style={{ textAlign: "center" }}>
+                <h2 style={{ marginTop: 0 }}>GAME SUMMARY</h2>
+                <p style={{ color: "#64748b" }}>
+                  Full House has been confirmed. Review all confirmed prizes before ending the game.
+                </p>
+              </div>
+
+              <div style={{ display: "grid", gap: 10 }}>
+                {getConfirmedPrizeResults().map((prize) => (
+                  <div
+                    key={prize.index}
+                    style={{
+                      padding: 14,
+                      borderRadius: 12,
+                      background: prize.locked ? "#f0fdf4" : "#f8fafc",
+                      border: `1px solid ${prize.locked ? "#bbf7d0" : "#e2e8f0"}`
+                    }}
+                  >
+                    <div style={{ fontWeight: "bold" }}>
+                      {prize.name || `Prize ${prize.index + 1}`}
+                    </div>
+                    <div style={{ marginTop: 4, color: prize.locked ? "#166534" : "#64748b" }}>
+                      {prize.locked ? "CONFIRMED" : "NOT WON"}
+                      {prize.amount !== "" && prize.amount != null ? ` - ${formatPrizeAmount(prize.amount)}` : ""}
+                    </div>
+                    {prize.winners.length > 0 && (
+                      <div style={{ marginTop: 8, display: "grid", gap: 5 }}>
+                        {prize.winners.map((winner, i) => (
+                          <div key={`${prize.index}-${winner.bookingId || ""}-${winner.ticketNumber || ""}-${i}`}>
+                            {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
+                            {winner.prizeShare != null ? ` - ${formatPrizeAmount(winner.prizeShare)}` : ""}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: "grid", gap: 10, marginTop: 18 }}>
+                <button
+                  type="button"
+                  onClick={endGame}
+                  disabled={gameAction}
+                  style={{ ...primaryButton, width: "100%", background: "#dc2626" }}
+                >
+                  {gameAction ? "ENDING GAME..." : "END GAME & SHOW FINAL RESULTS"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowGameSummary(false)}
+                  disabled={gameAction}
+                  style={{ ...secondaryButton, width: "100%" }}
+                >
+                  BACK TO LIVE GAME
+                </button>
               </div>
             </section>
           </div>
