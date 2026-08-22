@@ -3264,7 +3264,35 @@ function LiveGamePage({ game }) {
   );
   const [liveGame, setLiveGame] = useState(game);
   const finalAnnouncementSpokenRef = useRef(false);
-  const [showFinalResults, setShowFinalResults] = useState(true);
+  const finalSummaryTimerRef = useRef(null);
+  const [showFinalResults, setShowFinalResults] = useState(false);
+  const [viewFinishedLive, setViewFinishedLive] = useState(false);
+
+  useEffect(() => {
+    if (finalSummaryTimerRef.current) {
+      window.clearTimeout(finalSummaryTimerRef.current);
+      finalSummaryTimerRef.current = null;
+    }
+
+    if (liveGame.status !== "ended") {
+      setShowFinalResults(false);
+      setViewFinishedLive(false);
+      return undefined;
+    }
+
+    finalSummaryTimerRef.current = window.setTimeout(() => {
+      setViewFinishedLive(false);
+      setShowFinalResults(true);
+      finalSummaryTimerRef.current = null;
+    }, 3000);
+
+    return () => {
+      if (finalSummaryTimerRef.current) {
+        window.clearTimeout(finalSummaryTimerRef.current);
+        finalSummaryTimerRef.current = null;
+      }
+    };
+  }, [liveGame.status]);
 
   useEffect(() => {
     if (
@@ -3640,7 +3668,7 @@ function LiveGamePage({ game }) {
     ? calledNumbers[calledNumbers.length - 1]
     : null;
 
-  if (liveGame.status === "ended") {
+  if (liveGame.status === "ended" && !viewFinishedLive) {
     const finalPrizes = Array.isArray(liveGame.selected_prizes)
       ? liveGame.selected_prizes
       : [];
@@ -3729,7 +3757,10 @@ function LiveGamePage({ game }) {
 
                   <button
                     type="button"
-                    onClick={() => setShowFinalResults(false)}
+                    onClick={() => {
+                      setShowFinalResults(false);
+                      setViewFinishedLive(true);
+                    }}
                     style={{
                       ...secondaryButton,
                       whiteSpace: "nowrap"
@@ -3976,6 +4007,42 @@ function LiveGamePage({ game }) {
 
   return (
     <main style={pageStyle}>
+      {liveGame.status === "ended" && viewFinishedLive && (
+        <div
+          style={{
+            position: "sticky",
+            top: 10,
+            zIndex: 1000,
+            maxWidth: 800,
+            margin: "10px auto",
+            padding: "10px 12px",
+            borderRadius: 12,
+            background: "#eff6ff",
+            border: "1px solid #bfdbfe",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            flexWrap: "wrap"
+          }}
+        >
+          <div style={{ fontWeight: "bold", color: "#1d4ed8" }}>
+            GAME FINISHED - VIEWING LIVE GAME HISTORY
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setViewFinishedLive(false);
+              setShowFinalResults(true);
+            }}
+            style={primaryButton}
+          >
+            OPEN FINAL SUMMARY
+          </button>
+        </div>
+      )}
+
       <div style={{ maxWidth: 1050, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <h1>{liveGame.game_name}</h1>
