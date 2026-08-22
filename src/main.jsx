@@ -938,12 +938,13 @@ function getThemeUI(theme) {
     },
     card: {
       background: `linear-gradient(145deg, ${colors.surface}f7, ${colors.surface2}e8)`,
-      border: `1px solid ${colors.accent}66`,
-      borderTop: `3px solid ${colors.accent}`,
+      /* Borderless premium sections: the page should flow edge-to-edge. */
+      border: "none",
+      borderTop: "none",
       borderRadius: 24,
       padding: 24,
       color: colors.text,
-      boxShadow: `0 22px 60px rgba(0,0,0,.34), 0 0 0 1px ${colors.secondary}18 inset, 0 0 34px ${colors.secondary}16`,
+      boxShadow: `0 22px 60px rgba(0,0,0,.34), 0 0 34px ${colors.secondary}16`,
       backdropFilter: "blur(16px)"
     },
     input: {
