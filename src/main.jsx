@@ -81,16 +81,16 @@ function unlockPlayerSpeechFromGesture() {
     const synth = window.speechSynthesis;
     synth.resume();
 
-    const utterance = new SpeechSynthesisUtterance("Booking pending â€” waiting for host approval.");
-    utterance.lang = "en-US";
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-
+    // Unlock speech silently. Do NOT announce anything here.
+    // The booking message is spoken only after a successful Book action.
     const englishVoice = getPreferredEnglishSpeechVoice();
+
+    const utterance = new SpeechSynthesisUtterance("");
+    utterance.lang = englishVoice?.lang || "en-US";
+    utterance.volume = 0;
+
     if (englishVoice) {
       utterance.voice = englishVoice;
-      utterance.lang = englishVoice.lang;
     }
 
     utterance.onstart = () => {
@@ -98,9 +98,12 @@ function unlockPlayerSpeechFromGesture() {
       window.dispatchEvent(new Event("player-speech-unlocked"));
     };
 
+    utterance.onend = () => {
+      playerSpeechUnlocked = true;
+      window.dispatchEvent(new Event("player-speech-unlocked"));
+    };
+
     utterance.onerror = () => {
-      // Allow another real user gesture to retry if the browser rejected
-      // the first speech request.
       playerSpeechUnlockStarted = false;
     };
 
@@ -2866,6 +2869,34 @@ function PlayerBookingPage({
     setSelected([]);
   }
 
+  function speakBookingPendingMessage() {
+    if (!("speechSynthesis" in window)) return;
+
+    try {
+      const synth = window.speechSynthesis;
+      synth.cancel();
+      synth.resume();
+
+      const utterance = new SpeechSynthesisUtterance(
+        "Booking pending. Waiting for host approval."
+      );
+      utterance.lang = "en-US";
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      const englishVoice = getPreferredEnglishSpeechVoice();
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+        utterance.lang = englishVoice.lang;
+      }
+
+      synth.speak(utterance);
+    } catch (error) {
+      console.warn("Booking pending announcement failed:", error);
+    }
+  }
+
   async function bookTickets() {
     const name =
       playerName.trim();
@@ -3089,6 +3120,10 @@ function PlayerBookingPage({
             ", "
           )}. Waiting for host approval.`
       );
+
+      // Speak the professional booking-status message ONLY after the
+      // player's Book action succeeds. Voice unlocking itself is silent.
+      speakBookingPendingMessage();
 
       // Clear only this submission. Existing bookings do not lock this player
       // out of making another booking for any still-available ticket.
