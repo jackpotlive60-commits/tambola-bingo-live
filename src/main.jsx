@@ -42,6 +42,78 @@ const DEFAULT_PRIZES = [
 }));
 
 /* =========================================================
+   PLAYER VOICE UNLOCK
+
+   Mobile browsers block audible autoplay until the player has
+   interacted with the page. We unlock speech from ANY normal
+   player-page interaction (including the booking page), so the
+   player does not need to press a dedicated voice button.
+========================================================= */
+
+let playerSpeechUnlocked = false;
+let playerSpeechUnlockStarted = false;
+
+function getPreferredEnglishSpeechVoice() {
+  if (!("speechSynthesis" in window)) return null;
+
+  const voices = window.speechSynthesis.getVoices() || [];
+  return (
+    voices.find((voice) => /^en-US$/i.test(voice.lang)) ||
+    voices.find((voice) => /^en-GB$/i.test(voice.lang)) ||
+    voices.find((voice) => /^en-IN$/i.test(voice.lang)) ||
+    voices.find((voice) => /^en(-|_)/i.test(voice.lang)) ||
+    null
+  );
+}
+
+function unlockPlayerSpeechFromGesture() {
+  if (playerSpeechUnlocked || playerSpeechUnlockStarted) {
+    return playerSpeechUnlocked;
+  }
+
+  if (!("speechSynthesis" in window)) {
+    return false;
+  }
+
+  playerSpeechUnlockStarted = true;
+
+  try {
+    const synth = window.speechSynthesis;
+    synth.resume();
+
+    const utterance = new SpeechSynthesisUtterance("Voice ready.");
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    const englishVoice = getPreferredEnglishSpeechVoice();
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+      utterance.lang = englishVoice.lang;
+    }
+
+    utterance.onstart = () => {
+      playerSpeechUnlocked = true;
+      window.dispatchEvent(new Event("player-speech-unlocked"));
+    };
+
+    utterance.onerror = () => {
+      // Allow another real user gesture to retry if the browser rejected
+      // the first speech request.
+      playerSpeechUnlockStarted = false;
+    };
+
+    synth.speak(utterance);
+    return true;
+  } catch (error) {
+    console.warn("Player speech could not be unlocked:", error);
+    playerSpeechUnlockStarted = false;
+    return false;
+  }
+}
+
+/* =========================================================
    BASIC HELPERS
 ========================================================= */
 
@@ -282,8 +354,6 @@ function speakWinnerAnnouncement(events) {
   try {
     if (!("speechSynthesis" in window) || !events?.length) return;
 
-    window.speechSynthesis.cancel();
-
     const parts = events.map((event) => {
       const voicePrizeName = getPrizeVoiceName(event.prizeName);
       const names = event.winners.map((winner) => winner.playerName);
@@ -308,6 +378,14 @@ function speakWinnerAnnouncement(events) {
     utterance.rate = 0.82;
     utterance.pitch = 1.04;
     utterance.volume = 1;
+
+    const englishVoice = getPreferredEnglishSpeechVoice();
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+      utterance.lang = englishVoice.lang;
+    }
+
+    window.speechSynthesis.resume();
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.error("Could not announce winner:", err);
@@ -3620,6 +3698,8 @@ function LiveGamePage({ game }) {
     Array.isArray(game.called_numbers) ? game.called_numbers : []
   );
   const [liveGame, setLiveGame] = useState(game);
+  const liveGameRef = useRef(game);
+  liveGameRef.current = liveGame;
   const finalAnnouncementSpokenRef = useRef(false);
   const finalSummaryTimerRef = useRef(null);
   const [showFinalResults, setShowFinalResults] = useState(false);
@@ -3629,7 +3709,7 @@ function LiveGamePage({ game }) {
   // Android Chrome and iOS Safari require a user gesture before speech can
   // play. We use the player's first normal interaction with the live page;
   // there is no visible voice button.
-  const playerVoiceUnlockedRef = useRef(false);
+  const playerVoiceUnlockedRef = useRef(playerSpeechUnlocked);
   const playerVoiceReadyRef = useRef(false);
   const playerCalledNumbersRef = useRef(
     Array.isArray(game.called_numbers) ? game.called_numbers.map(Number) : []
@@ -3643,92 +3723,82 @@ function LiveGamePage({ game }) {
       )
   );
 
-  // Player audio uses real MP3 assets instead of speechSynthesis for called numbers.
-  // This is more reliable on Android/iOS because it uses HTMLAudioElement after a
-  // real player gesture. No visible voice button is required.
-  const playerAudioRef = useRef(null);
-  const playerAudioUnlockedRef = useRef(false);
-  const playerAudioQueueRef = useRef([]);
-  const playerAudioPlayingRef = useRef(false);
-
+  // App-level player voice unlock handles the first real interaction on
+  // the booking/live page. Keep this component synchronized with it.
   useEffect(() => {
-    const unlockPlayerAudio = () => {
-      if (playerAudioUnlockedRef.current) return;
-      try {
-        const audio = new Audio('/voice/welcome.mp3');
-        audio.preload = 'auto';
-        audio.volume = 1;
-        playerAudioRef.current = audio;
-        playerAudioUnlockedRef.current = true;
-        audio.play().catch(() => {
-          playerAudioUnlockedRef.current = false;
-        });
-      } catch (err) {
-        console.warn('Player audio could not be unlocked:', err);
+    const syncPlayerVoiceUnlock = () => {
+      playerVoiceUnlockedRef.current = true;
+      playerVoiceReadyRef.current = true;
+
+      // If this player opened the live page after a number was already called,
+      // announce the current latest number immediately after voice is unlocked.
+      const numbers = Array.isArray(liveGameRef.current?.called_numbers)
+        ? liveGameRef.current.called_numbers.map(Number).filter((n) => Number.isInteger(n))
+        : [];
+
+      if (numbers.length) {
+        window.setTimeout(() => {
+          speakPlayerNumber(numbers[numbers.length - 1]);
+        }, 150);
       }
     };
 
-    const options = { capture: true, passive: true };
-    window.addEventListener('pointerdown', unlockPlayerAudio, options);
-    window.addEventListener('touchstart', unlockPlayerAudio, options);
-    window.addEventListener('click', unlockPlayerAudio, options);
-    window.addEventListener('keydown', unlockPlayerAudio, options);
+    if (playerSpeechUnlocked) {
+      syncPlayerVoiceUnlock();
+    }
+
+    window.addEventListener(
+      "player-speech-unlocked",
+      syncPlayerVoiceUnlock
+    );
 
     return () => {
-      window.removeEventListener('pointerdown', unlockPlayerAudio, true);
-      window.removeEventListener('touchstart', unlockPlayerAudio, true);
-      window.removeEventListener('click', unlockPlayerAudio, true);
-      window.removeEventListener('keydown', unlockPlayerAudio, true);
+      window.removeEventListener(
+        "player-speech-unlocked",
+        syncPlayerVoiceUnlock
+      );
     };
   }, []);
 
-  function playPlayerAudioFile(fileName) {
-    if (!playerAudioUnlockedRef.current) return;
-    playerAudioQueueRef.current.push(fileName);
-    if (playerAudioPlayingRef.current) return;
-
-    const playNext = () => {
-      const next = playerAudioQueueRef.current.shift();
-      if (!next) {
-        playerAudioPlayingRef.current = false;
-        return;
-      }
-
-      playerAudioPlayingRef.current = true;
-      const audio = new Audio(`/voice/${next}`);
-      audio.volume = 1;
-      playerAudioRef.current = audio;
-      audio.onended = playNext;
-      audio.onerror = () => {
-        console.warn('Could not play player voice asset:', next);
-        playNext();
-      };
-      audio.play().catch((err) => {
-        console.warn('Player audio playback blocked:', err);
-        playerAudioPlayingRef.current = false;
-      });
-    };
-
-    playNext();
-  }
-
   function getEnglishSpeechVoice() {
-    if (!("speechSynthesis" in window)) return null;
-
-    const voices = window.speechSynthesis.getVoices() || [];
-    return (
-      voices.find((voice) => /^en-US$/i.test(voice.lang)) ||
-      voices.find((voice) => /^en-GB$/i.test(voice.lang)) ||
-      voices.find((voice) => /^en-IN$/i.test(voice.lang)) ||
-      voices.find((voice) => /^en(-|_)/i.test(voice.lang)) ||
-      null
-    );
+    return getPreferredEnglishSpeechVoice();
   }
 
   function speakPlayerNumber(number) {
-    const numericNumber = Number(number);
-    if (!Number.isInteger(numericNumber) || numericNumber < 1 || numericNumber > 90) return;
-    playPlayerAudioFile(`number-${numericNumber}.mp3`);
+    if (
+      !("speechSynthesis" in window) ||
+      !Number.isInteger(Number(number)) ||
+      !playerSpeechUnlocked
+    ) {
+      return;
+    }
+
+    try {
+      const numericNumber = Number(number);
+      const phrase =
+        CALLER_PHRASES[numericNumber] || `Number ${numericNumber}`;
+
+      window.speechSynthesis.resume();
+
+      const utterance = new SpeechSynthesisUtterance(phrase);
+      utterance.lang = "en-US";
+      utterance.rate = 0.88;
+      utterance.pitch = 1.02;
+      utterance.volume = 1;
+
+      const englishVoice = getEnglishSpeechVoice();
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+        utterance.lang = englishVoice.lang;
+      }
+
+      // Do not cancel an active announcement. Queueing is more reliable on
+      // Android Chrome than repeatedly calling cancel() immediately before
+      // speak().
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn("Could not announce player number:", err);
+    }
   }
 
   useEffect(() => {
@@ -3741,7 +3811,7 @@ function LiveGamePage({ game }) {
     const newlyCalled = nextNumbers.filter((number) => !previousNumbers.includes(number));
     playerCalledNumbersRef.current = nextNumbers;
 
-    if (!newlyCalled.length || !playerVoiceUnlockedRef.current) return;
+    if (!newlyCalled.length || !playerSpeechUnlocked) return;
 
     newlyCalled.forEach((number, index) => {
       window.setTimeout(() => speakPlayerNumber(number), index * 1800);
@@ -3777,10 +3847,9 @@ function LiveGamePage({ game }) {
 
     playerWinnerKeysRef.current = nextKeys;
 
-    if (!newlyConfirmedEvents.length || !playerVoiceUnlockedRef.current) return;
+    if (!newlyConfirmedEvents.length || !playerSpeechUnlocked) return;
 
     window.setTimeout(() => {
-      playPlayerAudioFile('prize-winner.mp3');
       speakWinnerAnnouncement(newlyConfirmedEvents);
     }, 300);
   }, [liveGame.selected_prizes]);
@@ -8097,6 +8166,29 @@ function App() {
       if (
         playerCode
       ) {
+        const unlockOptions = { capture: true, passive: true };
+
+        window.addEventListener(
+          "pointerdown",
+          unlockPlayerSpeechFromGesture,
+          unlockOptions
+        );
+        window.addEventListener(
+          "touchstart",
+          unlockPlayerSpeechFromGesture,
+          unlockOptions
+        );
+        window.addEventListener(
+          "click",
+          unlockPlayerSpeechFromGesture,
+          unlockOptions
+        );
+        window.addEventListener(
+          "keydown",
+          unlockPlayerSpeechFromGesture,
+          unlockOptions
+        );
+
         const cleanCode =
           String(
             playerCode
@@ -8151,6 +8243,27 @@ function App() {
         return () => {
           clearInterval(
             interval
+          );
+
+          window.removeEventListener(
+            "pointerdown",
+            unlockPlayerSpeechFromGesture,
+            true
+          );
+          window.removeEventListener(
+            "touchstart",
+            unlockPlayerSpeechFromGesture,
+            true
+          );
+          window.removeEventListener(
+            "click",
+            unlockPlayerSpeechFromGesture,
+            true
+          );
+          window.removeEventListener(
+            "keydown",
+            unlockPlayerSpeechFromGesture,
+            true
           );
 
           supabase.removeChannel(
@@ -8310,6 +8423,8 @@ function App() {
           current.status === data.status &&
           JSON.stringify(current.called_numbers || []) ===
             JSON.stringify(data.called_numbers || []) &&
+          JSON.stringify(current.selected_prizes || []) ===
+            JSON.stringify(data.selected_prizes || []) &&
           current.game_name === data.game_name &&
           current.game_code === data.game_code
         ) {
