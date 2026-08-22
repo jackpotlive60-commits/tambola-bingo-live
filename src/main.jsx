@@ -4140,8 +4140,19 @@ function LiveGamePage({ game }) {
           </div>
         </div>
 
+        {/* =========================================================
+           PLAYER LIVE-GAME ORDER â€” DO NOT REORDER
+           1 Current Numbers
+           2 Called Number Board
+           3 Call History
+           4 My Booked Tickets
+           5 Prizes
+           6 Search Player Name or Ticket Number
+           7 All Booked Tickets
+        ========================================================= */}
+
         {/* 1. CURRENT NUMBERS */}
-        <section style={cardStyle}>
+        <section data-live-section="1-current-numbers" style={cardStyle}>
           <div
             style={{
               display: "flex",
@@ -4192,7 +4203,7 @@ function LiveGamePage({ game }) {
         </section>
 
         {/* 2. CALLED NUMBER BOARD */}
-        <section style={{ ...cardStyle, textAlign: "center" }}>
+        <section data-live-section="2-called-number-board" style={{ ...cardStyle, textAlign: "center" }}>
           <div style={{ color: "#64748b", fontWeight: "bold" }}>
             Called Number Board
           </div>
@@ -4222,7 +4233,7 @@ function LiveGamePage({ game }) {
         </section>
 
         {/* 3. CALL HISTORY */}
-        <section style={cardStyle}>
+        <section data-live-section="3-call-history" style={cardStyle}>
           <div
             style={{
               display: "flex",
@@ -4293,7 +4304,7 @@ function LiveGamePage({ game }) {
 
         {/* 4. MY BOOKED TICKETS */}
         {playerBooking && (
-          <section style={cardStyle}>
+          <section data-live-section="4-my-booked-tickets" style={cardStyle}>
             <h2>Your Booked Tickets</h2>
             <p style={{ color: "#64748b" }}>
               Player: <b>{playerBooking.playerName}</b>
@@ -4336,10 +4347,10 @@ function LiveGamePage({ game }) {
         )}
 
         {/* 5. PRIZES */}
-        <LivePrizeList game={liveGame} />
+        <div data-live-section="5-prizes"><LivePrizeList game={liveGame} /></div>
 
         {/* 6. SEARCH */}
-        <section style={cardStyle}>
+        <section data-live-section="6-search" style={cardStyle}>
           <h2>Search Player Name or Ticket Number</h2>
           <div
             style={{
@@ -4368,7 +4379,7 @@ function LiveGamePage({ game }) {
         </section>
 
         {/* 7. ALL BOOKED TICKETS */}
-        <section style={cardStyle}>
+        <section data-live-section="7-all-booked-tickets" style={cardStyle}>
           <div
             style={{
               display: "flex",
@@ -7083,10 +7094,6 @@ function HostControlPage({
             </p>
           </section>
         )}
-
-        <WinnerHistory history={winnerHistory} />
-
-        <LivePrizeList game={game} />
 
         {pendingWinnerEvents.length > 0 && (
           <div
