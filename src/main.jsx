@@ -2873,6 +2873,12 @@ function PlayerBookingPage({
     if (!("speechSynthesis" in window)) return;
 
     try {
+      // The Book tap itself is a real user gesture. Persist the unlocked
+      // state at app level so LiveGamePage inherits it after navigation.
+      playerSpeechUnlocked = true;
+      playerSpeechUnlockStarted = false;
+      window.dispatchEvent(new Event("player-speech-unlocked"));
+
       const synth = window.speechSynthesis;
       synth.cancel();
       synth.resume();
@@ -3842,14 +3848,28 @@ function LiveGamePage({ game }) {
       : [];
     const previousNumbers = playerCalledNumbersRef.current;
 
-    // Only announce numbers that arrived after this player joined/refreshed.
-    const newlyCalled = nextNumbers.filter((number) => !previousNumbers.includes(number));
+    // If voice is already unlocked (for example because the player tapped
+    // BOOK), keep the Live Game page synchronized immediately.
+    if (playerSpeechUnlocked) {
+      playerVoiceUnlockedRef.current = true;
+      playerVoiceReadyRef.current = true;
+    }
+
+    const newlyCalled = nextNumbers.filter(
+      (number) => !previousNumbers.includes(number)
+    );
+
+    // Always remember the latest server state so we don't repeat numbers.
     playerCalledNumbersRef.current = nextNumbers;
 
-    if (!newlyCalled.length || !playerSpeechUnlocked) return;
+    if (!newlyCalled.length || !playerVoiceUnlockedRef.current) return;
 
     newlyCalled.forEach((number, index) => {
-      window.setTimeout(() => speakPlayerNumber(number), index * 1800);
+      window.setTimeout(() => {
+        if (playerVoiceUnlockedRef.current) {
+          speakPlayerNumber(number);
+        }
+      }, index * 1800);
     });
   }, [liveGame.called_numbers]);
 
