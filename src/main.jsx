@@ -1018,7 +1018,7 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
       />
       <div style={{ position: "relative", zIndex: 2, maxWidth: "72%" }}>
         <div style={{ fontSize: 12, letterSpacing: 2.5, textTransform: "uppercase", color: c.accent, fontWeight: 800 }}>
-          {theme || "Classic"} â€¢ TAMBOLA LIVE
+          {theme || "Classic"} {"\u2022"} TAMBOLA LIVE
         </div>
         <div style={{ fontSize: compact ? 25 : 32, lineHeight: 1.08, fontWeight: 900, marginTop: 8 }}>
           {title}
@@ -3060,7 +3060,7 @@ function PlayerBookingPage({
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
-        subtitle="Premium player booking â€¢ Select your tickets and request host approval"
+        subtitle="Premium player booking {"\u2022"} Select your tickets and request host approval"
       />
       <div
         style={{
@@ -4425,7 +4425,7 @@ function LiveGamePage({ game }) {
         </div>
 
         {/* =========================================================
-           PLAYER LIVE-GAME ORDER â€” DO NOT REORDER
+           PLAYER LIVE-GAME ORDER {"\u2014"} DO NOT REORDER
            1 Current Numbers
            2 Called Number Board
            3 Call History
@@ -4435,7 +4435,7 @@ function LiveGamePage({ game }) {
            7 All Booked Tickets
         ========================================================= */}
 
-        {/* 1. CURRENT NUMBER â€” ONE BIG DISPLAY ONLY */}
+        {/* 1. CURRENT NUMBER {"\u2014"} ONE BIG DISPLAY ONLY */}
         <section data-live-section="1-current-number" style={{ ...themedCardStyle, textAlign: "center" }}>
           <h2 style={{ margin: 0 }}>Current Number</h2>
 
@@ -6344,7 +6344,7 @@ function HostControlPage({
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
-        subtitle="Host Control Centre â€¢ Manage bookings, prizes and the live game"
+        subtitle="Host Control Centre {"\u2022"} Manage bookings, prizes and the live game"
         compact
       />
       <div
