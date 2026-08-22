@@ -883,8 +883,7 @@ function drawPosterText(
 }
 
 async function createGamePoster(
-  game,
-  inviteUrl
+  game
 ) {
   const width = 1080;
   const height = 1350;
@@ -1248,52 +1247,23 @@ async function createGamePoster(
     );
   }
 
-  const joinY =
-    Math.min(1130, prizeY + 65 + prizes.length * (prizes.length > 6 ? 34 : 40));
-
-  roundedRect(
-    ctx,
-    125,
-    joinY,
-    830,
-    125,
-    24
-  );
-
-  ctx.fillStyle =
-    colors.accent;
-
-  ctx.fill();
-
-  ctx.fillStyle =
-    "#111827";
-
-  ctx.font =
-    "bold 32px Arial";
+  const footerY =
+    Math.min(1225, prizeY + 95 + prizes.length * (prizes.length > 6 ? 34 : 40));
 
   ctx.textAlign =
     "center";
+
+  ctx.fillStyle =
+    colors.secondary;
+
+  ctx.font =
+    "bold 22px Arial";
 
   ctx.fillText(
-    "JOIN THE GAME",
+    "PRIZE LIST UPDATED",
     width / 2,
-    joinY + 48
+    footerY
   );
-
-  ctx.font =
-    "bold 23px Arial";
-
-  drawPosterText(
-    ctx,
-    inviteUrl,
-    width / 2,
-    joinY + 87,
-    770,
-    "bold 23px Arial"
-  );
-
-  ctx.textAlign =
-    "center";
 
   ctx.fillStyle =
     "rgba(255,255,255,0.75)";
@@ -1302,9 +1272,9 @@ async function createGamePoster(
     "18px Arial";
 
   ctx.fillText(
-    "Open the link or scan/share this poster to join",
+    "Final prize amounts announced by the host",
     width / 2,
-    1280
+    footerY + 38
   );
 
   const blob =
@@ -4537,6 +4507,11 @@ function HostControlPage({
   ] = useState("");
 
   const [
+    savedPrizeGame,
+    setSavedPrizeGame
+  ] = useState(null);
+
+  const [
     calledNumbers,
     setCalledNumbers
   ] = useState(
@@ -4924,11 +4899,12 @@ function HostControlPage({
           : prize
       )
     );
+    setSavedPrizeGame(null);
+    setShareMessage("");
   }
 
   async function savePrizeAmounts() {
     const prizeEditingAllowed =
-      game.status !== "live" &&
       game.status !== "ended";
 
     if (savingPrizes || !prizeEditingAllowed) {
@@ -4974,7 +4950,8 @@ function HostControlPage({
 
       saveHostGame(updatedGame);
       onGameUpdated(updatedGame);
-      setShareMessage("Prize amounts saved. The poster will use these updated amounts.");
+      setSavedPrizeGame(updatedGame);
+      setShareMessage("Prize amounts saved. Now generate the updated poster below to share the new prize list.");
       return updatedGame;
     } catch (err) {
       console.error("Could not save prize amounts:", err);
@@ -5020,10 +4997,9 @@ function HostControlPage({
       return;
     }
 
-    let posterSourceGame = game;
+    let posterSourceGame = savedPrizeGame || game;
 
     const prizeEditingAllowed =
-      game.status !== "live" &&
       game.status !== "ended";
 
     if (prizeEditingAllowed) {
@@ -5040,18 +5016,6 @@ function HostControlPage({
 
     setShareMessage("");
 
-    const message =
-`[TICKET] ${game.game_name}
-
-[DATE] ${game.game_date || "-"}
-[TIME] ${game.game_time || "-"}
-[TICKET] Ticket Price: INR ${game.ticket_price || 0}
-
-[TICKET] Game Code: ${game.game_code}
-
-Join Game:
-${inviteUrl}`;
-
     try {
       const posterGame = {
         ...posterSourceGame,
@@ -5062,39 +5026,30 @@ ${inviteUrl}`;
 
       const poster =
         await createGamePoster(
-          posterGame,
-          inviteUrl
+          posterGame
         );
 
       const canShareFiles =
         navigator.share &&
         navigator.canShare &&
         navigator.canShare({
-          files:
-            [poster]
+          files: [poster]
         });
 
-      if (
-        canShareFiles
-      ) {
+      if (canShareFiles) {
         await navigator.share({
-          title:
-            game.game_name,
-          text:
-            message,
-          files:
-            [poster]
+          title: game.game_name,
+          files: [poster]
         });
 
         setShareMessage(
-          "Poster and game link ready to share!"
+          "Updated prize poster ready to share. Only the poster was sent."
         );
 
         return;
       }
 
-      // Some browsers can share a link but cannot attach an image file.
-      // Keep the poster available locally, then share/copy the same game link.
+      // If the browser cannot share image files directly, save only the poster.
       try {
         const posterUrl = URL.createObjectURL(poster);
         const downloadLink = document.createElement("a");
@@ -5104,30 +5059,18 @@ ${inviteUrl}`;
         downloadLink.click();
         downloadLink.remove();
         window.setTimeout(() => URL.revokeObjectURL(posterUrl), 1000);
-      } catch (downloadError) {
-        console.error("Could not prepare poster download:", downloadError);
-      }
-
-      if (navigator.share) {
-        await navigator.share({
-          title: game.game_name,
-          text: message,
-          url: inviteUrl
-        });
 
         setShareMessage(
-          "Poster saved and game link ready to share. Attach the saved poster in WhatsApp."
+          "Updated prize poster saved. Share the poster file in WhatsApp."
         );
-
-        return;
+      } catch (downloadError) {
+        console.error("Could not prepare poster download:", downloadError);
+        setShareMessage(
+          "Could not share or save the updated poster."
+        );
       }
-
-      await copyLink();
-
-      setShareMessage(
-        "Poster saved and game link copied. Attach the saved poster in WhatsApp."
-      );
     } catch (error) {
+
       if (
         error?.name ===
         "AbortError"
@@ -5140,17 +5083,9 @@ ${inviteUrl}`;
         error
       );
 
-      try {
-        await copyLink();
-
-        setShareMessage(
-          "Poster could not be shared automatically, so the game link was copied."
-        );
-      } catch {
-        setShareMessage(
-          "Could not share the game."
-        );
-      }
+      setShareMessage(
+        "Updated prize poster could not be shared automatically. Please use the saved poster file in WhatsApp."
+      );
     } finally {
       setPosterCreating(
         false
@@ -6095,7 +6030,6 @@ ${inviteUrl}`;
               {editablePrizes.map((prize, index) => {
                 const locked = Boolean(prize?.locked);
                 const prizeEditingAllowed =
-                  game.status !== "live" &&
                   game.status !== "ended";
                 const disabled = !prizeEditingAllowed || locked || savingPrizes;
 
@@ -6150,7 +6084,6 @@ ${inviteUrl}`;
             onClick={savePrizeAmounts}
             disabled={
               savingPrizes ||
-              game.status === "live" ||
               game.status === "ended"
             }
             style={{
@@ -6158,7 +6091,6 @@ ${inviteUrl}`;
               marginTop: 14,
               opacity:
                 savingPrizes ||
-                game.status === "live" ||
                 game.status === "ended"
                   ? 0.55
                   : 1
@@ -6185,8 +6117,19 @@ ${inviteUrl}`;
           >
             Share Game automatically
             creates a real PNG poster
-            containing the game details,
-            updated prize amounts, and joining link.
+            containing the game details
+            and updated prize amounts.
+            The poster contains no game link.
+          </p>
+
+          <p
+            style={{
+              color: "#166534",
+              fontWeight: "bold",
+              marginTop: 0
+            }}
+          >
+            Save your new prize amounts first, then use the button below to generate a fresh poster with the updated prizes.
           </p>
 
           <input
@@ -6240,7 +6183,7 @@ ${inviteUrl}`;
             >
               {posterCreating
                 ? "Creating Poster..."
-                : "[STYLE] Share Updated Poster + Game"}
+                : "[STYLE] GENERATE UPDATED PRIZE POSTER + SHARE"}
             </button>
           </div>
 
