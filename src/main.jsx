@@ -8377,6 +8377,106 @@ function App() {
   );
 }
 
+
+/* =========================================================
+   PREMIUM DESIGN SYSTEM â€” UI ONLY
+   No game workflow/state/database logic is changed here.
+========================================================= */
+const PREMIUM_UI_CSS = `
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body, #root { min-height: 100%; }
+  html { background: #050914; }
+  body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #050914;
+    color: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button, input, select, textarea { font: inherit; }
+  button { -webkit-tap-highlight-color: transparent; }
+  input::placeholder, textarea::placeholder { opacity: .72; }
+
+  /* Premium page atmosphere */
+  #root > div {
+    min-height: 100vh;
+  }
+  #root > div::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 15% 10%, color-mix(in srgb, var(--theme-accent, #60a5fa) 12%, transparent), transparent 26%),
+      radial-gradient(circle at 85% 8%, color-mix(in srgb, var(--theme-secondary, #a78bfa) 10%, transparent), transparent 24%);
+  }
+
+  /* Glass surfaces */
+  #root > div > * { position: relative; z-index: 1; }
+  #root > div [style*="borderRadius"] {
+    transition: border-color .22s ease, box-shadow .22s ease, transform .22s ease, background .22s ease;
+  }
+  #root > div [style*="borderRadius"]:hover {
+    box-shadow: 0 22px 60px rgba(0,0,0,.34), 0 0 0 1px color-mix(in srgb, var(--theme-accent, #60a5fa) 18%, transparent) inset;
+  }
+
+  /* Inputs */
+  #root input, #root select, #root textarea {
+    color: var(--theme-input-text, #f8fafc) !important;
+    -webkit-text-fill-color: var(--theme-input-text, #f8fafc) !important;
+    background: var(--theme-input-bg, rgba(15,23,42,.88)) !important;
+    border-color: color-mix(in srgb, var(--theme-secondary, #94a3b8) 58%, transparent) !important;
+    border-radius: 14px !important;
+    outline: none;
+    transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  #root input:focus, #root select:focus, #root textarea:focus {
+    border-color: var(--theme-accent, #60a5fa) !important;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-accent, #60a5fa) 16%, transparent), 0 10px 28px rgba(0,0,0,.22) !important;
+  }
+
+  /* Buttons */
+  #root button {
+    border-radius: 14px;
+    transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+  }
+  #root button:not(:disabled):hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+  }
+  #root button:not(:disabled):active { transform: translateY(0) scale(.99); }
+  #root button:disabled { cursor: not-allowed; }
+
+  /* Typography hierarchy */
+  #root h1, #root h2, #root h3, #root h4 {
+    letter-spacing: -.025em;
+  }
+  #root label { font-weight: 700; }
+
+  /* Ticket/premium card feel */
+  #root [style*="gridTemplateColumns"] {
+    scrollbar-width: thin;
+  }
+
+  /* Mobile polish */
+  @media (max-width: 640px) {
+    #root > div { padding-left: 12px !important; padding-right: 12px !important; }
+    #root h1 { font-size: 28px !important; }
+    #root h2 { font-size: 22px !important; }
+    #root button { min-height: 44px; }
+  }
+`;
+
+if (typeof document !== "undefined" && !document.getElementById("tambola-premium-ui")) {
+  const style = document.createElement("style");
+  style.id = "tambola-premium-ui";
+  style.textContent = PREMIUM_UI_CSS;
+  document.head.appendChild(style);
+}
+
 /* =========================================================
    START APP
 ========================================================= */
