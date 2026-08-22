@@ -2561,6 +2561,13 @@ function PlayerBookingPage({
     setLoadingUnavailable
   ] = useState(true);
 
+  // Keep the ticket selector compact on phones and low-end Android devices.
+  // The first 15 tickets render initially; the rest are revealed on demand.
+  const [
+    showAllTickets,
+    setShowAllTickets
+  ] = useState(false);
+
   async function loadUnavailableTickets() {
     try {
       const {
@@ -2749,6 +2756,19 @@ function PlayerBookingPage({
         limit
       ]
     );
+
+  const INITIAL_TICKET_COUNT = 15;
+
+  const visibleTickets =
+    showAllTickets
+      ? tickets
+      : tickets.slice(
+          0,
+          Math.min(
+            INITIAL_TICKET_COUNT,
+            tickets.length
+          )
+        );
 
   function toggleTicket(
     number
@@ -3212,7 +3232,7 @@ function PlayerBookingPage({
               gap: 10
             }}
           >
-            {tickets.map(
+            {visibleTickets.map(
               (
                 ticket
               ) => {
@@ -3299,6 +3319,37 @@ function PlayerBookingPage({
               }
             )}
           </div>
+
+          {tickets.length > INITIAL_TICKET_COUNT && (
+            <button
+              type="button"
+              onClick={() =>
+                setShowAllTickets((current) => !current)
+              }
+              style={{
+                width: "100%",
+                marginTop: 14,
+                minHeight: 48,
+                borderRadius: 13,
+                border: `1px solid ${themeUI.colors.accent}66`,
+                background: showAllTickets
+                  ? "rgba(255,255,255,.10)"
+                  : `linear-gradient(135deg, ${themeUI.colors.accent}, ${themeUI.colors.secondary})`,
+                color: "#ffffff",
+                fontWeight: 800,
+                fontSize: 15,
+                letterSpacing: 0.3,
+                cursor: "pointer",
+                boxShadow: showAllTickets
+                  ? "none"
+                  : `0 8px 20px ${themeUI.colors.secondary}30`
+              }}
+            >
+              {showAllTickets
+                ? "SHOW LESS"
+                : `SHOW MORE (${tickets.length - visibleTickets.length} MORE)`}
+            </button>
+          )}
 
           <div
             style={{
