@@ -4077,6 +4077,18 @@ function getPlayerEnglishCallerPhrase(number) {
    LIVE GAME PAGE
 ========================================================= */
 
+// Player audio unlock state is shared across the player page so the browser
+// gesture can unlock speech before the next realtime game update arrives.
+function isPlayerSpeechUnlocked() {
+  return typeof window !== "undefined" && window.__tambolaPlayerSpeechUnlocked === true;
+}
+
+function markPlayerSpeechUnlocked() {
+  if (typeof window !== "undefined") {
+    window.__tambolaPlayerSpeechUnlocked = true;
+  }
+}
+
 function LiveGamePage({ game }) {
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
@@ -4096,7 +4108,7 @@ function LiveGamePage({ game }) {
   // Player-device voice state. Mobile browsers may block speech until the
   // player interacts with the page, so we keep the latest announcement and
   // unlock speech on the first tap/click.
-  const playerVoiceReadyRef = useRef(false);
+  const playerVoiceReadyRef = useRef(isPlayerSpeechUnlocked());
   const playerVoiceSpeakingRef = useRef(false);
   const playerVoiceQueueRef = useRef([]);
   const pendingPlayerNumberRef = useRef(null);
@@ -4119,7 +4131,7 @@ function LiveGamePage({ game }) {
         }))
     )
   );
-  const [playerVoiceEnabled, setPlayerVoiceEnabled] = useState(false);
+  const [playerVoiceEnabled, setPlayerVoiceEnabled] = useState(() => isPlayerSpeechUnlocked());
 
   const flushPlayerVoiceQueue = () => {
     if (!playerVoiceReadyRef.current || playerVoiceSpeakingRef.current) return;
@@ -4181,26 +4193,25 @@ function LiveGamePage({ game }) {
 
     try {
       playerVoiceReadyRef.current = true;
+      markPlayerSpeechUnlocked();
       setPlayerVoiceEnabled(true);
-      window.speechSynthesis.cancel();
 
-      const utterance = new SpeechSynthesisUtterance("Voice announcements enabled.");
+      // Do not announce an "enable voice" message. The first normal player
+      // interaction is only used to satisfy Android/iOS browser audio policy.
+      // A very short empty utterance primes speechSynthesis without changing
+      // the visible UI or speaking an extra sentence to the player.
+      window.speechSynthesis.cancel();
+      const unlockUtterance = new SpeechSynthesisUtterance(" ");
       applySpeechVoice(
-        utterance,
+        unlockUtterance,
         DEFAULT_VOICE_PRESET_ID,
         getAvailableSpeechVoices()
       );
-      utterance.rate = 0.9;
-      playerVoiceSpeakingRef.current = true;
-      utterance.onend = () => {
-        playerVoiceSpeakingRef.current = false;
-        flushPlayerVoiceQueue();
-      };
-      utterance.onerror = () => {
-        playerVoiceSpeakingRef.current = false;
-        flushPlayerVoiceQueue();
-      };
-      window.speechSynthesis.speak(utterance);
+      unlockUtterance.volume = 0;
+      unlockUtterance.rate = 10;
+      unlockUtterance.onend = () => flushPlayerVoiceQueue();
+      unlockUtterance.onerror = () => flushPlayerVoiceQueue();
+      window.speechSynthesis.speak(unlockUtterance);
 
       if (pendingPlayerNumberRef.current != null) {
         queuePlayerVoice(
@@ -4210,14 +4221,20 @@ function LiveGamePage({ game }) {
         pendingPlayerNumberRef.current = null;
       }
     } catch (err) {
-      console.error("Could not enable player voice:", err);
+      console.error("Could not unlock player voice:", err);
     }
   };
 
   // First user interaction unlocks speech on Android/iOS browsers.
   useEffect(() => {
     const unlock = () => {
-      if (!playerVoiceReadyRef.current) unlockPlayerVoice();
+      if (!playerVoiceReadyRef.current && !isPlayerSpeechUnlocked()) {
+        unlockPlayerVoice();
+      } else if (!playerVoiceReadyRef.current && isPlayerSpeechUnlocked()) {
+        playerVoiceReadyRef.current = true;
+        setPlayerVoiceEnabled(true);
+        flushPlayerVoiceQueue();
+      }
     };
 
     window.addEventListener("pointerdown", unlock, { passive: true });
@@ -4727,31 +4744,6 @@ function LiveGamePage({ game }) {
 
     return (
       <main style={themedPageStyle}>
-        <div
-          style={{
-            position: "sticky",
-            top: 8,
-            zIndex: 1001,
-            display: "flex",
-            justifyContent: "center",
-            padding: "8px 12px",
-            pointerEvents: "none"
-          }}
-        >
-          <button
-            type="button"
-            onClick={unlockPlayerVoice}
-            style={{
-              ...themedPrimaryButton,
-              pointerEvents: "auto",
-              minWidth: 190,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.18)"
-            }}
-          >
-            {playerVoiceEnabled ? "[VOICE] VOICE ENABLED" : "[VOICE] ENABLE VOICE"}
-          </button>
-        </div>
-
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -8752,17 +8744,6 @@ function App() {
     true
   );
 
-  const [
-    playerVoiceEnabled,
-    setPlayerVoiceEnabled
-  ] = useState(false);
-
-  const playerAnnouncementStateRef = useRef({
-    gameId: null,
-    calledNumbers: [],
-    winnerKeys: new Set()
-  });
-
   /* -------------------------------------------------------
      PLAYER GAME LOADING + REAL-TIME STATUS
   ------------------------------------------------------- */
@@ -8847,66 +8828,9 @@ function App() {
 
   /* -------------------------------------------------------
      PLAYER VOICE ANNOUNCEMENTS
-     Speech must run on the player's own device. The host only
-     publishes game state; each player speaks the new event locally.
+     Handled inside LiveGamePage so speech is unlocked by the player's
+     first normal interaction and announcements play locally on that device.
   ------------------------------------------------------- */
-  useEffect(() => {
-    if (!playerCode || !playerGame?.id) {
-      return undefined;
-    }
-
-    const currentCalledNumbers = Array.isArray(playerGame.called_numbers)
-      ? playerGame.called_numbers
-      : [];
-    const currentWinnerKeys = getPlayerWinnerKeys(playerGame);
-    const state = playerAnnouncementStateRef.current;
-
-    // Establish a baseline without replaying old calls/winners when a player
-    // first opens the live game or refreshes the page.
-    if (state.gameId !== playerGame.id) {
-      playerAnnouncementStateRef.current = {
-        gameId: playerGame.id,
-        calledNumbers: [...currentCalledNumbers],
-        winnerKeys: currentWinnerKeys
-      };
-      return undefined;
-    }
-
-    const previousCalled = state.calledNumbers || [];
-    const newNumbers = currentCalledNumbers.filter(
-      (number) => !previousCalled.includes(number)
-    );
-    const newWinnerEvents = getNewPlayerWinnerEvents(
-      playerGame,
-      state.winnerKeys || new Set()
-    );
-
-    playerAnnouncementStateRef.current = {
-      gameId: playerGame.id,
-      calledNumbers: [...currentCalledNumbers],
-      winnerKeys: currentWinnerKeys
-    };
-
-    if (!playerVoiceEnabled) {
-      return undefined;
-    }
-
-    const announcementQueue = [];
-
-    newNumbers.forEach((number) => {
-      announcementQueue.push(getPlayerEnglishCallerPhrase(number));
-    });
-
-    getWinnerAnnouncementParts(newWinnerEvents).forEach((text) => {
-      announcementQueue.push(text);
-    });
-
-    if (announcementQueue.length) {
-      speakPlayerAnnouncementQueue(announcementQueue);
-    }
-
-    return undefined;
-  }, [playerCode, playerGame, playerVoiceEnabled]);
 
   /* -------------------------------------------------------
      HOST GAME REAL-TIME SYNC
@@ -9217,55 +9141,6 @@ function App() {
     ) {
       return (
         <>
-          {!playerVoiceEnabled && (
-            <div
-              style={{
-                position: "fixed",
-                left: 12,
-                right: 12,
-                bottom: 12,
-                zIndex: 9999,
-                display: "flex",
-                justifyContent: "center",
-                pointerEvents: "none"
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  try {
-                    if ("speechSynthesis" in window) {
-                      window.speechSynthesis.cancel();
-                      const utterance = new SpeechSynthesisUtterance(
-                        "Voice announcements enabled. Get ready for the next number."
-                      );
-                      applySpeechVoice(
-                        utterance,
-                        DEFAULT_VOICE_PRESET_ID,
-                        getAvailableSpeechVoices()
-                      );
-                      window.speechSynthesis.speak(utterance);
-                    }
-                  } finally {
-                    setPlayerVoiceEnabled(true);
-                  }
-                }}
-                style={{
-                  pointerEvents: "auto",
-                  border: "0",
-                  borderRadius: 999,
-                  padding: "13px 20px",
-                  fontSize: 16,
-                  fontWeight: 800,
-                  color: "#fff",
-                  background: "linear-gradient(135deg, #f59e0b, #ef4444)",
-                  boxShadow: "0 8px 24px rgba(0,0,0,.35)"
-                }}
-              >
-                ðŸ”Š Enable Voice Announcements
-              </button>
-            </div>
-          )}
           <LiveGamePage
             game={
               playerGame
