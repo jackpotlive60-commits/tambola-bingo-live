@@ -791,7 +791,17 @@ function posterTheme(theme) {
         background: "#24113f",
         accent: "#f5c542",
         secondary: "#8b5cf6",
-        text: "#ffffff"
+        text: "#ffffff",
+        muted: "#d8c8f2",
+        surface: "#171126",
+        surface2: "#21173a",
+        inputBg: "#fbf9ff",
+        inputText: "#171126",
+        panelBg: "#f7f3fb",
+        panelText: "#171126",
+        panelMuted: "#5b526a",
+        ticketBg: "#fbf9ff",
+        ticketText: "#171126"
       };
 
     case "Party":
@@ -799,7 +809,17 @@ function posterTheme(theme) {
         background: "#7c1d5c",
         accent: "#facc15",
         secondary: "#22d3ee",
-        text: "#ffffff"
+        text: "#ffffff",
+        muted: "#d9d2e7",
+        surface: "#171126",
+        surface2: "#291536",
+        inputBg: "#fffaff",
+        inputText: "#171126",
+        panelBg: "#f7f3fb",
+        panelText: "#171126",
+        panelMuted: "#5b526a",
+        ticketBg: "#fffaff",
+        ticketText: "#171126"
       };
 
     case "Bollywood":
@@ -807,7 +827,17 @@ function posterTheme(theme) {
         background: "#7f1d1d",
         accent: "#fbbf24",
         secondary: "#fb7185",
-        text: "#ffffff"
+        text: "#ffffff",
+        muted: "#f0d6d8",
+        surface: "#1d0d12",
+        surface2: "#321016",
+        inputBg: "#fffafa",
+        inputText: "#1d0d12",
+        panelBg: "#fff7f7",
+        panelText: "#1d0d12",
+        panelMuted: "#674b50",
+        ticketBg: "#fffafa",
+        ticketText: "#1d0d12"
       };
 
     case "Neon":
@@ -815,7 +845,17 @@ function posterTheme(theme) {
         background: "#07111f",
         accent: "#22d3ee",
         secondary: "#a78bfa",
-        text: "#ffffff"
+        text: "#ffffff",
+        muted: "#b9c7d9",
+        surface: "#07101d",
+        surface2: "#0d1a2b",
+        inputBg: "#f7fbff",
+        inputText: "#07111f",
+        panelBg: "#f4fbff",
+        panelText: "#07111f",
+        panelMuted: "#536579",
+        ticketBg: "#f7fbff",
+        ticketText: "#07111f"
       };
 
     case "Elegant":
@@ -823,7 +863,17 @@ function posterTheme(theme) {
         background: "#172033",
         accent: "#d4af37",
         secondary: "#94a3b8",
-        text: "#ffffff"
+        text: "#ffffff",
+        muted: "#c4ceda",
+        surface: "#101722",
+        surface2: "#182232",
+        inputBg: "#fbfcfd",
+        inputText: "#101722",
+        panelBg: "#f6f8fb",
+        panelText: "#101722",
+        panelMuted: "#53606f",
+        ticketBg: "#fbfcfd",
+        ticketText: "#101722"
       };
 
     default:
@@ -831,7 +881,17 @@ function posterTheme(theme) {
         background: "#172554",
         accent: "#fbbf24",
         secondary: "#60a5fa",
-        text: "#ffffff"
+        text: "#ffffff",
+        muted: "#c6d4e5",
+        surface: "#0f172a",
+        surface2: "#16213a",
+        inputBg: "#f8fbff",
+        inputText: "#0f172a",
+        panelBg: "#f5f8fc",
+        panelText: "#0f172a",
+        panelMuted: "#526174",
+        ticketBg: "#f8fbff",
+        ticketText: "#0f172a"
       };
   }
 }
@@ -855,40 +915,55 @@ function getThemeUI(theme) {
     colors,
     page: {
       background,
-      color: "#0f172a",
+      color: colors.text,
       padding: 20,
       position: "relative",
       overflowX: "hidden",
       "--theme-accent": colors.accent,
       "--theme-secondary": colors.secondary,
       "--theme-bg": colors.background,
+      "--theme-text": colors.panelText,
+      "--theme-muted": colors.muted,
+      "--theme-surface": colors.surface,
+      "--theme-surface2": colors.surface2,
+      "--theme-input-bg": colors.inputBg,
+      "--theme-input-text": colors.inputText,
+      "--theme-input-muted": colors.panelMuted,
+      "--theme-panel-bg": colors.panelBg,
+      "--theme-panel-text": colors.panelText,
+      "--theme-panel-muted": colors.panelMuted,
+      "--theme-ticket-bg": colors.ticketBg,
+      "--theme-ticket-text": colors.ticketText,
       "--theme-glow": `${colors.secondary}35`
     },
     card: {
-      background: `linear-gradient(145deg, rgba(15,23,42,.94), rgba(15,23,42,.82))`,
+      background: `linear-gradient(145deg, ${colors.surface}f7, ${colors.surface2}e8)`,
       border: `1px solid ${colors.accent}66`,
       borderTop: `3px solid ${colors.accent}`,
       borderRadius: 24,
       padding: 24,
-      color: "#f8fafc",
+      color: colors.text,
       boxShadow: `0 22px 60px rgba(0,0,0,.34), 0 0 0 1px ${colors.secondary}18 inset, 0 0 34px ${colors.secondary}16`,
       backdropFilter: "blur(16px)"
     },
     input: {
       border: `1px solid ${colors.secondary}70`,
-      boxShadow: `0 0 0 4px ${colors.secondary}0c, 0 8px 20px rgba(15,23,42,.05)`,
-      background: "rgba(255,255,255,.98)",
-      color: "#0f172a"
+      boxShadow: `0 0 0 4px ${colors.secondary}0c, 0 8px 20px rgba(0,0,0,.12)`,
+      background: colors.inputBg,
+      color: colors.inputText,
+      WebkitTextFillColor: colors.inputText,
+      caretColor: colors.accent
     },
     primary: {
       background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.secondary} 100%)`,
+      color: "#ffffff",
       boxShadow: `0 12px 28px ${colors.secondary}45`,
       transform: "translateY(0)"
     },
     secondary: {
       border: `1px solid ${colors.secondary}66`,
-      background: "rgba(255,255,255,.96)",
-      color: "#0f172a",
+      background: colors.inputBg,
+      color: colors.inputText,
       boxShadow: `0 6px 16px ${colors.secondary}12`
     }
   };
@@ -949,7 +1024,7 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
           {title}
         </div>
         {subtitle && (
-          <div style={{ marginTop: 8, color: "#cbd5e1", fontSize: 14 }}>
+          <div style={{ marginTop: 8, color: "var(--theme-panel-muted, #64748b)", fontSize: 14 }}>
             {subtitle}
           </div>
         )}
@@ -1452,7 +1527,7 @@ const pageStyle = {
 
 const cardStyle = {
   background: "#fff",
-                      color: "#0f172a",
+                      color: "var(--theme-text, #0f172a)",
   border: "1px solid #e5e7eb",
   borderRadius: 16,
   padding: 20,
@@ -1490,7 +1565,7 @@ const secondaryButton = {
     "1px solid #cbd5e1",
   borderRadius: 9,
   background: "#fff",
-                      color: "#0f172a",
+                      color: "var(--theme-text, #0f172a)",
   color: "#111827",
   fontWeight: "bold",
   cursor: "pointer"
@@ -1997,7 +2072,7 @@ function CreateGamePage({
               >
                 <div style={{ fontSize: 12, letterSpacing: 1.5, color: getThemeUI(theme).colors.accent, fontWeight: 800 }}>THEME PREVIEW</div>
                 <div style={{ fontSize: 20, fontWeight: 900, marginTop: 4 }}>{theme}</div>
-                <div style={{ color: "#cbd5e1", fontSize: 13, marginTop: 4 }}>This visual identity will follow the game across every page.</div>
+                <div style={{ color: "var(--theme-muted, #cbd5e1)", fontSize: 13, marginTop: 4 }}>This visual identity will follow the game across every page.</div>
               </div>
             </div>
           </section>
@@ -3230,9 +3305,11 @@ function PlayerBookingPage({
               borderRadius:
                 11,
               background:
-                "#f8fafc",
+                "var(--theme-panel-bg, #f8fafc)",
+              color:
+                "var(--theme-panel-text, #0f172a)",
               border:
-                "1px solid #e2e8f0"
+                "1px solid var(--theme-secondary, #e2e8f0)66"
             }}
           >
             <b>
@@ -3974,7 +4051,7 @@ function LiveGamePage({ game }) {
           <section style={{ ...themedCardStyle, textAlign: "center" }}>
             <div style={{ fontSize: 44 }}>[WINNER]</div>
             <h1 style={{ marginBottom: 8 }}>FINAL GAME RESULTS</h1>
-            <p style={{ color: "#64748b", fontSize: 15, marginTop: 8 }}>
+            <p style={{ color: "var(--theme-muted, #64748b)", fontSize: 15, marginTop: 8 }}>
               Game complete. Your final results are shown below.
             </p>
 
@@ -3986,17 +4063,17 @@ function LiveGamePage({ game }) {
                 gap: 10
               }}
             >
-              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "var(--theme-panel-bg, #f8fafc)" }}>
                 <b>Numbers Called</b>
                 <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>{calledNumbers.length}</div>
               </div>
-              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "var(--theme-panel-bg, #f8fafc)" }}>
                 <b>Prizes Won</b>
                 <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>
                   {finalPrizes.filter((prize) => prize?.locked).length}
                 </div>
               </div>
-              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "var(--theme-panel-bg, #f8fafc)" }}>
                 <b>Winner Entries</b>
                 <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>{finalWinners.length}</div>
               </div>
@@ -4019,8 +4096,8 @@ function LiveGamePage({ game }) {
                 style={{
                   maxWidth: 760,
                   margin: "30px auto",
-                  background: "#fff",
-                      color: "#0f172a",
+                  background: "var(--theme-panel-bg, #fff)",
+                      color: "var(--theme-panel-text, #0f172a)",
                   borderRadius: 18,
                   padding: 20,
                   boxShadow: "0 20px 60px rgba(0,0,0,.25)"
@@ -4035,7 +4112,7 @@ function LiveGamePage({ game }) {
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: 13, color: "#64748b", fontWeight: "bold" }}>
+                    <div style={{ fontSize: 13, color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
                       GAME COMPLETE
                     </div>
                     <h2 style={{ margin: "5px 0 0" }}>FINAL GAME SUMMARY</h2>
@@ -4087,8 +4164,8 @@ function LiveGamePage({ game }) {
                         style={{
                           padding: 13,
                           borderRadius: 12,
-                          background: "#f8fafc",
-                      color: "#0f172a",
+                          background: "var(--theme-panel-bg, #f8fafc)",
+                      color: "var(--theme-panel-text, #0f172a)",
                           border: "1px solid #e2e8f0"
                         }}
                       >
@@ -4136,7 +4213,7 @@ function LiveGamePage({ game }) {
                     style={{
                       padding: 15,
                       borderRadius: 12,
-                      background: prize.locked ? "#f0fdf4" : "#f8fafc",
+                      background: prize.locked ? "#f0fdf4" : "var(--theme-panel-bg, #f8fafc)",
                       border: `1px solid ${prize.locked ? "#bbf7d0" : "#e2e8f0"}`
                     }}
                   >
@@ -4152,7 +4229,7 @@ function LiveGamePage({ game }) {
                         {winners.map((winner, winnerIndex) => (
                           <div
                             key={`${prizeIndex}-${winner.bookingId || ""}-${winner.ticketNumber || ""}-${winnerIndex}`}
-                            style={{ padding: 9, borderRadius: 9, background: "#fff" }}
+                            style={{ padding: 9, borderRadius: 9, background: "var(--theme-panel-bg, #fff)" }}
                           >
                             <b>{winner.playerName || "Player"}</b> - Ticket #{winner.ticketNumber}
                             {winner.prizeShare != null ? ` - ${formatPrizeAmount(winner.prizeShare)}` : ""}
@@ -4160,7 +4237,7 @@ function LiveGamePage({ game }) {
                         ))}
                       </div>
                     ) : (
-                      <div style={{ marginTop: 8, color: "#64748b" }}>No confirmed winner.</div>
+                      <div style={{ marginTop: 8, color: "var(--theme-muted, #64748b)" }}>No confirmed winner.</div>
                     )}
                   </div>
                 );
@@ -4180,7 +4257,7 @@ function LiveGamePage({ game }) {
             >
               <div>
                 <h2 style={{ marginBottom: 4 }}>LIVE GAME HISTORY</h2>
-                <div style={{ color: "#64748b", fontSize: 14 }}>
+                <div style={{ color: "var(--theme-muted, #64748b)", fontSize: 14 }}>
                   Read-only history of the game that just finished.
                 </div>
               </div>
@@ -4202,14 +4279,14 @@ function LiveGamePage({ game }) {
                 gap: 10
               }}
             >
-              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "var(--theme-panel-bg, #f8fafc)" }}>
                 <b>Numbers Called</b>
                 <div style={{ fontSize: 28, fontWeight: "bold", marginTop: 6 }}>
                   {calledNumbers.length}
                 </div>
               </div>
 
-              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "var(--theme-panel-bg, #f8fafc)" }}>
                 <b>Last Call</b>
                 <div style={{ fontSize: 28, fontWeight: "bold", marginTop: 6 }}>
                   {lastCalled ?? "-"}
@@ -4281,7 +4358,7 @@ function LiveGamePage({ game }) {
                   ))}
                 </div>
               ) : (
-                <div style={{ color: "#64748b" }}>
+                <div style={{ color: "var(--theme-muted, #64748b)" }}>
                   No confirmed winners recorded.
                 </div>
               )}
@@ -4381,7 +4458,7 @@ function LiveGamePage({ game }) {
             {lastCalled || "-"}
           </div>
 
-          <div style={{ color: "#64748b", fontWeight: "bold" }}>
+          <div style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
             Total Called: {calledNumbers.length}/90
           </div>
         </section>
@@ -4398,7 +4475,7 @@ function LiveGamePage({ game }) {
             }}
           >
             <h2 style={{ margin: 0 }}>Called Number Board</h2>
-            <div style={{ color: "#64748b", fontWeight: "bold" }}>
+            <div style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
               {calledNumbers.length}/90 called
             </div>
           </div>
@@ -4428,7 +4505,7 @@ function LiveGamePage({ game }) {
                       ? "2px solid #2563eb"
                       : "1px solid #e2e8f0",
                     background: isCalled ? "#2563eb" : "#fff",
-                    color: isCalled ? "#fff" : "#64748b",
+                    color: isCalled ? "#fff" : "var(--theme-panel-text, #0f172a)",
                     fontWeight: "bold",
                     fontSize: 16,
                     boxShadow: isLast
@@ -4457,7 +4534,7 @@ function LiveGamePage({ game }) {
               gap: 16,
               flexWrap: "wrap",
               marginTop: 16,
-              color: "#64748b",
+              color: "var(--theme-muted, #64748b)",
               fontSize: 13,
               fontWeight: "bold"
             }}
@@ -4479,13 +4556,13 @@ function LiveGamePage({ game }) {
             }}
           >
             <h2 style={{ margin: 0 }}>Call History</h2>
-            <div style={{ color: "#64748b", fontWeight: "bold" }}>
+            <div style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
               {calledNumbers.length} calls
             </div>
           </div>
 
           {calledNumbers.length === 0 ? (
-            <p style={{ color: "#64748b", marginBottom: 0 }}>
+            <p style={{ color: "var(--theme-muted, #64748b)", marginBottom: 0 }}>
               Call history will appear here as numbers are called.
             </p>
           ) : (
@@ -4508,7 +4585,7 @@ function LiveGamePage({ game }) {
                     border: index === 0
                       ? "2px solid #2563eb"
                       : "1px solid #e2e8f0",
-                    background: index === 0 ? "#eff6ff" : "#f8fafc",
+                    background: index === 0 ? `${themeUI.colors.secondary}18` : "var(--theme-panel-bg, #f8fafc)",
                     textAlign: "center"
                   }}
                 >
@@ -4531,12 +4608,12 @@ function LiveGamePage({ game }) {
         {playerBooking && (
           <section data-live-section="4-my-booked-tickets" style={themedCardStyle}>
             <h2>Your Booked Tickets</h2>
-            <p style={{ color: "#64748b" }}>
+            <p style={{ color: "var(--theme-muted, #64748b)" }}>
               Player: <b>{playerBooking.playerName}</b>
             </p>
 
             {loadingPlayerBookings ? (
-              <p style={{ color: "#64748b" }}>
+              <p style={{ color: "var(--theme-muted, #64748b)" }}>
                 Loading your tickets...
               </p>
             ) : (
@@ -4563,7 +4640,7 @@ function LiveGamePage({ game }) {
                     />
                   ))
                 ) : (
-                  <p style={{ color: "#64748b" }}>
+                  <p style={{ color: "var(--theme-muted, #64748b)" }}>
                     No accepted tickets found for this player yet.
                   </p>
                 )}
@@ -4599,7 +4676,7 @@ function LiveGamePage({ game }) {
               [SEARCH] Search / Clear
             </button>
           </div>
-          <p style={{ color: "#64748b", marginBottom: 0 }}>
+          <p style={{ color: "var(--theme-muted, #64748b)", marginBottom: 0 }}>
             Search will filter the All Booked Tickets below.
           </p>
         </section>
@@ -4619,7 +4696,7 @@ function LiveGamePage({ game }) {
               <h2 style={{ marginBottom: 5 }}>
                 All Booked 3x9 Tickets
               </h2>
-              <p style={{ color: "#64748b", marginTop: 0 }}>
+              <p style={{ color: "var(--theme-muted, #64748b)", marginTop: 0 }}>
                 Every accepted player's ticket is visible to everyone.
               </p>
             </div>
@@ -4638,7 +4715,7 @@ function LiveGamePage({ game }) {
           </div>
 
           {loadingBookings ? (
-            <p style={{ color: "#64748b", marginTop: 18 }}>
+            <p style={{ color: "var(--theme-muted, #64748b)", marginTop: 18 }}>
               Loading booked tickets...
             </p>
           ) : filteredBookedTickets.length === 0 ? (
@@ -4647,11 +4724,11 @@ function LiveGamePage({ game }) {
                 marginTop: 18,
                 padding: 20,
                 borderRadius: 12,
-                background: "#f8fafc",
-                      color: "#0f172a",
+                background: "var(--theme-panel-bg, #f8fafc)",
+                      color: "var(--theme-panel-text, #0f172a)",
                 border: "1px solid #e2e8f0",
                 textAlign: "center",
-                color: "#64748b"
+                color: "var(--theme-muted, #64748b)"
               }}
             >
               {allBookedTickets.length === 0
@@ -4687,7 +4764,7 @@ function LiveGamePage({ game }) {
         <div
           style={{
             textAlign: "center",
-            color: "#64748b",
+            color: "var(--theme-muted, #64748b)",
             padding: "10px 0 30px"
           }}
         >
@@ -4709,7 +4786,7 @@ function WinnerHistory({ history }) {
       <h2>Winner History</h2>
 
       {history.length === 0 ? (
-        <p style={{ color: "#64748b" }}>
+        <p style={{ color: "var(--theme-muted, #64748b)" }}>
           No confirmed winners yet.
         </p>
       ) : (
@@ -4745,7 +4822,7 @@ function WinnerHistory({ history }) {
               <div
                 style={{
                   marginTop: 4,
-                  color: "#64748b",
+                  color: "var(--theme-muted, #64748b)",
                   fontSize: 13
                 }}
               >
@@ -4778,7 +4855,7 @@ function LivePrizeList({ game }) {
       <h2>[WINNER] Prizes & Winners</h2>
 
       {prizes.length === 0 ? (
-        <p style={{ color: "#64748b" }}>
+        <p style={{ color: "var(--theme-muted, #64748b)" }}>
           No prizes have been configured for this game.
         </p>
       ) : (
@@ -4817,7 +4894,7 @@ function LivePrizeList({ game }) {
                     {prize.description && (
                       <div
                         style={{
-                          color: "#64748b",
+                          color: "var(--theme-muted, #64748b)",
                           fontSize: 13,
                           marginTop: 3
                         }}
@@ -4849,8 +4926,8 @@ function LivePrizeList({ game }) {
                         style={{
                           padding: "9px 10px",
                           borderRadius: 8,
-                          background: "#fff",
-                      color: "#0f172a",
+                          background: "var(--theme-panel-bg, #fff)",
+                      color: "var(--theme-panel-text, #0f172a)",
                           border: "1px solid #bbf7d0",
                           fontWeight: "bold"
                         }}
@@ -6458,7 +6535,7 @@ function HostControlPage({
 
           <p
             style={{
-              color: "#64748b",
+              color: "var(--theme-muted, #64748b)",
               marginTop: 0
             }}
           >
@@ -6472,15 +6549,15 @@ function HostControlPage({
               gap: 8,
               alignItems: "center",
               padding: "10px 12px",
-              background: "#f8fafc",
-                      color: "#0f172a",
+              background: "var(--theme-panel-bg, #f8fafc)",
+              color: "var(--theme-panel-text, #0f172a)",
               borderRadius: 10,
               fontWeight: "bold",
               marginBottom: 8
             }}
           >
-            <div style={{ color: "#0f172a" }}>Prize</div>
-            <div style={{ color: "#0f172a" }}>Amount (INR)</div>
+            <div style={{ color: "var(--theme-panel-text, #0f172a)" }}>Prize</div>
+            <div style={{ color: "var(--theme-panel-text, #0f172a)" }}>Amount (INR)</div>
           </div>
 
           {(editablePrizes.length === 0 && prizes.length === 0) ? (
@@ -6488,9 +6565,8 @@ function HostControlPage({
               style={{
                 padding: 14,
                 borderRadius: 10,
-                background: "#f8fafc",
-                      color: "#0f172a",
-                color: "#64748b"
+                background: "var(--theme-panel-bg, #f8fafc)",
+                      color: "var(--theme-panel-muted, #64748b)"
               }}
             >
               No prizes configured for this game.
@@ -6518,11 +6594,11 @@ function HostControlPage({
                         padding: 12,
                         border: "1px solid #e5e7eb",
                         borderRadius: 9,
-                        background: locked ? "#f8fafc" : "#fff",
-                        color: "#0f172a"
+                        background: locked ? "var(--theme-panel-bg, #f8fafc)" : "var(--theme-panel-bg, #fff)",
+                        color: "var(--theme-panel-text, #0f172a)"
                       }}
                     >
-                      <b style={{ color: "#0f172a" }}>{prize.name || `Prize ${index + 1}`}</b>
+                      <b style={{ color: "var(--theme-panel-text, #0f172a)" }}>{prize.name || `Prize ${index + 1}`}</b>
                       {locked && (
                         <div style={{ marginTop: 3, color: "#166534", fontSize: 12, fontWeight: "bold" }}>
                           LOCKED - WINNER CONFIRMED
@@ -6745,11 +6821,11 @@ function HostControlPage({
                 textAlign:
                   "center",
                 background:
-                  "#f8fafc",
+                  "var(--theme-panel-bg, #f8fafc)",
                 borderRadius:
                   10,
                 color:
-                  "#64748b"
+                  "var(--theme-panel-muted, #64748b)"
               }}
             >
               No player bookings
@@ -6787,7 +6863,9 @@ function HostControlPage({
                         padding:
                           15,
                         background:
-                          "#fff"
+                          "var(--theme-input-bg, #fff)",
+                        color:
+                          "var(--theme-input-text, #0f172a)"
                       }}
                     >
                       <div
@@ -7140,8 +7218,8 @@ function HostControlPage({
                   padding: "10px 12px",
                   border: "1px solid #cbd5e1",
                   borderRadius: 10,
-                  background: "#f8fafc",
-                      color: "#0f172a",
+                  background: "var(--theme-panel-bg, #f8fafc)",
+                      color: "var(--theme-panel-text, #0f172a)",
                   fontWeight: "bold"
                 }}
               >
@@ -7184,8 +7262,8 @@ function HostControlPage({
                   padding: "10px 12px",
                   border: "1px solid #cbd5e1",
                   borderRadius: 10,
-                  background: "#f8fafc",
-                      color: "#0f172a",
+                  background: "var(--theme-panel-bg, #f8fafc)",
+                      color: "var(--theme-panel-text, #0f172a)",
                   fontWeight: "bold"
                 }}
               >
@@ -7198,8 +7276,8 @@ function HostControlPage({
                     padding: "8px 10px",
                     borderRadius: 8,
                     border: "1px solid #cbd5e1",
-                    background: "#fff",
-                      color: "#0f172a",
+                    background: "var(--theme-panel-bg, #fff)",
+                      color: "var(--theme-panel-text, #0f172a)",
                     fontWeight: "bold"
                   }}
                 >
@@ -7367,8 +7445,8 @@ function HostControlPage({
                 maxWidth: 620,
                 maxHeight: "90vh",
                 overflowY: "auto",
-                background: "#fff",
-                      color: "#0f172a",
+                background: "var(--theme-panel-bg, #fff)",
+                      color: "var(--theme-panel-text, #0f172a)",
                 borderRadius: 22,
                 padding: 24,
                 boxShadow: "0 25px 70px rgba(0,0,0,0.35)",
@@ -7377,7 +7455,7 @@ function HostControlPage({
             >
               <div style={{ fontSize: 54 }}>[WINNER]</div>
               <h2 style={{ margin: "8px 0 6px" }}>WINNER DETECTED!</h2>
-              <p style={{ color: "#64748b", marginTop: 0 }}>
+              <p style={{ color: "var(--theme-muted, #64748b)", marginTop: 0 }}>
                 Winners are announced and prizes are locked automatically. Auto Call continues.
               </p>
 
@@ -7415,8 +7493,8 @@ function HostControlPage({
                           style={{
                             padding: "10px 12px",
                             borderRadius: 10,
-                            background: "#fff",
-                      color: "#0f172a",
+                            background: "var(--theme-panel-bg, #fff)",
+                      color: "var(--theme-panel-text, #0f172a)",
                             fontWeight: "bold"
                           }}
                         >
@@ -7439,7 +7517,7 @@ function HostControlPage({
                     <div
                       style={{
                         marginTop: 8,
-                        color: "#64748b",
+                        color: "var(--theme-muted, #64748b)",
                         fontSize: 13
                       }}
                     >
@@ -7531,8 +7609,8 @@ function HostControlPage({
                 maxWidth: 720,
                 maxHeight: "90vh",
                 overflowY: "auto",
-                background: "#fff",
-                      color: "#0f172a",
+                background: "var(--theme-panel-bg, #fff)",
+                      color: "var(--theme-panel-text, #0f172a)",
                 borderRadius: 22,
                 padding: 24,
                 boxShadow: "0 25px 70px rgba(0,0,0,0.35)"
@@ -7540,7 +7618,7 @@ function HostControlPage({
             >
               <div style={{ textAlign: "center" }}>
                 <h2 style={{ marginTop: 0 }}>GAME SUMMARY</h2>
-                <p style={{ color: "#64748b" }}>
+                <p style={{ color: "var(--theme-muted, #64748b)" }}>
                   Full House has been confirmed. Review all confirmed prizes before ending the game.
                 </p>
               </div>
@@ -7552,7 +7630,7 @@ function HostControlPage({
                     style={{
                       padding: 14,
                       borderRadius: 12,
-                      background: prize.locked ? "#f0fdf4" : "#f8fafc",
+                      background: prize.locked ? "#f0fdf4" : "var(--theme-panel-bg, #f8fafc)",
                       border: `1px solid ${prize.locked ? "#bbf7d0" : "#e2e8f0"}`
                     }}
                   >
@@ -7612,7 +7690,7 @@ function HostControlPage({
 
           <p
             style={{
-              color: "#64748b",
+              color: "var(--theme-muted, #64748b)",
               marginTop: 0
             }}
           >
@@ -7626,16 +7704,16 @@ function HostControlPage({
               gap: 8,
               alignItems: "center",
               padding: "10px 12px",
-              background: "#f8fafc",
-                      color: "#0f172a",
+              background: "var(--theme-panel-bg, #f8fafc)",
+              color: "var(--theme-panel-text, #0f172a)",
               borderRadius: 10,
               fontWeight: "bold",
               marginBottom: 8
             }}
           >
-            <div style={{ color: "#0f172a" }}>Prize</div>
-            <div style={{ color: "#0f172a" }}>Amount</div>
-            <div style={{ color: "#0f172a" }}>Winner</div>
+            <div style={{ color: "var(--theme-panel-text, #0f172a)" }}>Prize</div>
+            <div style={{ color: "var(--theme-panel-text, #0f172a)" }}>Amount</div>
+            <div style={{ color: "var(--theme-panel-text, #0f172a)" }}>Winner</div>
           </div>
 
           {(Array.isArray(game.selected_prizes) ? game.selected_prizes : []).length === 0 ? (
@@ -7643,9 +7721,8 @@ function HostControlPage({
               style={{
                 padding: 14,
                 borderRadius: 10,
-                background: "#f8fafc",
-                      color: "#0f172a",
-                color: "#64748b"
+                background: "var(--theme-panel-bg, #f8fafc)",
+                      color: "var(--theme-panel-muted, #64748b)"
               }}
             >
               No prizes configured for this game.
@@ -7667,12 +7744,12 @@ function HostControlPage({
                       padding: 12,
                       border: `1px solid ${confirmed ? "#bbf7d0" : "#e5e7eb"}`,
                       borderRadius: 10,
-                      background: confirmed ? "#f0fdf4" : "#fff",
-                      color: confirmed ? "#166534" : "#0f172a"
+                      background: confirmed ? "#f0fdf4" : "var(--theme-panel-bg, #fff)",
+                      color: confirmed ? "#166534" : "var(--theme-panel-text, #0f172a)"
                     }}
                   >
                     <div>
-                      <b style={{ color: "#0f172a" }}>{prize?.name || `Prize ${index + 1}`}</b>
+                      <b style={{ color: "var(--theme-panel-text, #0f172a)" }}>{prize?.name || `Prize ${index + 1}`}</b>
                     </div>
 
                     <div>
@@ -7697,7 +7774,7 @@ function HostControlPage({
                           ))}
                         </div>
                       ) : (
-                        <span style={{ color: "#64748b" }}>Waiting for a winner</span>
+                        <span style={{ color: "var(--theme-muted, #64748b)" }}>Waiting for a winner</span>
                       )}
                     </div>
                   </div>
@@ -7738,13 +7815,14 @@ function InfoBox({
         padding: 16,
         border: "1px solid var(--theme-secondary, #cbd5e1)",
         borderRadius: 14,
-        background: "linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.04))",
+        background: "var(--theme-panel-bg, #f8fafc)",
+        color: "var(--theme-panel-text, #0f172a)",
         boxShadow: "0 8px 20px rgba(0,0,0,.12) inset"
       }}
     >
       <div
         style={{
-          color: "#cbd5e1",
+          color: "var(--theme-panel-muted, #64748b)",
           fontSize: 13,
           marginBottom:
             5
@@ -7755,7 +7833,7 @@ function InfoBox({
         }
       </div>
 
-      <b>
+      <b style={{ color: "var(--theme-panel-text, #0f172a)" }}>
         {
           value
         }
@@ -7776,17 +7854,19 @@ function StatusBox({
         textAlign:
           "center",
         border:
-          "1px solid #e5e7eb",
+          "1px solid var(--theme-secondary, #e5e7eb)",
         borderRadius:
           10,
         background:
-          "#f8fafc"
+          "var(--theme-panel-bg, #f8fafc)",
+        color:
+          "var(--theme-panel-text, #0f172a)"
       }}
     >
       <div
         style={{
           color:
-            "#64748b",
+            "var(--theme-panel-muted, #64748b)",
           fontSize:
             13
         }}
