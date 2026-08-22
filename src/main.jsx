@@ -6927,7 +6927,8 @@ function StatusBox({
 
 function App() {
   const [
-    playerCode
+    playerCode,
+    setPlayerCode
   ] = useState(
     () =>
       getGameFromUrl()
@@ -7204,13 +7205,14 @@ function App() {
   function handleCreated(
     newGame
   ) {
-    setGame(
-      newGame
-    );
-
-    saveHostGame(
-      newGame
-    );
+    // Creating a game always takes the host directly to
+    // the Host Control Centre. Clear any player-link route
+    // state first so the player booking page cannot win the
+    // routing decision.
+    setPlayerCode(null);
+    setPlayerGame(null);
+    setGame(newGame);
+    saveHostGame(newGame);
 
     window.history.replaceState(
       {},
