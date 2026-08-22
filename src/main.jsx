@@ -858,27 +858,38 @@ function getThemeUI(theme) {
       color: "#0f172a",
       padding: 20,
       position: "relative",
-      overflowX: "hidden"
+      overflowX: "hidden",
+      "--theme-accent": colors.accent,
+      "--theme-secondary": colors.secondary,
+      "--theme-bg": colors.background,
+      "--theme-glow": `${colors.secondary}35`
     },
     card: {
-      background: "rgba(255,255,255,.96)",
-      border: `1px solid ${colors.accent}55`,
-      borderRadius: 20,
-      boxShadow: `0 14px 40px rgba(0,0,0,.22), 0 0 0 1px ${colors.secondary}12 inset`,
-      backdropFilter: "blur(10px)"
+      background: `linear-gradient(145deg, rgba(15,23,42,.94), rgba(15,23,42,.82))`,
+      border: `1px solid ${colors.accent}66`,
+      borderTop: `3px solid ${colors.accent}`,
+      borderRadius: 24,
+      padding: 24,
+      color: "#f8fafc",
+      boxShadow: `0 22px 60px rgba(0,0,0,.34), 0 0 0 1px ${colors.secondary}18 inset, 0 0 34px ${colors.secondary}16`,
+      backdropFilter: "blur(16px)"
     },
     input: {
-      border: `1px solid ${colors.secondary}66`,
-      boxShadow: `0 0 0 3px ${colors.secondary}0d`
+      border: `1px solid ${colors.secondary}70`,
+      boxShadow: `0 0 0 4px ${colors.secondary}0c, 0 8px 20px rgba(15,23,42,.05)`,
+      background: "rgba(255,255,255,.98)",
+      color: "#0f172a"
     },
     primary: {
-      background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
-      boxShadow: `0 8px 22px ${colors.secondary}35`
+      background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.secondary} 100%)`,
+      boxShadow: `0 12px 28px ${colors.secondary}45`,
+      transform: "translateY(0)"
     },
     secondary: {
       border: `1px solid ${colors.secondary}66`,
-      background: "rgba(255,255,255,.92)",
-      color: "#0f172a"
+      background: "rgba(255,255,255,.96)",
+      color: "#0f172a",
+      boxShadow: `0 6px 16px ${colors.secondary}12`
     }
   };
 }
@@ -1441,13 +1452,12 @@ const pageStyle = {
 
 const cardStyle = {
   background: "#fff",
-  border:
-    "1px solid #e5e7eb",
+  border: "1px solid #e5e7eb",
   borderRadius: 16,
   padding: 20,
   marginBottom: 18,
-  boxShadow:
-    "0 3px 10px rgba(0,0,0,.05)"
+  boxShadow: "0 3px 10px rgba(0,0,0,.05)",
+  boxSizing: "border-box"
 };
 
 const inputStyle = {
@@ -2164,23 +2174,22 @@ function TicketGridComponent({
         onSelect
       }
       style={{
-        border:
-          selected
-            ? "4px solid #2563eb"
-            : "2px solid #111827",
-        borderRadius:
-          14,
-        padding: 12,
-        background:
-          selected
-            ? "#eff6ff"
-            : "#fff",
-        cursor:
-          "pointer",
-        boxShadow:
-          selected
-            ? "0 0 0 3px rgba(37,99,235,.12)"
-            : "none"
+        border: selected
+          ? "3px solid var(--theme-secondary, #2563eb)"
+          : "1px solid rgba(15,23,42,.14)",
+        borderLeft: selected
+          ? "6px solid var(--theme-accent, #2563eb)"
+          : "4px solid var(--theme-secondary, #94a3b8)",
+        borderRadius: 18,
+        padding: 14,
+        background: selected
+          ? "linear-gradient(145deg, rgba(239,246,255,.98), rgba(255,255,255,.98))"
+          : "linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)",
+        cursor: "pointer",
+        boxShadow: selected
+          ? "0 14px 32px var(--theme-glow, rgba(37,99,235,.16))"
+          : "0 10px 24px rgba(15,23,42,.08)",
+        transition: "transform .18s ease, box-shadow .18s ease, border-color .18s ease"
       }}
     >
       <div
@@ -2197,7 +2206,9 @@ function TicketGridComponent({
       >
         <b
           style={{
-            fontSize: 21
+            fontSize: 21,
+            letterSpacing: "-.02em",
+            color: "#0f172a"
           }}
         >
           Ticket #
@@ -2214,12 +2225,13 @@ function TicketGridComponent({
               8,
             background:
               selected
-                ? "#2563eb"
-                : "#f1f5f9",
+                ? "linear-gradient(135deg, var(--theme-accent, #2563eb), var(--theme-secondary, #60a5fa))"
+                : "#eef2f7",
             color:
               selected
                 ? "#fff"
                 : "#475569",
+            border: selected ? "none" : "1px solid #e2e8f0",
             fontWeight:
               "bold",
             fontSize: 13
@@ -2311,8 +2323,8 @@ function TicketGridComponent({
                         called
                           ? "#fde68a"
                           : value
-                          ? "#fff"
-                          : "#f8fafc",
+                          ? "#ffffff"
+                          : "#f1f5f9",
                       color:
                         called
                           ? "#92400e"
@@ -7677,22 +7689,17 @@ function InfoBox({
   return (
     <div
       style={{
-        padding:
-          14,
-        border:
-          "1px solid #e5e7eb",
-        borderRadius:
-          10,
-        background:
-          "#f8fafc"
+        padding: 16,
+        border: "1px solid var(--theme-secondary, #cbd5e1)",
+        borderRadius: 14,
+        background: "linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.04))",
+        boxShadow: "0 8px 20px rgba(0,0,0,.12) inset"
       }}
     >
       <div
         style={{
-          color:
-            "#64748b",
-          fontSize:
-            13,
+          color: "#cbd5e1",
+          fontSize: 13,
           marginBottom:
             5
         }}
