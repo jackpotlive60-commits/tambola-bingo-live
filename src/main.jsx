@@ -42,220 +42,6 @@ const DEFAULT_PRIZES = [
 }));
 
 /* =========================================================
-   PLAYER VOICE UNLOCK
-
-   Mobile browsers block audible autoplay until the player has
-   interacted with the page. We unlock speech from ANY normal
-   player-page interaction (including the booking page), so the
-   player does not need to press a dedicated voice button.
-========================================================= */
-
-let playerSpeechUnlocked = false;
-let playerSpeechUnlockStarted = false;
-
-/* =========================================================
-   PLAYER NUMBER AUDIO
-   Uses real MP3 assets from /public/voice instead of
-   speechSynthesis for live called-number announcements.
-   The audio element is primed from a real player gesture
-   (BOOK tap or any normal player-page interaction) and the
-   same element is reused for later calls.
-========================================================= */
-
-const playerAudioState = {
-  unlocked: false,
-  audio: null,
-  queue: [],
-  playing: false,
-  priming: false
-};
-
-function getPlayerAudioElement() {
-  if (!playerAudioState.audio) {
-    const audio = new Audio();
-    audio.preload = "auto";
-    audio.volume = 1;
-    audio.playsInline = true;
-    playerAudioState.audio = audio;
-  }
-
-  return playerAudioState.audio;
-}
-
-function primePlayerAudioFromGesture() {
-  if (playerAudioState.unlocked) {
-    return Promise.resolve(true);
-  }
-
-  if (playerAudioState.priming) {
-    return Promise.resolve(false);
-  }
-
-  playerAudioState.priming = true;
-
-  try {
-    const audio = getPlayerAudioElement();
-
-    // A muted play is used only to initialize the media element during
-    // the user's gesture. No "voice ready" message is played.
-    audio.src = "/voice/welcome.mp3";
-    audio.currentTime = 0;
-    audio.muted = true;
-    audio.volume = 0;
-
-    const result = audio.play();
-
-    if (result && typeof result.then === "function") {
-      return result
-        .then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.muted = false;
-          audio.volume = 1;
-          playerAudioState.unlocked = true;
-          playerAudioState.priming = false;
-          flushPlayerAudioQueue();
-          return true;
-        })
-        .catch((error) => {
-          console.warn("Player audio prime was blocked:", error);
-          playerAudioState.priming = false;
-          return false;
-        });
-    }
-
-    audio.pause();
-    audio.currentTime = 0;
-    audio.muted = false;
-    audio.volume = 1;
-    playerAudioState.unlocked = true;
-    playerAudioState.priming = false;
-    flushPlayerAudioQueue();
-    return Promise.resolve(true);
-  } catch (error) {
-    console.warn("Player audio could not be primed:", error);
-    playerAudioState.priming = false;
-    return Promise.resolve(false);
-  }
-}
-
-function playPlayerAudioFile(fileName) {
-  playerAudioState.queue.push(fileName);
-
-  if (!playerAudioState.unlocked) {
-    return;
-  }
-
-  flushPlayerAudioQueue();
-}
-
-function flushPlayerAudioQueue() {
-  if (
-    !playerAudioState.unlocked ||
-    playerAudioState.playing ||
-    !playerAudioState.queue.length
-  ) {
-    return;
-  }
-
-  const next = playerAudioState.queue.shift();
-  const audio = getPlayerAudioElement();
-
-  playerAudioState.playing = true;
-
-  audio.pause();
-  audio.currentTime = 0;
-  audio.src = `/voice/${next}`;
-  audio.muted = false;
-  audio.volume = 1;
-
-  const finish = () => {
-    audio.onended = null;
-    audio.onerror = null;
-    playerAudioState.playing = false;
-    flushPlayerAudioQueue();
-  };
-
-  audio.onended = finish;
-  audio.onerror = (event) => {
-    console.warn("Could not play player voice asset:", next, event);
-    finish();
-  };
-
-  const result = audio.play();
-
-  if (result && typeof result.catch === "function") {
-    result.catch((error) => {
-      console.warn("Player audio playback was blocked:", error);
-      finish();
-    });
-  }
-}
-
-function getPreferredEnglishSpeechVoice() {
-  if (!("speechSynthesis" in window)) return null;
-
-  const voices = window.speechSynthesis.getVoices() || [];
-  return (
-    voices.find((voice) => /^en-US$/i.test(voice.lang)) ||
-    voices.find((voice) => /^en-GB$/i.test(voice.lang)) ||
-    voices.find((voice) => /^en-IN$/i.test(voice.lang)) ||
-    voices.find((voice) => /^en(-|_)/i.test(voice.lang)) ||
-    null
-  );
-}
-
-function unlockPlayerSpeechFromGesture() {
-  if (playerSpeechUnlocked || playerSpeechUnlockStarted) {
-    return playerSpeechUnlocked;
-  }
-
-  if (!("speechSynthesis" in window)) {
-    return false;
-  }
-
-  playerSpeechUnlockStarted = true;
-
-  try {
-    const synth = window.speechSynthesis;
-    synth.resume();
-
-    // Unlock speech silently. Do NOT announce anything here.
-    // The booking message is spoken only after a successful Book action.
-    const englishVoice = getPreferredEnglishSpeechVoice();
-
-    const utterance = new SpeechSynthesisUtterance("");
-    utterance.lang = englishVoice?.lang || "en-US";
-    utterance.volume = 0;
-
-    if (englishVoice) {
-      utterance.voice = englishVoice;
-    }
-
-    utterance.onstart = () => {
-      playerSpeechUnlocked = true;
-      window.dispatchEvent(new Event("player-speech-unlocked"));
-    };
-
-    utterance.onend = () => {
-      playerSpeechUnlocked = true;
-      window.dispatchEvent(new Event("player-speech-unlocked"));
-    };
-
-    utterance.onerror = () => {
-      playerSpeechUnlockStarted = false;
-    };
-
-    synth.speak(utterance);
-    return true;
-  } catch (error) {
-    console.warn("Player speech could not be unlocked:", error);
-    playerSpeechUnlockStarted = false;
-    return false;
-  }
-}
-
-/* =========================================================
    BASIC HELPERS
 ========================================================= */
 
@@ -496,6 +282,8 @@ function speakWinnerAnnouncement(events) {
   try {
     if (!("speechSynthesis" in window) || !events?.length) return;
 
+    window.speechSynthesis.cancel();
+
     const parts = events.map((event) => {
       const voicePrizeName = getPrizeVoiceName(event.prizeName);
       const names = event.winners.map((winner) => winner.playerName);
@@ -520,14 +308,6 @@ function speakWinnerAnnouncement(events) {
     utterance.rate = 0.82;
     utterance.pitch = 1.04;
     utterance.volume = 1;
-
-    const englishVoice = getPreferredEnglishSpeechVoice();
-    if (englishVoice) {
-      utterance.voice = englishVoice;
-      utterance.lang = englishVoice.lang;
-    }
-
-    window.speechSynthesis.resume();
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.error("Could not announce winner:", err);
@@ -2750,6 +2530,10 @@ function PlayerBookingPage({
     setMessageType
   ] = useState("info");
 
+  // Keep long ticket sections compact on mobile.
+  const [showAllTicketNumbers, setShowAllTicketNumbers] = useState(false);
+  const [showAllTicketCards, setShowAllTicketCards] = useState(false);
+
   useEffect(() => {
     const savedName = getSavedPlayerName(game.id);
     if (savedName && !playerName) {
@@ -3008,42 +2792,16 @@ function PlayerBookingPage({
     setSelected([]);
   }
 
-  function speakBookingPendingMessage() {
-    if (!("speechSynthesis" in window)) return;
+  const INITIAL_TICKET_NUMBER_COUNT = 30;
+  const INITIAL_TICKET_CARD_COUNT = 15;
 
-    try {
-      // The Book tap is a real user gesture. Prime the real MP3 player
-      // silently so Live Game can later play called-number assets.
-      primePlayerAudioFromGesture();
+  const visibleTicketNumbers = showAllTicketNumbers
+    ? tickets
+    : tickets.slice(0, INITIAL_TICKET_NUMBER_COUNT);
 
-      // Keep the existing speech unlock state for the booking-status message.
-      playerSpeechUnlocked = true;
-      playerSpeechUnlockStarted = false;
-      window.dispatchEvent(new Event("player-speech-unlocked"));
-
-      const synth = window.speechSynthesis;
-      synth.cancel();
-      synth.resume();
-
-      const utterance = new SpeechSynthesisUtterance(
-        "Booking pending. Waiting for host approval."
-      );
-      utterance.lang = "en-US";
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      const englishVoice = getPreferredEnglishSpeechVoice();
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-        utterance.lang = englishVoice.lang;
-      }
-
-      synth.speak(utterance);
-    } catch (error) {
-      console.warn("Booking pending announcement failed:", error);
-    }
-  }
+  const visibleTicketCards = showAllTicketCards
+    ? tickets
+    : tickets.slice(0, INITIAL_TICKET_CARD_COUNT);
 
   async function bookTickets() {
     const name =
@@ -3269,10 +3027,6 @@ function PlayerBookingPage({
           )}. Waiting for host approval.`
       );
 
-      // Speak the professional booking-status message ONLY after the
-      // player's Book action succeeds. Voice unlocking itself is silent.
-      speakBookingPendingMessage();
-
       // Clear only this submission. Existing bookings do not lock this player
       // out of making another booking for any still-available ticket.
       setSelected([]);
@@ -3469,7 +3223,7 @@ function PlayerBookingPage({
               gap: 10
             }}
           >
-            {tickets.map(
+            {visibleTicketNumbers.map(
               (
                 ticket
               ) => {
@@ -3556,6 +3310,31 @@ function PlayerBookingPage({
               }
             )}
           </div>
+
+          {tickets.length > INITIAL_TICKET_NUMBER_COUNT && (
+            <button
+              type="button"
+              onClick={() => setShowAllTicketNumbers((current) => !current)}
+              style={{
+                width: "100%",
+                marginTop: 14,
+                minHeight: 46,
+                borderRadius: 12,
+                border: `1px solid ${themeUI.colors.accent}66`,
+                background: showAllTicketNumbers
+                  ? "rgba(255,255,255,.10)"
+                  : `linear-gradient(135deg, ${themeUI.colors.accent}, ${themeUI.colors.secondary})`,
+                color: "#fff",
+                fontWeight: 800,
+                fontSize: 15,
+                cursor: "pointer"
+              }}
+            >
+              {showAllTicketNumbers
+                ? "SHOW LESS"
+                : `SHOW MORE (${tickets.length - visibleTicketNumbers.length} MORE)`}
+            </button>
+          )}
 
           <div
             style={{
@@ -3663,7 +3442,7 @@ function PlayerBookingPage({
               gap: 18
             }}
           >
-            {tickets.map(
+            {visibleTicketCards.map(
               (
                 ticket
               ) => {
@@ -3745,6 +3524,31 @@ function PlayerBookingPage({
               }
             )}
           </div>
+
+          {tickets.length > INITIAL_TICKET_CARD_COUNT && (
+            <button
+              type="button"
+              onClick={() => setShowAllTicketCards((current) => !current)}
+              style={{
+                width: "100%",
+                marginTop: 14,
+                minHeight: 46,
+                borderRadius: 12,
+                border: `1px solid ${themeUI.colors.accent}66`,
+                background: showAllTicketCards
+                  ? "rgba(255,255,255,.10)"
+                  : `linear-gradient(135deg, ${themeUI.colors.accent}, ${themeUI.colors.secondary})`,
+                color: "#fff",
+                fontWeight: 800,
+                fontSize: 15,
+                cursor: "pointer"
+              }}
+            >
+              {showAllTicketCards
+                ? "SHOW LESS"
+                : `SHOW MORE (${tickets.length - visibleTicketCards.length} MORE)`}
+            </button>
+          )}
         </section>
 
         <section
@@ -3881,152 +3685,11 @@ function LiveGamePage({ game }) {
     Array.isArray(game.called_numbers) ? game.called_numbers : []
   );
   const [liveGame, setLiveGame] = useState(game);
-  const liveGameRef = useRef(game);
-  liveGameRef.current = liveGame;
   const finalAnnouncementSpokenRef = useRef(false);
   const finalSummaryTimerRef = useRef(null);
   const [showFinalResults, setShowFinalResults] = useState(false);
   const [viewFinishedLive, setViewFinishedLive] = useState(false);
-
-  // Player-side voice tracking. Live called numbers use MP3 assets,
-  // while the existing speech unlock remains available for other
-  // announcements.
-  const playerVoiceUnlockedRef = useRef(playerSpeechUnlocked);
-  const playerVoiceReadyRef = useRef(playerAudioState.unlocked);
-  const playerCalledNumbersRef = useRef(
-    Array.isArray(game.called_numbers) ? game.called_numbers.map(Number) : []
-  );
-  const playerWinnerKeysRef = useRef(
-    (Array.isArray(game.selected_prizes) ? game.selected_prizes : [])
-      .flatMap((prize, prizeIndex) =>
-        (Array.isArray(prize?.winners) ? prize.winners : []).map((winner) =>
-          `${prizeIndex}|${prize?.name || `Prize ${prizeIndex + 1}`}|${winner?.playerName || "Player"}|${winner?.ticketNumber}|${winner?.winningNumber}`
-        )
-      )
-  );
-
-  // Any normal interaction on the Live Game page can prime the MP3
-  // player. This is silent and requires no visible voice button.
-  useEffect(() => {
-    const unlockFromGesture = () => {
-      primePlayerAudioFromGesture().then((unlocked) => {
-        if (unlocked) {
-          playerVoiceUnlockedRef.current = true;
-          playerVoiceReadyRef.current = true;
-          playerSpeechUnlocked = true;
-          window.dispatchEvent(new Event("player-speech-unlocked"));
-        }
-      });
-    };
-
-    const options = { capture: true, passive: true };
-    window.addEventListener("pointerdown", unlockFromGesture, options);
-    window.addEventListener("touchstart", unlockFromGesture, options);
-    window.addEventListener("click", unlockFromGesture, options);
-    window.addEventListener("keydown", unlockFromGesture, options);
-
-    if (playerAudioState.unlocked || playerSpeechUnlocked) {
-      playerVoiceUnlockedRef.current = true;
-      playerVoiceReadyRef.current = true;
-    }
-
-    return () => {
-      window.removeEventListener("pointerdown", unlockFromGesture, true);
-      window.removeEventListener("touchstart", unlockFromGesture, true);
-      window.removeEventListener("click", unlockFromGesture, true);
-      window.removeEventListener("keydown", unlockFromGesture, true);
-    };
-  }, []);
-
-  function speakPlayerNumber(number) {
-    const numericNumber = Number(number);
-
-    if (
-      !Number.isInteger(numericNumber) ||
-      numericNumber < 1 ||
-      numericNumber > 90
-    ) {
-      return;
-    }
-
-    // Real MP3: /public/voice/number-N.mp3
-    playPlayerAudioFile(`number-${numericNumber}.mp3`);
-  }
-
-  useEffect(() => {
-    const nextNumbers = Array.isArray(liveGame.called_numbers)
-      ? liveGame.called_numbers
-          .map(Number)
-          .filter((n) => Number.isInteger(n))
-      : [];
-
-    const previousNumbers = playerCalledNumbersRef.current;
-
-    if (playerAudioState.unlocked || playerSpeechUnlocked) {
-      playerVoiceUnlockedRef.current = true;
-      playerVoiceReadyRef.current = true;
-    }
-
-    const newlyCalled = nextNumbers.filter(
-      (number) => !previousNumbers.includes(number)
-    );
-
-    playerCalledNumbersRef.current = nextNumbers;
-
-    if (!newlyCalled.length || !playerVoiceUnlockedRef.current) return;
-
-    newlyCalled.forEach((number, index) => {
-      window.setTimeout(() => {
-        if (playerAudioState.unlocked || playerVoiceUnlockedRef.current) {
-          speakPlayerNumber(number);
-        }
-      }, index * 1800);
-    });
-  }, [liveGame.called_numbers]);
-
-  useEffect(() => {
-    const prizes = Array.isArray(liveGame.selected_prizes) ? liveGame.selected_prizes : [];
-    const newlyConfirmedEvents = [];
-    const nextKeys = [];
-
-    prizes.forEach((prize, prizeIndex) => {
-      const winners = Array.isArray(prize?.winners) ? prize.winners : [];
-      winners.forEach((winner) => {
-        const key = `${prizeIndex}|${prize?.name || `Prize ${prizeIndex + 1}`}|${winner?.playerName || "Player"}|${winner?.ticketNumber}|${winner?.winningNumber}`;
-        nextKeys.push(key);
-      });
-
-      const newWinners = winners.filter((winner) => {
-        const key = `${prizeIndex}|${prize?.name || `Prize ${prizeIndex + 1}`}|${winner?.playerName || "Player"}|${winner?.ticketNumber}|${winner?.winningNumber}`;
-        return !playerWinnerKeysRef.current.includes(key);
-      });
-
-      if (newWinners.length) {
-        newlyConfirmedEvents.push({
-          prizeName: prize?.name || `Prize ${prizeIndex + 1}`,
-          prizeAmount: prize?.amount ?? prize?.prizeAmount ?? 0,
-          winningNumber: newWinners[0]?.winningNumber,
-          winners: newWinners
-        });
-      }
-    });
-
-    playerWinnerKeysRef.current = nextKeys;
-
-    if (
-      !newlyConfirmedEvents.length ||
-      (!playerAudioState.unlocked && !playerSpeechUnlocked)
-    ) {
-      return;
-    }
-
-    window.setTimeout(() => {
-      if (playerAudioState.unlocked) {
-        playPlayerAudioFile("prize-winner.mp3");
-      }
-      speakWinnerAnnouncement(newlyConfirmedEvents);
-    }, 300);
-  }, [liveGame.selected_prizes]);
+  const [showAllCalledNumbers, setShowAllCalledNumbers] = useState(false);
 
   useEffect(() => {
     if (finalSummaryTimerRef.current) {
@@ -4098,6 +3761,11 @@ function LiveGamePage({ game }) {
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [searchText, setSearchText] = useState("");
+
+  const INITIAL_CALLED_BOARD_COUNT = 30;
+  const visibleCalledBoardNumbers = showAllCalledNumbers
+    ? Array.from({ length: 90 }, (_, i) => i + 1)
+    : Array.from({ length: INITIAL_CALLED_BOARD_COUNT }, (_, i) => i + 1);
 
   async function loadMyBookings() {
     const playerKey = getOrCreatePlayerKey(game.id);
@@ -4891,7 +4559,7 @@ function LiveGamePage({ game }) {
               marginTop: 16
             }}
           >
-            {Array.from({ length: 90 }, (_, i) => i + 1).map((number) => {
+            {visibleCalledBoardNumbers.map((number) => {
               const isCalled = calledNumbers.includes(number);
               const isLast = lastCalled === number;
 
@@ -4929,6 +4597,31 @@ function LiveGamePage({ game }) {
               );
             })}
           </div>
+
+          {90 > INITIAL_CALLED_BOARD_COUNT && (
+            <button
+              type="button"
+              onClick={() => setShowAllCalledNumbers((current) => !current)}
+              style={{
+                width: "100%",
+                marginTop: 14,
+                minHeight: 46,
+                borderRadius: 12,
+                border: `1px solid ${themeUI.colors.accent}66`,
+                background: showAllCalledNumbers
+                  ? "rgba(255,255,255,.10)"
+                  : `linear-gradient(135deg, ${themeUI.colors.accent}, ${themeUI.colors.secondary})`,
+                color: "#fff",
+                fontWeight: 800,
+                fontSize: 15,
+                cursor: "pointer"
+              }}
+            >
+              {showAllCalledNumbers
+                ? "SHOW LESS"
+                : "SHOW MORE (60 MORE)"}
+            </button>
+          )}
 
           <div
             style={{
@@ -8340,29 +8033,6 @@ function App() {
       if (
         playerCode
       ) {
-        const unlockOptions = { capture: true, passive: true };
-
-        window.addEventListener(
-          "pointerdown",
-          unlockPlayerSpeechFromGesture,
-          unlockOptions
-        );
-        window.addEventListener(
-          "touchstart",
-          unlockPlayerSpeechFromGesture,
-          unlockOptions
-        );
-        window.addEventListener(
-          "click",
-          unlockPlayerSpeechFromGesture,
-          unlockOptions
-        );
-        window.addEventListener(
-          "keydown",
-          unlockPlayerSpeechFromGesture,
-          unlockOptions
-        );
-
         const cleanCode =
           String(
             playerCode
@@ -8417,27 +8087,6 @@ function App() {
         return () => {
           clearInterval(
             interval
-          );
-
-          window.removeEventListener(
-            "pointerdown",
-            unlockPlayerSpeechFromGesture,
-            true
-          );
-          window.removeEventListener(
-            "touchstart",
-            unlockPlayerSpeechFromGesture,
-            true
-          );
-          window.removeEventListener(
-            "click",
-            unlockPlayerSpeechFromGesture,
-            true
-          );
-          window.removeEventListener(
-            "keydown",
-            unlockPlayerSpeechFromGesture,
-            true
           );
 
           supabase.removeChannel(
@@ -8597,8 +8246,6 @@ function App() {
           current.status === data.status &&
           JSON.stringify(current.called_numbers || []) ===
             JSON.stringify(data.called_numbers || []) &&
-          JSON.stringify(current.selected_prizes || []) ===
-            JSON.stringify(data.selected_prizes || []) &&
           current.game_name === data.game_name &&
           current.game_code === data.game_code
         ) {
