@@ -4203,32 +4203,83 @@ function LiveGamePage({ game }) {
         </section>
 
         {/* 2. CALLED NUMBER BOARD */}
-        <section data-live-section="2-called-number-board" style={{ ...cardStyle, textAlign: "center" }}>
-          <div style={{ color: "#64748b", fontWeight: "bold" }}>
-            Called Number Board
+        <section data-live-section="2-called-number-board" style={cardStyle}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap"
+            }}
+          >
+            <h2 style={{ margin: 0 }}>Called Number Board</h2>
+            <div style={{ color: "#64748b", fontWeight: "bold" }}>
+              {calledNumbers.length}/90 called
+            </div>
           </div>
 
           <div
             style={{
-              width: 150,
-              height: 150,
-              margin: "15px auto",
-              borderRadius: "50%",
-              background: "#2563eb",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 58,
-              fontWeight: "bold",
-              boxShadow: "0 10px 30px rgba(37,99,235,.25)"
+              display: "grid",
+              gridTemplateColumns: "repeat(10,minmax(0,1fr))",
+              gap: 8,
+              marginTop: 16
             }}
           >
-            {lastCalled || "-"}
+            {Array.from({ length: 90 }, (_, i) => i + 1).map((number) => {
+              const isCalled = calledNumbers.includes(number);
+              const isLast = lastCalled === number;
+
+              return (
+                <div
+                  key={`board-${number}`}
+                  style={{
+                    minHeight: 42,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 10,
+                    border: isCalled
+                      ? "2px solid #2563eb"
+                      : "1px solid #e2e8f0",
+                    background: isCalled ? "#2563eb" : "#fff",
+                    color: isCalled ? "#fff" : "#64748b",
+                    fontWeight: "bold",
+                    fontSize: 16,
+                    boxShadow: isLast
+                      ? "0 0 0 3px #facc15, 0 5px 14px rgba(37,99,235,.18)"
+                      : "none",
+                    transform: isLast ? "scale(1.04)" : "none"
+                  }}
+                  title={
+                    isLast
+                      ? `Last called number: ${number}`
+                      : isCalled
+                      ? `Called: ${number}`
+                      : `Not called: ${number}`
+                  }
+                >
+                  {number}
+                </div>
+              );
+            })}
           </div>
 
-          <div style={{ color: "#64748b" }}>
-            Last called number
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 16,
+              flexWrap: "wrap",
+              marginTop: 16,
+              color: "#64748b",
+              fontSize: 13,
+              fontWeight: "bold"
+            }}
+          >
+            <span>Blue = called</span>
+            <span>Yellow outline = last called</span>
           </div>
         </section>
 
@@ -6201,11 +6252,17 @@ function HostControlPage({
         </section>
 
         <section
-          style={
-            cardStyle
-          }
+          data-host-section="prize-amounts"
+          style={{
+            ...cardStyle,
+            display: "block",
+            visibility: "visible",
+            minHeight: 220,
+            position: "relative",
+            zIndex: 2
+          }}
         >
-          <h2>
+          <h2 style={{ marginTop: 0 }}>
             Prize Amounts
           </h2>
 
@@ -6235,7 +6292,7 @@ function HostControlPage({
             <div>Amount (INR)</div>
           </div>
 
-          {editablePrizes.length === 0 ? (
+          {(editablePrizes.length === 0 && prizes.length === 0) ? (
             <div
               style={{
                 padding: 14,
@@ -6248,7 +6305,7 @@ function HostControlPage({
             </div>
           ) : (
             <div style={{ display: "grid", gap: 8 }}>
-              {editablePrizes.map((prize, index) => {
+              {(editablePrizes.length ? editablePrizes : prizes).map((prize, index) => {
                 const locked = Boolean(prize?.locked);
                 const prizeEditingAllowed =
                   game.status !== "ended";
