@@ -7400,6 +7400,111 @@ function HostControlPage({
           </div>
         )}
 
+        <section
+          data-host-section="prize-winners-overview"
+          style={{
+            ...cardStyle,
+            marginTop: 16
+          }}
+        >
+          <h2 style={{ marginTop: 0 }}>
+            Prize Winners
+          </h2>
+
+          <p
+            style={{
+              color: "#64748b",
+              marginTop: 0
+            }}
+          >
+            Prize status and confirmed winners. This section updates with the saved game results.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.2fr 1fr 1.5fr",
+              gap: 8,
+              alignItems: "center",
+              padding: "10px 12px",
+              background: "#f8fafc",
+              borderRadius: 10,
+              fontWeight: "bold",
+              marginBottom: 8
+            }}
+          >
+            <div>Prize</div>
+            <div>Amount</div>
+            <div>Winner</div>
+          </div>
+
+          {(Array.isArray(game.selected_prizes) ? game.selected_prizes : []).length === 0 ? (
+            <div
+              style={{
+                padding: 14,
+                borderRadius: 10,
+                background: "#f8fafc",
+                color: "#64748b"
+              }}
+            >
+              No prizes configured for this game.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 8 }}>
+              {(Array.isArray(game.selected_prizes) ? game.selected_prizes : []).map((prize, index) => {
+                const winners = Array.isArray(prize?.winners) ? prize.winners : [];
+                const confirmed = Boolean(prize?.locked) || winners.length > 0;
+
+                return (
+                  <div
+                    key={`host-prize-winner-${index}`}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1.2fr 1fr 1.5fr",
+                      gap: 8,
+                      alignItems: "start",
+                      padding: 12,
+                      border: `1px solid ${confirmed ? "#bbf7d0" : "#e5e7eb"}`,
+                      borderRadius: 10,
+                      background: confirmed ? "#f0fdf4" : "#fff"
+                    }}
+                  >
+                    <div>
+                      <b>{prize?.name || `Prize ${index + 1}`}</b>
+                    </div>
+
+                    <div>
+                      {prize?.amount !== "" && prize?.amount != null
+                        ? formatPrizeAmount(prize.amount)
+                        : "-"}
+                    </div>
+
+                    <div>
+                      {winners.length > 0 ? (
+                        <div style={{ display: "grid", gap: 4 }}>
+                          {winners.map((winner, winnerIndex) => (
+                            <div
+                              key={`host-winner-${index}-${winner.bookingId || ""}-${winner.ticketNumber || ""}-${winnerIndex}`}
+                              style={{ fontWeight: "bold", color: "#166534" }}
+                            >
+                              {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
+                              {winner.prizeShare != null
+                                ? ` - ${formatPrizeAmount(winner.prizeShare)}`
+                                : ""}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: "#64748b" }}>Waiting for a winner</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         <button
           onClick={
             onNewGame
