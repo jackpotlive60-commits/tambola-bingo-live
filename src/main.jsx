@@ -4645,6 +4645,12 @@ function HostControlPage({
 
   const callingRef = useRef(false);
 
+  // Keep prize edits as a local draft until the host presses SAVE.
+  // This prevents parent game updates/re-renders from overwriting an
+  // amount while the host is typing or editing a prize.
+  const prizeDraftDirtyRef = useRef(false);
+  const prizeDraftGameIdRef = useRef(game.id);
+
   useEffect(
     () => {
       setCalledNumbers(
@@ -4662,6 +4668,18 @@ function HostControlPage({
 
   useEffect(
     () => {
+      // If the host is editing the current game's prizes, preserve the
+      // local draft. Only sync from game state when there is no draft,
+      // or when Host Control Centre has switched to another game.
+      if (prizeDraftGameIdRef.current !== game.id) {
+        prizeDraftGameIdRef.current = game.id;
+        prizeDraftDirtyRef.current = false;
+      }
+
+      if (prizeDraftDirtyRef.current) {
+        return;
+      }
+
       setEditablePrizes(
         (Array.isArray(game.selected_prizes)
           ? game.selected_prizes
@@ -4669,7 +4687,7 @@ function HostControlPage({
         ).map((prize) => ({ ...prize }))
       );
     },
-    [game.selected_prizes]
+    [game.id, game.selected_prizes]
   );
 
   async function loadBookings() {
@@ -4983,6 +5001,8 @@ function HostControlPage({
   }
 
   function updateEditablePrizeAmount(index, amount) {
+    prizeDraftDirtyRef.current = true;
+
     setEditablePrizes((current) =>
       current.map((prize, prizeIndex) =>
         prizeIndex === index
@@ -5025,6 +5045,11 @@ function HostControlPage({
         ...game,
         selected_prizes: selectedPrizes
       };
+
+      // The draft is now committed to the game, so future game-state
+      // updates are allowed to refresh the local prize fields again.
+      prizeDraftDirtyRef.current = false;
+      prizeDraftGameIdRef.current = updatedGame.id;
 
       setEditablePrizes(
         (updatedGame.selected_prizes || []).map((prize) => ({ ...prize }))
