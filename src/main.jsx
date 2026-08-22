@@ -2076,7 +2076,9 @@ function TicketGridComponent({
   ticket,
   selected,
   onSelect,
-  calledNumbers = []
+  calledNumbers = [],
+  ownerName = "",
+  status = ""
 }) {
   return (
     <div
@@ -2150,6 +2152,39 @@ function TicketGridComponent({
             : "AVAILABLE"}
         </span>
       </div>
+
+      {ownerName && (
+        <div
+          style={{
+            marginBottom: 10,
+            padding: "8px 10px",
+            borderRadius: 8,
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            fontWeight: "bold",
+            color: "#312e81"
+          }}
+        >
+          {ownerName}
+        </div>
+      )}
+
+      {status && (
+        <div
+          style={{
+            marginBottom: 10,
+            padding: "6px 10px",
+            borderRadius: 8,
+            display: "inline-block",
+            background: status === "accepted" ? "#dcfce7" : "#fef3c7",
+            color: status === "accepted" ? "#166534" : "#92400e",
+            fontWeight: "bold",
+            fontSize: 12
+          }}
+        >
+          {status === "accepted" ? "BOOKED" : "PENDING APPROVAL"}
+        </div>
+      )}
 
       <div
         style={{
@@ -2748,6 +2783,9 @@ function PlayerBookingPage({
           )}. Waiting for host approval.`
       );
 
+      const whatsappText = `Hello Host, I would like to request approval for my ticket booking.\n\nGame: ${game.game_name || game.game_code}\nGame Code: ${game.game_code}\nPlayer Name: ${name}\nTicket Numbers: ${sortedTickets.map((n) => `#${n}`).join(", ")}\n\nPlease approve my booking. Thank you!`;
+      window.location.href = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+
       setSelected([]);
 
       await loadUnavailableTickets();
@@ -3000,7 +3038,7 @@ function PlayerBookingPage({
                             3
                         }}
                       >
-                        BOOKED
+                        PENDING / BOOKED
                       </div>
                     )}
                   </button>
@@ -3402,16 +3440,16 @@ function LiveGamePage({ game }) {
         )
         .eq("game_id", game.id)
         .eq("player_id", playerId)
-        .eq("status", "accepted")
+        .in("status", ["pending", "accepted"])
         .order("created_at", { ascending: true });
 
       if (error) throw error;
 
-      const acceptedBookings = data || [];
-      setPlayerBookings(acceptedBookings);
+      const playerBookingRows = data || [];
+      setPlayerBookings(playerBookingRows);
 
       const allTickets = [];
-      acceptedBookings.forEach((booking) => {
+      playerBookingRows.forEach((booking) => {
         const numbers = Array.isArray(booking.ticket_numbers)
           ? booking.ticket_numbers
           : [];
@@ -3433,7 +3471,7 @@ function LiveGamePage({ game }) {
       );
 
       const displayName =
-        acceptedBookings[acceptedBookings.length - 1]?.player_name ||
+        playerBookingRows[playerBookingRows.length - 1]?.player_name ||
         savedBooking?.playerName ||
         getSavedPlayerName(game.id) ||
         "";
@@ -3638,14 +3676,27 @@ function LiveGamePage({ game }) {
       .sort((a, b) => a - b);
   }, [playerBookings, playerBooking?.ticketNumbers]);
 
-  const myTicketCards = useMemo(
-    () =>
-      myTicketNumbers.map((ticketNumber) => ({
-        number: ticketNumber,
-        grid: makeTicket(liveGame.game_code, ticketNumber)
-      })),
-    [myTicketNumbers, liveGame.game_code]
-  );
+  const myTicketCards = useMemo(() => {
+    const cards = [];
+    playerBookings.forEach((booking) => {
+      const numbers = Array.isArray(booking.ticket_numbers)
+        ? booking.ticket_numbers
+        : [];
+      numbers.forEach((ticketNumber) => {
+        const number = Number(ticketNumber);
+        if (Number.isInteger(number) && number >= 1 && number <= 100) {
+          cards.push({
+            bookingId: booking.id,
+            number,
+            status: booking.status,
+            playerName: booking.player_name || playerBooking?.playerName || "Player",
+            grid: makeTicket(liveGame.game_code, number)
+          });
+        }
+      });
+    });
+    return cards;
+  }, [playerBookings, liveGame.game_code, playerBooking?.playerName]);
 
   const allBookedTickets = useMemo(() => {
     const result = [];
@@ -4144,12 +4195,13 @@ function LiveGamePage({ game }) {
                 {myTicketCards.length ? (
                   myTicketCards.map((ticket) => (
                     <TicketGrid
-                      key={`mine-${ticket.number}`}
+                      key={`${ticket.bookingId}-${ticket.number}`}
                       ticket={ticket}
                       selected={false}
                       calledNumbers={calledNumbers}
                       readOnly
-                      ownerName={playerBooking.playerName}
+                      ownerName={ticket.playerName}
+                      status={ticket.status}
                     />
                   ))
                 ) : (
