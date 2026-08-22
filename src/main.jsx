@@ -41,7 +41,8 @@ const DEFAULT_PRIZES = [
   amount: ""
 }));
 
-const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_";
+const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_v2_";
+const DEFAULT_VOICE_PRESET_ID = "english";
 
 const VOICE_PRESETS = [
   {
@@ -95,9 +96,9 @@ function getVoiceSettingsKey(gameId) {
 function loadVoicePreset(gameId) {
   try {
     const saved = localStorage.getItem(getVoiceSettingsKey(gameId));
-    return VOICE_PRESETS.some((preset) => preset.id === saved) ? saved : "english";
+    return VOICE_PRESETS.some((preset) => preset.id === saved) ? saved : DEFAULT_VOICE_PRESET_ID;
   } catch {
-    return "auto";
+    return DEFAULT_VOICE_PRESET_ID;
   }
 }
 
@@ -113,7 +114,14 @@ function chooseSpeechVoice(voices, preset) {
   if (!Array.isArray(voices) || !voices.length) return null;
 
   const preferred = preset?.preferredLanguages || [];
-  const byLanguage = voices.find((voice) =>
+  const englishVoices = voices.filter((voice) =>
+    /^en(-|$)/i.test(String(voice.lang || ""))
+  );
+
+  const pool = preset?.id === "english" ? englishVoices : voices;
+  if (!pool.length) return null;
+
+  const byLanguage = pool.find((voice) =>
     preferred.some((language) =>
       String(voice.lang || "").toLowerCase() === language.toLowerCase()
     )
@@ -121,11 +129,11 @@ function chooseSpeechVoice(voices, preset) {
 
   if (byLanguage) return byLanguage;
 
-  const byEnglish = voices.find((voice) =>
-    /^en(-|$)/i.test(String(voice.lang || ""))
-  );
-
-  return byEnglish || voices[0] || null;
+  return pool.find((voice) => /^en-US$/i.test(String(voice.lang || "")))
+    || pool.find((voice) => /^en-GB$/i.test(String(voice.lang || "")))
+    || pool.find((voice) => /^en-IN$/i.test(String(voice.lang || "")))
+    || pool[0]
+    || null;
 }
 
 function applySpeechVoice(utterance, presetId, voices) {
@@ -137,10 +145,18 @@ function applySpeechVoice(utterance, presetId, voices) {
   utterance.pitch = preset.pitch;
   utterance.volume = 1;
 
+  // English is a hard default: never let the browser silently fall back
+  // to a Hindi/system voice when the voice list is still loading.
+  utterance.lang = preset.id === "english" ? "en-US" : (preset.preferredLanguages?.[0] || "en-US");
+
   const selectedVoice = chooseSpeechVoice(voices, preset);
   if (selectedVoice) {
     utterance.voice = selectedVoice;
-    utterance.lang = selectedVoice.lang;
+    if (preset.id === "english" && !/^en(-|$)/i.test(String(selectedVoice.lang || ""))) {
+      utterance.lang = "en-US";
+    } else {
+      utterance.lang = selectedVoice.lang;
+    }
   }
 
   return utterance;
@@ -7484,7 +7500,7 @@ function HostControlPage({
                 >
                   <option value="classic">Classic</option>
                   <option value="indian"> Indian / Hinglish</option>
-                  <option value="fun">[CELEBRATE] Fun</option>
+                  <option value="fun">[CELEBRATE] English Rhyming</option>
                 </select>
               </label>
             </div>
