@@ -2168,94 +2168,170 @@ function TicketGridComponent({
   selected,
   onSelect,
   calledNumbers = [],
-  ownerName = ""
+  ownerName = "",
+  theme = "Classic"
 }) {
+  const ui = getThemeUI(theme);
+  const c = ui.colors;
+
+  const ticketTheme = (() => {
+    switch (theme) {
+      case "Royal":
+        return {
+          shell: "linear-gradient(145deg, #2a123f 0%, #180b28 100%)",
+          grid: "#fff8df",
+          empty: "#f7edcf",
+          line: "#c9ad72",
+          text: "#24113f",
+          muted: "#f5c542",
+          player: "rgba(245,197,66,.12)",
+          selected: "linear-gradient(145deg, #3b1b5d, #24113f)",
+          glow: "rgba(245,197,66,.28)"
+        };
+      case "Party":
+        return {
+          shell: "linear-gradient(145deg, #5a1247 0%, #2a0b25 100%)",
+          grid: "#fff7fb",
+          empty: "#f8eaf3",
+          line: "#e3a8c8",
+          text: "#3b1234",
+          muted: "#facc15",
+          player: "rgba(34,211,238,.12)",
+          selected: "linear-gradient(145deg, #7c1d5c, #4a123b)",
+          glow: "rgba(244,63,94,.30)"
+        };
+      case "Bollywood":
+        return {
+          shell: "linear-gradient(145deg, #6d1518 0%, #2c090b 100%)",
+          grid: "#fff8e9",
+          empty: "#f8ead5",
+          line: "#d9a26a",
+          text: "#4b1117",
+          muted: "#fbbf24",
+          player: "rgba(251,191,36,.14)",
+          selected: "linear-gradient(145deg, #8f1d1d, #4b1117)",
+          glow: "rgba(251,191,36,.30)"
+        };
+      case "Neon":
+        return {
+          shell: "linear-gradient(145deg, #0b1528 0%, #030712 100%)",
+          grid: "#0d1728",
+          empty: "#08111f",
+          line: "#334155",
+          text: "#f8fafc",
+          muted: "#22d3ee",
+          player: "rgba(34,211,238,.10)",
+          selected: "linear-gradient(145deg, #101d38, #050814)",
+          glow: "rgba(34,211,238,.34)"
+        };
+      case "Elegant":
+        return {
+          shell: "linear-gradient(145deg, #152b2a 0%, #0b1717 100%)",
+          grid: "#fff9e8",
+          empty: "#f2ead3",
+          line: "#b8a56a",
+          text: "#172033",
+          muted: "#d4af37",
+          player: "rgba(212,175,55,.12)",
+          selected: "linear-gradient(145deg, #193b37, #0c201e)",
+          glow: "rgba(212,175,55,.28)"
+        };
+      default:
+        return {
+          shell: "linear-gradient(145deg, #102d55 0%, #07111f 100%)",
+          grid: "#f8fbff",
+          empty: "#eaf2fb",
+          line: "#9bb3cf",
+          text: "#0f172a",
+          muted: "#60a5fa",
+          player: "rgba(96,165,250,.12)",
+          selected: "linear-gradient(145deg, #173e70, #0b1e36)",
+          glow: "rgba(96,165,250,.28)"
+        };
+    }
+  })();
+
   return (
     <div
-      onClick={
-        onSelect
-      }
+      onClick={onSelect}
       style={{
+        position: "relative",
         border: selected
-          ? "3px solid var(--theme-secondary, #2563eb)"
-          : "1px solid rgba(15,23,42,.14)",
-        borderLeft: selected
-          ? "6px solid var(--theme-accent, #2563eb)"
-          : "4px solid var(--theme-secondary, #94a3b8)",
-        borderRadius: 18,
+          ? `2px solid ${c.accent}`
+          : `1px solid ${c.secondary}88`,
+        borderLeft: `6px solid ${c.accent}`,
+        borderRadius: 22,
         padding: 14,
         background: selected
-          ? "linear-gradient(145deg, rgba(239,246,255,.98), rgba(255,255,255,.98))"
-          : "linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)",
-        cursor: "pointer",
+          ? ticketTheme.selected
+          : ticketTheme.shell,
+        cursor: onSelect ? "pointer" : "default",
         boxShadow: selected
-          ? "0 14px 32px var(--theme-glow, rgba(37,99,235,.16))"
-          : "0 10px 24px rgba(15,23,42,.08)",
-        transition: "transform .18s ease, box-shadow .18s ease, border-color .18s ease"
+          ? `0 16px 34px ${ticketTheme.glow}, 0 0 0 1px ${c.accent}66 inset`
+          : `0 12px 28px rgba(0,0,0,.25), 0 0 0 1px ${c.secondary}22 inset`,
+        transition: "transform .18s ease, box-shadow .18s ease, border-color .18s ease",
+        overflow: "hidden"
       }}
     >
       <div
         style={{
-          display:
-            "flex",
-          justifyContent:
-            "space-between",
-          alignItems:
-            "center",
-          marginBottom:
-            10
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          background: `radial-gradient(circle at 88% 8%, ${c.accent}18, transparent 28%), radial-gradient(circle at 10% 92%, ${c.secondary}14, transparent 30%)`
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 10
         }}
       >
         <b
           style={{
             fontSize: 21,
             letterSpacing: "-.02em",
-            color: "#0f172a"
+            color: "#ffffff"
           }}
         >
-          Ticket #
-          {
-            ticket.number
-          }
+          Ticket #{ticket.number}
         </b>
 
         <span
           style={{
-            padding:
-              "6px 10px",
-            borderRadius:
-              8,
-            background:
-              selected
-                ? "linear-gradient(135deg, var(--theme-accent, #2563eb), var(--theme-secondary, #60a5fa))"
-                : "#eef2f7",
-            color:
-              selected
-                ? "#fff"
-                : "#475569",
-            border: selected ? "none" : "1px solid #e2e8f0",
-            fontWeight:
-              "bold",
-            fontSize: 13
+            padding: "7px 11px",
+            borderRadius: 10,
+            background: selected
+              ? `linear-gradient(135deg, ${c.accent}, ${c.secondary})`
+              : `${c.secondary}20`,
+            color: selected ? "#ffffff" : "#ffffff",
+            border: `1px solid ${selected ? c.accent : c.secondary}88`,
+            fontWeight: "800",
+            fontSize: 12,
+            letterSpacing: ".03em",
+            whiteSpace: "nowrap"
           }}
         >
-          {selected
-            ? "SELECTED"
-            : ownerName
-            ? "BOOKED"
-            : "AVAILABLE"}
+          {selected ? "SELECTED" : ownerName ? "BOOKED" : "AVAILABLE"}
         </span>
       </div>
 
       {ownerName && (
         <div
           style={{
+            position: "relative",
             marginBottom: 10,
             padding: "8px 10px",
-            borderRadius: 8,
-            background: "#eff6ff",
-            color: "#1d4ed8",
-            fontWeight: "bold",
+            borderRadius: 10,
+            background: ticketTheme.player,
+            border: `1px solid ${c.secondary}45`,
+            color: "#ffffff",
+            fontWeight: "800",
             fontSize: 14
           }}
         >
@@ -2265,102 +2341,61 @@ function TicketGridComponent({
 
       <div
         style={{
-          display:
-            "grid",
-          gridTemplateColumns:
-            "repeat(9,minmax(28px,1fr))",
-          border:
-            "2px solid #111827",
-          overflow:
-            "hidden",
-          borderRadius:
-            8
+          position: "relative",
+          display: "grid",
+          gridTemplateColumns: "repeat(9,minmax(28px,1fr))",
+          border: `2px solid ${theme === "Neon" ? c.secondary : c.accent}`,
+          overflow: "hidden",
+          borderRadius: 10,
+          boxShadow: `0 0 0 1px ${c.secondary}22 inset`
         }}
       >
-        {ticket.grid.flatMap(
-          (
-            row,
-            r
-          ) =>
-            row.map(
-              (
-                value,
-                c
-              ) => {
-                const called =
-                  value &&
-                  calledNumbers.includes(
-                    value
-                  );
+        {ticket.grid.flatMap((row, r) =>
+          row.map((value, col) => {
+            const called = value && calledNumbers.includes(value);
 
-                return (
-                  <div
-                    key={`${r}-${c}`}
-                    style={{
-                      minHeight:
-                        48,
-                      display:
-                        "flex",
-                      alignItems:
-                        "center",
-                      justifyContent:
-                        "center",
-                      borderRight:
-                        c ===
-                        8
-                          ? "none"
-                          : "1px solid #94a3b8",
-                      borderBottom:
-                        r ===
-                        2
-                          ? "none"
-                          : "1px solid #94a3b8",
-                      fontWeight:
-                        value
-                          ? "bold"
-                          : "normal",
-                      fontSize:
-                        17,
-                      background:
-                        called
-                          ? "#fde68a"
-                          : value
-                          ? "#ffffff"
-                          : "#f1f5f9",
-                      color:
-                        called
-                          ? "#92400e"
-                          : "#111827"
-                    }}
-                  >
-                    {
-                      value ||
-                      ""
-                    }
-                  </div>
-                );
-              }
-            )
+            return (
+              <div
+                key={`${r}-${col}`}
+                style={{
+                  minHeight: 48,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRight:
+                    col === 8 ? "none" : `1px solid ${ticketTheme.line}`,
+                  borderBottom:
+                    r === 2 ? "none" : `1px solid ${ticketTheme.line}`,
+                  fontWeight: value ? "800" : "normal",
+                  fontSize: 17,
+                  background: called
+                    ? `linear-gradient(145deg, #fde68a, #fbbf24)`
+                    : value
+                    ? ticketTheme.grid
+                    : ticketTheme.empty,
+                  color: called
+                    ? "#78350f"
+                    : ticketTheme.text
+                }}
+              >
+                {value || ""}
+              </div>
+            );
+          })
         )}
       </div>
 
       <div
         style={{
-          marginTop:
-            9,
-          textAlign:
-            "center",
-          color:
-            selected
-              ? "#1d4ed8"
-              : "#64748b",
-          fontWeight:
-            "bold"
+          position: "relative",
+          marginTop: 10,
+          textAlign: "center",
+          color: c.accent,
+          fontWeight: "800",
+          letterSpacing: ".01em"
         }}
       >
-        {selected
-          ? "[OK] Tap to unselect"
-          : "Tap to select"}
+        {selected ? "[OK] Tap to unselect" : "Tap to select"}
       </div>
     </div>
   );
@@ -3127,40 +3162,30 @@ function PlayerBookingPage({
                       )
                     }
                     style={{
-                      minHeight:
-                        65,
-                      border:
-                        active
-                          ? "3px solid #2563eb"
-                          : unavailable
-                          ? "2px solid #94a3b8"
-                          : "1px solid #cbd5e1",
-                      borderRadius:
-                        11,
-                      background:
-                        active
-                          ? "#2563eb"
-                          : unavailable
-                          ? "#e2e8f0"
-                          : "#fff",
-                      color:
-                        active
-                          ? "#fff"
-                          : unavailable
-                          ? "#64748b"
-                          : "#111827",
-                      fontWeight:
-                        "bold",
-                      fontSize:
-                        17,
-                      cursor:
-                        unavailable
-                          ? "not-allowed"
-                          : "pointer",
-                      opacity:
-                        unavailable
-                          ? 0.75
-                          : 1
+                      minHeight: 65,
+                      border: active
+                        ? `3px solid ${themeUI.colors.accent}`
+                        : unavailable
+                        ? `2px solid ${themeUI.colors.secondary}55`
+                        : `1px solid ${themeUI.colors.secondary}66`,
+                      borderRadius: 13,
+                      background: active
+                        ? `linear-gradient(135deg, ${themeUI.colors.accent}, ${themeUI.colors.secondary})`
+                        : unavailable
+                        ? `${themeUI.colors.secondary}22`
+                        : "rgba(255,255,255,.96)",
+                      color: active
+                        ? "#fff"
+                        : unavailable
+                        ? "#94a3b8"
+                        : "#0f172a",
+                      fontWeight: "bold",
+                      fontSize: 17,
+                      cursor: unavailable ? "not-allowed" : "pointer",
+                      opacity: unavailable ? 0.78 : 1,
+                      boxShadow: active
+                        ? `0 8px 20px ${themeUI.colors.secondary}35`
+                        : `0 5px 14px ${themeUI.colors.secondary}12`
                     }}
                   >
                     <div>
@@ -3229,7 +3254,7 @@ function PlayerBookingPage({
                 marginTop:
                   8,
                 color:
-                  "#2563eb",
+                  themeUI.colors.accent,
                 fontWeight:
                   "bold"
               }}
@@ -3327,6 +3352,7 @@ function PlayerBookingPage({
                       ticket={
                         ticket
                       }
+                      theme={game.theme}
                       selected={selected.includes(
                         ticket.number
                       )}
@@ -4528,6 +4554,7 @@ function LiveGamePage({ game }) {
                   myTicketCards.map((ticket) => (
                     <TicketGrid
                       key={`mine-${ticket.number}`}
+                      theme={liveGame.theme}
                       ticket={ticket}
                       selected={false}
                       calledNumbers={calledNumbers}
@@ -4645,6 +4672,7 @@ function LiveGamePage({ game }) {
               {filteredBookedTickets.map((ticket) => (
                 <TicketGrid
                   key={`${ticket.bookingId}-${ticket.number}`}
+                  theme={liveGame.theme}
                   ticket={ticket}
                   selected={false}
                   calledNumbers={calledNumbers}
