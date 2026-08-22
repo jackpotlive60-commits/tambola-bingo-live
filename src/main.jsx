@@ -4151,55 +4151,32 @@ function LiveGamePage({ game }) {
            7 All Booked Tickets
         ========================================================= */}
 
-        {/* 1. CURRENT NUMBERS */}
-        <section data-live-section="1-current-numbers" style={cardStyle}>
+        {/* 1. CURRENT NUMBER â€” ONE BIG DISPLAY ONLY */}
+        <section data-live-section="1-current-number" style={{ ...cardStyle, textAlign: "center" }}>
+          <h2 style={{ margin: 0 }}>Current Number</h2>
+
           <div
             style={{
+              width: 170,
+              height: 170,
+              margin: "18px auto 12px",
+              borderRadius: "50%",
+              background: "#2563eb",
+              color: "#fff",
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
-              gap: 10,
-              flexWrap: "wrap"
+              justifyContent: "center",
+              fontSize: 72,
+              fontWeight: "bold",
+              boxShadow: "0 10px 30px rgba(37,99,235,.25)"
             }}
           >
-            <h2 style={{ margin: 0 }}>Current Numbers</h2>
-            <div style={{ color: "#64748b", fontWeight: "bold" }}>
-              Total Called: {calledNumbers.length}
-            </div>
+            {lastCalled || "-"}
           </div>
 
-          {calledNumbers.length === 0 ? (
-            <p style={{ color: "#64748b", marginBottom: 0 }}>
-              No numbers have been called yet.
-            </p>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 8,
-                marginTop: 14
-              }}
-            >
-              {calledNumbers.map((number, index) => (
-                <div
-                  key={`${number}-${index}`}
-                  style={{
-                    minWidth: 42,
-                    padding: "8px 10px",
-                    textAlign: "center",
-                    borderRadius: 9,
-                    border: "1px solid #bbf7d0",
-                    background: "#f0fdf4",
-                    color: "#166534",
-                    fontWeight: "bold"
-                  }}
-                >
-                  {number}
-                </div>
-              ))}
-            </div>
-          )}
+          <div style={{ color: "#64748b", fontWeight: "bold" }}>
+            Total Called: {calledNumbers.length}/90
+          </div>
         </section>
 
         {/* 2. CALLED NUMBER BOARD */}
@@ -4330,19 +4307,9 @@ function LiveGamePage({ game }) {
                 >
                   <div
                     style={{
-                      fontSize: 12,
-                      color: "#64748b",
-                      fontWeight: "bold"
-                    }}
-                  >
-                    #{calledNumbers.length - index}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 24,
+                      fontSize: 30,
                       fontWeight: "bold",
-                      color: "#1e3a8a",
-                      marginTop: 3
+                      color: "#1e3a8a"
                     }}
                   >
                     {number}
