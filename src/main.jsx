@@ -3643,43 +3643,46 @@ function LiveGamePage({ game }) {
       )
   );
 
-  // Android/iOS browsers can suspend speechSynthesis until a real user
-  // gesture. Unlock it from the player's first normal interaction. There is
-  // deliberately no voice button in the UI.
+  // Player voice: unlock speech from the first normal interaction.
+  // The first interaction intentionally speaks a short welcome message so
+  // Android/iOS browsers receive a real user-gesture speech request.
   useEffect(() => {
+    let unlocked = false;
+
     const unlockPlayerVoice = () => {
-      if (!("speechSynthesis" in window)) return;
+      if (unlocked || !("speechSynthesis" in window)) return;
 
       try {
-        window.speechSynthesis.resume();
+        const synth = window.speechSynthesis;
+        synth.cancel();
+        synth.resume();
 
-        // Do not mark the voice as ready until the browser accepts an
-        // utterance. A tiny, nearly silent utterance is used only to prime the
-        // speech engine from the user's gesture; it never announces anything.
-        const unlockUtterance = new SpeechSynthesisUtterance(".");
-        unlockUtterance.lang = "en-US";
-        unlockUtterance.volume = 0.01;
-        unlockUtterance.rate = 10;
-        unlockUtterance.pitch = 1;
-        unlockUtterance.onend = () => {
-          playerVoiceUnlockedRef.current = true;
-          playerVoiceReadyRef.current = true;
-        };
-        unlockUtterance.onerror = () => {
-          // Keep trying on the next normal interaction.
-          playerVoiceUnlockedRef.current = false;
-          playerVoiceReadyRef.current = false;
-        };
+        const utterance = new SpeechSynthesisUtterance(
+          "Welcome to the game."
+        );
+        utterance.lang = "en-US";
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 1;
 
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(unlockUtterance);
+        const englishVoice =
+          (synth.getVoices() || []).find((v) => /^en-US$/i.test(v.lang)) ||
+          (synth.getVoices() || []).find((v) => /^en-GB$/i.test(v.lang)) ||
+          (synth.getVoices() || []).find((v) => /^en-IN$/i.test(v.lang)) ||
+          (synth.getVoices() || []).find((v) => /^en(-|_)/i.test(v.lang));
 
-        // Some Android WebViews do not fire onend reliably. The gesture itself
-        // is still a valid activation, so allow subsequent announcements.
+        if (englishVoice) {
+          utterance.voice = englishVoice;
+          utterance.lang = englishVoice.lang;
+        }
+
+        synth.speak(utterance);
+
+        unlocked = true;
         playerVoiceUnlockedRef.current = true;
         playerVoiceReadyRef.current = true;
       } catch (err) {
-        console.warn("Player voice could not be unlocked yet:", err);
+        console.warn("Player voice could not be unlocked:", err);
       }
     };
 
