@@ -2013,7 +2013,8 @@ function TicketGridComponent({
   ticket,
   selected,
   onSelect,
-  calledNumbers = []
+  calledNumbers = [],
+  ownerName = ""
 }) {
   return (
     <div
@@ -2084,9 +2085,27 @@ function TicketGridComponent({
         >
           {selected
             ? "SELECTED"
+            : ownerName
+            ? "BOOKED"
             : "AVAILABLE"}
         </span>
       </div>
+
+      {ownerName && (
+        <div
+          style={{
+            marginBottom: 10,
+            padding: "8px 10px",
+            borderRadius: 8,
+            background: "#eff6ff",
+            color: "#1d4ed8",
+            fontWeight: "bold",
+            fontSize: 14
+          }}
+        >
+          Player: {ownerName}
+        </div>
+      )}
 
       <div
         style={{
