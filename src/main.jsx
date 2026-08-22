@@ -41,297 +41,134 @@ const DEFAULT_PRIZES = [
   amount: ""
 }));
 
-/* =========================================================
-   PLAYER VOICE UNLOCK
+const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_v2_";
+const DEFAULT_VOICE_PRESET_ID = "english";
 
-   Mobile browsers block audible autoplay until the player has
-   interacted with the page. We unlock speech from ANY normal
-   player-page interaction (including the booking page), so the
-   player does not need to press a dedicated voice button.
-========================================================= */
-
-let playerSpeechUnlocked = false;
-let playerSpeechUnlockStarted = false;
-
-/* =========================================================
-   PLAYER NUMBER AUDIO
-   Uses real MP3 assets from /public/voice instead of
-   speechSynthesis for live called-number announcements.
-   The audio element is primed from a real player gesture
-   (BOOK tap or any normal player-page interaction) and the
-   same element is reused for later calls.
-========================================================= */
-
-const playerAudioState = {
-  unlocked: false,
-  audio: null,
-  audioContext: null,
-  bufferCache: new Map(),
-  queue: [],
-  playing: false,
-  priming: false
-};
-
-function getPlayerAudioElement() {
-  if (!playerAudioState.audio) {
-    const audio = new Audio();
-    audio.preload = "auto";
-    audio.volume = 1;
-    audio.playsInline = true;
-    playerAudioState.audio = audio;
+const VOICE_PRESETS = [
+  {
+    id: "english",
+    label: "English (Default)",
+    rate: 0.88,
+    pitch: 1.0,
+    preferredLanguages: ["en-US", "en-GB", "en-IN"]
+  },
+  {
+    id: "auto",
+    label: "Auto / Best Available",
+    rate: 0.88,
+    pitch: 1.0,
+    preferredLanguages: ["en-US", "en-GB", "en-IN", "hi-IN"]
+  },
+  {
+    id: "indian",
+    label: "Indian English",
+    rate: 0.86,
+    pitch: 0.98,
+    preferredLanguages: ["en-IN", "hi-IN"]
+  },
+  {
+    id: "hinglish",
+    label: "Hindi / Hinglish",
+    rate: 0.84,
+    pitch: 0.98,
+    preferredLanguages: ["hi-IN", "en-IN"]
+  },
+  {
+    id: "cinema",
+    label: "Deep Cinema Announcer",
+    rate: 0.80,
+    pitch: 0.78,
+    preferredLanguages: ["en-IN", "hi-IN", "en-GB", "en-US"]
+  },
+  {
+    id: "bright",
+    label: "Bright Female Announcer",
+    rate: 0.90,
+    pitch: 1.18,
+    preferredLanguages: ["en-IN", "hi-IN", "en-US", "en-GB"]
   }
+];
 
-  return playerAudioState.audio;
+function getVoiceSettingsKey(gameId) {
+  return `${VOICE_SETTINGS_PREFIX}${gameId || "default"}`;
 }
 
-function getPlayerAudioContext() {
-  if (!playerAudioState.audioContext) {
-    const AudioContextClass =
-      window.AudioContext ||
-      window.webkitAudioContext;
-
-    if (!AudioContextClass) return null;
-
-    playerAudioState.audioContext =
-      new AudioContextClass();
-  }
-
-  return playerAudioState.audioContext;
-}
-
-async function primePlayerAudioFromGesture() {
-  if (playerAudioState.unlocked) return true;
-  if (playerAudioState.priming) return false;
-
-  playerAudioState.priming = true;
-
+function loadVoicePreset(gameId) {
   try {
-    // Android/iOS-friendly unlock: resume AudioContext directly from
-    // the player's real tap. Muted HTMLAudio does not reliably grant
-    // permission for later audible playback.
-    const context = getPlayerAudioContext();
-
-    if (context) {
-      await context.resume();
-
-      if (context.state === "running") {
-        playerAudioState.unlocked = true;
-        playerAudioState.priming = false;
-        flushPlayerAudioQueue();
-        return true;
-      }
-    }
-
-    // Older-browser fallback.
-    const audio = getPlayerAudioElement();
-    audio.src = "/voice/welcome.mp3";
-    audio.currentTime = 0;
-    audio.muted = false;
-    audio.volume = 0.001;
-
-    const result = audio.play();
-    if (result && typeof result.then === "function") {
-      await result;
-    }
-
-    audio.pause();
-    audio.currentTime = 0;
-    audio.volume = 1;
-    audio.muted = false;
-
-    playerAudioState.unlocked = true;
-    playerAudioState.priming = false;
-    flushPlayerAudioQueue();
-    return true;
-  } catch (error) {
-    console.warn("Player audio prime was blocked:", error);
-    playerAudioState.priming = false;
-    return false;
+    const saved = localStorage.getItem(getVoiceSettingsKey(gameId));
+    return VOICE_PRESETS.some((preset) => preset.id === saved) ? saved : DEFAULT_VOICE_PRESET_ID;
+  } catch {
+    return DEFAULT_VOICE_PRESET_ID;
   }
 }
 
-async function loadPlayerAudioBuffer(fileName) {
-  const context = getPlayerAudioContext();
-  if (!context) return null;
-
-  if (playerAudioState.bufferCache.has(fileName)) {
-    return playerAudioState.bufferCache.get(fileName);
+function saveVoicePreset(gameId, presetId) {
+  try {
+    localStorage.setItem(getVoiceSettingsKey(gameId), presetId);
+  } catch (error) {
+    console.error("Could not save voice preference:", error);
   }
+}
 
-  const response = await fetch(
-    `/voice/${encodeURIComponent(fileName)}`,
-    { cache: "force-cache" }
+function chooseSpeechVoice(voices, preset) {
+  if (!Array.isArray(voices) || !voices.length) return null;
+
+  const preferred = preset?.preferredLanguages || [];
+  const englishVoices = voices.filter((voice) =>
+    /^en(-|$)/i.test(String(voice.lang || ""))
   );
 
-  if (!response.ok) {
-    throw new Error(
-      `Voice file ${fileName} returned HTTP ${response.status}`
-    );
-  }
+  const pool = preset?.id === "english" ? englishVoices : voices;
+  if (!pool.length) return null;
 
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = await context.decodeAudioData(arrayBuffer);
-
-  playerAudioState.bufferCache.set(fileName, buffer);
-  return buffer;
-}
-
-function playPlayerAudioFile(fileName) {
-  playerAudioState.queue.push(fileName);
-
-  if (!playerAudioState.unlocked) {
-    return;
-  }
-
-  flushPlayerAudioQueue();
-}
-
-async function flushPlayerAudioQueue() {
-  if (
-    !playerAudioState.unlocked ||
-    playerAudioState.playing ||
-    !playerAudioState.queue.length
-  ) {
-    return;
-  }
-
-  const next = playerAudioState.queue.shift();
-  const context = getPlayerAudioContext();
-
-  // Preferred path for Android/iOS: Web Audio.
-  if (context) {
-    try {
-      if (context.state !== "running") {
-        await context.resume();
-      }
-
-      const buffer = await loadPlayerAudioBuffer(next);
-      if (!buffer) throw new Error("Web Audio unavailable");
-
-      playerAudioState.playing = true;
-
-      const source = context.createBufferSource();
-      const gain = context.createGain();
-
-      source.buffer = buffer;
-      gain.gain.value = 1;
-      source.connect(gain);
-      gain.connect(context.destination);
-
-      source.onended = () => {
-        try {
-          source.disconnect();
-          gain.disconnect();
-        } catch {}
-
-        playerAudioState.playing = false;
-        flushPlayerAudioQueue();
-      };
-
-      source.start(0);
-      return;
-    } catch (error) {
-      console.warn(
-        "Web Audio failed; using HTMLAudio fallback:",
-        next,
-        error
-      );
-      playerAudioState.playing = false;
-    }
-  }
-
-  // Fallback for older browsers.
-  const audio = getPlayerAudioElement();
-  playerAudioState.playing = true;
-
-  audio.pause();
-  audio.currentTime = 0;
-  audio.src = `/voice/${next}`;
-  audio.muted = false;
-  audio.volume = 1;
-
-  const finish = () => {
-    audio.onended = null;
-    audio.onerror = null;
-    playerAudioState.playing = false;
-    flushPlayerAudioQueue();
-  };
-
-  audio.onended = finish;
-  audio.onerror = (event) => {
-    console.warn("Could not play player voice asset:", next, event);
-    finish();
-  };
-
-  const result = audio.play();
-  if (result && typeof result.catch === "function") {
-    result.catch((error) => {
-      console.warn("Player audio playback was blocked:", error);
-      finish();
-    });
-  }
-}
-
-function getPreferredEnglishSpeechVoice() {
-  if (!("speechSynthesis" in window)) return null;
-
-  const voices = window.speechSynthesis.getVoices() || [];
-  return (
-    voices.find((voice) => /^en-US$/i.test(voice.lang)) ||
-    voices.find((voice) => /^en-GB$/i.test(voice.lang)) ||
-    voices.find((voice) => /^en-IN$/i.test(voice.lang)) ||
-    voices.find((voice) => /^en(-|_)/i.test(voice.lang)) ||
-    null
+  const byLanguage = pool.find((voice) =>
+    preferred.some((language) =>
+      String(voice.lang || "").toLowerCase() === language.toLowerCase()
+    )
   );
+
+  if (byLanguage) return byLanguage;
+
+  return pool.find((voice) => /^en-US$/i.test(String(voice.lang || "")))
+    || pool.find((voice) => /^en-GB$/i.test(String(voice.lang || "")))
+    || pool.find((voice) => /^en-IN$/i.test(String(voice.lang || "")))
+    || pool[0]
+    || null;
 }
 
-function unlockPlayerSpeechFromGesture() {
-  if (playerSpeechUnlocked || playerSpeechUnlockStarted) {
-    return playerSpeechUnlocked;
-  }
+function applySpeechVoice(utterance, presetId, voices) {
+  const preset =
+    VOICE_PRESETS.find((item) => item.id === presetId) ||
+    VOICE_PRESETS[0];
 
-  if (!("speechSynthesis" in window)) {
-    return false;
-  }
+  utterance.rate = preset.rate;
+  utterance.pitch = preset.pitch;
+  utterance.volume = 1;
 
-  playerSpeechUnlockStarted = true;
+  // English is a hard default: never let the browser silently fall back
+  // to a Hindi/system voice when the voice list is still loading.
+  utterance.lang = preset.id === "english" ? "en-US" : (preset.preferredLanguages?.[0] || "en-US");
 
-  try {
-    const synth = window.speechSynthesis;
-    synth.resume();
-
-    // Unlock speech silently. Do NOT announce anything here.
-    // The booking message is spoken only after a successful Book action.
-    const englishVoice = getPreferredEnglishSpeechVoice();
-
-    const utterance = new SpeechSynthesisUtterance("");
-    utterance.lang = englishVoice?.lang || "en-US";
-    utterance.volume = 0;
-
-    if (englishVoice) {
-      utterance.voice = englishVoice;
+  const selectedVoice = chooseSpeechVoice(voices, preset);
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+    if (preset.id === "english" && !/^en(-|$)/i.test(String(selectedVoice.lang || ""))) {
+      utterance.lang = "en-US";
+    } else {
+      utterance.lang = selectedVoice.lang;
     }
+  }
 
-    utterance.onstart = () => {
-      playerSpeechUnlocked = true;
-      window.dispatchEvent(new Event("player-speech-unlocked"));
-    };
+  return utterance;
+}
 
-    utterance.onend = () => {
-      playerSpeechUnlocked = true;
-      window.dispatchEvent(new Event("player-speech-unlocked"));
-    };
-
-    utterance.onerror = () => {
-      playerSpeechUnlockStarted = false;
-    };
-
-    synth.speak(utterance);
-    return true;
-  } catch (error) {
-    console.warn("Player speech could not be unlocked:", error);
-    playerSpeechUnlockStarted = false;
-    return false;
+function getAvailableSpeechVoices() {
+  try {
+    return "speechSynthesis" in window
+      ? window.speechSynthesis.getVoices() || []
+      : [];
+  } catch {
+    return [];
   }
 }
 
@@ -572,9 +409,11 @@ function getPrizeVoiceName(name) {
   return String(name || "Prize");
 }
 
-function speakWinnerAnnouncement(events) {
+function speakWinnerAnnouncement(events, voicePresetId = "auto", voices = []) {
   try {
     if (!("speechSynthesis" in window) || !events?.length) return;
+
+    window.speechSynthesis.cancel();
 
     const parts = events.map((event) => {
       const voicePrizeName = getPrizeVoiceName(event.prizeName);
@@ -597,21 +436,213 @@ function speakWinnerAnnouncement(events) {
     });
 
     const utterance = new SpeechSynthesisUtterance(parts.join(". "));
-    utterance.rate = 0.82;
-    utterance.pitch = 1.04;
-    utterance.volume = 1;
-
-    const englishVoice = getPreferredEnglishSpeechVoice();
-    if (englishVoice) {
-      utterance.voice = englishVoice;
-      utterance.lang = englishVoice.lang;
-    }
-
-    window.speechSynthesis.resume();
+    applySpeechVoice(utterance, voicePresetId, voices);
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.error("Could not announce winner:", err);
   }
+}
+
+
+const PLAYER_ENGLISH_CALLER_PHRASES = {
+    1: "First on the board, number 1",
+    2: "One little duck, number 2",
+    3: "Cup of tea, number 3",
+    4: "Knock at the door, number 4",
+    5: "Man alive, number 5",
+    6: "Half a dozen, number 6",
+    7: "Lucky seven, number 7",
+    8: "Garden gate, number 8",
+    9: "Doctor's orders, number 9",
+    10: "Big fat hen, number 10",
+    11: "Legs eleven, number 11",
+    12: "One dozen, number 12",
+    13: "Unlucky for some, number 13",
+    14: "Valentine's Day, number 14",
+    15: "Young and keen, number 15",
+    16: "Sweet sixteen, number 16",
+    17: "Dancing queen, number 17",
+    18: "Coming of age, number 18",
+    19: "Goodbye teens, number 19",
+    20: "One score, number 20",
+    21: "Key to the door, number 21",
+    22: "Two little ducks, number 22",
+    23: "You and me, number 23",
+    24: "Two dozen, number 24",
+    25: "Silver jubilee, number 25",
+    26: "Republic Day, number 26",
+    27: "Gateway to heaven, number 27",
+    28: "Duck and its mate, number 28",
+    29: "Rise and shine, number 29",
+    30: "Flirty thirty, number 30",
+    31: "Get up and run, number 31",
+    32: "Buckle my shoe, number 32",
+    33: "All the threes, number 33",
+    34: "Dil maange more, number 34",
+    35: "Jump and jive, number 35",
+    36: "Three dozen, number 36",
+    37: "Mixed luck, number 37",
+    38: "Christmas cake, number 38",
+    39: "The thirty-nine steps, number 39",
+    40: "Life begins at forty, number 40",
+    41: "Time for fun, number 41",
+    42: "The answer to life, number 42",
+    43: "Down on your knees, number 43",
+    44: "All the fours, number 44",
+    45: "Halfway there, number 45",
+    46: "Up to tricks, number 46",
+    47: "Four and seven, number 47",
+    48: "Four dozen, number 48",
+    49: "Rise and shine, number 49",
+    50: "Half a century, number 50",
+    51: "Charity begins at fifty-one, number 51",
+    52: "Pack of cards, number 52",
+    53: "Stuck in the tree, number 53",
+    54: "Clean the floor, number 54",
+    55: "Snakes alive, number 55",
+    56: "Pick up sticks, number 56",
+    57: "Fifty-seven varieties, number 57",
+    58: "Make them wait, number 58",
+    59: "Brighton line, number 59",
+    60: "Diamond jubilee, number 60",
+    61: "Baker's bun, number 61",
+    62: "Turn the screw, number 62",
+    63: "Tickle me, number 63",
+    64: "Almost retired, number 64",
+    65: "Retirement time, number 65",
+    66: "Clickety click, number 66",
+    67: "Stairway to heaven, number 67",
+    68: "Pick a mate, number 68",
+    69: "Ulta pulta, number 69",
+    70: "Three score and ten, number 70",
+    71: "Bang on the drum, number 71",
+    72: "Six dozen, number 72",
+    73: "Queen bee, number 73",
+    74: "Hit the floor, number 74",
+    75: "Strive and strive, number 75",
+    76: "Seventy-six trombones, number 76",
+    77: "Double lucky seven, number 77",
+    78: "Lucky seth, number 78",
+    79: "One more time, number 79",
+    80: "Eight and zero, number 80",
+    81: "Stop and run, number 81",
+    82: "Straight on through, number 82",
+    83: "Time for tea, number 83",
+    84: "Seven dozen, number 84",
+    85: "Staying alive, number 85",
+    86: "Between the sticks, number 86",
+    87: "Last of luck, number 87",
+    88: "Two fat ladies, number 88",
+    89: "Nearly there, number 89",
+    90: "Top of the house, number 90"
+  };
+
+
+
+function getPlayerEnglishCallerPhrase(number) {
+  return (
+    PLAYER_ENGLISH_CALLER_PHRASES[number] ||
+    `Number ${number}`
+  );
+}
+
+function getWinnerAnnouncementParts(events) {
+  if (!Array.isArray(events)) return [];
+
+  return events.map((event) => {
+    const voicePrizeName = getPrizeVoiceName(event.prizeName);
+    const names = Array.isArray(event.winners)
+      ? event.winners.map((winner) => winner.playerName || "Player")
+      : [];
+
+    let winnersText = names[0] || "a player";
+
+    if (names.length === 2) {
+      winnersText = `${names[0]} and ${names[1]}`;
+    } else if (names.length > 2) {
+      winnersText = `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    }
+
+    if (names.length > 1) {
+      return `${voicePrizeName} won by ${winnersText}. Prize of ${formatPrizeAmount(
+        event.prizeAmount
+      )} split equally among ${names.length} winners.`;
+    }
+
+    return `${voicePrizeName} won by ${winnersText}`;
+  });
+}
+
+function speakPlayerAnnouncementQueue(items) {
+  try {
+    if (!("speechSynthesis" in window) || !Array.isArray(items) || !items.length) {
+      return false;
+    }
+
+    const voices = getAvailableSpeechVoices();
+    const queue = items.filter(Boolean).map((text) => String(text));
+    if (!queue.length) return false;
+
+    window.speechSynthesis.cancel();
+
+    let index = 0;
+    const speakNext = () => {
+      if (index >= queue.length) return;
+
+      const utterance = new SpeechSynthesisUtterance(queue[index++]);
+      applySpeechVoice(utterance, DEFAULT_VOICE_PRESET_ID, voices);
+      utterance.onend = speakNext;
+      utterance.onerror = speakNext;
+      window.speechSynthesis.speak(utterance);
+    };
+
+    speakNext();
+    return true;
+  } catch (err) {
+    console.error("Could not play player announcement:", err);
+    return false;
+  }
+}
+
+function getPlayerWinnerKeys(game) {
+  const prizes = Array.isArray(game?.selected_prizes) ? game.selected_prizes : [];
+  const keys = new Set();
+
+  prizes.forEach((prize, prizeIndex) => {
+    const winners = Array.isArray(prize?.winners) ? prize.winners : [];
+    winners.forEach((winner, winnerIndex) => {
+      keys.add(
+        `${prizeIndex}|${winner.bookingId || ""}|${winner.ticketNumber || ""}|${winner.playerName || ""}|${winnerIndex}`
+      );
+    });
+  });
+
+  return keys;
+}
+
+function getNewPlayerWinnerEvents(game, previousKeys) {
+  const prizes = Array.isArray(game?.selected_prizes) ? game.selected_prizes : [];
+  const events = [];
+
+  prizes.forEach((prize, prizeIndex) => {
+    const winners = Array.isArray(prize?.winners) ? prize.winners : [];
+    const newWinners = winners.filter((winner, winnerIndex) => {
+      const key = `${prizeIndex}|${winner.bookingId || ""}|${winner.ticketNumber || ""}|${winner.playerName || ""}|${winnerIndex}`;
+      return !previousKeys.has(key);
+    });
+
+    if (newWinners.length) {
+      events.push({
+        prizeIndex,
+        prizeName: prize.name || `Prize ${prizeIndex + 1}`,
+        prizeAmount: Number(prize.amount) || 0,
+        winnerCount: winners.length,
+        winners: newWinners
+      });
+    }
+  });
+
+  return events;
 }
 
 function generateGameCode() {
@@ -1238,12 +1269,13 @@ function getThemeUI(theme) {
     },
     card: {
       background: `linear-gradient(145deg, ${colors.surface}f7, ${colors.surface2}e8)`,
-      border: `1px solid ${colors.accent}66`,
-      borderTop: `3px solid ${colors.accent}`,
+      /* Borderless premium sections: the page should flow edge-to-edge. */
+      border: "none",
+      borderTop: "none",
       borderRadius: 24,
       padding: 24,
       color: colors.text,
-      boxShadow: `0 22px 60px rgba(0,0,0,.34), 0 0 0 1px ${colors.secondary}18 inset, 0 0 34px ${colors.secondary}16`,
+      boxShadow: `0 22px 60px rgba(0,0,0,.34), 0 0 34px ${colors.secondary}16`,
       backdropFilter: "blur(16px)"
     },
     input: {
@@ -1409,17 +1441,58 @@ async function createGamePoster(
     );
   }
 
-  const colors =
+  const baseColors =
     posterTheme(
       game.theme
     );
 
+  // Give every newly-created game its own poster variation.
+  // The variation is deterministic from the game's unique code/id, so
+  // refreshing or resharing the same game does not randomly change it.
+  const gameIdentity = String(
+    game.game_code ||
+    game.id ||
+    game.created_at ||
+    game.game_name ||
+    "TambolaLive"
+  );
+
+  let gameHash = 0;
+  for (let i = 0; i < gameIdentity.length; i += 1) {
+    gameHash =
+      (gameHash * 31 + gameIdentity.charCodeAt(i)) >>> 0;
+  }
+
+  const posterVariant = gameHash % 5;
+
+  const variantAccents = [
+    baseColors.accent,
+    baseColors.secondary,
+    "#38bdf8",
+    "#f472b6",
+    "#a78bfa"
+  ];
+
+  const variantSecondary = [
+    baseColors.secondary,
+    "#22c55e",
+    "#f59e0b",
+    "#60a5fa",
+    "#fb7185"
+  ];
+
+  const colors = {
+    ...baseColors,
+    accent: variantAccents[posterVariant],
+    secondary: variantSecondary[posterVariant]
+  };
+
   const gradient =
     ctx.createLinearGradient(
-      0,
-      0,
-      width,
-      height
+      posterVariant === 1 ? width : 0,
+      posterVariant === 2 ? height : 0,
+      posterVariant === 3 ? 0 : width,
+      posterVariant === 4 ? 0 : height
     );
 
   gradient.addColorStop(
@@ -1428,8 +1501,15 @@ async function createGamePoster(
   );
 
   gradient.addColorStop(
+    0.55,
+    "#0f172a"
+  );
+
+  gradient.addColorStop(
     1,
-    "#020617"
+    posterVariant === 0
+      ? "#020617"
+      : colors.secondary
   );
 
   ctx.fillStyle =
@@ -1441,6 +1521,33 @@ async function createGamePoster(
     width,
     height
   );
+
+  // Per-game decorative glow shapes.
+  ctx.globalAlpha = 0.14;
+  ctx.fillStyle = colors.accent;
+
+  ctx.beginPath();
+  ctx.arc(
+    120 + posterVariant * 70,
+    130 + posterVariant * 45,
+    190 + posterVariant * 18,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+
+  ctx.fillStyle = colors.secondary;
+  ctx.beginPath();
+  ctx.arc(
+    960 - posterVariant * 55,
+    250 + posterVariant * 65,
+    230 - posterVariant * 12,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+
+  ctx.globalAlpha = 1;
 
   ctx.globalAlpha =
     0.15;
@@ -1805,7 +1912,7 @@ async function createGamePoster(
           /[^a-z0-9]/gi,
           "_"
         )
-    }-poster.png`,
+    }-${gameIdentity.replace(/[^a-z0-9]/gi, "_")}-poster.png`,
     {
       type: "image/png"
     }
@@ -1818,8 +1925,13 @@ async function createGamePoster(
 
 const pageStyle = {
   minHeight: "100vh",
+  minHeight: "100dvh",
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
   background: "#f5f7fb",
-  padding: 20,
+  /* Full-bleed app background; content keeps a small safe gutter. */
+  padding: "12px max(14px, env(safe-area-inset-right)) 16px max(14px, env(safe-area-inset-left))",
   boxSizing: "border-box",
   fontFamily:
     "Arial, Helvetica, sans-serif"
@@ -2635,8 +2747,10 @@ function TicketGridComponent({
           ? `2px solid ${c.accent}`
           : `1px solid ${c.secondary}88`,
         borderLeft: `6px solid ${c.accent}`,
-        borderRadius: 22,
-        padding: 14,
+        borderRadius: 18,
+        padding: 10,
+        width: "100%",
+        boxSizing: "border-box",
         background: selected
           ? ticketTheme.selected
           : ticketTheme.shell,
@@ -2645,6 +2759,10 @@ function TicketGridComponent({
           ? `0 16px 34px ${ticketTheme.glow}, 0 0 0 1px ${c.accent}66 inset`
           : `0 12px 28px rgba(0,0,0,.25), 0 0 0 1px ${c.secondary}22 inset`,
         transition: "transform .18s ease, box-shadow .18s ease, border-color .18s ease",
+        // Progressive performance enhancement for long ticket lists.
+        // Older browsers ignore these properties safely.
+        contentVisibility: "auto",
+        contain: "layout paint",
         overflow: "hidden"
       }}
     >
@@ -2664,12 +2782,12 @@ function TicketGridComponent({
           justifyContent: "space-between",
           alignItems: "center",
           gap: 10,
-          marginBottom: 10
+          marginBottom: 7
         }}
       >
         <b
           style={{
-            fontSize: 21,
+            fontSize: 20,
             letterSpacing: "-.02em",
             color: "#ffffff"
           }}
@@ -2718,7 +2836,8 @@ function TicketGridComponent({
         style={{
           position: "relative",
           display: "grid",
-          gridTemplateColumns: "repeat(9,minmax(28px,1fr))",
+          gridTemplateColumns: "repeat(9, minmax(0, 1fr))",
+          width: "100%",
           border: `2px solid ${theme === "Neon" ? c.secondary : c.accent}`,
           overflow: "hidden",
           borderRadius: 10,
@@ -2733,8 +2852,10 @@ function TicketGridComponent({
               <div
                 key={`${r}-${col}`}
                 style={{
-                  minHeight: 48,
+                  minHeight: 38,
+                  height: 38,
                   display: "flex",
+                  boxSizing: "border-box",
                   alignItems: "center",
                   justifyContent: "center",
                   borderRight:
@@ -2742,7 +2863,7 @@ function TicketGridComponent({
                   borderBottom:
                     r === 2 ? "none" : `1px solid ${ticketTheme.line}`,
                   fontWeight: value ? "800" : "normal",
-                  fontSize: 17,
+                  fontSize: 16,
                   background: called
                     ? `linear-gradient(145deg, #fde68a, #fbbf24)`
                     : value
@@ -2763,7 +2884,7 @@ function TicketGridComponent({
       <div
         style={{
           position: "relative",
-          marginTop: 10,
+          marginTop: 7,
           textAlign: "center",
           color: c.accent,
           fontWeight: "800",
@@ -2856,6 +2977,13 @@ function PlayerBookingPage({
     loadingUnavailable,
     setLoadingUnavailable
   ] = useState(true);
+
+  // Keep the ticket selector compact on phones and low-end Android devices.
+  // The first 15 tickets render initially; the rest are revealed on demand.
+  const [
+    showAllTickets,
+    setShowAllTickets
+  ] = useState(false);
 
   async function loadUnavailableTickets() {
     try {
@@ -3046,6 +3174,19 @@ function PlayerBookingPage({
       ]
     );
 
+  const INITIAL_TICKET_COUNT = 15;
+
+  const visibleTickets =
+    showAllTickets
+      ? tickets
+      : tickets.slice(
+          0,
+          Math.min(
+            INITIAL_TICKET_COUNT,
+            tickets.length
+          )
+        );
+
   function toggleTicket(
     number
   ) {
@@ -3086,43 +3227,6 @@ function PlayerBookingPage({
 
   function clearSelection() {
     setSelected([]);
-  }
-
-  function speakBookingPendingMessage() {
-    if (!("speechSynthesis" in window)) return;
-
-    try {
-      // The Book tap is a real user gesture. Prime the real MP3 player
-      // silently so Live Game can later play called-number assets.
-      primePlayerAudioFromGesture();
-
-      // Keep the existing speech unlock state for the booking-status message.
-      playerSpeechUnlocked = true;
-      playerSpeechUnlockStarted = false;
-      window.dispatchEvent(new Event("player-speech-unlocked"));
-
-      const synth = window.speechSynthesis;
-      synth.cancel();
-      synth.resume();
-
-      const utterance = new SpeechSynthesisUtterance(
-        "Booking pending. Waiting for host approval."
-      );
-      utterance.lang = "en-US";
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      const englishVoice = getPreferredEnglishSpeechVoice();
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-        utterance.lang = englishVoice.lang;
-      }
-
-      synth.speak(utterance);
-    } catch (error) {
-      console.warn("Booking pending announcement failed:", error);
-    }
   }
 
   async function bookTickets() {
@@ -3349,10 +3453,6 @@ function PlayerBookingPage({
           )}. Waiting for host approval.`
       );
 
-      // Speak the professional booking-status message ONLY after the
-      // player's Book action succeeds. Voice unlocking itself is silent.
-      speakBookingPendingMessage();
-
       // Clear only this submission. Existing bookings do not lock this player
       // out of making another booking for any still-available ticket.
       setSelected([]);
@@ -3549,7 +3649,7 @@ function PlayerBookingPage({
               gap: 10
             }}
           >
-            {tickets.map(
+            {visibleTickets.map(
               (
                 ticket
               ) => {
@@ -3636,6 +3736,37 @@ function PlayerBookingPage({
               }
             )}
           </div>
+
+          {tickets.length > INITIAL_TICKET_COUNT && (
+            <button
+              type="button"
+              onClick={() =>
+                setShowAllTickets((current) => !current)
+              }
+              style={{
+                width: "100%",
+                marginTop: 14,
+                minHeight: 48,
+                borderRadius: 13,
+                border: `1px solid ${themeUI.colors.accent}66`,
+                background: showAllTickets
+                  ? "rgba(255,255,255,.10)"
+                  : `linear-gradient(135deg, ${themeUI.colors.accent}, ${themeUI.colors.secondary})`,
+                color: "#ffffff",
+                fontWeight: 800,
+                fontSize: 15,
+                letterSpacing: 0.3,
+                cursor: "pointer",
+                boxShadow: showAllTickets
+                  ? "none"
+                  : `0 8px 20px ${themeUI.colors.secondary}30`
+              }}
+            >
+              {showAllTickets
+                ? "SHOW LESS"
+                : `SHOW MORE (${tickets.length - visibleTickets.length} MORE)`}
+            </button>
+          )}
 
           <div
             style={{
@@ -3961,152 +4092,10 @@ function LiveGamePage({ game }) {
     Array.isArray(game.called_numbers) ? game.called_numbers : []
   );
   const [liveGame, setLiveGame] = useState(game);
-  const liveGameRef = useRef(game);
-  liveGameRef.current = liveGame;
   const finalAnnouncementSpokenRef = useRef(false);
   const finalSummaryTimerRef = useRef(null);
   const [showFinalResults, setShowFinalResults] = useState(false);
   const [viewFinishedLive, setViewFinishedLive] = useState(false);
-
-  // Player-side voice tracking. Live called numbers use MP3 assets,
-  // while the existing speech unlock remains available for other
-  // announcements.
-  const playerVoiceUnlockedRef = useRef(playerSpeechUnlocked);
-  const playerVoiceReadyRef = useRef(playerAudioState.unlocked);
-  const playerCalledNumbersRef = useRef(
-    Array.isArray(game.called_numbers) ? game.called_numbers.map(Number) : []
-  );
-  const playerWinnerKeysRef = useRef(
-    (Array.isArray(game.selected_prizes) ? game.selected_prizes : [])
-      .flatMap((prize, prizeIndex) =>
-        (Array.isArray(prize?.winners) ? prize.winners : []).map((winner) =>
-          `${prizeIndex}|${prize?.name || `Prize ${prizeIndex + 1}`}|${winner?.playerName || "Player"}|${winner?.ticketNumber}|${winner?.winningNumber}`
-        )
-      )
-  );
-
-  // Any normal interaction on the Live Game page can prime the MP3
-  // player. This is silent and requires no visible voice button.
-  useEffect(() => {
-    const unlockFromGesture = () => {
-      primePlayerAudioFromGesture().then((unlocked) => {
-        if (unlocked) {
-          playerVoiceUnlockedRef.current = true;
-          playerVoiceReadyRef.current = true;
-          playerSpeechUnlocked = true;
-          window.dispatchEvent(new Event("player-speech-unlocked"));
-        }
-      });
-    };
-
-    const options = { capture: true, passive: true };
-    window.addEventListener("pointerdown", unlockFromGesture, options);
-    window.addEventListener("touchstart", unlockFromGesture, options);
-    window.addEventListener("click", unlockFromGesture, options);
-    window.addEventListener("keydown", unlockFromGesture, options);
-
-    if (playerAudioState.unlocked || playerSpeechUnlocked) {
-      playerVoiceUnlockedRef.current = true;
-      playerVoiceReadyRef.current = true;
-    }
-
-    return () => {
-      window.removeEventListener("pointerdown", unlockFromGesture, true);
-      window.removeEventListener("touchstart", unlockFromGesture, true);
-      window.removeEventListener("click", unlockFromGesture, true);
-      window.removeEventListener("keydown", unlockFromGesture, true);
-    };
-  }, []);
-
-  function speakPlayerNumber(number) {
-    const numericNumber = Number(number);
-
-    if (
-      !Number.isInteger(numericNumber) ||
-      numericNumber < 1 ||
-      numericNumber > 90
-    ) {
-      return;
-    }
-
-    // Real MP3: /public/voice/number-N.mp3
-    playPlayerAudioFile(`number-${numericNumber}.mp3`);
-  }
-
-  useEffect(() => {
-    const nextNumbers = Array.isArray(liveGame.called_numbers)
-      ? liveGame.called_numbers
-          .map(Number)
-          .filter((n) => Number.isInteger(n))
-      : [];
-
-    const previousNumbers = playerCalledNumbersRef.current;
-
-    if (playerAudioState.unlocked || playerSpeechUnlocked) {
-      playerVoiceUnlockedRef.current = true;
-      playerVoiceReadyRef.current = true;
-    }
-
-    const newlyCalled = nextNumbers.filter(
-      (number) => !previousNumbers.includes(number)
-    );
-
-    playerCalledNumbersRef.current = nextNumbers;
-
-    if (!newlyCalled.length || !playerVoiceUnlockedRef.current) return;
-
-    newlyCalled.forEach((number, index) => {
-      window.setTimeout(() => {
-        if (playerAudioState.unlocked || playerVoiceUnlockedRef.current) {
-          speakPlayerNumber(number);
-        }
-      }, index * 1800);
-    });
-  }, [liveGame.called_numbers]);
-
-  useEffect(() => {
-    const prizes = Array.isArray(liveGame.selected_prizes) ? liveGame.selected_prizes : [];
-    const newlyConfirmedEvents = [];
-    const nextKeys = [];
-
-    prizes.forEach((prize, prizeIndex) => {
-      const winners = Array.isArray(prize?.winners) ? prize.winners : [];
-      winners.forEach((winner) => {
-        const key = `${prizeIndex}|${prize?.name || `Prize ${prizeIndex + 1}`}|${winner?.playerName || "Player"}|${winner?.ticketNumber}|${winner?.winningNumber}`;
-        nextKeys.push(key);
-      });
-
-      const newWinners = winners.filter((winner) => {
-        const key = `${prizeIndex}|${prize?.name || `Prize ${prizeIndex + 1}`}|${winner?.playerName || "Player"}|${winner?.ticketNumber}|${winner?.winningNumber}`;
-        return !playerWinnerKeysRef.current.includes(key);
-      });
-
-      if (newWinners.length) {
-        newlyConfirmedEvents.push({
-          prizeName: prize?.name || `Prize ${prizeIndex + 1}`,
-          prizeAmount: prize?.amount ?? prize?.prizeAmount ?? 0,
-          winningNumber: newWinners[0]?.winningNumber,
-          winners: newWinners
-        });
-      }
-    });
-
-    playerWinnerKeysRef.current = nextKeys;
-
-    if (
-      !newlyConfirmedEvents.length ||
-      (!playerAudioState.unlocked && !playerSpeechUnlocked)
-    ) {
-      return;
-    }
-
-    window.setTimeout(() => {
-      if (playerAudioState.unlocked) {
-        playPlayerAudioFile("prize-winner.mp3");
-      }
-      speakWinnerAnnouncement(newlyConfirmedEvents);
-    }, 300);
-  }, [liveGame.selected_prizes]);
 
   useEffect(() => {
     if (finalSummaryTimerRef.current) {
@@ -4131,9 +4120,9 @@ function LiveGamePage({ game }) {
         const utterance =
           new SpeechSynthesisUtterance(message);
 
-        utterance.rate = 0.92;
-        utterance.pitch = 1;
-        utterance.volume = 1;
+        const presetId = loadVoicePreset(liveGame.id);
+        const voices = getAvailableSpeechVoices();
+        applySpeechVoice(utterance, presetId, voices);
 
         window.speechSynthesis.speak(utterance);
       } catch (err) {
@@ -5570,6 +5559,35 @@ function HostControlPage({
   ] = useState("fun");
 
   const [
+    voicePreset,
+    setVoicePreset
+  ] = useState(() => loadVoicePreset(game.id));
+
+  const [
+    speechVoices,
+    setSpeechVoices
+  ] = useState(() => getAvailableSpeechVoices());
+
+  useEffect(() => {
+    const refreshVoices = () => setSpeechVoices(getAvailableSpeechVoices());
+    refreshVoices();
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.addEventListener("voiceschanged", refreshVoices);
+    }
+
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.removeEventListener("voiceschanged", refreshVoices);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setVoicePreset(loadVoicePreset(game.id));
+  }, [game.id]);
+
+  const [
     callingNumber,
     setCallingNumber
   ] = useState(false);
@@ -6268,9 +6286,7 @@ function HostControlPage({
       const utterance = new SpeechSynthesisUtterance(
         phrase
       );
-      utterance.rate = 0.88;
-      utterance.pitch = 1.02;
-      utterance.volume = 1;
+      applySpeechVoice(utterance, voicePreset, speechVoices);
 
       window.speechSynthesis.speak(utterance);
     } catch (err) {
@@ -6380,7 +6396,7 @@ function HostControlPage({
     setPendingWinnerEvents(events);
 
     window.setTimeout(() => {
-      speakWinnerAnnouncement(events);
+      speakWinnerAnnouncement(events, voicePreset, speechVoices);
     }, 950);
 
     window.setTimeout(() => {
@@ -7766,9 +7782,95 @@ function HostControlPage({
                 >
                   <option value="classic">Classic</option>
                   <option value="indian"> Indian / Hinglish</option>
-                  <option value="fun">[CELEBRATE] Fun</option>
+                  <option value="fun">[CELEBRATE] English Rhyming</option>
                 </select>
               </label>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: 8,
+                marginBottom: 12
+              }}
+            >
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  padding: "10px 12px",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 10,
+                  background: "var(--theme-panel-bg, #f8fafc)",
+                  color: "var(--theme-panel-text, #0f172a)",
+                  fontWeight: "bold"
+                }}
+              >
+                <span>[VOICE] Voice Over</span>
+                <select
+                  value={voicePreset}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setVoicePreset(next);
+                    saveVoicePreset(game.id, next);
+                  }}
+                  disabled={callingNumber}
+                  style={{
+                    maxWidth: "58%",
+                    padding: "8px 10px",
+                    borderRadius: 8,
+                    border: "1px solid #cbd5e1",
+                    background: "var(--theme-panel-bg, #fff)",
+                    color: "var(--theme-panel-text, #0f172a)",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {VOICE_PRESETS.map((preset) => (
+                    <option key={preset.id} value={preset.id}>
+                      {preset.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    if (!("speechSynthesis" in window)) return;
+                    window.speechSynthesis.cancel();
+                    const preview = new SpeechSynthesisUtterance(
+                      "Answer to life, number 42!"
+                    );
+                    applySpeechVoice(preview, voicePreset, speechVoices);
+                    window.speechSynthesis.speak(preview);
+                  } catch (err) {
+                    console.error("Could not preview voice:", err);
+                  }
+                }}
+                disabled={callingNumber || !("speechSynthesis" in window)}
+                style={{
+                  ...themedSecondaryButton,
+                  width: "100%",
+                  opacity: callingNumber ? 0.55 : 1
+                }}
+              >
+                [SPEAKER] PREVIEW VOICE
+              </button>
+
+              <div
+                style={{
+                  fontSize: 13,
+                  lineHeight: 1.45,
+                  color: "var(--theme-muted-text, #64748b)"
+                }}
+              >
+                Voice settings are saved for this game on the host device.
+                The Deep Cinema Announcer gives a deep, authoritative Indian-cinema feel; it does not imitate a real person.
+              </div>
             </div>
 
             <div
@@ -8411,6 +8513,17 @@ function App() {
     true
   );
 
+  const [
+    playerVoiceEnabled,
+    setPlayerVoiceEnabled
+  ] = useState(false);
+
+  const playerAnnouncementStateRef = useRef({
+    gameId: null,
+    calledNumbers: [],
+    winnerKeys: new Set()
+  });
+
   /* -------------------------------------------------------
      PLAYER GAME LOADING + REAL-TIME STATUS
   ------------------------------------------------------- */
@@ -8420,29 +8533,6 @@ function App() {
       if (
         playerCode
       ) {
-        const unlockOptions = { capture: true, passive: true };
-
-        window.addEventListener(
-          "pointerdown",
-          unlockPlayerSpeechFromGesture,
-          unlockOptions
-        );
-        window.addEventListener(
-          "touchstart",
-          unlockPlayerSpeechFromGesture,
-          unlockOptions
-        );
-        window.addEventListener(
-          "click",
-          unlockPlayerSpeechFromGesture,
-          unlockOptions
-        );
-        window.addEventListener(
-          "keydown",
-          unlockPlayerSpeechFromGesture,
-          unlockOptions
-        );
-
         const cleanCode =
           String(
             playerCode
@@ -8491,33 +8581,12 @@ function App() {
               loadPlayerGame(
                 cleanCode
               ),
-            2000
+            5000
           );
 
         return () => {
           clearInterval(
             interval
-          );
-
-          window.removeEventListener(
-            "pointerdown",
-            unlockPlayerSpeechFromGesture,
-            true
-          );
-          window.removeEventListener(
-            "touchstart",
-            unlockPlayerSpeechFromGesture,
-            true
-          );
-          window.removeEventListener(
-            "click",
-            unlockPlayerSpeechFromGesture,
-            true
-          );
-          window.removeEventListener(
-            "keydown",
-            unlockPlayerSpeechFromGesture,
-            true
           );
 
           supabase.removeChannel(
@@ -8536,6 +8605,69 @@ function App() {
       playerCode
     ]
   );
+
+  /* -------------------------------------------------------
+     PLAYER VOICE ANNOUNCEMENTS
+     Speech must run on the player's own device. The host only
+     publishes game state; each player speaks the new event locally.
+  ------------------------------------------------------- */
+  useEffect(() => {
+    if (!playerCode || !playerGame?.id) {
+      return undefined;
+    }
+
+    const currentCalledNumbers = Array.isArray(playerGame.called_numbers)
+      ? playerGame.called_numbers
+      : [];
+    const currentWinnerKeys = getPlayerWinnerKeys(playerGame);
+    const state = playerAnnouncementStateRef.current;
+
+    // Establish a baseline without replaying old calls/winners when a player
+    // first opens the live game or refreshes the page.
+    if (state.gameId !== playerGame.id) {
+      playerAnnouncementStateRef.current = {
+        gameId: playerGame.id,
+        calledNumbers: [...currentCalledNumbers],
+        winnerKeys: currentWinnerKeys
+      };
+      return undefined;
+    }
+
+    const previousCalled = state.calledNumbers || [];
+    const newNumbers = currentCalledNumbers.filter(
+      (number) => !previousCalled.includes(number)
+    );
+    const newWinnerEvents = getNewPlayerWinnerEvents(
+      playerGame,
+      state.winnerKeys || new Set()
+    );
+
+    playerAnnouncementStateRef.current = {
+      gameId: playerGame.id,
+      calledNumbers: [...currentCalledNumbers],
+      winnerKeys: currentWinnerKeys
+    };
+
+    if (!playerVoiceEnabled) {
+      return undefined;
+    }
+
+    const announcementQueue = [];
+
+    newNumbers.forEach((number) => {
+      announcementQueue.push(getPlayerEnglishCallerPhrase(number));
+    });
+
+    getWinnerAnnouncementParts(newWinnerEvents).forEach((text) => {
+      announcementQueue.push(text);
+    });
+
+    if (announcementQueue.length) {
+      speakPlayerAnnouncementQueue(announcementQueue);
+    }
+
+    return undefined;
+  }, [playerCode, playerGame, playerVoiceEnabled]);
 
   /* -------------------------------------------------------
      HOST GAME REAL-TIME SYNC
@@ -8677,8 +8809,6 @@ function App() {
           current.status === data.status &&
           JSON.stringify(current.called_numbers || []) ===
             JSON.stringify(data.called_numbers || []) &&
-          JSON.stringify(current.selected_prizes || []) ===
-            JSON.stringify(data.selected_prizes || []) &&
           current.game_name === data.game_name &&
           current.game_code === data.game_code
         ) {
@@ -8847,11 +8977,62 @@ function App() {
       "live"
     ) {
       return (
-        <LiveGamePage
-          game={
-            playerGame
-          }
-        />
+        <>
+          {!playerVoiceEnabled && (
+            <div
+              style={{
+                position: "fixed",
+                left: 12,
+                right: 12,
+                bottom: 12,
+                zIndex: 9999,
+                display: "flex",
+                justifyContent: "center",
+                pointerEvents: "none"
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    if ("speechSynthesis" in window) {
+                      window.speechSynthesis.cancel();
+                      const utterance = new SpeechSynthesisUtterance(
+                        "Voice announcements enabled. Get ready for the next number."
+                      );
+                      applySpeechVoice(
+                        utterance,
+                        DEFAULT_VOICE_PRESET_ID,
+                        getAvailableSpeechVoices()
+                      );
+                      window.speechSynthesis.speak(utterance);
+                    }
+                  } finally {
+                    setPlayerVoiceEnabled(true);
+                  }
+                }}
+                style={{
+                  pointerEvents: "auto",
+                  border: "0",
+                  borderRadius: 999,
+                  padding: "13px 20px",
+                  fontSize: 16,
+                  fontWeight: 800,
+                  color: "#fff",
+                  background: "linear-gradient(135deg, #f59e0b, #ef4444)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,.35)"
+                }}
+              >
+                ðŸ”Š Enable Voice Announcements
+              </button>
+            </div>
+          )}
+          <LiveGamePage
+            game={
+              playerGame
+            }
+          />
+        </>
       );
     }
 
@@ -8909,6 +9090,42 @@ function App() {
 /* =========================================================
    START APP
 ========================================================= */
+
+/* =========================================================
+   FULL-SCREEN MOBILE BASE
+   Removes the browser's default body gutter so the themed
+   background reaches both edges of the viewport.
+   Safe-area padding remains handled by pageStyle above.
+========================================================= */
+const globalStyle = document.createElement("style");
+globalStyle.textContent = `
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-width: 100%;
+    min-height: 100%;
+  }
+
+  html {
+    background: #000;
+  }
+
+  body {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+`;
+document.head.appendChild(globalStyle);
 
 const rootElement =
   document.getElementById(
