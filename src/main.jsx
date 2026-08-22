@@ -41,6 +41,121 @@ const DEFAULT_PRIZES = [
   amount: ""
 }));
 
+const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_";
+
+const VOICE_PRESETS = [
+  {
+    id: "english",
+    label: "English (Default)",
+    rate: 0.88,
+    pitch: 1.0,
+    preferredLanguages: ["en-US", "en-GB", "en-IN"]
+  },
+  {
+    id: "auto",
+    label: "Auto / Best Available",
+    rate: 0.88,
+    pitch: 1.0,
+    preferredLanguages: ["en-US", "en-GB", "en-IN", "hi-IN"]
+  },
+  {
+    id: "indian",
+    label: "Indian English",
+    rate: 0.86,
+    pitch: 0.98,
+    preferredLanguages: ["en-IN", "hi-IN"]
+  },
+  {
+    id: "hinglish",
+    label: "Hindi / Hinglish",
+    rate: 0.84,
+    pitch: 0.98,
+    preferredLanguages: ["hi-IN", "en-IN"]
+  },
+  {
+    id: "cinema",
+    label: "Deep Cinema Announcer",
+    rate: 0.80,
+    pitch: 0.78,
+    preferredLanguages: ["en-IN", "hi-IN", "en-GB", "en-US"]
+  },
+  {
+    id: "bright",
+    label: "Bright Female Announcer",
+    rate: 0.90,
+    pitch: 1.18,
+    preferredLanguages: ["en-IN", "hi-IN", "en-US", "en-GB"]
+  }
+];
+
+function getVoiceSettingsKey(gameId) {
+  return `${VOICE_SETTINGS_PREFIX}${gameId || "default"}`;
+}
+
+function loadVoicePreset(gameId) {
+  try {
+    const saved = localStorage.getItem(getVoiceSettingsKey(gameId));
+    return VOICE_PRESETS.some((preset) => preset.id === saved) ? saved : "english";
+  } catch {
+    return "auto";
+  }
+}
+
+function saveVoicePreset(gameId, presetId) {
+  try {
+    localStorage.setItem(getVoiceSettingsKey(gameId), presetId);
+  } catch (error) {
+    console.error("Could not save voice preference:", error);
+  }
+}
+
+function chooseSpeechVoice(voices, preset) {
+  if (!Array.isArray(voices) || !voices.length) return null;
+
+  const preferred = preset?.preferredLanguages || [];
+  const byLanguage = voices.find((voice) =>
+    preferred.some((language) =>
+      String(voice.lang || "").toLowerCase() === language.toLowerCase()
+    )
+  );
+
+  if (byLanguage) return byLanguage;
+
+  const byEnglish = voices.find((voice) =>
+    /^en(-|$)/i.test(String(voice.lang || ""))
+  );
+
+  return byEnglish || voices[0] || null;
+}
+
+function applySpeechVoice(utterance, presetId, voices) {
+  const preset =
+    VOICE_PRESETS.find((item) => item.id === presetId) ||
+    VOICE_PRESETS[0];
+
+  utterance.rate = preset.rate;
+  utterance.pitch = preset.pitch;
+  utterance.volume = 1;
+
+  const selectedVoice = chooseSpeechVoice(voices, preset);
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+    utterance.lang = selectedVoice.lang;
+  }
+
+  return utterance;
+}
+
+function getAvailableSpeechVoices() {
+  try {
+    return "speechSynthesis" in window
+      ? window.speechSynthesis.getVoices() || []
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 /* =========================================================
    BASIC HELPERS
 ========================================================= */
@@ -278,7 +393,7 @@ function getPrizeVoiceName(name) {
   return String(name || "Prize");
 }
 
-function speakWinnerAnnouncement(events) {
+function speakWinnerAnnouncement(events, voicePresetId = "auto", voices = []) {
   try {
     if (!("speechSynthesis" in window) || !events?.length) return;
 
@@ -305,9 +420,7 @@ function speakWinnerAnnouncement(events) {
     });
 
     const utterance = new SpeechSynthesisUtterance(parts.join(". "));
-    utterance.rate = 0.82;
-    utterance.pitch = 1.04;
-    utterance.volume = 1;
+    applySpeechVoice(utterance, voicePresetId, voices);
     window.speechSynthesis.speak(utterance);
   } catch (err) {
     console.error("Could not announce winner:", err);
@@ -3709,9 +3822,9 @@ function LiveGamePage({ game }) {
         const utterance =
           new SpeechSynthesisUtterance(message);
 
-        utterance.rate = 0.92;
-        utterance.pitch = 1;
-        utterance.volume = 1;
+        const presetId = loadVoicePreset(liveGame.id);
+        const voices = getAvailableSpeechVoices();
+        applySpeechVoice(utterance, presetId, voices);
 
         window.speechSynthesis.speak(utterance);
       } catch (err) {
@@ -5148,6 +5261,35 @@ function HostControlPage({
   ] = useState("fun");
 
   const [
+    voicePreset,
+    setVoicePreset
+  ] = useState(() => loadVoicePreset(game.id));
+
+  const [
+    speechVoices,
+    setSpeechVoices
+  ] = useState(() => getAvailableSpeechVoices());
+
+  useEffect(() => {
+    const refreshVoices = () => setSpeechVoices(getAvailableSpeechVoices());
+    refreshVoices();
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.addEventListener("voiceschanged", refreshVoices);
+    }
+
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.removeEventListener("voiceschanged", refreshVoices);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setVoicePreset(loadVoicePreset(game.id));
+  }, [game.id]);
+
+  const [
     callingNumber,
     setCallingNumber
   ] = useState(false);
@@ -5846,9 +5988,7 @@ function HostControlPage({
       const utterance = new SpeechSynthesisUtterance(
         phrase
       );
-      utterance.rate = 0.88;
-      utterance.pitch = 1.02;
-      utterance.volume = 1;
+      applySpeechVoice(utterance, voicePreset, speechVoices);
 
       window.speechSynthesis.speak(utterance);
     } catch (err) {
@@ -5958,7 +6098,7 @@ function HostControlPage({
     setPendingWinnerEvents(events);
 
     window.setTimeout(() => {
-      speakWinnerAnnouncement(events);
+      speakWinnerAnnouncement(events, voicePreset, speechVoices);
     }, 950);
 
     window.setTimeout(() => {
@@ -7347,6 +7487,92 @@ function HostControlPage({
                   <option value="fun">[CELEBRATE] Fun</option>
                 </select>
               </label>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: 8,
+                marginBottom: 12
+              }}
+            >
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  padding: "10px 12px",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 10,
+                  background: "var(--theme-panel-bg, #f8fafc)",
+                  color: "var(--theme-panel-text, #0f172a)",
+                  fontWeight: "bold"
+                }}
+              >
+                <span>[VOICE] Voice Over</span>
+                <select
+                  value={voicePreset}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setVoicePreset(next);
+                    saveVoicePreset(game.id, next);
+                  }}
+                  disabled={callingNumber}
+                  style={{
+                    maxWidth: "58%",
+                    padding: "8px 10px",
+                    borderRadius: 8,
+                    border: "1px solid #cbd5e1",
+                    background: "var(--theme-panel-bg, #fff)",
+                    color: "var(--theme-panel-text, #0f172a)",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {VOICE_PRESETS.map((preset) => (
+                    <option key={preset.id} value={preset.id}>
+                      {preset.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    if (!("speechSynthesis" in window)) return;
+                    window.speechSynthesis.cancel();
+                    const preview = new SpeechSynthesisUtterance(
+                      "Answer to life, number 42!"
+                    );
+                    applySpeechVoice(preview, voicePreset, speechVoices);
+                    window.speechSynthesis.speak(preview);
+                  } catch (err) {
+                    console.error("Could not preview voice:", err);
+                  }
+                }}
+                disabled={callingNumber || !("speechSynthesis" in window)}
+                style={{
+                  ...themedSecondaryButton,
+                  width: "100%",
+                  opacity: callingNumber ? 0.55 : 1
+                }}
+              >
+                [SPEAKER] PREVIEW VOICE
+              </button>
+
+              <div
+                style={{
+                  fontSize: 13,
+                  lineHeight: 1.45,
+                  color: "var(--theme-muted-text, #64748b)"
+                }}
+              >
+                Voice settings are saved for this game on the host device.
+                The Deep Cinema Announcer gives a deep, authoritative Indian-cinema feel; it does not imitate a real person.
+              </div>
             </div>
 
             <div
