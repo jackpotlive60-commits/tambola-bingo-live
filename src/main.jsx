@@ -1518,8 +1518,13 @@ async function createGamePoster(
 
 const pageStyle = {
   minHeight: "100vh",
+  minHeight: "100dvh",
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
   background: "#f5f7fb",
-  padding: 20,
+  /* Full-bleed app background; content keeps a small safe gutter. */
+  padding: "12px max(14px, env(safe-area-inset-right)) 16px max(14px, env(safe-area-inset-left))",
   boxSizing: "border-box",
   fontFamily:
     "Arial, Helvetica, sans-serif"
@@ -8435,6 +8440,42 @@ function App() {
 /* =========================================================
    START APP
 ========================================================= */
+
+/* =========================================================
+   FULL-SCREEN MOBILE BASE
+   Removes the browser's default body gutter so the themed
+   background reaches both edges of the viewport.
+   Safe-area padding remains handled by pageStyle above.
+========================================================= */
+const globalStyle = document.createElement("style");
+globalStyle.textContent = `
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-width: 100%;
+    min-height: 100%;
+  }
+
+  html {
+    background: #000;
+  }
+
+  body {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+`;
+document.head.appendChild(globalStyle);
 
 const rootElement =
   document.getElementById(
