@@ -1247,34 +1247,47 @@ async function createGamePoster(
     );
   }
 
-  const footerY =
-    Math.min(1225, prizeY + 95 + prizes.length * (prizes.length > 6 ? 34 : 40));
+  const footerY = Math.min(1195, prizeY + 90 + prizes.length * (prizes.length > 6 ? 34 : 40));
+
+  roundedRect(
+    ctx,
+    150,
+    footerY,
+    780,
+    105,
+    24
+  );
+
+  ctx.fillStyle =
+    "rgba(255,255,255,0.10)";
+
+  ctx.fill();
+
+  ctx.fillStyle =
+    colors.accent;
+
+  ctx.font =
+    "bold 30px Arial";
 
   ctx.textAlign =
     "center";
 
-  ctx.fillStyle =
-    colors.secondary;
-
-  ctx.font =
-    "bold 22px Arial";
-
   ctx.fillText(
-    "PRIZE LIST UPDATED",
+    "PRIZE ANNOUNCEMENT",
     width / 2,
-    footerY
+    footerY + 43
   );
 
   ctx.fillStyle =
-    "rgba(255,255,255,0.75)";
+    "rgba(255,255,255,0.80)";
 
   ctx.font =
     "18px Arial";
 
   ctx.fillText(
-    "Final prize amounts announced by the host",
+    "Prize amounts updated by the host",
     width / 2,
-    footerY + 38
+    footerY + 75
   );
 
   const blob =
@@ -4905,7 +4918,7 @@ function HostControlPage({
 
   async function savePrizeAmounts() {
     const prizeEditingAllowed =
-      game.status !== "ended";
+      game.status !== "live" && game.status !== "ended";
 
     if (savingPrizes || !prizeEditingAllowed) {
       return false;
@@ -4989,461 +5002,132 @@ function HostControlPage({
     }
   }
 
-  async function shareGame() {
-    if (
-      posterCreating ||
-      savingPrizes
-    ) {
+  async function sharePlayerLink() {
+    if (posterCreating || savingPrizes) {
       return;
     }
 
-    let posterSourceGame = savedPrizeGame || game;
+    setPosterCreating(true);
+    setShareMessage("");
+    setGameError("");
 
-    const prizeEditingAllowed =
-      game.status !== "ended";
+    try {
+      // At game creation time the poster uses the prize amounts set by the host.
+      // Sharing the link/poster does NOT lock or modify the prizes.
+      const poster = await createGamePoster({
+        ...game,
+        selected_prizes: Array.isArray(game.selected_prizes)
+          ? game.selected_prizes.map((prize) => ({ ...prize }))
+          : []
+      });
 
-    if (prizeEditingAllowed) {
+      const canShareFile =
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [poster] });
+
+      if (canShareFile) {
+        // Initial share: send the player booking link AND the initial prize poster together.
+        await navigator.share({
+          title: game.game_name,
+          text: `Book your tickets for ${game.game_name}.`,
+          url: inviteUrl,
+          files: [poster]
+        });
+        setShareMessage("Player booking link and initial prize poster shared. Prize amounts remain editable until the game starts.");
+        return;
+      }
+
+      // If the device cannot attach files to the share sheet, copy the booking link
+      // and save the poster so the host can attach it manually in WhatsApp.
+      await navigator.clipboard.writeText(inviteUrl);
+
+      const posterUrl = URL.createObjectURL(poster);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = posterUrl;
+      downloadLink.download = poster.name;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+      window.setTimeout(() => URL.revokeObjectURL(posterUrl), 1000);
+
+      setShareMessage("Player booking link copied and initial prize poster generated. Send the link and poster to players.");
+    } catch (err) {
+      if (err?.name === "AbortError") {
+        return;
+      }
+      console.error("Could not share player link and poster:", err);
+      setGameError(err?.message || "Could not share the player link and poster.");
+    } finally {
+      setPosterCreating(false);
+    }
+  }
+
+  async function generateUpdatedPrizePoster() {
+    if (posterCreating || savingPrizes) {
+      return;
+    }
+
+    if (game.status === "live" || game.status === "ended") {
+      setShareMessage("Prize amounts can only be changed before the game starts.");
+      return;
+    }
+
+    setPosterCreating(true);
+    setShareMessage("");
+    setGameError("");
+
+    try {
+      // Always save the values currently visible in the editor first.
       const savedGame = await savePrizeAmounts();
       if (!savedGame) {
         return;
       }
-      posterSourceGame = savedGame;
-    }
 
-    setPosterCreating(
-      true
-    );
-
-    setShareMessage("");
-
-    try {
       const posterGame = {
-        ...posterSourceGame,
-        selected_prizes: Array.isArray(posterSourceGame.selected_prizes)
-          ? posterSourceGame.selected_prizes.map((prize) => ({ ...prize }))
-          : editablePrizes.map((prize) => ({ ...prize }))
+        ...savedGame,
+        selected_prizes: Array.isArray(savedGame.selected_prizes)
+          ? savedGame.selected_prizes.map((prize) => ({ ...prize }))
+          : []
       };
 
-      const poster =
-        await createGamePoster(
-          posterGame
-        );
+      const poster = await createGamePoster(posterGame);
 
-      const canShareFiles =
+      const canShareFile =
         navigator.share &&
         navigator.canShare &&
-        navigator.canShare({
-          files: [poster]
-        });
+        navigator.canShare({ files: [poster] });
 
-      if (canShareFiles) {
+      if (canShareFile) {
+        // IMPORTANT: share ONLY the poster. No URL and no share text.
         await navigator.share({
-          title: game.game_name,
           files: [poster]
         });
-
-        setShareMessage(
-          "Updated prize poster ready to share. Only the poster was sent."
-        );
-
+        setShareMessage("Updated prize poster generated and shared. Poster contains the new prize amounts only.");
         return;
       }
 
-      // If the browser cannot share image files directly, save only the poster.
-      try {
-        const posterUrl = URL.createObjectURL(poster);
-        const downloadLink = document.createElement("a");
-        downloadLink.href = posterUrl;
-        downloadLink.download = poster.name;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        downloadLink.remove();
-        window.setTimeout(() => URL.revokeObjectURL(posterUrl), 1000);
+      // If the browser cannot attach files to its share sheet, download ONLY the poster.
+      const posterUrl = URL.createObjectURL(poster);
+      const downloadLink = document.createElement("a");
+      downloadLink.href = posterUrl;
+      downloadLink.download = poster.name;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+      window.setTimeout(() => URL.revokeObjectURL(posterUrl), 1000);
 
-        setShareMessage(
-          "Updated prize poster saved. Share the poster file in WhatsApp."
-        );
-      } catch (downloadError) {
-        console.error("Could not prepare poster download:", downloadError);
-        setShareMessage(
-          "Could not share or save the updated poster."
-        );
-      }
-    } catch (error) {
-
-      if (
-        error?.name ===
-        "AbortError"
-      ) {
+      setShareMessage("Updated prize poster generated and saved. Send this poster on WhatsApp.");
+    } catch (err) {
+      if (err?.name === "AbortError") {
         return;
       }
-
-      console.error(
-        "Could not share game:",
-        error
-      );
-
-      setShareMessage(
-        "Updated prize poster could not be shared automatically. Please use the saved poster file in WhatsApp."
-      );
+      console.error("Could not generate updated prize poster:", err);
+      setGameError(err?.message || "Could not generate updated prize poster.");
     } finally {
-      setPosterCreating(
-        false
-      );
+      setPosterCreating(false);
     }
   }
-
-  const CALLER_PHRASES = {
-    1: "First on the board, number 1",
-    2: "One little duck, number 2",
-    3: "Cup of tea, number 3",
-    4: "Knock at the door, number 4",
-    5: "Man alive, number 5",
-    6: "Half a dozen, number 6",
-    7: "Lucky seven, number 7",
-    8: "Garden gate, number 8",
-    9: "Doctor's orders, number 9",
-    10: "Big fat hen, number 10",
-    11: "Legs eleven, number 11",
-    12: "One dozen, number 12",
-    13: "Unlucky for some, number 13",
-    14: "Valentine's Day, number 14",
-    15: "Young and keen, number 15",
-    16: "Sweet sixteen, number 16",
-    17: "Dancing queen, number 17",
-    18: "Coming of age, number 18",
-    19: "Goodbye teens, number 19",
-    20: "One score, number 20",
-    21: "Key to the door, number 21",
-    22: "Two little ducks, number 22",
-    23: "You and me, number 23",
-    24: "Two dozen, number 24",
-    25: "Silver jubilee, number 25",
-    26: "Republic Day, number 26",
-    27: "Gateway to heaven, number 27",
-    28: "Duck and its mate, number 28",
-    29: "Rise and shine, number 29",
-    30: "Flirty thirty, number 30",
-    31: "Get up and run, number 31",
-    32: "Buckle my shoe, number 32",
-    33: "All the threes, number 33",
-    34: "Dil maange more, number 34",
-    35: "Jump and jive, number 35",
-    36: "Three dozen, number 36",
-    37: "Mixed luck, number 37",
-    38: "Christmas cake, number 38",
-    39: "The thirty-nine steps, number 39",
-    40: "Life begins at forty, number 40",
-    41: "Time for fun, number 41",
-    42: "The answer to life, number 42",
-    43: "Down on your knees, number 43",
-    44: "All the fours, number 44",
-    45: "Halfway there, number 45",
-    46: "Up to tricks, number 46",
-    47: "Four and seven, number 47",
-    48: "Four dozen, number 48",
-    49: "Rise and shine, number 49",
-    50: "Half a century, number 50",
-    51: "Charity begins at fifty-one, number 51",
-    52: "Pack of cards, number 52",
-    53: "Stuck in the tree, number 53",
-    54: "Clean the floor, number 54",
-    55: "Snakes alive, number 55",
-    56: "Pick up sticks, number 56",
-    57: "Fifty-seven varieties, number 57",
-    58: "Make them wait, number 58",
-    59: "Brighton line, number 59",
-    60: "Diamond jubilee, number 60",
-    61: "Baker's bun, number 61",
-    62: "Turn the screw, number 62",
-    63: "Tickle me, number 63",
-    64: "Almost retired, number 64",
-    65: "Retirement time, number 65",
-    66: "Clickety click, number 66",
-    67: "Stairway to heaven, number 67",
-    68: "Pick a mate, number 68",
-    69: "Ulta pulta, number 69",
-    70: "Three score and ten, number 70",
-    71: "Bang on the drum, number 71",
-    72: "Six dozen, number 72",
-    73: "Queen bee, number 73",
-    74: "Hit the floor, number 74",
-    75: "Strive and strive, number 75",
-    76: "Seventy-six trombones, number 76",
-    77: "Double lucky seven, number 77",
-    78: "Lucky seth, number 78",
-    79: "One more time, number 79",
-    80: "Eight and zero, number 80",
-    81: "Stop and run, number 81",
-    82: "Straight on through, number 82",
-    83: "Time for tea, number 83",
-    84: "Seven dozen, number 84",
-    85: "Staying alive, number 85",
-    86: "Between the sticks, number 86",
-    87: "Last of luck, number 87",
-    88: "Two fat ladies, number 88",
-    89: "Nearly there, number 89",
-    90: "Top of the house, number 90"
-  };
-
-  const INDIAN_CALLER_PHRASES = {
-    1: "Ek number, shuruaat zabardast",
-    2: "Do chhote ducks, number 2",
-    3: "Cup of chai, number 3",
-    4: "Darwaze par knock, number 4",
-    5: "Paanch ka punch, number 5",
-    6: "Chhe, aadha dozen",
-    7: "Lucky saat, number 7",
-    8: "Aath ka aath, number 8",
-    9: "Nau, doctor ka number",
-    10: "Das ka dum, number 10",
-    11: "Gyarah, legs eleven",
-    12: "Ek dozen, baarah",
-    13: "Terah, unlucky for some",
-    14: "Chaudah, Valentine special",
-    15: "Pandrah, quarter century ki taraf",
-    16: "Solah, sweet sixteen",
-    17: "Satrah, dancing queen ke kareeb",
-    18: "Atharah, coming of age",
-    19: "Unnis, almost twenty",
-    20: "Bees, score number 20",
-    21: "Ikkis, key of the door",
-    22: "Baais, do little ducks",
-    23: "Teis, you and me",
-    24: "Chaubees, two dozen",
-    25: "Pachchees, quarter century",
-    30: "Tees, dirty thirty",
-    40: "Chalees, life begins at forty",
-    50: "Pachaas, half century",
-    60: "Saath, sixty on the board",
-    66: "Chhiyaasath, clickety click",
-    69: "Unhattar, ulta pulta",
-    77: "Sattaattar, double lucky seven",
-    88: "Athaasi, two fat ladies",
-    90: "Nabbe, top of the house"
-  };
-
-  function getCallerPhrase(number) {
-    if (callerMode === "classic") {
-      return `Number ${number}`;
-    }
-
-    if (callerMode === "indian") {
-      return (
-        INDIAN_CALLER_PHRASES[number] ||
-        `Agla number hai ${number}, dhyaan se dekhiye!`
-      );
-    }
-
-    return (
-      CALLER_PHRASES[number] ||
-      `Number ${number}`
-    );
-  }
-
-  function announceNumber(number) {
-    try {
-      if (!("speechSynthesis" in window)) return;
-
-      window.speechSynthesis.cancel();
-
-      const phrase = getCallerPhrase(number);
-
-      const utterance = new SpeechSynthesisUtterance(
-        phrase
-      );
-      utterance.rate = 0.88;
-      utterance.pitch = 1.02;
-      utterance.volume = 1;
-
-      window.speechSynthesis.speak(utterance);
-    } catch (err) {
-      console.error("Could not announce number:", err);
-    }
-  }
-
-  function playCallSound() {
-    try {
-      const AudioContextClass =
-        window.AudioContext || window.webkitAudioContext;
-
-      if (!AudioContextClass) return;
-
-      const context = new AudioContextClass();
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(660, context.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(
-        880,
-        context.currentTime + 0.12
-      );
-
-      gain.gain.setValueAtTime(0.0001, context.currentTime);
-      gain.gain.exponentialRampToValueAtTime(
-        0.18,
-        context.currentTime + 0.02
-      );
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        context.currentTime + 0.22
-      );
-
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-
-      oscillator.start();
-      oscillator.stop(context.currentTime + 0.24);
-
-      oscillator.onended = () => {
-        context.close().catch(() => {});
-      };
-    } catch (err) {
-      console.error("Could not play call sound:", err);
-    }
-  }
-
-  function detectWinnersForCall(nextNumber, nextCalledNumbers) {
-    const acceptedBookings = bookings.filter(
-      (booking) => booking.status === "accepted"
-    );
-
-    if (!acceptedBookings.length) {
-      return [];
-    }
-
-    const currentPrizes = Array.isArray(game.selected_prizes)
-      ? game.selected_prizes
-      : [];
-
-    const events = [];
-
-    currentPrizes.forEach((prize, prizeIndex) => {
-      if (prize?.locked) return;
-
-      const winners = findPrizeWinners(
-        prize,
-        acceptedBookings,
-        nextCalledNumbers,
-        nextNumber,
-        game.game_code
-      );
-
-      if (winners.length) {
-        const prizeAmount = Number(prize.amount) || 0;
-        const shares = calculateWinnerShares(
-          prizeAmount,
-          winners.length
-        );
-
-        const winnersWithShares = winners.map(
-          (winner, winnerIndex) => ({
-            ...winner,
-            prizeAmount,
-            winnerCount: winners.length,
-            prizeShare: shares[winnerIndex]
-          })
-        );
-
-        events.push({
-          prizeIndex,
-          prizeName: prize.name || `Prize ${prizeIndex + 1}`,
-          prizeAmount,
-          winningNumber: nextNumber,
-          winnerCount: winnersWithShares.length,
-          winners: winnersWithShares
-        });
-      }
-    });
-
-    if (!events.length) {
-      return [];
-    }
-
-    setPendingWinnerEvents(events);
-
-    window.setTimeout(() => {
-      speakWinnerAnnouncement(events);
-    }, 950);
-
-    window.setTimeout(() => {
-      confirmWinnerEvents(events);
-    }, 300);
-
-    return events;
-  }
-
-  function recordWinnerHistory(events) {
-    if (!Array.isArray(events) || !events.length) {
-      return;
-    }
-
-    setWinnerHistory((current) => {
-      const existingKeys = new Set(
-        current.map(
-          (item) =>
-            `${item.prizeName}|${item.playerName}|${item.ticketNumber}|${item.winningNumber}`
-        )
-      );
-
-      const entries = [];
-
-      events.forEach((event) => {
-        if (!Array.isArray(event.winners)) {
-          return;
-        }
-
-        event.winners.forEach((winner) => {
-          const item = {
-            prizeName: event.prizeName,
-            prizeAmount: event.prizeAmount,
-            winnerCount:
-              event.winnerCount || event.winners.length,
-            playerName:
-              winner.playerName || "Player",
-            ticketNumber:
-              winner.ticketNumber,
-            prizeShare:
-              winner.prizeShare,
-            winningNumber:
-              event.winningNumber,
-            confirmedAt:
-              new Date().toISOString()
-          };
-
-          const key =
-            `${item.prizeName}|${item.playerName}|${item.ticketNumber}|${item.winningNumber}`;
-
-          if (!existingKeys.has(key)) {
-            existingKeys.add(key);
-            entries.push(item);
-          }
-        });
-      });
-
-      return [
-        ...current,
-        ...entries
-      ];
-    });
-  }
-
-  function getConfirmedPrizeResults() {
-    const prizes = Array.isArray(game.selected_prizes) ? game.selected_prizes : [];
-    return prizes.map((prize, index) => ({
-      ...prize,
-      index,
-      winners: Array.isArray(prize?.winners) ? prize.winners : []
-    }));
-  }
-
-  function hasConfirmedFullHouse() {
-    return getConfirmedPrizeResults().some(
-      (prize) => getPrizePattern(prize?.name) === "full_house" && prize?.locked
-    );
-  }
-
   async function confirmWinnerEvents(eventsOverride = null) {
     const eventsToConfirm =
       Array.isArray(eventsOverride) && eventsOverride.length
@@ -6030,7 +5714,7 @@ function HostControlPage({
               {editablePrizes.map((prize, index) => {
                 const locked = Boolean(prize?.locked);
                 const prizeEditingAllowed =
-                  game.status !== "ended";
+                  game.status !== "live" && game.status !== "ended";
                 const disabled = !prizeEditingAllowed || locked || savingPrizes;
 
                 return (
@@ -6084,6 +5768,7 @@ function HostControlPage({
             onClick={savePrizeAmounts}
             disabled={
               savingPrizes ||
+              game.status === "live" ||
               game.status === "ended"
             }
             style={{
@@ -6091,6 +5776,7 @@ function HostControlPage({
               marginTop: 14,
               opacity:
                 savingPrizes ||
+                game.status === "live" ||
                 game.status === "ended"
                   ? 0.55
                   : 1
@@ -6106,107 +5792,104 @@ function HostControlPage({
           }
         >
           <h2>
-            Share Game
+            Share Player Booking Link
           </h2>
 
           <p
             style={{
-              color:
-                "#64748b"
+              color: "#64748b"
             }}
           >
-            Share Game automatically
-            creates a real PNG poster
-            containing the game details
-            and updated prize amounts.
-            The poster contains no game link.
-          </p>
-
-          <p
-            style={{
-              color: "#166534",
-              fontWeight: "bold",
-              marginTop: 0
-            }}
-          >
-            Save your new prize amounts first, then use the button below to generate a fresh poster with the updated prizes.
+            Share the player booking link together with the initial prize poster.
+            The poster uses the prize amounts set when the game was created.
+            Sharing does not lock the prizes; you can edit them later while the game is UPCOMING.
           </p>
 
           <input
             readOnly
-            value={
-              inviteUrl
-            }
+            value={inviteUrl}
             style={{
               ...inputStyle,
-              marginBottom:
-                10
+              marginBottom: 10
             }}
           />
 
           <div
             style={{
-              display:
-                "flex",
+              display: "flex",
               gap: 8,
-              flexWrap:
-                "wrap"
+              flexWrap: "wrap"
             }}
           >
             <button
-              onClick={
-                copyLink
-              }
-              style={
-                secondaryButton
-              }
+              onClick={copyLink}
+              style={secondaryButton}
             >
-              {copied
-                ? "[OK] Copied"
-                : "Copy Link"}
+              {copied ? "[OK] Copied" : "Copy Player Link"}
             </button>
 
             <button
-              onClick={
-                shareGame
-              }
-              disabled={
-                posterCreating
-              }
-              style={{
-                ...primaryButton,
-                opacity:
-                  posterCreating
-                    ? 0.6
-                    : 1
-              }}
+              onClick={sharePlayerLink}
+              style={primaryButton}
             >
-              {posterCreating
-                ? "Creating Poster..."
-                : "[STYLE] GENERATE UPDATED PRIZE POSTER + SHARE"}
+              [SHARE] SHARE PLAYER LINK + POSTER
             </button>
           </div>
+        </section>
+
+        <section
+          style={cardStyle}
+        >
+          <h2>
+            Updated Prize Poster
+          </h2>
+
+          <p
+            style={{
+              color: "#64748b",
+              marginTop: 0
+            }}
+          >
+            After players have booked their tickets, edit the prize amounts above, save them, and then generate a fresh poster. The poster contains the updated prize list only â€” no player booking link.
+          </p>
+
+          <button
+            type="button"
+            onClick={generateUpdatedPrizePoster}
+            disabled={
+              posterCreating ||
+              savingPrizes ||
+              game.status === "live" ||
+              game.status === "ended"
+            }
+            style={{
+              ...primaryButton,
+              opacity:
+                posterCreating ||
+                savingPrizes ||
+                game.status === "live" ||
+                game.status === "ended"
+                  ? 0.55
+                  : 1
+            }}
+          >
+            {posterCreating
+              ? "GENERATING POSTER..."
+              : "[STYLE] GENERATE UPDATED PRIZE POSTER + SHARE"}
+          </button>
 
           {shareMessage && (
             <div
               style={{
-                marginTop:
-                  14,
-                padding:
-                  12,
-                borderRadius:
-                  10,
-                background:
-                  "#eff6ff",
-                color:
-                  "#1d4ed8",
-                fontWeight:
-                  "bold"
+                marginTop: 14,
+                padding: 12,
+                borderRadius: 10,
+                background: "#eff6ff",
+                color: "#1d4ed8",
+                fontWeight: "bold"
               }}
             >
-              {
-                shareMessage
-              }
+              {shareMessage}
             </div>
           )}
         </section>
