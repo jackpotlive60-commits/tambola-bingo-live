@@ -81,7 +81,7 @@ function unlockPlayerSpeechFromGesture() {
     const synth = window.speechSynthesis;
     synth.resume();
 
-    const utterance = new SpeechSynthesisUtterance("Voice ready.");
+    const utterance = new SpeechSynthesisUtterance("Booking pending â€” waiting for host approval.");
     utterance.lang = "en-US";
     utterance.rate = 0.9;
     utterance.pitch = 1;
