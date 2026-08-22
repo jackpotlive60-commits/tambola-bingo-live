@@ -883,9 +883,7 @@ function drawPosterText(
 }
 
 async function createGamePoster(
-  game,
-  inviteUrl,
-  includeJoinLink = true
+  game
 ) {
   const width = 1080;
   const height = 1350;
@@ -1184,7 +1182,7 @@ async function createGamePoster(
       : [];
 
   const prizeY =
-    860;
+    830;
 
   ctx.textAlign =
     "center";
@@ -1202,11 +1200,9 @@ async function createGamePoster(
   );
 
   if (prizes.length) {
-    const displayPrizes =
-      prizes.slice(
-        0,
-        5
-      );
+    const displayPrizes = prizes;
+    const prizeRowGap = displayPrizes.length > 6 ? 34 : 40;
+    const prizeFontSize = displayPrizes.length > 6 ? 20 : 22;
 
     displayPrizes.forEach(
       (
@@ -1216,14 +1212,13 @@ async function createGamePoster(
         const y =
           prizeY +
           55 +
-          index *
-            52;
+          index * prizeRowGap;
 
         ctx.fillStyle =
           colors.text;
 
         ctx.font =
-          "bold 24px Arial";
+          `bold ${prizeFontSize}px Arial`;
 
         ctx.fillText(
           `${
@@ -1252,93 +1247,35 @@ async function createGamePoster(
     );
   }
 
-  if (includeJoinLink) {
-    const joinY =
-      1130;
+  const footerY =
+    Math.min(1225, prizeY + 95 + prizes.length * (prizes.length > 6 ? 34 : 40));
 
-    roundedRect(
-      ctx,
-      125,
-      joinY,
-      830,
-      125,
-      24
-    );
+  ctx.textAlign =
+    "center";
 
-    ctx.fillStyle =
-      colors.accent;
+  ctx.fillStyle =
+    colors.secondary;
 
-    ctx.fill();
+  ctx.font =
+    "bold 22px Arial";
 
-    ctx.fillStyle =
-      "#111827";
+  ctx.fillText(
+    "PRIZE LIST UPDATED",
+    width / 2,
+    footerY
+  );
 
-    ctx.font =
-      "bold 32px Arial";
+  ctx.fillStyle =
+    "rgba(255,255,255,0.75)";
 
-    ctx.textAlign =
-      "center";
+  ctx.font =
+    "18px Arial";
 
-    ctx.fillText(
-      "JOIN THE GAME",
-      width / 2,
-      joinY + 48
-    );
-
-    ctx.font =
-      "bold 23px Arial";
-
-    drawPosterText(
-      ctx,
-      inviteUrl,
-      width / 2,
-      joinY + 87,
-      770,
-      "bold 23px Arial"
-    );
-
-    ctx.textAlign =
-      "center";
-
-    ctx.fillStyle =
-      "rgba(255,255,255,0.75)";
-
-    ctx.font =
-      "18px Arial";
-
-    ctx.fillText(
-      "Open the link or scan/share this poster to join",
-      width / 2,
-      1280
-    );
-  } else {
-    ctx.textAlign =
-      "center";
-
-    ctx.fillStyle =
-      colors.secondary;
-
-    ctx.font =
-      "bold 24px Arial";
-
-    ctx.fillText(
-      "UPDATED PRIZE LIST",
-      width / 2,
-      1190
-    );
-
-    ctx.fillStyle =
-      "rgba(255,255,255,0.75)";
-
-    ctx.font =
-      "18px Arial";
-
-    ctx.fillText(
-      "Final prize amounts announced by the host",
-      width / 2,
-      1230
-    );
-  }
+  ctx.fillText(
+    "Final prize amounts announced by the host",
+    width / 2,
+    footerY + 38
+  );
 
   const blob =
     await new Promise(
@@ -2076,9 +2013,7 @@ function TicketGridComponent({
   ticket,
   selected,
   onSelect,
-  calledNumbers = [],
-  ownerName = "",
-  status = ""
+  calledNumbers = []
 }) {
   return (
     <div
@@ -2152,39 +2087,6 @@ function TicketGridComponent({
             : "AVAILABLE"}
         </span>
       </div>
-
-      {ownerName && (
-        <div
-          style={{
-            marginBottom: 10,
-            padding: "8px 10px",
-            borderRadius: 8,
-            background: "#f8fafc",
-            border: "1px solid #e2e8f0",
-            fontWeight: "bold",
-            color: "#312e81"
-          }}
-        >
-          {ownerName}
-        </div>
-      )}
-
-      {status && (
-        <div
-          style={{
-            marginBottom: 10,
-            padding: "6px 10px",
-            borderRadius: 8,
-            display: "inline-block",
-            background: status === "accepted" ? "#dcfce7" : "#fef3c7",
-            color: status === "accepted" ? "#166534" : "#92400e",
-            fontWeight: "bold",
-            fontSize: 12
-          }}
-        >
-          {status === "accepted" ? "BOOKED" : "PENDING APPROVAL"}
-        </div>
-      )}
 
       <div
         style={{
@@ -2350,6 +2252,11 @@ function PlayerBookingPage({
   ] = useState([]);
 
   const [
+    ticketStatuses,
+    setTicketStatuses
+  ] = useState({});
+
+  const [
     loadingUnavailable,
     setLoadingUnavailable
   ] = useState(true);
@@ -2386,6 +2293,8 @@ function PlayerBookingPage({
       const numbers =
         [];
 
+      const statuses = {};
+
       (
         data || []
       ).forEach(
@@ -2414,6 +2323,19 @@ function PlayerBookingPage({
                 numbers.push(
                   n
                 );
+
+                // If multiple bookings somehow reference the same ticket,
+                // an accepted booking takes precedence over pending.
+                if (
+                  statuses[n] !==
+                  "accepted"
+                ) {
+                  statuses[n] =
+                    booking.status ===
+                    "accepted"
+                      ? "accepted"
+                      : "pending";
+                }
               }
             }
           );
@@ -2429,6 +2351,10 @@ function PlayerBookingPage({
           (a, b) =>
             a - b
         )
+      );
+
+      setTicketStatuses(
+        statuses
       );
     } catch (err) {
       console.error(
@@ -2783,12 +2709,27 @@ function PlayerBookingPage({
           )}. Waiting for host approval.`
       );
 
-      const whatsappText = `Hello Host, I would like to request approval for my ticket booking.\n\nGame: ${game.game_name || game.game_code}\nGame Code: ${game.game_code}\nPlayer Name: ${name}\nTicket Numbers: ${sortedTickets.map((n) => `#${n}`).join(", ")}\n\nPlease approve my booking. Thank you!`;
-      window.location.href = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
-
       setSelected([]);
 
       await loadUnavailableTickets();
+
+      // Open WhatsApp with an approval request. No host phone number is
+      // hard-coded; WhatsApp lets the player choose the host/contact.
+      const whatsappMessage =
+        `Hello, I am ${name}. I have requested ticket${
+          sortedTickets.length === 1 ? "" : "s"
+        } ${sortedTickets
+          .map((n) => `#${n}`)
+          .join(", ")} for ${game.game_name}. Please approve my booking.`;
+
+      const whatsappUrl =
+        `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
+
+      window.open(
+        whatsappUrl,
+        "_blank",
+        "noopener,noreferrer"
+      );
     } catch (err) {
       console.error(
         err
@@ -3035,10 +2976,18 @@ function PlayerBookingPage({
                           fontSize:
                             10,
                           marginTop:
-                            3
+                            3,
+                          color:
+                            ticketStatuses[ticket.number] ===
+                            "accepted"
+                              ? "#166534"
+                              : "#9a3412"
                         }}
                       >
-                        PENDING / BOOKED
+                        {ticketStatuses[ticket.number] ===
+                        "accepted"
+                          ? "BOOKED"
+                          : "PENDING"}
                       </div>
                     )}
                   </button>
@@ -3184,7 +3133,10 @@ function PlayerBookingPage({
                           borderRadius:
                             8,
                           background:
-                            "#64748b",
+                            ticketStatuses[ticket.number] ===
+                            "accepted"
+                              ? "#64748b"
+                              : "#f59e0b",
                           color:
                             "#fff",
                           fontSize:
@@ -3193,7 +3145,10 @@ function PlayerBookingPage({
                             "bold"
                         }}
                       >
-                        BOOKED
+                        {ticketStatuses[ticket.number] ===
+                        "accepted"
+                          ? "BOOKED"
+                          : "PENDING"}
                       </div>
                     )}
                   </div>
@@ -3348,36 +3303,11 @@ function LiveGamePage({ game }) {
       return undefined;
     }
 
-    finalSummaryTimerRef.current = window.setTimeout(() => {
-      setViewFinishedLive(false);
-      setShowFinalResults(true);
-      finalSummaryTimerRef.current = null;
-    }, 3000);
-
-    return () => {
-      if (finalSummaryTimerRef.current) {
-        window.clearTimeout(finalSummaryTimerRef.current);
-        finalSummaryTimerRef.current = null;
+    const speakMessage = (message) => {
+      if (!("speechSynthesis" in window)) {
+        return;
       }
-    };
-  }, [liveGame.status]);
 
-  useEffect(() => {
-    if (
-      liveGame.status !== "ended" ||
-      finalAnnouncementSpokenRef.current
-    ) {
-      return;
-    }
-
-    finalAnnouncementSpokenRef.current = true;
-
-    const message =
-      "And that's the game! All prizes have been claimed! Thank you everyone for joining us and making this game special. We hope you enjoyed the fun - see you in the next game!";
-
-    if (
-      "speechSynthesis" in window
-    ) {
       try {
         window.speechSynthesis.cancel();
 
@@ -3390,12 +3320,36 @@ function LiveGamePage({ game }) {
 
         window.speechSynthesis.speak(utterance);
       } catch (err) {
-        console.error(
-          "Could not announce game end:",
-          err
-        );
+        console.error("Could not announce game end:", err);
       }
+    };
+
+    if (!finalAnnouncementSpokenRef.current) {
+      finalAnnouncementSpokenRef.current = true;
+
+      speakMessage(
+        "All prizes have been claimed! No prizes remaining."
+      );
+
+      finalSummaryTimerRef.current = window.setTimeout(() => {
+        speakMessage(
+          "And that's the game! All prizes have been claimed! Thank you everyone for joining us and making this game special. We hope you enjoyed the fun - see you in the next game!"
+        );
+
+        finalSummaryTimerRef.current = window.setTimeout(() => {
+          setViewFinishedLive(false);
+          setShowFinalResults(true);
+          finalSummaryTimerRef.current = null;
+        }, 3000);
+      }, 3000);
     }
+
+    return () => {
+      if (finalSummaryTimerRef.current) {
+        window.clearTimeout(finalSummaryTimerRef.current);
+        finalSummaryTimerRef.current = null;
+      }
+    };
   }, [liveGame.status]);
 
   const [playerBooking, setPlayerBooking] = useState(
@@ -3440,16 +3394,16 @@ function LiveGamePage({ game }) {
         )
         .eq("game_id", game.id)
         .eq("player_id", playerId)
-        .in("status", ["pending", "accepted"])
+        .eq("status", "accepted")
         .order("created_at", { ascending: true });
 
       if (error) throw error;
 
-      const playerBookingRows = data || [];
-      setPlayerBookings(playerBookingRows);
+      const acceptedBookings = data || [];
+      setPlayerBookings(acceptedBookings);
 
       const allTickets = [];
-      playerBookingRows.forEach((booking) => {
+      acceptedBookings.forEach((booking) => {
         const numbers = Array.isArray(booking.ticket_numbers)
           ? booking.ticket_numbers
           : [];
@@ -3471,7 +3425,7 @@ function LiveGamePage({ game }) {
       );
 
       const displayName =
-        playerBookingRows[playerBookingRows.length - 1]?.player_name ||
+        acceptedBookings[acceptedBookings.length - 1]?.player_name ||
         savedBooking?.playerName ||
         getSavedPlayerName(game.id) ||
         "";
@@ -3676,27 +3630,14 @@ function LiveGamePage({ game }) {
       .sort((a, b) => a - b);
   }, [playerBookings, playerBooking?.ticketNumbers]);
 
-  const myTicketCards = useMemo(() => {
-    const cards = [];
-    playerBookings.forEach((booking) => {
-      const numbers = Array.isArray(booking.ticket_numbers)
-        ? booking.ticket_numbers
-        : [];
-      numbers.forEach((ticketNumber) => {
-        const number = Number(ticketNumber);
-        if (Number.isInteger(number) && number >= 1 && number <= 100) {
-          cards.push({
-            bookingId: booking.id,
-            number,
-            status: booking.status,
-            playerName: booking.player_name || playerBooking?.playerName || "Player",
-            grid: makeTicket(liveGame.game_code, number)
-          });
-        }
-      });
-    });
-    return cards;
-  }, [playerBookings, liveGame.game_code, playerBooking?.playerName]);
+  const myTicketCards = useMemo(
+    () =>
+      myTicketNumbers.map((ticketNumber) => ({
+        number: ticketNumber,
+        grid: makeTicket(liveGame.game_code, ticketNumber)
+      })),
+    [myTicketNumbers, liveGame.game_code]
+  );
 
   const allBookedTickets = useMemo(() => {
     const result = [];
@@ -4195,13 +4136,12 @@ function LiveGamePage({ game }) {
                 {myTicketCards.length ? (
                   myTicketCards.map((ticket) => (
                     <TicketGrid
-                      key={`${ticket.bookingId}-${ticket.number}`}
+                      key={`mine-${ticket.number}`}
                       ticket={ticket}
                       selected={false}
                       calledNumbers={calledNumbers}
                       readOnly
-                      ownerName={ticket.playerName}
-                      status={ticket.status}
+                      ownerName={playerBooking.playerName}
                     />
                   ))
                 ) : (
@@ -4607,10 +4547,9 @@ function HostControlPage({
     setEditablePrizes
   ] = useState(
     () =>
-      (Array.isArray(game.selected_prizes)
-        ? game.selected_prizes
+      Array.isArray(game.selected_prizes)
+        ? game.selected_prizes.map((prize) => ({ ...prize }))
         : []
-      ).map((prize) => ({ ...prize }))
   );
 
   const [
@@ -4619,14 +4558,14 @@ function HostControlPage({
   ] = useState(false);
 
   const [
-    prizeSaveMessage,
-    setPrizeSaveMessage
-  ] = useState("");
-
-  const [
     shareMessage,
     setShareMessage
   ] = useState("");
+
+  const [
+    savedPrizeGame,
+    setSavedPrizeGame
+  ] = useState(null);
 
   const [
     calledNumbers,
@@ -4697,12 +4636,6 @@ function HostControlPage({
 
   const callingRef = useRef(false);
 
-  // Keep prize edits as a local draft until the host presses SAVE.
-  // This prevents parent game updates/re-renders from overwriting an
-  // amount while the host is typing or editing a prize.
-  const prizeDraftDirtyRef = useRef(false);
-  const prizeDraftGameIdRef = useRef(game.id);
-
   useEffect(
     () => {
       setCalledNumbers(
@@ -4720,26 +4653,13 @@ function HostControlPage({
 
   useEffect(
     () => {
-      // If the host is editing the current game's prizes, preserve the
-      // local draft. Only sync from game state when there is no draft,
-      // or when Host Control Centre has switched to another game.
-      if (prizeDraftGameIdRef.current !== game.id) {
-        prizeDraftGameIdRef.current = game.id;
-        prizeDraftDirtyRef.current = false;
-      }
-
-      if (prizeDraftDirtyRef.current) {
-        return;
-      }
-
       setEditablePrizes(
-        (Array.isArray(game.selected_prizes)
-          ? game.selected_prizes
+        Array.isArray(game.selected_prizes)
+          ? game.selected_prizes.map((prize) => ({ ...prize }))
           : []
-        ).map((prize) => ({ ...prize }))
       );
     },
-    [game.id, game.selected_prizes]
+    [game.selected_prizes]
   );
 
   async function loadBookings() {
@@ -5027,6 +4947,79 @@ function HostControlPage({
     }
   }
 
+  function updateEditablePrizeAmount(index, amount) {
+    setEditablePrizes((current) =>
+      current.map((prize, prizeIndex) =>
+        prizeIndex === index
+          ? { ...prize, amount }
+          : prize
+      )
+    );
+    setSavedPrizeGame(null);
+    setShareMessage("");
+  }
+
+  async function savePrizeAmounts() {
+    const prizeEditingAllowed =
+      game.status !== "ended";
+
+    if (savingPrizes || !prizeEditingAllowed) {
+      return false;
+    }
+
+    setSavingPrizes(true);
+    setGameError("");
+    setShareMessage("");
+
+    try {
+      const updatedPrizes = editablePrizes.map((prize) => ({
+        ...prize,
+        amount:
+          prize.amount === "" || prize.amount == null
+            ? ""
+            : Number(prize.amount) || 0
+      }));
+
+      const { data, error } = await supabase
+        .from("games")
+        .update({
+          selected_prizes: updatedPrizes
+        })
+        .eq("id", game.id)
+        .select()
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedGame = data || {
+        ...game,
+        selected_prizes: updatedPrizes
+      };
+
+      setEditablePrizes(
+        Array.isArray(updatedGame.selected_prizes)
+          ? updatedGame.selected_prizes.map((prize) => ({ ...prize }))
+          : []
+      );
+
+      saveHostGame(updatedGame);
+      onGameUpdated(updatedGame);
+      setSavedPrizeGame(updatedGame);
+      setShareMessage("Prize amounts saved. Now generate the updated poster below to share the new prize list.");
+      return updatedGame;
+    } catch (err) {
+      console.error("Could not save prize amounts:", err);
+      setGameError(
+        err?.message || "Could not save prize amounts."
+      );
+      return false;
+    } finally {
+      setSavingPrizes(false);
+    }
+  }
+
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(
@@ -5052,139 +5045,25 @@ function HostControlPage({
     }
   }
 
-  function updateEditablePrizeAmount(index, amount) {
-    prizeDraftDirtyRef.current = true;
-
-    setEditablePrizes((current) =>
-      current.map((prize, prizeIndex) =>
-        prizeIndex === index
-          ? { ...prize, amount }
-          : prize
-      )
-    );
-    setPrizeSaveMessage("");
-  }
-
-  async function savePrizeAmounts() {
-    if (savingPrizes || game.status !== "upcoming") {
-      return null;
-    }
-
-    setSavingPrizes(true);
-    setPrizeSaveMessage("");
-
-    try {
-      const selectedPrizes = editablePrizes.map((prize) => ({
-        ...prize,
-        amount:
-          prize.amount === "" || prize.amount == null
-            ? ""
-            : Number(prize.amount) || 0
-      }));
-
-      const { data, error } = await supabase
-        .from("games")
-        .update({ selected_prizes: selectedPrizes })
-        .eq("id", game.id)
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      const updatedGame = data || {
-        ...game,
-        selected_prizes: selectedPrizes
-      };
-
-      // The draft is now committed to the game, so future game-state
-      // updates are allowed to refresh the local prize fields again.
-      prizeDraftDirtyRef.current = false;
-      prizeDraftGameIdRef.current = updatedGame.id;
-
-      setEditablePrizes(
-        (updatedGame.selected_prizes || []).map((prize) => ({ ...prize }))
-      );
-      saveHostGame(updatedGame);
-      onGameUpdated(updatedGame);
-      setPrizeSaveMessage("Prize amounts saved successfully.");
-
-      return updatedGame;
-    } catch (err) {
-      console.error("Could not save prize amounts:", err);
-      setPrizeSaveMessage(
-        err?.message || "Could not save prize amounts."
-      );
-      return null;
-    } finally {
-      setSavingPrizes(false);
-    }
-  }
-
-  async function shareUpdatedPrizePoster() {
-    if (posterCreating || game.status !== "upcoming") {
-      return;
-    }
-
-    setPosterCreating(true);
-    setShareMessage("");
-
-    try {
-      const updatedGame = await savePrizeAmounts();
-
-      if (!updatedGame) {
-        return;
-      }
-
-      const poster = await createGamePoster(
-        updatedGame,
-        inviteUrl,
-        false
-      );
-
-      const canShareFiles =
-        navigator.share &&
-        navigator.canShare &&
-        navigator.canShare({ files: [poster] });
-
-      if (canShareFiles) {
-        await navigator.share({
-          title: `${updatedGame.game_name || "Game"} - Updated Prizes`,
-          files: [poster]
-        });
-
-        setShareMessage("Updated prize poster ready to share!");
-        return;
-      }
-
-      const objectUrl = URL.createObjectURL(poster);
-      const anchor = document.createElement("a");
-      anchor.href = objectUrl;
-      anchor.download = poster.name;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-
-      setShareMessage("Updated prize poster downloaded. You can now share it on WhatsApp.");
-    } catch (error) {
-      if (error?.name === "AbortError") {
-        return;
-      }
-
-      console.error("Could not share updated prize poster:", error);
-      setShareMessage("Could not generate the updated prize poster.");
-    } finally {
-      setPosterCreating(false);
-    }
-  }
-
   async function shareGame() {
     if (
-      posterCreating
+      posterCreating ||
+      savingPrizes
     ) {
       return;
+    }
+
+    let posterSourceGame = savedPrizeGame || game;
+
+    const prizeEditingAllowed =
+      game.status !== "ended";
+
+    if (prizeEditingAllowed) {
+      const savedGame = await savePrizeAmounts();
+      if (!savedGame) {
+        return;
+      }
+      posterSourceGame = savedGame;
     }
 
     setPosterCreating(
@@ -5193,77 +5072,61 @@ function HostControlPage({
 
     setShareMessage("");
 
-    const message =
-`[TICKET] ${game.game_name}
-
-[DATE] ${game.game_date || "-"}
-[TIME] ${game.game_time || "-"}
-[TICKET] Ticket Price: INR ${game.ticket_price || 0}
-
-[TICKET] Game Code: ${game.game_code}
-
-Join Game:
-${inviteUrl}`;
-
     try {
+      const posterGame = {
+        ...posterSourceGame,
+        selected_prizes: Array.isArray(posterSourceGame.selected_prizes)
+          ? posterSourceGame.selected_prizes.map((prize) => ({ ...prize }))
+          : editablePrizes.map((prize) => ({ ...prize }))
+      };
+
       const poster =
         await createGamePoster(
-          game,
-          inviteUrl
+          posterGame
         );
 
       const canShareFiles =
         navigator.share &&
         navigator.canShare &&
         navigator.canShare({
-          files:
-            [poster]
+          files: [poster]
         });
 
-      if (
-        canShareFiles
-      ) {
+      if (canShareFiles) {
         await navigator.share({
-          title:
-            game.game_name,
-          text:
-            message,
-          files:
-            [poster]
+          title: game.game_name,
+          files: [poster]
         });
 
         setShareMessage(
-          "Poster and game link ready to share!"
+          "Updated prize poster ready to share. Only the poster was sent."
         );
 
         return;
       }
 
-      if (
-        navigator.share
-      ) {
-        await navigator.share({
-          title:
-            game.game_name,
-          text:
-            message,
-          url:
-            inviteUrl
-        });
+      // If the browser cannot share image files directly, save only the poster.
+      try {
+        const posterUrl = URL.createObjectURL(poster);
+        const downloadLink = document.createElement("a");
+        downloadLink.href = posterUrl;
+        downloadLink.download = poster.name;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+        window.setTimeout(() => URL.revokeObjectURL(posterUrl), 1000);
 
         setShareMessage(
-          "Game link shared. Your device does not support sharing the poster as a file."
+          "Updated prize poster saved. Share the poster file in WhatsApp."
         );
-
-        return;
+      } catch (downloadError) {
+        console.error("Could not prepare poster download:", downloadError);
+        setShareMessage(
+          "Could not share or save the updated poster."
+        );
       }
-
-      await copyLink();
-
-      setShareMessage(
-        "Game link copied. Your browser does not support the share sheet."
-      );
     } catch (error) {
+
       if (
         error?.name ===
         "AbortError"
@@ -5276,17 +5139,9 @@ ${inviteUrl}`;
         error
       );
 
-      try {
-        await copyLink();
-
-        setShareMessage(
-          "Poster could not be shared automatically, so the game link was copied."
-        );
-      } catch {
-        setShareMessage(
-          "Could not share the game."
-        );
-      }
+      setShareMessage(
+        "Updated prize poster could not be shared automatically. Please use the saved poster file in WhatsApp."
+      );
     } finally {
       setPosterCreating(
         false
@@ -6180,28 +6035,78 @@ ${inviteUrl}`;
           </div>
         </section>
 
-        <section style={cardStyle}>
-          <h2>Prize Amounts</h2>
-          <p style={{ color: "#64748b" }}>
-            While the game is UPCOMING, you can adjust the prize amounts after checking ticket sales. Sharing the player link does not lock these amounts.
+        <section
+          style={
+            cardStyle
+          }
+        >
+          <h2>
+            Prize Amounts
+          </h2>
+
+          <p
+            style={{
+              color: "#64748b",
+              marginTop: 0
+            }}
+          >
+            Edit the prize amounts here based on your ticket sales. Save them before sharing the updated poster.
           </p>
 
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 160px",
+              gap: 8,
+              alignItems: "center",
+              padding: "10px 12px",
+              background: "#f8fafc",
+              borderRadius: 10,
+              fontWeight: "bold",
+              marginBottom: 8
+            }}
+          >
+            <div>Prize</div>
+            <div>Amount (INR)</div>
+          </div>
+
           {editablePrizes.length === 0 ? (
-            <div style={{ padding: 14, borderRadius: 10, background: "#f8fafc", color: "#64748b" }}>
+            <div
+              style={{
+                padding: 14,
+                borderRadius: 10,
+                background: "#f8fafc",
+                color: "#64748b"
+              }}
+            >
               No prizes configured for this game.
             </div>
           ) : (
             <div style={{ display: "grid", gap: 8 }}>
               {editablePrizes.map((prize, index) => {
                 const locked = Boolean(prize?.locked);
-                const disabled = game.status !== "upcoming" || locked || savingPrizes;
+                const prizeEditingAllowed =
+                  game.status !== "ended";
+                const disabled = !prizeEditingAllowed || locked || savingPrizes;
 
                 return (
                   <div
                     key={`${prize.name || "prize"}-${index}`}
-                    style={{ display: "grid", gridTemplateColumns: "1fr 160px", gap: 8, alignItems: "center" }}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 160px",
+                      gap: 8,
+                      alignItems: "center"
+                    }}
                   >
-                    <div style={{ padding: 12, border: "1px solid #e5e7eb", borderRadius: 9, background: locked ? "#f8fafc" : "#fff" }}>
+                    <div
+                      style={{
+                        padding: 12,
+                        border: "1px solid #e5e7eb",
+                        borderRadius: 9,
+                        background: locked ? "#f8fafc" : "#fff"
+                      }}
+                    >
                       <b>{prize.name || `Prize ${index + 1}`}</b>
                       {locked && (
                         <div style={{ marginTop: 3, color: "#166534", fontSize: 12, fontWeight: "bold" }}>
@@ -6209,14 +6114,20 @@ ${inviteUrl}`;
                         </div>
                       )}
                     </div>
+
                     <input
                       type="number"
                       min="0"
                       placeholder="Amount"
                       value={prize.amount ?? ""}
                       disabled={disabled}
-                      onChange={(e) => updateEditablePrizeAmount(index, e.target.value)}
-                      style={{ ...inputStyle, opacity: disabled ? 0.65 : 1 }}
+                      onChange={(e) =>
+                        updateEditablePrizeAmount(index, e.target.value)
+                      }
+                      style={{
+                        ...inputStyle,
+                        opacity: disabled ? 0.65 : 1
+                      }}
                     />
                   </div>
                 );
@@ -6227,17 +6138,22 @@ ${inviteUrl}`;
           <button
             type="button"
             onClick={savePrizeAmounts}
-            disabled={savingPrizes || game.status !== "upcoming"}
-            style={{ ...primaryButton, marginTop: 14, opacity: savingPrizes || game.status !== "upcoming" ? 0.55 : 1 }}
+            disabled={
+              savingPrizes ||
+              game.status === "ended"
+            }
+            style={{
+              ...primaryButton,
+              marginTop: 14,
+              opacity:
+                savingPrizes ||
+                game.status === "ended"
+                  ? 0.55
+                  : 1
+            }}
           >
             {savingPrizes ? "SAVING PRIZES..." : "SAVE PRIZE AMOUNTS"}
           </button>
-
-          {prizeSaveMessage && (
-            <p style={{ color: prizeSaveMessage.includes("successfully") ? "#166534" : "#b91c1c", fontWeight: "bold" }}>
-              {prizeSaveMessage}
-            </p>
-          )}
         </section>
 
         <section
@@ -6258,7 +6174,18 @@ ${inviteUrl}`;
             Share Game automatically
             creates a real PNG poster
             containing the game details
-            and joining link.
+            and updated prize amounts.
+            The poster contains no game link.
+          </p>
+
+          <p
+            style={{
+              color: "#166534",
+              fontWeight: "bold",
+              marginTop: 0
+            }}
+          >
+            Save your new prize amounts first, then use the button below to generate a fresh poster with the updated prizes.
           </p>
 
           <input
@@ -6296,18 +6223,6 @@ ${inviteUrl}`;
             </button>
 
             <button
-              type="button"
-              onClick={shareUpdatedPrizePoster}
-              disabled={posterCreating || game.status !== "upcoming"}
-              style={{
-                ...primaryButton,
-                opacity: posterCreating || game.status !== "upcoming" ? 0.55 : 1
-              }}
-            >
-              {posterCreating ? "GENERATING POSTER..." : "GENERATE UPDATED PRIZE POSTER + SHARE"}
-            </button>
-
-            <button
               onClick={
                 shareGame
               }
@@ -6324,7 +6239,7 @@ ${inviteUrl}`;
             >
               {posterCreating
                 ? "Creating Poster..."
-                : "[STYLE] Share Game + Poster"}
+                : "[STYLE] GENERATE UPDATED PRIZE POSTER + SHARE"}
             </button>
           </div>
 
