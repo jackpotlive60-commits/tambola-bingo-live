@@ -4140,9 +4140,61 @@ function LiveGamePage({ game }) {
           </div>
         </div>
 
+        {/* 1. CURRENT NUMBERS */}
+        <section style={cardStyle}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap"
+            }}
+          >
+            <h2 style={{ margin: 0 }}>Current Numbers</h2>
+            <div style={{ color: "#64748b", fontWeight: "bold" }}>
+              Total Called: {calledNumbers.length}
+            </div>
+          </div>
+
+          {calledNumbers.length === 0 ? (
+            <p style={{ color: "#64748b", marginBottom: 0 }}>
+              No numbers have been called yet.
+            </p>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 8,
+                marginTop: 14
+              }}
+            >
+              {calledNumbers.map((number, index) => (
+                <div
+                  key={`${number}-${index}`}
+                  style={{
+                    minWidth: 42,
+                    padding: "8px 10px",
+                    textAlign: "center",
+                    borderRadius: 9,
+                    border: "1px solid #bbf7d0",
+                    background: "#f0fdf4",
+                    color: "#166534",
+                    fontWeight: "bold"
+                  }}
+                >
+                  {number}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* 2. CALLED NUMBER BOARD */}
         <section style={{ ...cardStyle, textAlign: "center" }}>
           <div style={{ color: "#64748b", fontWeight: "bold" }}>
-            LAST CALLED NUMBER
+            Called Number Board
           </div>
 
           <div
@@ -4165,13 +4217,84 @@ function LiveGamePage({ game }) {
           </div>
 
           <div style={{ color: "#64748b" }}>
-            Numbers called: {calledNumbers.length}/90
+            Last called number
           </div>
         </section>
 
+        {/* 3. CALL HISTORY */}
+        <section style={cardStyle}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap"
+            }}
+          >
+            <h2 style={{ margin: 0 }}>Call History</h2>
+            <div style={{ color: "#64748b", fontWeight: "bold" }}>
+              {calledNumbers.length} calls
+            </div>
+          </div>
+
+          {calledNumbers.length === 0 ? (
+            <p style={{ color: "#64748b", marginBottom: 0 }}>
+              Call history will appear here as numbers are called.
+            </p>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                marginTop: 14,
+                overflowX: "auto",
+                paddingBottom: 4
+              }}
+            >
+              {[...calledNumbers].reverse().map((number, index) => (
+                <div
+                  key={`history-${number}-${index}`}
+                  style={{
+                    minWidth: 72,
+                    padding: "10px 8px",
+                    borderRadius: 10,
+                    border: index === 0
+                      ? "2px solid #2563eb"
+                      : "1px solid #e2e8f0",
+                    background: index === 0 ? "#eff6ff" : "#f8fafc",
+                    textAlign: "center"
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#64748b",
+                      fontWeight: "bold"
+                    }}
+                  >
+                    #{calledNumbers.length - index}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 24,
+                      fontWeight: "bold",
+                      color: "#1e3a8a",
+                      marginTop: 3
+                    }}
+                  >
+                    {number}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* 4. MY BOOKED TICKETS */}
         {playerBooking && (
           <section style={cardStyle}>
-            <h2>Your Tickets</h2>
+            <h2>Your Booked Tickets</h2>
             <p style={{ color: "#64748b" }}>
               Player: <b>{playerBooking.playerName}</b>
             </p>
@@ -4212,6 +4335,39 @@ function LiveGamePage({ game }) {
           </section>
         )}
 
+        {/* 5. PRIZES */}
+        <LivePrizeList game={liveGame} />
+
+        {/* 6. SEARCH */}
+        <section style={cardStyle}>
+          <h2>Search Player Name or Ticket Number</h2>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap"
+            }}
+          >
+            <input
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search player name or ticket number"
+              style={{ ...inputStyle, flex: "1 1 280px" }}
+            />
+            <button
+              type="button"
+              onClick={() => setSearchText("")}
+              style={secondaryButton}
+            >
+              [SEARCH] Search / Clear
+            </button>
+          </div>
+          <p style={{ color: "#64748b", marginBottom: 0 }}>
+            Search will filter the All Booked Tickets below.
+          </p>
+        </section>
+
+        {/* 7. ALL BOOKED TICKETS */}
         <section style={cardStyle}>
           <div
             style={{
@@ -4242,30 +4398,6 @@ function LiveGamePage({ game }) {
             >
               {allBookedTickets.length} booked
             </div>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              marginTop: 12,
-              flexWrap: "wrap"
-            }}
-          >
-            <input
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Search player name or ticket #"
-              style={{ ...inputStyle, flex: "1 1 240px" }}
-            />
-
-            <button
-              type="button"
-              onClick={() => setSearchText("")}
-              style={secondaryButton}
-            >
-              [SEARCH] Search / Clear
-            </button>
           </div>
 
           {loadingBookings ? (
@@ -4312,42 +4444,6 @@ function LiveGamePage({ game }) {
             </div>
           )}
         </section>
-
-        <section style={cardStyle}>
-          <h2>Called Numbers</h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(10,minmax(0,1fr))",
-              gap: 7
-            }}
-          >
-            {Array.from({ length: 90 }, (_, i) => i + 1).map((number) => {
-              const called = calledNumbers.includes(number);
-
-              return (
-                <div
-                  key={number}
-                  style={{
-                    padding: "11px 4px",
-                    textAlign: "center",
-                    borderRadius: 8,
-                    border: called
-                      ? "2px solid #2563eb"
-                      : "1px solid #e2e8f0",
-                    background: called ? "#2563eb" : "#fff",
-                    color: called ? "#fff" : "#64748b",
-                    fontWeight: "bold"
-                  }}
-                >
-                  {number}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <LivePrizeList game={liveGame} />
 
         <div
           style={{
