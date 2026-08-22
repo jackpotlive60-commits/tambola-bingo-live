@@ -836,6 +836,122 @@ function posterTheme(theme) {
   }
 }
 
+
+function getThemeUI(theme) {
+  const colors = posterTheme(theme);
+
+  const backgrounds = {
+    Classic: `radial-gradient(circle at 12% 8%, rgba(37,99,235,.18), transparent 28%), radial-gradient(circle at 88% 0%, rgba(96,165,250,.12), transparent 25%), linear-gradient(135deg, #07111f 0%, #0f172a 48%, #111827 100%)`,
+    Royal: `radial-gradient(circle at 12% 8%, rgba(139,92,246,.22), transparent 30%), radial-gradient(circle at 88% 4%, rgba(245,197,66,.12), transparent 24%), linear-gradient(135deg, #160b29 0%, #24113f 52%, #12091f 100%)`,
+    Party: `radial-gradient(circle at 10% 5%, rgba(34,211,238,.18), transparent 28%), radial-gradient(circle at 90% 0%, rgba(250,204,21,.12), transparent 22%), linear-gradient(135deg, #250b1d 0%, #4a123b 52%, #160817 100%)`,
+    Bollywood: `radial-gradient(circle at 10% 5%, rgba(251,191,36,.15), transparent 26%), radial-gradient(circle at 90% 0%, rgba(251,113,133,.14), transparent 24%), linear-gradient(135deg, #26090b 0%, #4b1117 52%, #160608 100%)`,
+    Neon: `radial-gradient(circle at 10% 5%, rgba(34,211,238,.20), transparent 28%), radial-gradient(circle at 90% 0%, rgba(167,139,250,.18), transparent 24%), linear-gradient(135deg, #030712 0%, #07111f 52%, #050814 100%)`,
+    Elegant: `radial-gradient(circle at 10% 5%, rgba(212,175,55,.16), transparent 28%), radial-gradient(circle at 90% 0%, rgba(148,163,184,.12), transparent 24%), linear-gradient(135deg, #090e17 0%, #172033 52%, #0b1019 100%)`
+  };
+
+  const background = backgrounds[theme] || backgrounds.Classic;
+
+  return {
+    colors,
+    page: {
+      background,
+      color: "#0f172a",
+      padding: 20,
+      position: "relative",
+      overflowX: "hidden"
+    },
+    card: {
+      background: "rgba(255,255,255,.96)",
+      border: `1px solid ${colors.accent}55`,
+      borderRadius: 20,
+      boxShadow: `0 14px 40px rgba(0,0,0,.22), 0 0 0 1px ${colors.secondary}12 inset`,
+      backdropFilter: "blur(10px)"
+    },
+    input: {
+      border: `1px solid ${colors.secondary}66`,
+      boxShadow: `0 0 0 3px ${colors.secondary}0d`
+    },
+    primary: {
+      background: `linear-gradient(135deg, ${colors.accent}, ${colors.secondary})`,
+      boxShadow: `0 8px 22px ${colors.secondary}35`
+    },
+    secondary: {
+      border: `1px solid ${colors.secondary}66`,
+      background: "rgba(255,255,255,.92)",
+      color: "#0f172a"
+    }
+  };
+}
+
+function ThemeHero({ theme, title, subtitle, compact = false }) {
+  const ui = getThemeUI(theme);
+  const c = ui.colors;
+
+  const ball = (number, size, offset, opacity = 1) => ({
+    position: "absolute",
+    width: size,
+    height: size,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 900,
+    fontSize: Math.max(14, size * .28),
+    color: "#fff",
+    background: `radial-gradient(circle at 32% 25%, #fff 0%, ${c.secondary} 18%, ${c.background} 82%)`,
+    border: `2px solid ${c.accent}`,
+    boxShadow: `0 0 28px ${c.secondary}66, inset -8px -10px 18px rgba(0,0,0,.25)`,
+    opacity,
+    ...offset
+  });
+
+  return (
+    <div
+      style={{
+        maxWidth: 1000,
+        margin: "0 auto 18px",
+        minHeight: compact ? 120 : 155,
+        position: "relative",
+        overflow: "hidden",
+        borderRadius: 24,
+        border: `1px solid ${c.accent}66`,
+        background: `linear-gradient(135deg, ${c.background} 0%, #020617 100%)`,
+        boxShadow: `0 18px 50px rgba(0,0,0,.30), 0 0 40px ${c.secondary}18`,
+        color: "#fff",
+        padding: compact ? "22px 24px" : "28px 30px",
+        boxSizing: "border-box"
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(circle at 70% 35%, ${c.accent}1f, transparent 28%), radial-gradient(circle at 25% 80%, ${c.secondary}22, transparent 30%)`,
+          pointerEvents: "none"
+        }}
+      />
+      <div style={{ position: "relative", zIndex: 2, maxWidth: "72%" }}>
+        <div style={{ fontSize: 12, letterSpacing: 2.5, textTransform: "uppercase", color: c.accent, fontWeight: 800 }}>
+          {theme || "Classic"} â€¢ TAMBOLA LIVE
+        </div>
+        <div style={{ fontSize: compact ? 25 : 32, lineHeight: 1.08, fontWeight: 900, marginTop: 8 }}>
+          {title}
+        </div>
+        {subtitle && (
+          <div style={{ marginTop: 8, color: "#cbd5e1", fontSize: 14 }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
+      <div aria-hidden="true">
+        <div style={ball(7, compact ? 68 : 86, { right: 116, top: compact ? 24 : 30 }, .88)}>7</div>
+        <div style={ball(42, compact ? 86 : 110, { right: 42, top: compact ? 14 : 18 }, 1)}>42</div>
+        <div style={ball(89, compact ? 54 : 68, { right: 178, bottom: compact ? -18 : -22 }, .62)}>89</div>
+      </div>
+    </div>
+  );
+}
+
 function drawPosterText(
   ctx,
   text,
@@ -1430,6 +1546,12 @@ function CreateGamePage({
     error,
     setError
   ] = useState("");
+  const themeUI = getThemeUI(theme);
+  const themedPageStyle = { ...pageStyle, ...themeUI.page };
+  const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  const themedInputStyle = { ...inputStyle, ...themeUI.input };
+  const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
+  const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
 
   function updatePrize(
     index,
@@ -1642,7 +1764,12 @@ function CreateGamePage({
   }
 
   return (
-    <main style={pageStyle}>
+    <main style={themedPageStyle}>
+      <ThemeHero
+        theme={theme}
+        title="Create your next premium game"
+        subtitle="Choose a visual theme now. The same theme will carry through the player booking page, host controls, live game and final results."
+      />
       <div
         style={{
           maxWidth: 760,
@@ -1679,7 +1806,7 @@ function CreateGamePage({
         >
           <section
             style={
-              cardStyle
+              themedCardStyle
             }
           >
             <h2>
@@ -1700,7 +1827,7 @@ function CreateGamePage({
                 )
               }
               style={{
-                ...inputStyle,
+                ...themedInputStyle,
                 marginTop: 7
               }}
             />
@@ -1733,7 +1860,7 @@ function CreateGamePage({
                     )
                   }
                   style={{
-                    ...inputStyle,
+                    ...themedInputStyle,
                     marginTop: 7
                   }}
                 />
@@ -1756,7 +1883,7 @@ function CreateGamePage({
                     )
                   }
                   style={{
-                    ...inputStyle,
+                    ...themedInputStyle,
                     marginTop: 7
                   }}
                 />
@@ -1780,7 +1907,7 @@ function CreateGamePage({
                     )
                   }
                   style={{
-                    ...inputStyle,
+                    ...themedInputStyle,
                     marginTop: 7
                   }}
                 />
@@ -1803,7 +1930,7 @@ function CreateGamePage({
                     )
                   }
                   style={{
-                    ...inputStyle,
+                    ...themedInputStyle,
                     marginTop: 7
                   }}
                 />
@@ -1830,7 +1957,7 @@ function CreateGamePage({
                   )
                 }
                 style={{
-                  ...inputStyle,
+                  ...themedInputStyle,
                   marginTop: 7
                 }}
               >
@@ -1845,12 +1972,27 @@ function CreateGamePage({
                   )
                 )}
               </select>
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: 14,
+                  borderRadius: 16,
+                  background: `linear-gradient(135deg, ${getThemeUI(theme).colors.background}, #020617)`,
+                  border: `1px solid ${getThemeUI(theme).colors.accent}66`,
+                  color: "#fff",
+                  boxShadow: `0 10px 28px ${getThemeUI(theme).colors.secondary}20`
+                }}
+              >
+                <div style={{ fontSize: 12, letterSpacing: 1.5, color: getThemeUI(theme).colors.accent, fontWeight: 800 }}>THEME PREVIEW</div>
+                <div style={{ fontSize: 20, fontWeight: 900, marginTop: 4 }}>{theme}</div>
+                <div style={{ color: "#cbd5e1", fontSize: 13, marginTop: 4 }}>This visual identity will follow the game across every page.</div>
+              </div>
             </div>
           </section>
 
           <section
             style={
-              cardStyle
+              themedCardStyle
             }
           >
             <h2>
@@ -1896,7 +2038,7 @@ function CreateGamePage({
                       )
                     }
                     style={
-                      inputStyle
+                      themedInputStyle
                     }
                   />
 
@@ -1908,7 +2050,7 @@ function CreateGamePage({
                       )
                     }
                     style={
-                      secondaryButton
+                      themedSecondaryButton
                     }
                   >
                     Remove
@@ -1937,7 +2079,7 @@ function CreateGamePage({
                   )
                 }
                 style={
-                  inputStyle
+                  themedInputStyle
                 }
               />
 
@@ -1947,7 +2089,7 @@ function CreateGamePage({
                   addPrize
                 }
                 style={
-                  secondaryButton
+                  themedSecondaryButton
                 }
               >
                 + Add
@@ -1958,7 +2100,7 @@ function CreateGamePage({
           {error && (
             <section
               style={{
-                ...cardStyle,
+                ...themedCardStyle,
                 background:
                   "#fef2f2",
                 border:
@@ -1986,7 +2128,7 @@ function CreateGamePage({
               creating
             }
             style={{
-              ...primaryButton,
+              ...themedPrimaryButton,
               width:
                 "100%",
               opacity:
@@ -2220,6 +2362,12 @@ const TicketGrid = React.memo(TicketGridComponent);
 function PlayerBookingPage({
   game
 }) {
+  const themeUI = getThemeUI(game.theme);
+  const themedPageStyle = { ...pageStyle, ...themeUI.page };
+  const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  const themedInputStyle = { ...inputStyle, ...themeUI.input };
+  const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
+  const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
   const limit =
     Math.min(
       100,
@@ -2784,7 +2932,12 @@ function PlayerBookingPage({
   }
 
   return (
-    <main style={pageStyle}>
+    <main style={themedPageStyle}>
+      <ThemeHero
+        theme={game.theme}
+        title={game.game_name}
+        subtitle="Premium player booking â€¢ Select your tickets and request host approval"
+      />
       <div
         style={{
           maxWidth:
@@ -2842,7 +2995,7 @@ function PlayerBookingPage({
 
         <section
           style={
-            cardStyle
+            themedCardStyle
           }
         >
           <h2>
@@ -2893,7 +3046,7 @@ function PlayerBookingPage({
 
         <section
           style={
-            cardStyle
+            themedCardStyle
           }
         >
           <h2>
@@ -3086,7 +3239,7 @@ function PlayerBookingPage({
                   clearSelection
                 }
                 style={{
-                  ...secondaryButton,
+                  ...themedSecondaryButton,
                   marginTop:
                     10
                 }}
@@ -3105,7 +3258,7 @@ function PlayerBookingPage({
                   });
                 }}
                 style={{
-                  ...primaryButton,
+                  ...themedPrimaryButton,
                   marginTop: 10,
                   width: "100%"
                 }}
@@ -3119,7 +3272,7 @@ function PlayerBookingPage({
         <section
           id="player-ticket-list"
           style={
-            cardStyle
+            themedCardStyle
           }
         >
           <h2>
@@ -3218,7 +3371,7 @@ function PlayerBookingPage({
 
         <section
           style={{
-            ...cardStyle,
+            ...themedCardStyle,
             marginTop: 20
           }}
         >
@@ -3243,7 +3396,7 @@ function PlayerBookingPage({
             }}
             placeholder="Enter your name"
             style={{
-              ...inputStyle,
+              ...themedInputStyle,
               marginTop:
                 8
             }}
@@ -3259,7 +3412,7 @@ function PlayerBookingPage({
               !selected.length
             }
             style={{
-              ...primaryButton,
+              ...themedPrimaryButton,
               width:
                 "100%",
               marginTop:
@@ -3340,6 +3493,12 @@ function PlayerBookingPage({
 ========================================================= */
 
 function LiveGamePage({ game }) {
+  const themeUI = getThemeUI(game.theme);
+  const themedPageStyle = { ...pageStyle, ...themeUI.page };
+  const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  const themedInputStyle = { ...inputStyle, ...themeUI.input };
+  const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
+  const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
   const [calledNumbers, setCalledNumbers] = useState(
     Array.isArray(game.called_numbers) ? game.called_numbers : []
   );
@@ -3764,9 +3923,15 @@ function LiveGamePage({ game }) {
     );
 
     return (
-      <main style={pageStyle}>
+      <main style={themedPageStyle}>
+        <ThemeHero
+          theme={liveGame.theme}
+          title="Game complete"
+          subtitle="The final results keep the same theme as the live event."
+          compact
+        />
         <div style={{ maxWidth: 800, margin: "40px auto" }}>
-          <section style={{ ...cardStyle, textAlign: "center" }}>
+          <section style={{ ...themedCardStyle, textAlign: "center" }}>
             <div style={{ fontSize: 44 }}>[WINNER]</div>
             <h1 style={{ marginBottom: 8 }}>FINAL GAME RESULTS</h1>
             <p style={{ color: "#64748b", fontSize: 15, marginTop: 8 }}>
@@ -3781,17 +3946,17 @@ function LiveGamePage({ game }) {
                 gap: 10
               }}
             >
-              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
                 <b>Numbers Called</b>
                 <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>{calledNumbers.length}</div>
               </div>
-              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
                 <b>Prizes Won</b>
                 <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>
                   {finalPrizes.filter((prize) => prize?.locked).length}
                 </div>
               </div>
-              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
                 <b>Winner Entries</b>
                 <div style={{ fontSize: 30, fontWeight: "bold", marginTop: 6 }}>{finalWinners.length}</div>
               </div>
@@ -3842,7 +4007,7 @@ function LiveGamePage({ game }) {
                       setViewFinishedLive(true);
                     }}
                     style={{
-                      ...secondaryButton,
+                      ...themedSecondaryButton,
                       whiteSpace: "nowrap"
                     }}
                   >
@@ -3918,7 +4083,7 @@ function LiveGamePage({ game }) {
             </div>
           )}
 
-          <section style={cardStyle}>
+          <section style={themedCardStyle}>
             <h2>Prize Results</h2>
             <div style={{ display: "grid", gap: 12 }}>
               {finalPrizes.map((prize, prizeIndex) => {
@@ -3961,7 +4126,7 @@ function LiveGamePage({ game }) {
             </div>
           </section>
 
-          <section style={cardStyle}>
+          <section style={themedCardStyle}>
             <div
               style={{
                 display: "flex",
@@ -3981,7 +4146,7 @@ function LiveGamePage({ game }) {
               <button
                 type="button"
                 onClick={() => setShowFinalResults(true)}
-                style={primaryButton}
+                style={themedPrimaryButton}
               >
                 OPEN FINAL SUMMARY
               </button>
@@ -3995,14 +4160,14 @@ function LiveGamePage({ game }) {
                 gap: 10
               }}
             >
-              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
                 <b>Numbers Called</b>
                 <div style={{ fontSize: 28, fontWeight: "bold", marginTop: 6 }}>
                   {calledNumbers.length}
                 </div>
               </div>
 
-              <div style={{ ...cardStyle, margin: 0, background: "#f8fafc" }}>
+              <div style={{ ...themedCardStyle, margin: 0, background: "#f8fafc" }}>
                 <b>Last Call</b>
                 <div style={{ fontSize: 28, fontWeight: "bold", marginTop: 6 }}>
                   {lastCalled ?? "-"}
@@ -4086,7 +4251,7 @@ function LiveGamePage({ game }) {
   }
 
   return (
-    <main style={pageStyle}>
+    <main style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
@@ -4116,7 +4281,7 @@ function LiveGamePage({ game }) {
               setViewFinishedLive(false);
               setShowFinalResults(true);
             }}
-            style={primaryButton}
+            style={themedPrimaryButton}
           >
             OPEN FINAL SUMMARY
           </button>
@@ -4152,7 +4317,7 @@ function LiveGamePage({ game }) {
         ========================================================= */}
 
         {/* 1. CURRENT NUMBER â€” ONE BIG DISPLAY ONLY */}
-        <section data-live-section="1-current-number" style={{ ...cardStyle, textAlign: "center" }}>
+        <section data-live-section="1-current-number" style={{ ...themedCardStyle, textAlign: "center" }}>
           <h2 style={{ margin: 0 }}>Current Number</h2>
 
           <div
@@ -4180,7 +4345,7 @@ function LiveGamePage({ game }) {
         </section>
 
         {/* 2. CALLED NUMBER BOARD */}
-        <section data-live-section="2-called-number-board" style={cardStyle}>
+        <section data-live-section="2-called-number-board" style={themedCardStyle}>
           <div
             style={{
               display: "flex",
@@ -4261,7 +4426,7 @@ function LiveGamePage({ game }) {
         </section>
 
         {/* 3. CALL HISTORY */}
-        <section data-live-section="3-call-history" style={cardStyle}>
+        <section data-live-section="3-call-history" style={themedCardStyle}>
           <div
             style={{
               display: "flex",
@@ -4322,7 +4487,7 @@ function LiveGamePage({ game }) {
 
         {/* 4. MY BOOKED TICKETS */}
         {playerBooking && (
-          <section data-live-section="4-my-booked-tickets" style={cardStyle}>
+          <section data-live-section="4-my-booked-tickets" style={themedCardStyle}>
             <h2>Your Booked Tickets</h2>
             <p style={{ color: "#64748b" }}>
               Player: <b>{playerBooking.playerName}</b>
@@ -4368,7 +4533,7 @@ function LiveGamePage({ game }) {
         <div data-live-section="5-prizes"><LivePrizeList game={liveGame} /></div>
 
         {/* 6. SEARCH */}
-        <section data-live-section="6-search" style={cardStyle}>
+        <section data-live-section="6-search" style={themedCardStyle}>
           <h2>Search Player Name or Ticket Number</h2>
           <div
             style={{
@@ -4381,12 +4546,12 @@ function LiveGamePage({ game }) {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               placeholder="Search player name or ticket number"
-              style={{ ...inputStyle, flex: "1 1 280px" }}
+              style={{ ...themedInputStyle, flex: "1 1 280px" }}
             />
             <button
               type="button"
               onClick={() => setSearchText("")}
-              style={secondaryButton}
+              style={themedSecondaryButton}
             >
               [SEARCH] Search / Clear
             </button>
@@ -4397,7 +4562,7 @@ function LiveGamePage({ game }) {
         </section>
 
         {/* 7. ALL BOOKED TICKETS */}
-        <section data-live-section="7-all-booked-tickets" style={cardStyle}>
+        <section data-live-section="7-all-booked-tickets" style={themedCardStyle}>
           <div
             style={{
               display: "flex",
@@ -4688,6 +4853,12 @@ function HostControlPage({
   onNewGame,
   onGameUpdated
 }) {
+  const themeUI = getThemeUI(game.theme);
+  const themedPageStyle = { ...pageStyle, ...themeUI.page };
+  const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  const themedInputStyle = { ...inputStyle, ...themeUI.input };
+  const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
+  const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
   const inviteUrl =
     `${window.location.origin}/?game=${game.game_code}`;
 
@@ -6044,9 +6215,15 @@ function HostControlPage({
   return (
     <main
       style={
-        pageStyle
+        themedPageStyle
       }
     >
+      <ThemeHero
+        theme={game.theme}
+        title={game.game_name}
+        subtitle="Host Control Centre â€¢ Manage bookings, prizes and the live game"
+        compact
+      />
       <div
         style={{
           maxWidth:
@@ -6081,7 +6258,7 @@ function HostControlPage({
 
         <section
           style={{
-            ...cardStyle,
+            ...themedCardStyle,
             border:
               isLive
                 ? "2px solid #22c55e"
@@ -6153,7 +6330,7 @@ function HostControlPage({
 
         <section
           style={
-            cardStyle
+            themedCardStyle
           }
         >
           <h2>
@@ -6221,7 +6398,7 @@ function HostControlPage({
         <section
           data-host-section="prize-amounts"
           style={{
-            ...cardStyle,
+            ...themedCardStyle,
             display: "block",
             visibility: "visible",
             minHeight: 220,
@@ -6314,7 +6491,7 @@ function HostControlPage({
                         updateEditablePrizeAmount(index, e.target.value)
                       }
                       style={{
-                        ...inputStyle,
+                        ...themedInputStyle,
                         opacity: disabled ? 0.65 : 1
                       }}
                     />
@@ -6332,7 +6509,7 @@ function HostControlPage({
               game.status === "ended"
             }
             style={{
-              ...primaryButton,
+              ...themedPrimaryButton,
               marginTop: 14,
               opacity:
                 savingPrizes ||
@@ -6347,7 +6524,7 @@ function HostControlPage({
 
         <section
           style={
-            cardStyle
+            themedCardStyle
           }
         >
           <h2>
@@ -6383,7 +6560,7 @@ function HostControlPage({
               inviteUrl
             }
             style={{
-              ...inputStyle,
+              ...themedInputStyle,
               marginBottom:
                 10
             }}
@@ -6403,7 +6580,7 @@ function HostControlPage({
                 copyLink
               }
               style={
-                secondaryButton
+                themedSecondaryButton
               }
             >
               {copied
@@ -6419,7 +6596,7 @@ function HostControlPage({
                 posterCreating
               }
               style={{
-                ...primaryButton,
+                ...themedPrimaryButton,
                 opacity:
                   posterCreating
                     ? 0.6
@@ -6458,7 +6635,7 @@ function HostControlPage({
 
         <section
           style={
-            cardStyle
+            themedCardStyle
           }
         >
           <h2>
@@ -6499,7 +6676,7 @@ function HostControlPage({
 
         <section
           style={
-            cardStyle
+            themedCardStyle
           }
         >
           <h2>
@@ -6634,7 +6811,7 @@ function HostControlPage({
                               )
                             }
                             style={{
-                              ...primaryButton,
+                              ...themedPrimaryButton,
                               background:
                                 "#16a34a",
                               opacity:
@@ -6659,7 +6836,7 @@ function HostControlPage({
                               )
                             }
                             style={{
-                              ...secondaryButton,
+                              ...themedSecondaryButton,
                               color:
                                 "#dc2626",
                               border:
@@ -6685,7 +6862,7 @@ function HostControlPage({
 
         <section
           style={{
-            ...cardStyle,
+            ...themedCardStyle,
             border:
               isLive
                 ? "2px solid #22c55e"
@@ -6730,7 +6907,7 @@ function HostControlPage({
                 isEnded
               }
               style={{
-                ...primaryButton,
+                ...themedPrimaryButton,
                 background:
                   isLive
                     ? "#16a34a"
@@ -6762,7 +6939,7 @@ function HostControlPage({
                 !isLive
               }
               style={{
-                ...secondaryButton,
+                ...themedSecondaryButton,
                 color:
                   "#dc2626",
                 border:
@@ -6786,7 +6963,7 @@ function HostControlPage({
         {isLive && (
           <section
             style={{
-              ...cardStyle,
+              ...themedCardStyle,
               border:
                 "2px solid #22c55e"
             }}
@@ -6858,7 +7035,7 @@ function HostControlPage({
                 onClick={() => setAutoCall((current) => !current)}
                 disabled={callingNumber || calledNumbers.length >= 90 || confirmingWinners}
                 style={{
-                  ...primaryButton,
+                  ...themedPrimaryButton,
                   background: autoCall ? "#16a34a" : "#2563eb",
                   opacity:
                     callingNumber || calledNumbers.length >= 90
@@ -6876,7 +7053,7 @@ function HostControlPage({
                 }
                 disabled={!autoCall || callingNumber || pendingWinnerEvents.length > 0}
                 style={{
-                  ...secondaryButton,
+                  ...themedSecondaryButton,
                   opacity: !autoCall || callingNumber ? 0.55 : 1
                 }}
               >
@@ -6893,7 +7070,7 @@ function HostControlPage({
                   pendingWinnerEvents.length > 0
                 }
                 style={{
-                  ...secondaryButton,
+                  ...themedSecondaryButton,
                   opacity:
                     callingNumber ||
                     game.status !== "live" ||
@@ -7100,7 +7277,7 @@ function HostControlPage({
         {!isLive && (
           <section
             style={
-              cardStyle
+              themedCardStyle
             }
           >
             <h2>
@@ -7271,7 +7448,7 @@ function HostControlPage({
             type="button"
             onClick={() => setShowGameSummary(true)}
             style={{
-              ...primaryButton,
+              ...themedPrimaryButton,
               width: "100%",
               marginBottom: 12,
               background: "#7c3aed"
@@ -7350,7 +7527,7 @@ function HostControlPage({
                   type="button"
                   onClick={endGame}
                   disabled={gameAction}
-                  style={{ ...primaryButton, width: "100%", background: "#dc2626" }}
+                  style={{ ...themedPrimaryButton, width: "100%", background: "#dc2626" }}
                 >
                   {gameAction ? "ENDING GAME..." : "END GAME & SHOW FINAL RESULTS"}
                 </button>
@@ -7358,7 +7535,7 @@ function HostControlPage({
                   type="button"
                   onClick={() => setShowGameSummary(false)}
                   disabled={gameAction}
-                  style={{ ...secondaryButton, width: "100%" }}
+                  style={{ ...themedSecondaryButton, width: "100%" }}
                 >
                   BACK TO LIVE GAME
                 </button>
@@ -7370,7 +7547,7 @@ function HostControlPage({
         <section
           data-host-section="prize-winners-overview"
           style={{
-            ...cardStyle,
+            ...themedCardStyle,
             marginTop: 16
           }}
         >
@@ -7477,7 +7654,7 @@ function HostControlPage({
             onNewGame
           }
           style={{
-            ...secondaryButton,
+            ...themedSecondaryButton,
             width:
               "100%"
           }}
