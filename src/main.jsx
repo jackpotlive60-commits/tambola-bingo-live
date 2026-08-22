@@ -2276,6 +2276,11 @@ function PlayerBookingPage({
   ] = useState({});
 
   const [
+    ticketOwners,
+    setTicketOwners
+  ] = useState({});
+
+  const [
     loadingUnavailable,
     setLoadingUnavailable
   ] = useState(true);
@@ -2291,7 +2296,7 @@ function PlayerBookingPage({
             "ticket_bookings"
           )
           .select(
-            "ticket_numbers,status"
+            "ticket_numbers,status,player_name"
           )
           .eq(
             "game_id",
@@ -2313,6 +2318,7 @@ function PlayerBookingPage({
         [];
 
       const statuses = {};
+      const owners = {};
 
       (
         data || []
@@ -2355,6 +2361,11 @@ function PlayerBookingPage({
                       ? "accepted"
                       : "pending";
                 }
+
+                if (booking.status === "accepted") {
+                  owners[n] = booking.player_name || "Player";
+                  statuses[n] = "accepted";
+                }
               }
             }
           );
@@ -2375,6 +2386,7 @@ function PlayerBookingPage({
       setTicketStatuses(
         statuses
       );
+      setTicketOwners(owners);
     } catch (err) {
       console.error(
         "Could not load unavailable tickets:",
@@ -2728,6 +2740,8 @@ function PlayerBookingPage({
           )}. Waiting for host approval.`
       );
 
+      // Clear only this submission. Existing bookings do not lock this player
+      // out of making another booking for any still-available ticket.
       setSelected([]);
 
       await loadUnavailableTickets();
@@ -3080,10 +3094,30 @@ function PlayerBookingPage({
                 Clear Selection
               </button>
             )}
+
+            {!selected.length && !booking && messageType === "success" && (
+              <button
+                type="button"
+                onClick={() => {
+                  document.getElementById("player-ticket-list")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                  });
+                }}
+                style={{
+                  ...primaryButton,
+                  marginTop: 10,
+                  width: "100%"
+                }}
+              >
+                BOOK ANOTHER TICKET
+              </button>
+            )}
           </div>
         </section>
 
         <section
+          id="player-ticket-list"
           style={
             cardStyle
           }
@@ -3129,6 +3163,11 @@ function PlayerBookingPage({
                       selected={selected.includes(
                         ticket.number
                       )}
+                      ownerName={
+                        ticketStatuses[ticket.number] === "accepted"
+                          ? ticketOwners[ticket.number] || "Player"
+                          : ""
+                      }
                       onSelect={() => {
                         if (
                           !unavailable
