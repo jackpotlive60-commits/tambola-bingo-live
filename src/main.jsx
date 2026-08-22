@@ -2672,8 +2672,10 @@ function TicketGridComponent({
           ? `2px solid ${c.accent}`
           : `1px solid ${c.secondary}88`,
         borderLeft: `6px solid ${c.accent}`,
-        borderRadius: 22,
-        padding: 14,
+        borderRadius: 18,
+        padding: 10,
+        width: "100%",
+        boxSizing: "border-box",
         background: selected
           ? ticketTheme.selected
           : ticketTheme.shell,
@@ -2705,12 +2707,12 @@ function TicketGridComponent({
           justifyContent: "space-between",
           alignItems: "center",
           gap: 10,
-          marginBottom: 10
+          marginBottom: 7
         }}
       >
         <b
           style={{
-            fontSize: 21,
+            fontSize: 20,
             letterSpacing: "-.02em",
             color: "#ffffff"
           }}
@@ -2759,7 +2761,8 @@ function TicketGridComponent({
         style={{
           position: "relative",
           display: "grid",
-          gridTemplateColumns: "repeat(9,minmax(28px,1fr))",
+          gridTemplateColumns: "repeat(9, minmax(0, 1fr))",
+          width: "100%",
           border: `2px solid ${theme === "Neon" ? c.secondary : c.accent}`,
           overflow: "hidden",
           borderRadius: 10,
@@ -2774,8 +2777,10 @@ function TicketGridComponent({
               <div
                 key={`${r}-${col}`}
                 style={{
-                  minHeight: 48,
+                  minHeight: 38,
+                  height: 38,
                   display: "flex",
+                  boxSizing: "border-box",
                   alignItems: "center",
                   justifyContent: "center",
                   borderRight:
@@ -2783,7 +2788,7 @@ function TicketGridComponent({
                   borderBottom:
                     r === 2 ? "none" : `1px solid ${ticketTheme.line}`,
                   fontWeight: value ? "800" : "normal",
-                  fontSize: 17,
+                  fontSize: 16,
                   background: called
                     ? `linear-gradient(145deg, #fde68a, #fbbf24)`
                     : value
@@ -2804,7 +2809,7 @@ function TicketGridComponent({
       <div
         style={{
           position: "relative",
-          marginTop: 10,
+          marginTop: 7,
           textAlign: "center",
           color: c.accent,
           fontWeight: "800",
