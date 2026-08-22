@@ -3280,36 +3280,11 @@ function LiveGamePage({ game }) {
       return undefined;
     }
 
-    finalSummaryTimerRef.current = window.setTimeout(() => {
-      setViewFinishedLive(false);
-      setShowFinalResults(true);
-      finalSummaryTimerRef.current = null;
-    }, 3000);
-
-    return () => {
-      if (finalSummaryTimerRef.current) {
-        window.clearTimeout(finalSummaryTimerRef.current);
-        finalSummaryTimerRef.current = null;
+    const speakMessage = (message) => {
+      if (!("speechSynthesis" in window)) {
+        return;
       }
-    };
-  }, [liveGame.status]);
 
-  useEffect(() => {
-    if (
-      liveGame.status !== "ended" ||
-      finalAnnouncementSpokenRef.current
-    ) {
-      return;
-    }
-
-    finalAnnouncementSpokenRef.current = true;
-
-    const message =
-      "And that's the game! All prizes have been claimed! Thank you everyone for joining us and making this game special. We hope you enjoyed the fun - see you in the next game!";
-
-    if (
-      "speechSynthesis" in window
-    ) {
       try {
         window.speechSynthesis.cancel();
 
@@ -3322,12 +3297,36 @@ function LiveGamePage({ game }) {
 
         window.speechSynthesis.speak(utterance);
       } catch (err) {
-        console.error(
-          "Could not announce game end:",
-          err
-        );
+        console.error("Could not announce game end:", err);
       }
+    };
+
+    if (!finalAnnouncementSpokenRef.current) {
+      finalAnnouncementSpokenRef.current = true;
+
+      speakMessage(
+        "All prizes have been claimed! No prizes remaining."
+      );
+
+      finalSummaryTimerRef.current = window.setTimeout(() => {
+        speakMessage(
+          "And that's the game! All prizes have been claimed! Thank you everyone for joining us and making this game special. We hope you enjoyed the fun - see you in the next game!"
+        );
+
+        finalSummaryTimerRef.current = window.setTimeout(() => {
+          setViewFinishedLive(false);
+          setShowFinalResults(true);
+          finalSummaryTimerRef.current = null;
+        }, 3000);
+      }, 3000);
     }
+
+    return () => {
+      if (finalSummaryTimerRef.current) {
+        window.clearTimeout(finalSummaryTimerRef.current);
+        finalSummaryTimerRef.current = null;
+      }
+    };
   }, [liveGame.status]);
 
   const [playerBooking, setPlayerBooking] = useState(
