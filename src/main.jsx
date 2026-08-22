@@ -1201,12 +1201,12 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
 
   const backgrounds = {
-    Classic: `radial-gradient(circle at 12% 8%, rgba(37,99,235,.18), transparent 28%), radial-gradient(circle at 88% 0%, rgba(96,165,250,.12), transparent 25%), linear-gradient(135deg, #07111f 0%, #0f172a 48%, #111827 100%)`,
-    Royal: `radial-gradient(circle at 12% 8%, rgba(139,92,246,.22), transparent 30%), radial-gradient(circle at 88% 4%, rgba(245,197,66,.12), transparent 24%), linear-gradient(135deg, #160b29 0%, #24113f 52%, #12091f 100%)`,
-    Party: `radial-gradient(circle at 10% 5%, rgba(34,211,238,.18), transparent 28%), radial-gradient(circle at 90% 0%, rgba(250,204,21,.12), transparent 22%), linear-gradient(135deg, #250b1d 0%, #4a123b 52%, #160817 100%)`,
-    Bollywood: `radial-gradient(circle at 10% 5%, rgba(251,191,36,.15), transparent 26%), radial-gradient(circle at 90% 0%, rgba(251,113,133,.14), transparent 24%), linear-gradient(135deg, #26090b 0%, #4b1117 52%, #160608 100%)`,
-    Neon: `radial-gradient(circle at 10% 5%, rgba(34,211,238,.20), transparent 28%), radial-gradient(circle at 90% 0%, rgba(167,139,250,.18), transparent 24%), linear-gradient(135deg, #030712 0%, #07111f 52%, #050814 100%)`,
-    Elegant: `radial-gradient(circle at 10% 5%, rgba(212,175,55,.16), transparent 28%), radial-gradient(circle at 90% 0%, rgba(148,163,184,.12), transparent 24%), linear-gradient(135deg, #090e17 0%, #172033 52%, #0b1019 100%)`
+    Classic: `radial-gradient(circle at 18% 0%, rgba(212,175,55,.18), transparent 26%), radial-gradient(circle at 85% 10%, rgba(160,20,35,.18), transparent 24%), linear-gradient(135deg, #050505 0%, #140d08 52%, #090909 100%)`,
+    Royal: `radial-gradient(circle at 15% 0%, rgba(212,175,55,.18), transparent 28%), radial-gradient(circle at 88% 5%, rgba(126,34,206,.20), transparent 26%), linear-gradient(135deg, #090608 0%, #1b0d24 52%, #080509 100%)`,
+    Party: `radial-gradient(circle at 12% 5%, rgba(245,197,66,.18), transparent 26%), radial-gradient(circle at 90% 0%, rgba(239,68,68,.18), transparent 24%), linear-gradient(135deg, #0a0705 0%, #24100d 50%, #080707 100%)`,
+    Bollywood: `radial-gradient(circle at 12% 5%, rgba(251,191,36,.20), transparent 26%), radial-gradient(circle at 90% 0%, rgba(185,28,28,.24), transparent 24%), linear-gradient(135deg, #080504 0%, #2b0b0d 52%, #090505 100%)`,
+    Neon: `radial-gradient(circle at 12% 5%, rgba(34,211,238,.20), transparent 28%), radial-gradient(circle at 88% 0%, rgba(168,85,247,.22), transparent 24%), linear-gradient(135deg, #030303 0%, #071019 52%, #050408 100%)`,
+    Elegant: `radial-gradient(circle at 12% 5%, rgba(212,175,55,.22), transparent 28%), radial-gradient(circle at 88% 0%, rgba(148,163,184,.12), transparent 24%), linear-gradient(135deg, #050505 0%, #17130d 52%, #080808 100%)`
   };
 
   const background = backgrounds[theme] || backgrounds.Classic;
@@ -1240,10 +1240,10 @@ function getThemeUI(theme) {
       background: `linear-gradient(145deg, ${colors.surface}f7, ${colors.surface2}e8)`,
       border: `1px solid ${colors.accent}66`,
       borderTop: `3px solid ${colors.accent}`,
-      borderRadius: 24,
+      borderRadius: 18,
       padding: 24,
       color: colors.text,
-      boxShadow: `0 22px 60px rgba(0,0,0,.34), 0 0 0 1px ${colors.secondary}18 inset, 0 0 34px ${colors.secondary}16`,
+      boxShadow: `0 20px 55px rgba(0,0,0,.48), 0 0 0 1px ${colors.accent}18 inset, 0 0 28px ${colors.accent}12`,
       backdropFilter: "blur(16px)"
     },
     input: {
@@ -1255,18 +1255,36 @@ function getThemeUI(theme) {
       caretColor: colors.accent
     },
     primary: {
-      background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.secondary} 100%)`,
+      background: `linear-gradient(135deg, ${theme === "Bollywood" || theme === "Party" ? "#b91c1c" : colors.accent} 0%, ${theme === "Neon" ? colors.secondary : "#6f0f17"} 100%)`,
       color: "#ffffff",
       boxShadow: `0 12px 28px ${colors.secondary}45`,
       transform: "translateY(0)"
     },
     secondary: {
-      border: `1px solid ${colors.secondary}66`,
-      background: colors.inputBg,
-      color: colors.inputText,
+      border: `1px solid ${colors.accent}66`,
+      background: `linear-gradient(180deg, ${colors.surface2} 0%, ${colors.surface} 100%)`,
+      color: colors.text,
       boxShadow: `0 6px 16px ${colors.secondary}12`
     }
   };
+}
+
+
+function installCasinoResponsiveStyles() {
+  if (typeof document === "undefined" || document.getElementById("tambolalive-casino-responsive")) return;
+  const style = document.createElement("style");
+  style.id = "tambolalive-casino-responsive";
+  style.textContent = `
+    @media (max-width: 760px) {
+      main { padding: 12px !important; }
+      [data-host-section] { overflow-x: auto; }
+      input, button { min-height: 44px; }
+    }
+    @media (max-width: 820px) {
+      div[style*="minmax(260px, .7fr)"] { grid-template-columns: 1fr !important; }
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 function ThemeHero({ theme, title, subtitle, compact = false }) {
@@ -1818,21 +1836,22 @@ async function createGamePoster(
 
 const pageStyle = {
   minHeight: "100vh",
-  background: "#f5f7fb",
+  background: "#090909",
   padding: 20,
   boxSizing: "border-box",
   fontFamily:
-    "Arial, Helvetica, sans-serif"
+    "Arial, Helvetica, sans-serif",
+  color: "#fff"
 };
 
 const cardStyle = {
-  background: "#fff",
-                      color: "var(--theme-text, #0f172a)",
-  border: "1px solid #e5e7eb",
-  borderRadius: 16,
+  background: "linear-gradient(145deg, #15100d 0%, #090909 100%)",
+  color: "var(--theme-text, #fff)",
+  border: "1px solid rgba(212,175,55,.55)",
+  borderRadius: 18,
   padding: 20,
   marginBottom: 18,
-  boxShadow: "0 3px 10px rgba(0,0,0,.05)",
+  boxShadow: "0 18px 45px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.025)",
   boxSizing: "border-box"
 };
 
@@ -1840,33 +1859,34 @@ const inputStyle = {
   width: "100%",
   padding: 13,
   border:
-    "1px solid #cbd5e1",
-  borderRadius: 9,
+    "1px solid rgba(212,175,55,.5)",
+  borderRadius: 10,
   boxSizing: "border-box",
-  fontSize: 16
+  fontSize: 16,
+  background: "#fffaf0"
 };
 
 const primaryButton = {
   padding:
     "13px 18px",
-  border: "none",
-  borderRadius: 9,
-  background: "#2563eb",
+  border: "1px solid #f5d76e",
+  borderRadius: 10,
+  background: "linear-gradient(135deg, #a30f1c 0%, #6d0711 100%)",
   color: "#fff",
   fontWeight: "bold",
   fontSize: 16,
-  cursor: "pointer"
+  cursor: "pointer",
+  boxShadow: "0 10px 24px rgba(128,0,0,.35), inset 0 1px rgba(255,255,255,.18)"
 };
 
 const secondaryButton = {
   padding:
     "11px 16px",
   border:
-    "1px solid #cbd5e1",
-  borderRadius: 9,
-  background: "#fff",
-                      color: "var(--theme-text, #0f172a)",
-  color: "#111827",
+    "1px solid rgba(212,175,55,.6)",
+  borderRadius: 10,
+  background: "linear-gradient(180deg, #211a10 0%, #0e0b08 100%)",
+  color: "#f5d76e",
   fontWeight: "bold",
   cursor: "pointer"
 };
@@ -3459,9 +3479,10 @@ function PlayerBookingPage({
         </div>
 
         <section
-          style={
-            themedCardStyle
-          }
+          style={{
+            ...themedCardStyle,
+            marginBottom: 0
+          }}
         >
           <h2>
             Game Details
@@ -6833,7 +6854,7 @@ function HostControlPage({
       <div
         style={{
           maxWidth:
-            1000,
+            1200,
           margin:
             "0 auto"
         }}
@@ -6861,6 +6882,15 @@ function HostControlPage({
             Host Control Centre
           </p>
         </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(260px, .7fr) minmax(0, 1.8fr)",
+            gap: 18,
+            alignItems: "stretch"
+          }}
+        >
 
         <section
           style={{
@@ -7000,6 +7030,8 @@ function HostControlPage({
             />
           </div>
         </section>
+
+        </div>
 
         <section
           data-host-section="prize-amounts"
@@ -8382,6 +8414,7 @@ function StatusBox({
 ========================================================= */
 
 function App() {
+  installCasinoResponsiveStyles();
   const [
     playerCode
   ] = useState(
