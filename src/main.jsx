@@ -3805,11 +3805,11 @@ function LiveGamePage({ game }) {
     return getPreferredEnglishSpeechVoice();
   }
 
-  function speakPlayerNumber(number) {
+  function speakPlayerNumber(number, retry = 0) {
     if (
       !("speechSynthesis" in window) ||
       !Number.isInteger(Number(number)) ||
-      !playerSpeechUnlocked
+      !playerVoiceUnlockedRef.current
     ) {
       return;
     }
@@ -3818,27 +3818,66 @@ function LiveGamePage({ game }) {
       const numericNumber = Number(number);
       const phrase =
         CALLER_PHRASES[numericNumber] || `Number ${numericNumber}`;
+      const synth = window.speechSynthesis;
 
-      window.speechSynthesis.resume();
+      // Android Chrome can leave speech paused/stuck after a previous
+      // utterance. Reset that stale queue before announcing a live number.
+      synth.resume();
+      if (synth.speaking || synth.pending) {
+        synth.cancel();
+        synth.resume();
+      }
+
+      const voices = synth.getVoices() || [];
+      const englishVoice =
+        voices.find((voice) => /^en-US$/i.test(voice.lang)) ||
+        voices.find((voice) => /^en-GB$/i.test(voice.lang)) ||
+        voices.find((voice) => /^en/i.test(voice.lang)) ||
+        getEnglishSpeechVoice();
+
+      // Android can load its voice list asynchronously.
+      if (!voices.length && retry < 4) {
+        const retrySpeak = () => speakPlayerNumber(numericNumber, retry + 1);
+
+        if ("onvoiceschanged" in synth) {
+          synth.addEventListener("voiceschanged", retrySpeak, { once: true });
+        }
+
+        window.setTimeout(retrySpeak, 500);
+        return;
+      }
 
       const utterance = new SpeechSynthesisUtterance(phrase);
-      utterance.lang = "en-US";
+      utterance.lang = englishVoice?.lang || "en-US";
       utterance.rate = 0.88;
       utterance.pitch = 1.02;
       utterance.volume = 1;
 
-      const englishVoice = getEnglishSpeechVoice();
       if (englishVoice) {
         utterance.voice = englishVoice;
-        utterance.lang = englishVoice.lang;
       }
 
-      // Do not cancel an active announcement. Queueing is more reliable on
-      // Android Chrome than repeatedly calling cancel() immediately before
-      // speak().
-      window.speechSynthesis.speak(utterance);
+      utterance.onerror = (event) => {
+        console.warn("Player number speech error:", event?.error || event);
+
+        if (retry < 3 && playerVoiceUnlockedRef.current) {
+          window.setTimeout(
+            () => speakPlayerNumber(numericNumber, retry + 1),
+            350
+          );
+        }
+      };
+
+      synth.speak(utterance);
     } catch (err) {
       console.warn("Could not announce player number:", err);
+
+      if (retry < 3 && playerVoiceUnlockedRef.current) {
+        window.setTimeout(
+          () => speakPlayerNumber(Number(number), retry + 1),
+          350
+        );
+      }
     }
   }
 
