@@ -4927,7 +4927,11 @@ function HostControlPage({
   }
 
   async function savePrizeAmounts() {
-    if (savingPrizes || game.status !== "upcoming") {
+    const prizeEditingAllowed =
+      game.status !== "live" &&
+      game.status !== "ended";
+
+    if (savingPrizes || !prizeEditingAllowed) {
       return false;
     }
 
@@ -4971,7 +4975,7 @@ function HostControlPage({
       saveHostGame(updatedGame);
       onGameUpdated(updatedGame);
       setShareMessage("Prize amounts saved. The poster will use these updated amounts.");
-      return true;
+      return updatedGame;
     } catch (err) {
       console.error("Could not save prize amounts:", err);
       setGameError(
@@ -5016,11 +5020,18 @@ function HostControlPage({
       return;
     }
 
-    if (game.status === "upcoming") {
-      const saved = await savePrizeAmounts();
-      if (!saved) {
+    let posterSourceGame = game;
+
+    const prizeEditingAllowed =
+      game.status !== "live" &&
+      game.status !== "ended";
+
+    if (prizeEditingAllowed) {
+      const savedGame = await savePrizeAmounts();
+      if (!savedGame) {
         return;
       }
+      posterSourceGame = savedGame;
     }
 
     setPosterCreating(
@@ -5043,14 +5054,10 @@ ${inviteUrl}`;
 
     try {
       const posterGame = {
-        ...game,
-        selected_prizes: editablePrizes.map((prize) => ({
-          ...prize,
-          amount:
-            prize.amount === "" || prize.amount == null
-              ? ""
-              : Number(prize.amount) || 0
-        }))
+        ...posterSourceGame,
+        selected_prizes: Array.isArray(posterSourceGame.selected_prizes)
+          ? posterSourceGame.selected_prizes.map((prize) => ({ ...prize }))
+          : editablePrizes.map((prize) => ({ ...prize }))
       };
 
       const poster =
@@ -5086,20 +5093,30 @@ ${inviteUrl}`;
         return;
       }
 
-      if (
-        navigator.share
-      ) {
+      // Some browsers can share a link but cannot attach an image file.
+      // Keep the poster available locally, then share/copy the same game link.
+      try {
+        const posterUrl = URL.createObjectURL(poster);
+        const downloadLink = document.createElement("a");
+        downloadLink.href = posterUrl;
+        downloadLink.download = poster.name;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+        window.setTimeout(() => URL.revokeObjectURL(posterUrl), 1000);
+      } catch (downloadError) {
+        console.error("Could not prepare poster download:", downloadError);
+      }
+
+      if (navigator.share) {
         await navigator.share({
-          title:
-            game.game_name,
-          text:
-            message,
-          url:
-            inviteUrl
+          title: game.game_name,
+          text: message,
+          url: inviteUrl
         });
 
         setShareMessage(
-          "Game link shared. Your device does not support sharing the poster as a file."
+          "Poster saved and game link ready to share. Attach the saved poster in WhatsApp."
         );
 
         return;
@@ -5108,7 +5125,7 @@ ${inviteUrl}`;
       await copyLink();
 
       setShareMessage(
-        "Game link copied. Your browser does not support the share sheet."
+        "Poster saved and game link copied. Attach the saved poster in WhatsApp."
       );
     } catch (error) {
       if (
@@ -6077,7 +6094,10 @@ ${inviteUrl}`;
             <div style={{ display: "grid", gap: 8 }}>
               {editablePrizes.map((prize, index) => {
                 const locked = Boolean(prize?.locked);
-                const disabled = game.status !== "upcoming" || locked || savingPrizes;
+                const prizeEditingAllowed =
+                  game.status !== "live" &&
+                  game.status !== "ended";
+                const disabled = !prizeEditingAllowed || locked || savingPrizes;
 
                 return (
                   <div
@@ -6128,11 +6148,20 @@ ${inviteUrl}`;
           <button
             type="button"
             onClick={savePrizeAmounts}
-            disabled={savingPrizes || game.status !== "upcoming"}
+            disabled={
+              savingPrizes ||
+              game.status === "live" ||
+              game.status === "ended"
+            }
             style={{
               ...primaryButton,
               marginTop: 14,
-              opacity: savingPrizes || game.status !== "upcoming" ? 0.55 : 1
+              opacity:
+                savingPrizes ||
+                game.status === "live" ||
+                game.status === "ended"
+                  ? 0.55
+                  : 1
             }}
           >
             {savingPrizes ? "SAVING PRIZES..." : "SAVE PRIZE AMOUNTS"}
