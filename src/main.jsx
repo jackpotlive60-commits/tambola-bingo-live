@@ -1452,6 +1452,7 @@ const pageStyle = {
 
 const cardStyle = {
   background: "#fff",
+                      color: "#0f172a",
   border: "1px solid #e5e7eb",
   borderRadius: 16,
   padding: 20,
@@ -1489,6 +1490,7 @@ const secondaryButton = {
     "1px solid #cbd5e1",
   borderRadius: 9,
   background: "#fff",
+                      color: "#0f172a",
   color: "#111827",
   fontWeight: "bold",
   cursor: "pointer"
@@ -3992,6 +3994,7 @@ function LiveGamePage({ game }) {
                   maxWidth: 760,
                   margin: "30px auto",
                   background: "#fff",
+                      color: "#0f172a",
                   borderRadius: 18,
                   padding: 20,
                   boxShadow: "0 20px 60px rgba(0,0,0,.25)"
@@ -4059,6 +4062,7 @@ function LiveGamePage({ game }) {
                           padding: 13,
                           borderRadius: 12,
                           background: "#f8fafc",
+                      color: "#0f172a",
                           border: "1px solid #e2e8f0"
                         }}
                       >
@@ -4617,6 +4621,7 @@ function LiveGamePage({ game }) {
                 padding: 20,
                 borderRadius: 12,
                 background: "#f8fafc",
+                      color: "#0f172a",
                 border: "1px solid #e2e8f0",
                 textAlign: "center",
                 color: "#64748b"
@@ -4817,6 +4822,7 @@ function LivePrizeList({ game }) {
                           padding: "9px 10px",
                           borderRadius: 8,
                           background: "#fff",
+                      color: "#0f172a",
                           border: "1px solid #bbf7d0",
                           fontWeight: "bold"
                         }}
@@ -6439,13 +6445,14 @@ function HostControlPage({
               alignItems: "center",
               padding: "10px 12px",
               background: "#f8fafc",
+                      color: "#0f172a",
               borderRadius: 10,
               fontWeight: "bold",
               marginBottom: 8
             }}
           >
-            <div>Prize</div>
-            <div>Amount (INR)</div>
+            <div style={{ color: "#0f172a" }}>Prize</div>
+            <div style={{ color: "#0f172a" }}>Amount (INR)</div>
           </div>
 
           {(editablePrizes.length === 0 && prizes.length === 0) ? (
@@ -6454,6 +6461,7 @@ function HostControlPage({
                 padding: 14,
                 borderRadius: 10,
                 background: "#f8fafc",
+                      color: "#0f172a",
                 color: "#64748b"
               }}
             >
@@ -6482,10 +6490,11 @@ function HostControlPage({
                         padding: 12,
                         border: "1px solid #e5e7eb",
                         borderRadius: 9,
-                        background: locked ? "#f8fafc" : "#fff"
+                        background: locked ? "#f8fafc" : "#fff",
+                        color: "#0f172a"
                       }}
                     >
-                      <b>{prize.name || `Prize ${index + 1}`}</b>
+                      <b style={{ color: "#0f172a" }}>{prize.name || `Prize ${index + 1}`}</b>
                       {locked && (
                         <div style={{ marginTop: 3, color: "#166534", fontSize: 12, fontWeight: "bold" }}>
                           LOCKED - WINNER CONFIRMED
@@ -6504,7 +6513,7 @@ function HostControlPage({
                       }
                       style={{
                         ...themedInputStyle,
-                        opacity: disabled ? 0.65 : 1
+                        opacity: disabled ? 0.82 : 1
                       }}
                     />
                   </div>
@@ -7104,6 +7113,7 @@ function HostControlPage({
                   border: "1px solid #cbd5e1",
                   borderRadius: 10,
                   background: "#f8fafc",
+                      color: "#0f172a",
                   fontWeight: "bold"
                 }}
               >
@@ -7147,6 +7157,7 @@ function HostControlPage({
                   border: "1px solid #cbd5e1",
                   borderRadius: 10,
                   background: "#f8fafc",
+                      color: "#0f172a",
                   fontWeight: "bold"
                 }}
               >
@@ -7160,6 +7171,7 @@ function HostControlPage({
                     borderRadius: 8,
                     border: "1px solid #cbd5e1",
                     background: "#fff",
+                      color: "#0f172a",
                     fontWeight: "bold"
                   }}
                 >
@@ -7328,6 +7340,7 @@ function HostControlPage({
                 maxHeight: "90vh",
                 overflowY: "auto",
                 background: "#fff",
+                      color: "#0f172a",
                 borderRadius: 22,
                 padding: 24,
                 boxShadow: "0 25px 70px rgba(0,0,0,0.35)",
@@ -7375,6 +7388,7 @@ function HostControlPage({
                             padding: "10px 12px",
                             borderRadius: 10,
                             background: "#fff",
+                      color: "#0f172a",
                             fontWeight: "bold"
                           }}
                         >
@@ -7490,6 +7504,7 @@ function HostControlPage({
                 maxHeight: "90vh",
                 overflowY: "auto",
                 background: "#fff",
+                      color: "#0f172a",
                 borderRadius: 22,
                 padding: 24,
                 boxShadow: "0 25px 70px rgba(0,0,0,0.35)"
@@ -7584,14 +7599,15 @@ function HostControlPage({
               alignItems: "center",
               padding: "10px 12px",
               background: "#f8fafc",
+                      color: "#0f172a",
               borderRadius: 10,
               fontWeight: "bold",
               marginBottom: 8
             }}
           >
-            <div>Prize</div>
-            <div>Amount</div>
-            <div>Winner</div>
+            <div style={{ color: "#0f172a" }}>Prize</div>
+            <div style={{ color: "#0f172a" }}>Amount</div>
+            <div style={{ color: "#0f172a" }}>Winner</div>
           </div>
 
           {(Array.isArray(game.selected_prizes) ? game.selected_prizes : []).length === 0 ? (
@@ -7600,6 +7616,7 @@ function HostControlPage({
                 padding: 14,
                 borderRadius: 10,
                 background: "#f8fafc",
+                      color: "#0f172a",
                 color: "#64748b"
               }}
             >
@@ -7622,11 +7639,12 @@ function HostControlPage({
                       padding: 12,
                       border: `1px solid ${confirmed ? "#bbf7d0" : "#e5e7eb"}`,
                       borderRadius: 10,
-                      background: confirmed ? "#f0fdf4" : "#fff"
+                      background: confirmed ? "#f0fdf4" : "#fff",
+                      color: confirmed ? "#166534" : "#0f172a"
                     }}
                   >
                     <div>
-                      <b>{prize?.name || `Prize ${index + 1}`}</b>
+                      <b style={{ color: "#0f172a" }}>{prize?.name || `Prize ${index + 1}`}</b>
                     </div>
 
                     <div>
