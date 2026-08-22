@@ -1183,7 +1183,7 @@ async function createGamePoster(
       : [];
 
   const prizeY =
-    860;
+    830;
 
   ctx.textAlign =
     "center";
@@ -1201,11 +1201,9 @@ async function createGamePoster(
   );
 
   if (prizes.length) {
-    const displayPrizes =
-      prizes.slice(
-        0,
-        5
-      );
+    const displayPrizes = prizes;
+    const prizeRowGap = displayPrizes.length > 6 ? 34 : 40;
+    const prizeFontSize = displayPrizes.length > 6 ? 20 : 22;
 
     displayPrizes.forEach(
       (
@@ -1215,14 +1213,13 @@ async function createGamePoster(
         const y =
           prizeY +
           55 +
-          index *
-            52;
+          index * prizeRowGap;
 
         ctx.fillStyle =
           colors.text;
 
         ctx.font =
-          "bold 24px Arial";
+          `bold ${prizeFontSize}px Arial`;
 
         ctx.fillText(
           `${
@@ -1252,7 +1249,7 @@ async function createGamePoster(
   }
 
   const joinY =
-    1130;
+    Math.min(1130, prizeY + 65 + prizes.length * (prizes.length > 6 ? 34 : 40));
 
   roundedRect(
     ctx,
@@ -4520,6 +4517,21 @@ function HostControlPage({
   ] = useState(false);
 
   const [
+    editablePrizes,
+    setEditablePrizes
+  ] = useState(
+    () =>
+      Array.isArray(game.selected_prizes)
+        ? game.selected_prizes.map((prize) => ({ ...prize }))
+        : []
+  );
+
+  const [
+    savingPrizes,
+    setSavingPrizes
+  ] = useState(false);
+
+  const [
     shareMessage,
     setShareMessage
   ] = useState("");
@@ -4606,6 +4618,17 @@ function HostControlPage({
     [
       game.called_numbers
     ]
+  );
+
+  useEffect(
+    () => {
+      setEditablePrizes(
+        Array.isArray(game.selected_prizes)
+          ? game.selected_prizes.map((prize) => ({ ...prize }))
+          : []
+      );
+    },
+    [game.selected_prizes]
   );
 
   async function loadBookings() {
@@ -4893,6 +4916,73 @@ function HostControlPage({
     }
   }
 
+  function updateEditablePrizeAmount(index, amount) {
+    setEditablePrizes((current) =>
+      current.map((prize, prizeIndex) =>
+        prizeIndex === index
+          ? { ...prize, amount }
+          : prize
+      )
+    );
+  }
+
+  async function savePrizeAmounts() {
+    if (savingPrizes || game.status !== "upcoming") {
+      return false;
+    }
+
+    setSavingPrizes(true);
+    setGameError("");
+    setShareMessage("");
+
+    try {
+      const updatedPrizes = editablePrizes.map((prize) => ({
+        ...prize,
+        amount:
+          prize.amount === "" || prize.amount == null
+            ? ""
+            : Number(prize.amount) || 0
+      }));
+
+      const { data, error } = await supabase
+        .from("games")
+        .update({
+          selected_prizes: updatedPrizes
+        })
+        .eq("id", game.id)
+        .select()
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedGame = data || {
+        ...game,
+        selected_prizes: updatedPrizes
+      };
+
+      setEditablePrizes(
+        Array.isArray(updatedGame.selected_prizes)
+          ? updatedGame.selected_prizes.map((prize) => ({ ...prize }))
+          : []
+      );
+
+      saveHostGame(updatedGame);
+      onGameUpdated(updatedGame);
+      setShareMessage("Prize amounts saved. The poster will use these updated amounts.");
+      return true;
+    } catch (err) {
+      console.error("Could not save prize amounts:", err);
+      setGameError(
+        err?.message || "Could not save prize amounts."
+      );
+      return false;
+    } finally {
+      setSavingPrizes(false);
+    }
+  }
+
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(
@@ -4920,9 +5010,17 @@ function HostControlPage({
 
   async function shareGame() {
     if (
-      posterCreating
+      posterCreating ||
+      savingPrizes
     ) {
       return;
+    }
+
+    if (game.status === "upcoming") {
+      const saved = await savePrizeAmounts();
+      if (!saved) {
+        return;
+      }
     }
 
     setPosterCreating(
@@ -4944,9 +5042,20 @@ Join Game:
 ${inviteUrl}`;
 
     try {
+      const posterGame = {
+        ...game,
+        selected_prizes: editablePrizes.map((prize) => ({
+          ...prize,
+          amount:
+            prize.amount === "" || prize.amount == null
+              ? ""
+              : Number(prize.amount) || 0
+        }))
+      };
+
       const poster =
         await createGamePoster(
-          game,
+          posterGame,
           inviteUrl
         );
 
@@ -5924,6 +6033,118 @@ ${inviteUrl}`;
           }
         >
           <h2>
+            Prize Amounts
+          </h2>
+
+          <p
+            style={{
+              color: "#64748b",
+              marginTop: 0
+            }}
+          >
+            Edit the prize amounts here based on your ticket sales. Save them before sharing the updated poster.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 160px",
+              gap: 8,
+              alignItems: "center",
+              padding: "10px 12px",
+              background: "#f8fafc",
+              borderRadius: 10,
+              fontWeight: "bold",
+              marginBottom: 8
+            }}
+          >
+            <div>Prize</div>
+            <div>Amount (INR)</div>
+          </div>
+
+          {editablePrizes.length === 0 ? (
+            <div
+              style={{
+                padding: 14,
+                borderRadius: 10,
+                background: "#f8fafc",
+                color: "#64748b"
+              }}
+            >
+              No prizes configured for this game.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 8 }}>
+              {editablePrizes.map((prize, index) => {
+                const locked = Boolean(prize?.locked);
+                const disabled = game.status !== "upcoming" || locked || savingPrizes;
+
+                return (
+                  <div
+                    key={`${prize.name || "prize"}-${index}`}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 160px",
+                      gap: 8,
+                      alignItems: "center"
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: 12,
+                        border: "1px solid #e5e7eb",
+                        borderRadius: 9,
+                        background: locked ? "#f8fafc" : "#fff"
+                      }}
+                    >
+                      <b>{prize.name || `Prize ${index + 1}`}</b>
+                      {locked && (
+                        <div style={{ marginTop: 3, color: "#166534", fontSize: 12, fontWeight: "bold" }}>
+                          LOCKED - WINNER CONFIRMED
+                        </div>
+                      )}
+                    </div>
+
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Amount"
+                      value={prize.amount ?? ""}
+                      disabled={disabled}
+                      onChange={(e) =>
+                        updateEditablePrizeAmount(index, e.target.value)
+                      }
+                      style={{
+                        ...inputStyle,
+                        opacity: disabled ? 0.65 : 1
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={savePrizeAmounts}
+            disabled={savingPrizes || game.status !== "upcoming"}
+            style={{
+              ...primaryButton,
+              marginTop: 14,
+              opacity: savingPrizes || game.status !== "upcoming" ? 0.55 : 1
+            }}
+          >
+            {savingPrizes ? "SAVING PRIZES..." : "SAVE PRIZE AMOUNTS"}
+          </button>
+        </section>
+
+        <section
+          style={
+            cardStyle
+          }
+        >
+          <h2>
             Share Game
           </h2>
 
@@ -5935,8 +6156,8 @@ ${inviteUrl}`;
           >
             Share Game automatically
             creates a real PNG poster
-            containing the game details
-            and joining link.
+            containing the game details,
+            updated prize amounts, and joining link.
           </p>
 
           <input
@@ -5990,7 +6211,7 @@ ${inviteUrl}`;
             >
               {posterCreating
                 ? "Creating Poster..."
-                : "[STYLE] Share Game + Poster"}
+                : "[STYLE] Share Updated Poster + Game"}
             </button>
           </div>
 
