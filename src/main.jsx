@@ -3643,55 +3643,104 @@ function LiveGamePage({ game }) {
       )
   );
 
+  // Android/iOS browsers can suspend speechSynthesis until a real user
+  // gesture. Unlock it from the player's first normal interaction. There is
+  // deliberately no voice button in the UI.
   useEffect(() => {
     const unlockPlayerVoice = () => {
-      if (playerVoiceUnlockedRef.current) return;
-      playerVoiceUnlockedRef.current = true;
-
       if (!("speechSynthesis" in window)) return;
 
       try {
-        window.speechSynthesis.cancel();
         window.speechSynthesis.resume();
 
-        // Silent utterance started directly from the player's gesture. This
-        // primes speechSynthesis on browsers that require user activation.
-        const unlockUtterance = new SpeechSynthesisUtterance(" ");
+        // Do not mark the voice as ready until the browser accepts an
+        // utterance. A tiny, nearly silent utterance is used only to prime the
+        // speech engine from the user's gesture; it never announces anything.
+        const unlockUtterance = new SpeechSynthesisUtterance(".");
         unlockUtterance.lang = "en-US";
-        unlockUtterance.volume = 0;
-        unlockUtterance.rate = 1;
+        unlockUtterance.volume = 0.01;
+        unlockUtterance.rate = 10;
+        unlockUtterance.pitch = 1;
+        unlockUtterance.onend = () => {
+          playerVoiceUnlockedRef.current = true;
+          playerVoiceReadyRef.current = true;
+        };
+        unlockUtterance.onerror = () => {
+          // Keep trying on the next normal interaction.
+          playerVoiceUnlockedRef.current = false;
+          playerVoiceReadyRef.current = false;
+        };
+
+        window.speechSynthesis.cancel();
         window.speechSynthesis.speak(unlockUtterance);
+
+        // Some Android WebViews do not fire onend reliably. The gesture itself
+        // is still a valid activation, so allow subsequent announcements.
+        playerVoiceUnlockedRef.current = true;
         playerVoiceReadyRef.current = true;
       } catch (err) {
         console.warn("Player voice could not be unlocked yet:", err);
       }
     };
 
-    window.addEventListener("pointerdown", unlockPlayerVoice, { capture: true, passive: true });
-    window.addEventListener("touchstart", unlockPlayerVoice, { capture: true, passive: true });
-    window.addEventListener("keydown", unlockPlayerVoice, { capture: true, passive: true });
+    const options = { capture: true, passive: true };
+    window.addEventListener("pointerdown", unlockPlayerVoice, options);
+    window.addEventListener("touchstart", unlockPlayerVoice, options);
+    window.addEventListener("click", unlockPlayerVoice, options);
+    window.addEventListener("keydown", unlockPlayerVoice, options);
 
     return () => {
       window.removeEventListener("pointerdown", unlockPlayerVoice, true);
       window.removeEventListener("touchstart", unlockPlayerVoice, true);
+      window.removeEventListener("click", unlockPlayerVoice, true);
       window.removeEventListener("keydown", unlockPlayerVoice, true);
     };
   }, []);
 
+  function getEnglishSpeechVoice() {
+    if (!("speechSynthesis" in window)) return null;
+
+    const voices = window.speechSynthesis.getVoices() || [];
+    return (
+      voices.find((voice) => /^en-US$/i.test(voice.lang)) ||
+      voices.find((voice) => /^en-GB$/i.test(voice.lang)) ||
+      voices.find((voice) => /^en-IN$/i.test(voice.lang)) ||
+      voices.find((voice) => /^en(-|_)/i.test(voice.lang)) ||
+      null
+    );
+  }
+
   function speakPlayerNumber(number) {
-    if (!("speechSynthesis" in window) || !Number.isInteger(Number(number))) return;
+    if (
+      !("speechSynthesis" in window) ||
+      !Number.isInteger(Number(number)) ||
+      !playerVoiceUnlockedRef.current
+    ) {
+      return;
+    }
 
     try {
-      window.speechSynthesis.cancel();
+      const numericNumber = Number(number);
+      const phrase =
+        CALLER_PHRASES[numericNumber] || `Number ${numericNumber}`;
+
       window.speechSynthesis.resume();
 
-      const numericNumber = Number(number);
-      const phrase = CALLER_PHRASES[numericNumber] || `Number ${numericNumber}`;
       const utterance = new SpeechSynthesisUtterance(phrase);
       utterance.lang = "en-US";
       utterance.rate = 0.88;
       utterance.pitch = 1.02;
       utterance.volume = 1;
+
+      const englishVoice = getEnglishSpeechVoice();
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+        utterance.lang = englishVoice.lang;
+      }
+
+      // Do not cancel an active announcement. Queueing is more reliable on
+      // Android Chrome than repeatedly calling cancel() immediately before
+      // speak().
       window.speechSynthesis.speak(utterance);
     } catch (err) {
       console.warn("Could not announce player number:", err);
