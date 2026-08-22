@@ -409,6 +409,32 @@ function getPrizeVoiceName(name) {
   return String(name || "Prize");
 }
 
+function buildWinnerAnnouncementText(events) {
+  if (!Array.isArray(events) || !events.length) return "";
+
+  return events.map((event) => {
+    const voicePrizeName = getPrizeVoiceName(event.prizeName);
+    const names = Array.isArray(event.winners)
+      ? event.winners.map((winner) => winner.playerName || "a player")
+      : [];
+
+    let winnersText = names[0] || "a player";
+    if (names.length === 2) {
+      winnersText = `${names[0]} and ${names[1]}`;
+    } else if (names.length > 2) {
+      winnersText = `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    }
+
+    if (names.length > 1) {
+      return `${voicePrizeName} won by ${winnersText}. Prize of ${formatPrizeAmount(
+        event.prizeAmount
+      )} split equally among ${names.length} winners.`;
+    }
+
+    return `${voicePrizeName} won by ${winnersText}.`;
+  }).join(" ");
+}
+
 function speakWinnerAnnouncement(events, voicePresetId = "auto", voices = []) {
   try {
     if (!("speechSynthesis" in window) || !events?.length) return;
@@ -4002,6 +4028,51 @@ function PlayerBookingPage({
   );
 }
 
+const PLAYER_RHYME_PHRASES = {
+  1: "First on the board, number 1",
+  2: "One little duck, number 2",
+  3: "Cup of tea, number 3",
+  4: "Knock at the door, number 4",
+  5: "Man alive, number 5",
+  6: "Tom Mix, number 6",
+  7: "Lucky seven, number 7",
+  8: "Garden gate, number 8",
+  9: "Doctor's orders, number 9",
+  10: "Number 10, all the tens",
+  11: "Legs eleven, number 11",
+  12: "A dozen, number 12",
+  13: "Unlucky for some, number 13",
+  14: "Valentine's day, number 14",
+  15: "Young and keen, number 15",
+  16: "Sweet sixteen, number 16",
+  17: "Dancing queen, number 17",
+  18: "Coming of age, number 18",
+  19: "Goodbye teens, number 19",
+  20: "One score, number 20",
+  21: "Key of the door, number 21",
+  22: "Two little ducks, number 22",
+  23: "You and me, number 23",
+  24: "Two dozen, number 24",
+  25: "Quarter century, number 25",
+  26: "Pick and mix, number 26",
+  27: "Gateway to heaven, number 27",
+  28: "Overweight, number 28",
+  29: "Rise and shine, number 29",
+  30: "Dirty thirty, number 30",
+  40: "Life begins at forty, number 40",
+  50: "Half century, number 50",
+  60: "Sixty on the board, number 60",
+  66: "Clickety click, number 66",
+  69: "Either way up, number 69",
+  77: "Sunset strip, number 77",
+  88: "Two fat ladies, number 88",
+  90: "Top of the house, number 90"
+};
+
+function getPlayerEnglishCallerPhrase(number) {
+  return PLAYER_RHYME_PHRASES[number] || `Number ${number}`;
+}
+
 /* =========================================================
    LIVE GAME PAGE
 ========================================================= */
@@ -4021,6 +4092,224 @@ function LiveGamePage({ game }) {
   const finalSummaryTimerRef = useRef(null);
   const [showFinalResults, setShowFinalResults] = useState(false);
   const [viewFinishedLive, setViewFinishedLive] = useState(false);
+
+  // Player-device voice state. Mobile browsers may block speech until the
+  // player interacts with the page, so we keep the latest announcement and
+  // unlock speech on the first tap/click.
+  const playerVoiceReadyRef = useRef(false);
+  const playerVoiceSpeakingRef = useRef(false);
+  const playerVoiceQueueRef = useRef([]);
+  const pendingPlayerNumberRef = useRef(null);
+  const announcedPlayerNumberRef = useRef(
+    Array.isArray(game.called_numbers) && game.called_numbers.length
+      ? game.called_numbers[game.called_numbers.length - 1]
+      : null
+  );
+  const announcedPrizeSignatureRef = useRef(
+    JSON.stringify(
+      (Array.isArray(game.selected_prizes) ? game.selected_prizes : [])
+        .filter((prize) => prize?.locked && Array.isArray(prize?.winners) && prize.winners.length)
+        .map((prize, index) => ({
+          index,
+          name: prize.name || `Prize ${index + 1}`,
+          winners: prize.winners.map((winner) => ({
+            playerName: winner.playerName || "Player",
+            ticketNumber: winner.ticketNumber || ""
+          }))
+        }))
+    )
+  );
+  const [playerVoiceEnabled, setPlayerVoiceEnabled] = useState(false);
+
+  const flushPlayerVoiceQueue = () => {
+    if (!playerVoiceReadyRef.current || playerVoiceSpeakingRef.current) return;
+    if (!("speechSynthesis" in window) || !playerVoiceQueueRef.current.length) return;
+
+    const queued = playerVoiceQueueRef.current.shift();
+    const message = queued?.text || queued;
+    if (!message) return;
+
+    try {
+      const utterance = new SpeechSynthesisUtterance(message);
+      applySpeechVoice(
+        utterance,
+        DEFAULT_VOICE_PRESET_ID,
+        getAvailableSpeechVoices()
+      );
+      playerVoiceSpeakingRef.current = true;
+      utterance.onend = () => {
+        playerVoiceSpeakingRef.current = false;
+        flushPlayerVoiceQueue();
+      };
+      utterance.onerror = () => {
+        playerVoiceSpeakingRef.current = false;
+        flushPlayerVoiceQueue();
+      };
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      playerVoiceSpeakingRef.current = false;
+      console.error("Could not speak player announcement:", err);
+    }
+  };
+
+  const queuePlayerVoice = (message, options = {}) => {
+    if (!("speechSynthesis" in window) || !message) return;
+
+    if (options.replaceNumber) {
+      playerVoiceQueueRef.current = playerVoiceQueueRef.current.filter(
+        (item) => !item.isPlayerNumberAnnouncement
+      );
+      playerVoiceQueueRef.current.push({
+        text: String(message),
+        isPlayerNumberAnnouncement: true
+      });
+    } else {
+      playerVoiceQueueRef.current.push({
+        text: String(message),
+        isPlayerNumberAnnouncement: false
+      });
+    }
+
+    flushPlayerVoiceQueue();
+  };
+
+  const unlockPlayerVoice = () => {
+    if (!("speechSynthesis" in window)) {
+      setPlayerVoiceEnabled(false);
+      return;
+    }
+
+    try {
+      playerVoiceReadyRef.current = true;
+      setPlayerVoiceEnabled(true);
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance("Voice announcements enabled.");
+      applySpeechVoice(
+        utterance,
+        DEFAULT_VOICE_PRESET_ID,
+        getAvailableSpeechVoices()
+      );
+      utterance.rate = 0.9;
+      playerVoiceSpeakingRef.current = true;
+      utterance.onend = () => {
+        playerVoiceSpeakingRef.current = false;
+        flushPlayerVoiceQueue();
+      };
+      utterance.onerror = () => {
+        playerVoiceSpeakingRef.current = false;
+        flushPlayerVoiceQueue();
+      };
+      window.speechSynthesis.speak(utterance);
+
+      if (pendingPlayerNumberRef.current != null) {
+        queuePlayerVoice(
+          getPlayerEnglishCallerPhrase(pendingPlayerNumberRef.current),
+          { replaceNumber: true }
+        );
+        pendingPlayerNumberRef.current = null;
+      }
+    } catch (err) {
+      console.error("Could not enable player voice:", err);
+    }
+  };
+
+  // First user interaction unlocks speech on Android/iOS browsers.
+  useEffect(() => {
+    const unlock = () => {
+      if (!playerVoiceReadyRef.current) unlockPlayerVoice();
+    };
+
+    window.addEventListener("pointerdown", unlock, { passive: true });
+    window.addEventListener("touchstart", unlock, { passive: true });
+    window.addEventListener("click", unlock, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("click", unlock);
+    };
+  }, [game.id]);
+
+  // Announce every newly called number on the player's own device.
+  useEffect(() => {
+    if (!Array.isArray(calledNumbers) || !calledNumbers.length) return;
+
+    const number = Number(calledNumbers[calledNumbers.length - 1]);
+    if (!Number.isInteger(number)) return;
+    if (announcedPlayerNumberRef.current === number) return;
+
+    announcedPlayerNumberRef.current = number;
+    const phrase = getPlayerEnglishCallerPhrase(number);
+
+    if (!playerVoiceReadyRef.current) {
+      pendingPlayerNumberRef.current = number;
+      return;
+    }
+
+    queuePlayerVoice(phrase, { replaceNumber: true });
+  }, [calledNumbers]);
+
+  // Announce newly confirmed prize winners on every player's device.
+  useEffect(() => {
+    const prizes = Array.isArray(liveGame.selected_prizes)
+      ? liveGame.selected_prizes
+      : [];
+
+    const locked = prizes
+      .map((prize, index) => ({
+        prize,
+        index,
+        key: `${index}|${prize?.name || "Prize"}|${JSON.stringify(prize?.winners || [])}`
+      }))
+      .filter(({ prize }) => prize?.locked && Array.isArray(prize?.winners) && prize.winners.length);
+
+    const signature = JSON.stringify(
+      locked.map(({ index, prize }) => ({
+        index,
+        name: prize.name || `Prize ${index + 1}`,
+        winners: prize.winners.map((winner) => ({
+          playerName: winner.playerName || "Player",
+          ticketNumber: winner.ticketNumber || ""
+        }))
+      }))
+    );
+
+    if (signature === announcedPrizeSignatureRef.current) return;
+
+    const previous = announcedPrizeSignatureRef.current;
+    announcedPrizeSignatureRef.current = signature;
+
+    let previousKeys = new Set();
+    try {
+      const parsed = JSON.parse(previous || "[]");
+      previousKeys = new Set(
+        parsed.map((item) => `${item.index}|${item.name}|${JSON.stringify(item.winners)}`)
+      );
+    } catch {
+      previousKeys = new Set();
+    }
+
+    const newEvents = locked
+      .filter(({ index, prize }) => {
+        const key = `${index}|${prize.name || `Prize ${index + 1}`}|${JSON.stringify(
+          prize.winners.map((winner) => ({
+            playerName: winner.playerName || "Player",
+            ticketNumber: winner.ticketNumber || ""
+          }))
+        )}`;
+        return !previousKeys.has(key);
+      })
+      .map(({ index, prize }) => ({
+        prizeName: prize.name || `Prize ${index + 1}`,
+        prizeAmount: prize.amount,
+        winners: prize.winners
+      }));
+
+    if (!newEvents.length) return;
+
+    queuePlayerVoice(buildWinnerAnnouncementText(newEvents));
+  }, [liveGame.selected_prizes]);
 
   useEffect(() => {
     if (finalSummaryTimerRef.current) {
@@ -4438,6 +4727,31 @@ function LiveGamePage({ game }) {
 
     return (
       <main style={themedPageStyle}>
+        <div
+          style={{
+            position: "sticky",
+            top: 8,
+            zIndex: 1001,
+            display: "flex",
+            justifyContent: "center",
+            padding: "8px 12px",
+            pointerEvents: "none"
+          }}
+        >
+          <button
+            type="button"
+            onClick={unlockPlayerVoice}
+            style={{
+              ...themedPrimaryButton,
+              pointerEvents: "auto",
+              minWidth: 190,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.18)"
+            }}
+          >
+            {playerVoiceEnabled ? "[VOICE] VOICE ENABLED" : "[VOICE] ENABLE VOICE"}
+          </button>
+        </div>
+
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
