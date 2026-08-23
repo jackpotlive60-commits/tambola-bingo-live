@@ -3905,7 +3905,7 @@ function PlayerBookingPage({
                   gap: 18
                 }}
               >
-            {tickets.map(
+            {visibleTickets.map(
               (
                 ticket
               ) => {
@@ -3987,6 +3987,38 @@ function PlayerBookingPage({
               }
             )}
               </div>
+
+              {tickets.length > INITIAL_TICKET_COUNT && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowAllTickets((current) => !current)
+                  }
+                  aria-expanded={showAllTickets}
+                  style={{
+                    width: "100%",
+                    marginTop: 14,
+                    minHeight: 48,
+                    borderRadius: 13,
+                    border: `1px solid ${themeUI.colors.accent}66`,
+                    background: showAllTickets
+                      ? "rgba(255,255,255,.10)"
+                      : `linear-gradient(135deg, ${themeUI.colors.accent}, ${themeUI.colors.secondary})`,
+                    color: "#ffffff",
+                    fontWeight: 800,
+                    fontSize: 15,
+                    letterSpacing: 0.3,
+                    cursor: "pointer",
+                    boxShadow: showAllTickets
+                      ? "none"
+                      : `0 8px 20px ${themeUI.colors.secondary}30`
+                  }}
+                >
+                  {showAllTickets
+                    ? "SHOW LESS"
+                    : `SHOW MORE (${tickets.length - visibleTickets.length} MORE)`}
+                </button>
+              )}
             </>
           )}
         </section>
