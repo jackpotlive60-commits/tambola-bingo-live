@@ -8679,6 +8679,17 @@ function App() {
     winnerKeys: new Set()
   });
 
+  const playerVoiceEnabledRef = useRef(false);
+  const playerFinalAnnouncementRef = useRef({
+    gameId: null,
+    scheduled: false,
+    timer: null
+  });
+
+  useEffect(() => {
+    playerVoiceEnabledRef.current = playerVoiceEnabled;
+  }, [playerVoiceEnabled]);
+
   /* -------------------------------------------------------
      PLAYER GAME LOADING + REAL-TIME STATUS
   ------------------------------------------------------- */
@@ -8823,6 +8834,109 @@ function App() {
 
     return undefined;
   }, [playerCode, playerGame, playerVoiceEnabled]);
+
+  /* -------------------------------------------------------
+     PLAYER FINAL GAME VOICE ANNOUNCEMENT
+     When the host finishes the final prize, the game becomes
+     "ended". Wait about 3 seconds, announce that all prizes
+     are claimed, pause briefly, then give the closing message.
+     This is spoken once per player and respects the player's
+     voice on/off control.
+  ------------------------------------------------------- */
+  useEffect(() => {
+    if (!playerCode || !playerGame?.id) {
+      return undefined;
+    }
+
+    const state = playerFinalAnnouncementRef.current;
+
+    if (state.gameId !== playerGame.id) {
+      if (state.timer) {
+        window.clearTimeout(state.timer);
+      }
+
+      playerFinalAnnouncementRef.current = {
+        gameId: playerGame.id,
+        scheduled: false,
+        timer: null
+      };
+    }
+
+    const currentState = playerFinalAnnouncementRef.current;
+
+    if (playerGame.status !== "ended") {
+      return undefined;
+    }
+
+    if (!playerVoiceEnabled) {
+      if (currentState.timer) {
+        window.clearTimeout(currentState.timer);
+        currentState.timer = null;
+        currentState.scheduled = false;
+      }
+      return undefined;
+    }
+
+    if (currentState.scheduled) {
+      return undefined;
+    }
+
+    currentState.scheduled = true;
+
+    currentState.timer = window.setTimeout(() => {
+      currentState.timer = null;
+
+      if (!playerVoiceEnabledRef.current || !("speechSynthesis" in window)) {
+        currentState.scheduled = false;
+        return;
+      }
+
+      try {
+        const voices = getAvailableSpeechVoices();
+        window.speechSynthesis.cancel();
+
+        const first = new SpeechSynthesisUtterance(
+          "All prizes have been claimed! No prizes remaining."
+        );
+        applySpeechVoice(first, DEFAULT_VOICE_PRESET_ID, voices);
+
+        const speakClosingMessage = () => {
+          if (!playerVoiceEnabledRef.current) {
+            return;
+          }
+
+          const closing = new SpeechSynthesisUtterance(
+            "And that's the game! Thank you everyone for joining us, and we hope you enjoyed the game. See you in the next game!"
+          );
+          applySpeechVoice(closing, DEFAULT_VOICE_PRESET_ID, voices);
+          window.speechSynthesis.speak(closing);
+        };
+
+        const pauseThenClose = () => {
+          window.setTimeout(speakClosingMessage, 1800);
+        };
+
+        first.onend = pauseThenClose;
+        first.onerror = pauseThenClose;
+        window.speechSynthesis.speak(first);
+      } catch (err) {
+        console.error("Could not announce player game end:", err);
+        currentState.scheduled = false;
+      }
+    }, 3000);
+
+    return undefined;
+  }, [playerCode, playerGame?.id, playerGame?.status, playerVoiceEnabled]);
+
+  useEffect(() => {
+    return () => {
+      const state = playerFinalAnnouncementRef.current;
+      if (state.timer) {
+        window.clearTimeout(state.timer);
+        state.timer = null;
+      }
+    };
+  }, []);
 
   /* -------------------------------------------------------
      HOST GAME REAL-TIME SYNC
