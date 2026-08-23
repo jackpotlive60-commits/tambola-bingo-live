@@ -29,6 +29,228 @@ const THEMES = [
   "Elegant"
 ];
 
+/* =========================================================
+   THEME DESIGN SYSTEM
+   Runtime definitions mirror /public/themes/theme-designs.json
+========================================================= */
+
+const THEME_DESIGNS = {
+  "Classic": {
+    "backgroundImage": "/assets/casino-background-mobile.jpg",
+    "identity": "Traditional tambola and casino game-room",
+    "page": {
+      "overlay": "rgba(3, 20, 15, 0.42)",
+      "text": "#fff8e7",
+      "muted": "#d8d0bd"
+    },
+    "hero": {
+      "surface": "rgba(5, 35, 25, 0.82)",
+      "border": "#d4af37",
+      "accent": "#f5c542",
+      "text": "#fff8e7",
+      "decoration": "casino-balls"
+    },
+    "card": {
+      "surface": "rgba(7, 28, 22, 0.88)",
+      "surfaceAlt": "rgba(15, 48, 35, 0.78)",
+      "border": "rgba(212,175,55,0.55)",
+      "radius": 20,
+      "shadow": "0 18px 45px rgba(0,0,0,0.38)"
+    },
+    "input": {
+      "background": "#f8f6ef",
+      "text": "#172018",
+      "border": "#c9a93b",
+      "radius": 14
+    },
+    "button": {
+      "primary": "#c99a1e",
+      "primaryAlt": "#f0c94a",
+      "text": "#17120a",
+      "radius": 14
+    }
+  },
+  "Royal": {
+    "backgroundImage": "/assets/royal-background-mobile.jpg",
+    "identity": "Regal palace, velvet and gold",
+    "page": {
+      "overlay": "rgba(28, 9, 48, 0.38)",
+      "text": "#fff8e8",
+      "muted": "#dfd1eb"
+    },
+    "hero": {
+      "surface": "rgba(42, 16, 65, 0.80)",
+      "border": "#e7c45b",
+      "accent": "#f5c542",
+      "text": "#fff8e8",
+      "decoration": "royal-ornament"
+    },
+    "card": {
+      "surface": "rgba(31, 12, 48, 0.88)",
+      "surfaceAlt": "rgba(61, 27, 84, 0.76)",
+      "border": "rgba(231,196,91,0.55)",
+      "radius": 22,
+      "shadow": "0 20px 55px rgba(18,5,30,0.48)"
+    },
+    "input": {
+      "background": "#fbf7ff",
+      "text": "#21122e",
+      "border": "#c8a343",
+      "radius": 14
+    },
+    "button": {
+      "primary": "#d4a72c",
+      "primaryAlt": "#f3d36a",
+      "text": "#201326",
+      "radius": 14
+    }
+  },
+  "Party": {
+    "backgroundImage": "/assets/fun-background-mobile.jpg",
+    "identity": "Bright celebration, playful and energetic",
+    "page": {
+      "overlay": "rgba(52, 11, 55, 0.24)",
+      "text": "#ffffff",
+      "muted": "#f1e5f4"
+    },
+    "hero": {
+      "surface": "rgba(76, 18, 79, 0.76)",
+      "border": "#facc15",
+      "accent": "#22d3ee",
+      "text": "#ffffff",
+      "decoration": "confetti"
+    },
+    "card": {
+      "surface": "rgba(44, 13, 55, 0.82)",
+      "surfaceAlt": "rgba(91, 24, 88, 0.72)",
+      "border": "rgba(250,204,21,0.42)",
+      "radius": 24,
+      "shadow": "0 18px 45px rgba(35,5,42,0.34)"
+    },
+    "input": {
+      "background": "#fffaff",
+      "text": "#28152f",
+      "border": "#22d3ee",
+      "radius": 16
+    },
+    "button": {
+      "primary": "#ec4899",
+      "primaryAlt": "#22d3ee",
+      "text": "#ffffff",
+      "radius": 16
+    }
+  },
+  "Bollywood": {
+    "backgroundImage": "/assets/bollywood-background-mobile.jpg",
+    "identity": "Indian cinema glamour, lights and celebration",
+    "page": {
+      "overlay": "rgba(76, 8, 13, 0.36)",
+      "text": "#fffaf0",
+      "muted": "#f1d8cf"
+    },
+    "hero": {
+      "surface": "rgba(89, 16, 22, 0.80)",
+      "border": "#fbbf24",
+      "accent": "#fbbf24",
+      "text": "#fffaf0",
+      "decoration": "cinema-lights"
+    },
+    "card": {
+      "surface": "rgba(62, 10, 16, 0.86)",
+      "surfaceAlt": "rgba(111, 20, 28, 0.72)",
+      "border": "rgba(251,191,36,0.55)",
+      "radius": 20,
+      "shadow": "0 20px 50px rgba(45,4,8,0.46)"
+    },
+    "input": {
+      "background": "#fffaf5",
+      "text": "#2a1113",
+      "border": "#d99a18",
+      "radius": 14
+    },
+    "button": {
+      "primary": "#d97706",
+      "primaryAlt": "#fbbf24",
+      "text": "#ffffff",
+      "radius": 14
+    }
+  },
+  "Neon": {
+    "backgroundImage": "/assets/neon-background-mobile.jpg",
+    "identity": "Futuristic arcade, cyan and violet glow",
+    "page": {
+      "overlay": "rgba(1, 7, 18, 0.38)",
+      "text": "#f5fbff",
+      "muted": "#b9c9dc"
+    },
+    "hero": {
+      "surface": "rgba(3, 13, 30, 0.78)",
+      "border": "#22d3ee",
+      "accent": "#22d3ee",
+      "text": "#f5fbff",
+      "decoration": "neon-grid"
+    },
+    "card": {
+      "surface": "rgba(3, 12, 27, 0.84)",
+      "surfaceAlt": "rgba(8, 24, 48, 0.74)",
+      "border": "rgba(34,211,238,0.50)",
+      "radius": 18,
+      "shadow": "0 18px 50px rgba(0,0,0,0.46), 0 0 28px rgba(34,211,238,0.12)"
+    },
+    "input": {
+      "background": "#f6fbff",
+      "text": "#07111f",
+      "border": "#22d3ee",
+      "radius": 12
+    },
+    "button": {
+      "primary": "#0891b2",
+      "primaryAlt": "#8b5cf6",
+      "text": "#ffffff",
+      "radius": 12
+    }
+  },
+  "Elegant": {
+    "backgroundImage": "/assets/elegant-background-mobile.jpg",
+    "identity": "Refined contemporary luxury",
+    "page": {
+      "overlay": "rgba(245, 241, 232, 0.16)",
+      "text": "#20262d",
+      "muted": "#66717b"
+    },
+    "hero": {
+      "surface": "rgba(250, 248, 243, 0.88)",
+      "border": "rgba(173, 139, 57, 0.72)",
+      "accent": "#a98532",
+      "text": "#20262d",
+      "decoration": "minimal-gold"
+    },
+    "card": {
+      "surface": "rgba(250, 248, 243, 0.90)",
+      "surfaceAlt": "rgba(238, 233, 222, 0.82)",
+      "border": "rgba(169,139,67,0.38)",
+      "radius": 22,
+      "shadow": "0 18px 45px rgba(48,43,34,0.18)"
+    },
+    "input": {
+      "background": "rgba(255,255,255,0.94)",
+      "text": "#20262d",
+      "border": "#b99b5b",
+      "radius": 12
+    },
+    "button": {
+      "primary": "#a98532",
+      "primaryAlt": "#d1b56a",
+      "text": "#ffffff",
+      "radius": 12
+    }
+  }
+};
+
+function getThemeDesign(theme) {
+  return THEME_DESIGNS[theme] || THEME_DESIGNS.Classic;
+}
+
 const DEFAULT_PRIZES = [
   "First Five",
   "Four Corners",
@@ -1230,78 +1452,85 @@ function posterTheme(theme) {
 
 function getThemeUI(theme) {
   const colors = posterTheme(theme);
+  const design = getThemeDesign(theme);
 
-  const backgrounds = {
-    Classic: `url("/assets/casino-background-mobile.jpg")`,
-    Royal: `url("/assets/royal-background-mobile.jpg")`,
-    Party: `url("/assets/fun-background-mobile.jpg")`,
-    Bollywood: `url("/assets/bollywood-background-mobile.jpg")`,
-    Neon: `url("/assets/neon-background-mobile.jpg")`,
-    Elegant: `url("/assets/elegant-background-mobile.jpg")`
-  };
-
-  const background = backgrounds[theme] || backgrounds.Classic;
+  const backgroundImage = design.backgroundImage
+    ? `url("${design.backgroundImage}")`
+    : "none";
 
   return {
     colors,
+    design,
+
     page: {
-      background: colors.background,
-      backgroundImage: background,
+      backgroundColor: colors.background,
+      backgroundImage: `
+        linear-gradient(${design.page.overlay}, ${design.page.overlay}),
+        ${backgroundImage}
+      `,
       backgroundSize: "cover",
-      backgroundPosition: "center center",
-      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center top",
       backgroundAttachment: "fixed",
-      color: colors.text,
+      backgroundRepeat: "no-repeat",
+      color: design.page.text,
       padding: 20,
       position: "relative",
       overflowX: "hidden",
-      "--theme-accent": colors.accent,
-      "--theme-secondary": colors.secondary,
+      minHeight: "100vh",
+      "--theme-accent": design.hero.accent,
+      "--theme-secondary": design.button.primaryAlt,
       "--theme-bg": colors.background,
-      "--theme-text": colors.panelText,
-      "--theme-muted": colors.muted,
-      "--theme-surface": colors.surface,
-      "--theme-surface2": colors.surface2,
-      "--theme-input-bg": colors.inputBg,
-      "--theme-input-text": colors.inputText,
-      "--theme-input-muted": colors.panelMuted,
-      "--theme-panel-bg": colors.panelBg,
-      "--theme-panel-text": colors.panelText,
-      "--theme-panel-muted": colors.panelMuted,
-      "--theme-ticket-bg": colors.ticketBg,
-      "--theme-ticket-text": colors.ticketText,
-      "--theme-glow": `${colors.secondary}35`
+      "--theme-text": design.hero.text,
+      "--theme-muted": design.page.muted,
+      "--theme-surface": design.card.surface,
+      "--theme-surface2": design.card.surfaceAlt,
+      "--theme-input-bg": design.input.background,
+      "--theme-input-text": design.input.text,
+      "--theme-input-muted": design.page.muted,
+      "--theme-panel-bg": design.card.surface,
+      "--theme-panel-text": design.hero.text,
+      "--theme-panel-muted": design.page.muted,
+      "--theme-ticket-bg": design.input.background,
+      "--theme-ticket-text": design.input.text,
+      "--theme-glow": design.button.primaryAlt
     },
+
     card: {
-      background: `linear-gradient(145deg, ${colors.surface}f7, ${colors.surface2}e8)`,
-      /* Borderless premium sections: the page should flow edge-to-edge. */
-      border: "none",
-      borderTop: "none",
-      borderRadius: 24,
+      background: design.card.surface,
+      border: `1px solid ${design.card.border}`,
+      borderRadius: design.card.radius,
       padding: 24,
-      color: colors.text,
-      boxShadow: `0 22px 60px rgba(0,0,0,.34), 0 0 34px ${colors.secondary}16`,
-      backdropFilter: "blur(16px)"
+      color: design.hero.text,
+      boxShadow: design.card.shadow,
+      backdropFilter: "blur(16px)",
+      WebkitBackdropFilter: "blur(16px)"
     },
+
     input: {
-      border: `1px solid ${colors.secondary}70`,
-      boxShadow: `0 0 0 4px ${colors.secondary}0c, 0 8px 20px rgba(0,0,0,.12)`,
-      background: colors.inputBg,
-      color: colors.inputText,
-      WebkitTextFillColor: colors.inputText,
-      caretColor: colors.accent
+      border: `1px solid ${design.input.border}`,
+      borderRadius: design.input.radius,
+      boxShadow: `0 6px 18px rgba(0,0,0,.10)`,
+      background: design.input.background,
+      color: design.input.text,
+      WebkitTextFillColor: design.input.text,
+      caretColor: design.hero.accent
     },
+
     primary: {
-      background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.secondary} 100%)`,
-      color: "#ffffff",
-      boxShadow: `0 12px 28px ${colors.secondary}45`,
+      background: `linear-gradient(135deg, ${design.button.primary} 0%, ${design.button.primaryAlt} 100%)`,
+      color: design.button.text,
+      borderRadius: design.button.radius,
+      border: `1px solid ${design.button.primary}`,
+      boxShadow: design.card.shadow,
       transform: "translateY(0)"
     },
+
     secondary: {
-      border: `1px solid ${colors.secondary}66`,
-      background: colors.inputBg,
-      color: colors.inputText,
-      boxShadow: `0 6px 16px ${colors.secondary}12`
+      border: `1px solid ${design.card.border}`,
+      borderRadius: design.button.radius,
+      background: design.input.background,
+      color: design.input.text,
+      boxShadow: `0 6px 16px rgba(0,0,0,.10)`
     }
   };
 }
@@ -1338,7 +1567,12 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         overflow: "hidden",
         borderRadius: 24,
         border: `1px solid ${c.accent}66`,
-        background: `linear-gradient(135deg, ${c.background} 0%, #020617 100%)`,
+        background: ui.design.hero.surface,
+         backgroundImage: ui.design.backgroundImage
+           ? `linear-gradient(${ui.design.page.overlay}, ${ui.design.page.overlay}), url("${ui.design.backgroundImage}")`
+           : undefined,
+         backgroundSize: "cover",
+         backgroundPosition: "center",
         boxShadow: `0 18px 50px rgba(0,0,0,.30), 0 0 40px ${c.secondary}18`,
         color: "#fff",
         padding: compact ? "22px 24px" : "28px 30px",
