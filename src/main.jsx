@@ -2905,7 +2905,8 @@ const TicketGrid = React.memo(TicketGridComponent);
 ========================================================= */
 
 function PlayerBookingPage({
-  game
+  game,
+  onVoiceEnable
 }) {
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
@@ -3235,6 +3236,13 @@ function PlayerBookingPage({
   }
 
   async function bookTickets() {
+    // The booking button is also the player voice-activation gesture.
+    // This happens synchronously from the button tap before any await,
+    // allowing mobile browsers to authorize speech for the live game.
+    if (typeof onVoiceEnable === "function") {
+      onVoiceEnable();
+    }
+
     const name =
       playerName.trim();
 
@@ -4146,7 +4154,7 @@ function PlayerBookingPage({
    LIVE GAME PAGE
 ========================================================= */
 
-function LiveGamePage({ game }) {
+function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
@@ -4975,7 +4983,39 @@ function LiveGamePage({ game }) {
 
         {/* 1. CURRENT NUMBER - ONE BIG DISPLAY ONLY */}
         <section data-live-section="1-current-number" style={{ ...themedCardStyle, textAlign: "center" }}>
-          <h2 style={{ margin: 0 }}>Current Number</h2>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8
+            }}
+          >
+            <h2 style={{ margin: 0 }}>Current Number</h2>
+            <button
+              type="button"
+              onClick={onTogglePlayerVoice}
+              aria-label={playerVoiceEnabled ? "Mute voice announcements" : "Turn on voice announcements"}
+              title={playerVoiceEnabled ? "Mute voice announcements" : "Turn on voice announcements"}
+              style={{
+                width: 30,
+                height: 30,
+                padding: 0,
+                borderRadius: "50%",
+                border: "1px solid var(--theme-secondary, #cbd5e1)",
+                background: playerVoiceEnabled ? "#ecfdf5" : "#f1f5f9",
+                color: playerVoiceEnabled ? "#047857" : "#64748b",
+                fontSize: 16,
+                lineHeight: 1,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer"
+              }}
+            >
+              {playerVoiceEnabled ? "ðŸ”Š" : "ðŸ”‡"}
+            </button>
+          </div>
 
           <div
             style={{
@@ -8611,6 +8651,28 @@ function App() {
     setPlayerVoiceEnabled
   ] = useState(false);
 
+  function enablePlayerVoiceFromBooking() {
+    if (playerVoiceEnabled) return;
+
+    speakPlayerAnnouncementQueue([
+      "Voice announcements enabled. Get ready for the next number."
+    ]);
+    setPlayerVoiceEnabled(true);
+  }
+
+  function togglePlayerVoice() {
+    if (playerVoiceEnabled) {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      setPlayerVoiceEnabled(false);
+      return;
+    }
+
+    speakPlayerAnnouncementQueue(["Voice announcements on."]);
+    setPlayerVoiceEnabled(true);
+  }
+
   const playerAnnouncementStateRef = useRef({
     gameId: null,
     calledNumbers: [],
@@ -9070,62 +9132,13 @@ function App() {
       "live"
     ) {
       return (
-        <>
-          {!playerVoiceEnabled && (
-            <div
-              style={{
-                position: "fixed",
-                left: 12,
-                right: 12,
-                bottom: 12,
-                zIndex: 9999,
-                display: "flex",
-                justifyContent: "center",
-                pointerEvents: "none"
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  try {
-                    if ("speechSynthesis" in window) {
-                      window.speechSynthesis.cancel();
-                      const utterance = new SpeechSynthesisUtterance(
-                        "Voice announcements enabled. Get ready for the next number."
-                      );
-                      applySpeechVoice(
-                        utterance,
-                        DEFAULT_VOICE_PRESET_ID,
-                        getAvailableSpeechVoices()
-                      );
-                      window.speechSynthesis.speak(utterance);
-                    }
-                  } finally {
-                    setPlayerVoiceEnabled(true);
-                  }
-                }}
-                style={{
-                  pointerEvents: "auto",
-                  border: "0",
-                  borderRadius: 999,
-                  padding: "13px 20px",
-                  fontSize: 16,
-                  fontWeight: 800,
-                  color: "#fff",
-                  background: "linear-gradient(135deg, #f59e0b, #ef4444)",
-                  boxShadow: "0 8px 24px rgba(0,0,0,.35)"
-                }}
-              >
-                ðŸ”Š Enable Voice Announcements
-              </button>
-            </div>
-          )}
-          <LiveGamePage
-            game={
-              playerGame
-            }
-          />
-        </>
+        <LiveGamePage
+          game={
+            playerGame
+          }
+          playerVoiceEnabled={playerVoiceEnabled}
+          onTogglePlayerVoice={togglePlayerVoice}
+        />
       );
     }
 
@@ -9138,6 +9151,8 @@ function App() {
           game={
             playerGame
           }
+          playerVoiceEnabled={playerVoiceEnabled}
+          onTogglePlayerVoice={togglePlayerVoice}
         />
       );
     }
@@ -9147,6 +9162,7 @@ function App() {
         game={
           playerGame
         }
+        onVoiceEnable={enablePlayerVoiceFromBooking}
       />
     );
   }
