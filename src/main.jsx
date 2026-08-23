@@ -1232,12 +1232,12 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
 
   const backgrounds = {
-    Classic: `radial-gradient(circle at 12% 8%, rgba(37,99,235,.18), transparent 28%), radial-gradient(circle at 88% 0%, rgba(96,165,250,.12), transparent 25%), linear-gradient(135deg, #07111f 0%, #0f172a 48%, #111827 100%)`,
-    Royal: `radial-gradient(circle at 12% 8%, rgba(139,92,246,.22), transparent 30%), radial-gradient(circle at 88% 4%, rgba(245,197,66,.12), transparent 24%), linear-gradient(135deg, #160b29 0%, #24113f 52%, #12091f 100%)`,
-    Party: `radial-gradient(circle at 10% 5%, rgba(34,211,238,.18), transparent 28%), radial-gradient(circle at 90% 0%, rgba(250,204,21,.12), transparent 22%), linear-gradient(135deg, #250b1d 0%, #4a123b 52%, #160817 100%)`,
-    Bollywood: `radial-gradient(circle at 10% 5%, rgba(251,191,36,.15), transparent 26%), radial-gradient(circle at 90% 0%, rgba(251,113,133,.14), transparent 24%), linear-gradient(135deg, #26090b 0%, #4b1117 52%, #160608 100%)`,
-    Neon: `radial-gradient(circle at 10% 5%, rgba(34,211,238,.20), transparent 28%), radial-gradient(circle at 90% 0%, rgba(167,139,250,.18), transparent 24%), linear-gradient(135deg, #030712 0%, #07111f 52%, #050814 100%)`,
-    Elegant: `radial-gradient(circle at 10% 5%, rgba(212,175,55,.16), transparent 28%), radial-gradient(circle at 90% 0%, rgba(148,163,184,.12), transparent 24%), linear-gradient(135deg, #090e17 0%, #172033 52%, #0b1019 100%)`
+    Classic: `url("/assets/casino-background-mobile.jpg")`,
+    Royal: `url("/assets/royal-background-mobile.jpg")`,
+    Party: `url("/assets/fun-background-mobile.jpg")`,
+    Bollywood: `url("/assets/bollywood-background-mobile.jpg")`,
+    Neon: `url("/assets/neon-background-mobile.jpg")`,
+    Elegant: `url("/assets/elegant-background-mobile.jpg")`
   };
 
   const background = backgrounds[theme] || backgrounds.Classic;
@@ -1245,7 +1245,12 @@ function getThemeUI(theme) {
   return {
     colors,
     page: {
-      background,
+      background: colors.background,
+      backgroundImage: background,
+      backgroundSize: "cover",
+      backgroundPosition: "center center",
+      backgroundRepeat: "no-repeat",
+      backgroundAttachment: "fixed",
       color: colors.text,
       padding: 20,
       position: "relative",
