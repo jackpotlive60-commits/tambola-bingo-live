@@ -1,1 +1,212 @@
-
+{
+  "Classic": {
+    "backgroundImage": "/assets/casino-background-mobile.jpg",
+    "identity": "Traditional tambola and casino game-room",
+    "page": {
+      "overlay": "rgba(3, 20, 15, 0.42)",
+      "text": "#fff8e7",
+      "muted": "#d8d0bd"
+    },
+    "hero": {
+      "surface": "rgba(5, 35, 25, 0.82)",
+      "border": "#d4af37",
+      "accent": "#f5c542",
+      "text": "#fff8e7",
+      "decoration": "casino-balls"
+    },
+    "card": {
+      "surface": "rgba(7, 28, 22, 0.88)",
+      "surfaceAlt": "rgba(15, 48, 35, 0.78)",
+      "border": "rgba(212,175,55,0.55)",
+      "radius": 20,
+      "shadow": "0 18px 45px rgba(0,0,0,0.38)"
+    },
+    "input": {
+      "background": "#f8f6ef",
+      "text": "#172018",
+      "border": "#c9a93b",
+      "radius": 14
+    },
+    "button": {
+      "primary": "#c99a1e",
+      "primaryAlt": "#f0c94a",
+      "text": "#17120a",
+      "radius": 14
+    }
+  },
+  "Royal": {
+    "backgroundImage": "/assets/royal-background-mobile.jpg",
+    "identity": "Regal palace, velvet and gold",
+    "page": {
+      "overlay": "rgba(28, 9, 48, 0.38)",
+      "text": "#fff8e8",
+      "muted": "#dfd1eb"
+    },
+    "hero": {
+      "surface": "rgba(42, 16, 65, 0.80)",
+      "border": "#e7c45b",
+      "accent": "#f5c542",
+      "text": "#fff8e8",
+      "decoration": "royal-ornament"
+    },
+    "card": {
+      "surface": "rgba(31, 12, 48, 0.88)",
+      "surfaceAlt": "rgba(61, 27, 84, 0.76)",
+      "border": "rgba(231,196,91,0.55)",
+      "radius": 22,
+      "shadow": "0 20px 55px rgba(18,5,30,0.48)"
+    },
+    "input": {
+      "background": "#fbf7ff",
+      "text": "#21122e",
+      "border": "#c8a343",
+      "radius": 14
+    },
+    "button": {
+      "primary": "#d4a72c",
+      "primaryAlt": "#f3d36a",
+      "text": "#201326",
+      "radius": 14
+    }
+  },
+  "Party": {
+    "backgroundImage": "/assets/fun-background-mobile.jpg",
+    "identity": "Bright celebration, playful and energetic",
+    "page": {
+      "overlay": "rgba(52, 11, 55, 0.24)",
+      "text": "#ffffff",
+      "muted": "#f1e5f4"
+    },
+    "hero": {
+      "surface": "rgba(76, 18, 79, 0.76)",
+      "border": "#facc15",
+      "accent": "#22d3ee",
+      "text": "#ffffff",
+      "decoration": "confetti"
+    },
+    "card": {
+      "surface": "rgba(44, 13, 55, 0.82)",
+      "surfaceAlt": "rgba(91, 24, 88, 0.72)",
+      "border": "rgba(250,204,21,0.42)",
+      "radius": 24,
+      "shadow": "0 18px 45px rgba(35,5,42,0.34)"
+    },
+    "input": {
+      "background": "#fffaff",
+      "text": "#28152f",
+      "border": "#22d3ee",
+      "radius": 16
+    },
+    "button": {
+      "primary": "#ec4899",
+      "primaryAlt": "#22d3ee",
+      "text": "#ffffff",
+      "radius": 16
+    }
+  },
+  "Bollywood": {
+    "backgroundImage": "/assets/bollywood-background-mobile.jpg",
+    "identity": "Indian cinema glamour, lights and celebration",
+    "page": {
+      "overlay": "rgba(76, 8, 13, 0.36)",
+      "text": "#fffaf0",
+      "muted": "#f1d8cf"
+    },
+    "hero": {
+      "surface": "rgba(89, 16, 22, 0.80)",
+      "border": "#fbbf24",
+      "accent": "#fbbf24",
+      "text": "#fffaf0",
+      "decoration": "cinema-lights"
+    },
+    "card": {
+      "surface": "rgba(62, 10, 16, 0.86)",
+      "surfaceAlt": "rgba(111, 20, 28, 0.72)",
+      "border": "rgba(251,191,36,0.55)",
+      "radius": 20,
+      "shadow": "0 20px 50px rgba(45,4,8,0.46)"
+    },
+    "input": {
+      "background": "#fffaf5",
+      "text": "#2a1113",
+      "border": "#d99a18",
+      "radius": 14
+    },
+    "button": {
+      "primary": "#d97706",
+      "primaryAlt": "#fbbf24",
+      "text": "#ffffff",
+      "radius": 14
+    }
+  },
+  "Neon": {
+    "backgroundImage": "/assets/neon-background-mobile.jpg",
+    "identity": "Futuristic arcade, cyan and violet glow",
+    "page": {
+      "overlay": "rgba(1, 7, 18, 0.38)",
+      "text": "#f5fbff",
+      "muted": "#b9c9dc"
+    },
+    "hero": {
+      "surface": "rgba(3, 13, 30, 0.78)",
+      "border": "#22d3ee",
+      "accent": "#22d3ee",
+      "text": "#f5fbff",
+      "decoration": "neon-grid"
+    },
+    "card": {
+      "surface": "rgba(3, 12, 27, 0.84)",
+      "surfaceAlt": "rgba(8, 24, 48, 0.74)",
+      "border": "rgba(34,211,238,0.50)",
+      "radius": 18,
+      "shadow": "0 18px 50px rgba(0,0,0,0.46), 0 0 28px rgba(34,211,238,0.12)"
+    },
+    "input": {
+      "background": "#f6fbff",
+      "text": "#07111f",
+      "border": "#22d3ee",
+      "radius": 12
+    },
+    "button": {
+      "primary": "#0891b2",
+      "primaryAlt": "#8b5cf6",
+      "text": "#ffffff",
+      "radius": 12
+    }
+  },
+  "Elegant": {
+    "backgroundImage": "/assets/elegant-background-mobile.jpg",
+    "identity": "Refined contemporary luxury",
+    "page": {
+      "overlay": "rgba(245, 241, 232, 0.16)",
+      "text": "#20262d",
+      "muted": "#66717b"
+    },
+    "hero": {
+      "surface": "rgba(250, 248, 243, 0.88)",
+      "border": "rgba(173, 139, 57, 0.72)",
+      "accent": "#a98532",
+      "text": "#20262d",
+      "decoration": "minimal-gold"
+    },
+    "card": {
+      "surface": "rgba(250, 248, 243, 0.90)",
+      "surfaceAlt": "rgba(238, 233, 222, 0.82)",
+      "border": "rgba(169,139,67,0.38)",
+      "radius": 22,
+      "shadow": "0 18px 45px rgba(48,43,34,0.18)"
+    },
+    "input": {
+      "background": "rgba(255,255,255,0.94)",
+      "text": "#20262d",
+      "border": "#b99b5b",
+      "radius": 12
+    },
+    "button": {
+      "primary": "#a98532",
+      "primaryAlt": "#d1b56a",
+      "text": "#ffffff",
+      "radius": 12
+    }
+  }
+}
