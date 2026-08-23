@@ -2985,6 +2985,11 @@ function PlayerBookingPage({
     setShowAllTickets
   ] = useState(false);
 
+  const [
+    showBookingTicketList,
+    setShowBookingTicketList
+  ] = useState(true);
+
   async function loadUnavailableTickets() {
     try {
       const {
@@ -3863,17 +3868,43 @@ function PlayerBookingPage({
             themedCardStyle
           }
         >
-          <h2>
-            All 3x9 Tambola Tickets
-          </h2>
-
           <div
             style={{
-              display:
-                "grid",
-              gap: 18
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap"
             }}
           >
+            <h2 style={{ margin: 0 }}>
+              All 3x9 Tambola Tickets
+            </h2>
+            <button
+              type="button"
+              onClick={() =>
+                setShowBookingTicketList((current) => !current)
+              }
+              aria-expanded={showBookingTicketList}
+              style={{
+                ...themedSecondaryButton,
+                minHeight: 42,
+                whiteSpace: "nowrap"
+              }}
+            >
+              {showBookingTicketList ? "COLLAPSE TICKETS" : "EXPAND TICKETS"}
+            </button>
+          </div>
+
+          {showBookingTicketList && (
+            <>
+              <div
+                style={{
+                  display:
+                    "grid",
+                  gap: 18
+                }}
+              >
             {tickets.map(
               (
                 ticket
@@ -3955,7 +3986,9 @@ function PlayerBookingPage({
                 );
               }
             )}
-          </div>
+              </div>
+            </>
+          )}
         </section>
 
         <section
@@ -4091,6 +4124,7 @@ function LiveGamePage({ game }) {
   const [calledNumbers, setCalledNumbers] = useState(
     Array.isArray(game.called_numbers) ? game.called_numbers : []
   );
+  const [showCalledNumberBoard, setShowCalledNumberBoard] = useState(true);
   const [liveGame, setLiveGame] = useState(game);
   const finalAnnouncementSpokenRef = useRef(false);
   const finalSummaryTimerRef = useRef(null);
@@ -4947,13 +4981,38 @@ function LiveGamePage({ game }) {
             }}
           >
             <h2 style={{ margin: 0 }}>Called Number Board</h2>
-            <div style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
-              {calledNumbers.length}/90 called
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                flexWrap: "wrap"
+              }}
+            >
+              <div style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
+                {calledNumbers.length}/90 called
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setShowCalledNumberBoard((current) => !current)
+                }
+                aria-expanded={showCalledNumberBoard}
+                style={{
+                  ...themedSecondaryButton,
+                  minHeight: 42,
+                  whiteSpace: "nowrap"
+                }}
+              >
+                {showCalledNumberBoard ? "COLLAPSE BOARD" : "EXPAND BOARD"}
+              </button>
             </div>
           </div>
 
-          <div
-            style={{
+          {showCalledNumberBoard && (
+            <>
+              <div
+                style={{
               display: "grid",
               gridTemplateColumns: "repeat(10,minmax(0,1fr))",
               gap: 8,
@@ -4997,13 +5056,13 @@ function LiveGamePage({ game }) {
                 </div>
               );
             })}
-          </div>
+              </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 16,
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 16,
               flexWrap: "wrap",
               marginTop: 16,
               color: "var(--theme-muted, #64748b)",
@@ -5014,6 +5073,8 @@ function LiveGamePage({ game }) {
             <span>Blue = called</span>
             <span>Yellow outline = last called</span>
           </div>
+            </>
+          )}
         </section>
 
         {/* 3. CALL HISTORY */}
