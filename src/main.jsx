@@ -5013,7 +5013,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                 cursor: "pointer"
               }}
             >
-              {playerVoiceEnabled ? "ðŸ”Š" : "ðŸ”‡"}
+              {playerVoiceEnabled ? <span aria-hidden="true">&#128266;</span> : <span aria-hidden="true">&#128263;</span>}
             </button>
           </div>
 
