@@ -64,91 +64,22 @@ function getThemeHeroImage(theme) {
  * labels and inputs. No new image files are required.
  */
 function getThemedSectionStyle(themeUI, index, extra = {}) {
-  const theme = themeUI?.themeName || "Classic";
-
   /*
-   * SECTION ARTWORK
-   * These are the six uploaded transparent 3D PNGs in /public/assets.
-   * Each theme uses its own artwork instead of reusing the hero image.
+   * Theme artwork used to be injected here as PNG backgrounds.  The visual
+   system now lives in themes/themes.css.  Keeping this helper means we do
+   not have to touch the many existing sections in the app; they simply
+   inherit the selected CSS theme.
    */
-  const SECTION_VISUALS = {
-    Classic: "/assets/classic-casino-visual.png",
-    Royal: "/assets/royal-visual.png",
-    Elegant: "/assets/elegant-visual.png",
-    Bollywood: "/assets/bollywood-visual.png",
-    Neon: "/assets/neon-visual.png",
-    Party: "/assets/party-visual.png"
-  };
-
-  const image =
-    SECTION_VISUALS[theme] || SECTION_VISUALS.Classic;
-
-  /*
-   * Rotate the placement so successive sections do not all look identical.
-   * The same theme artwork can therefore appear in different corners/edges
-   * while the actual section content stays readable.
-   */
-  const variants = {
-    Classic: [
-      ["right -28px bottom -24px", "52% auto", "normal"],
-      ["left -34px bottom -22px", "48% auto", "normal"],
-      ["right -30px top -26px", "50% auto", "normal"]
-    ],
-    Royal: [
-      ["right -42px top -30px", "46% auto", "soft-light"],
-      ["left -46px bottom -34px", "42% auto", "soft-light"],
-      ["right -40px bottom -34px", "48% auto", "soft-light"]
-    ],
-    Party: [
-      ["right -42px bottom -34px", "50% auto", "screen"],
-      ["left -46px top -30px", "45% auto", "screen"],
-      ["right -38px top -38px", "48% auto", "screen"]
-    ],
-    Bollywood: [
-      ["left -46px bottom -34px", "46% auto", "normal"],
-      ["right -42px top -30px", "48% auto", "soft-light"],
-      ["right -44px bottom -36px", "46% auto", "normal"]
-    ],
-    Neon: [
-      ["right -42px center", "50% auto", "screen"],
-      ["left -46px bottom -30px", "46% auto", "screen"],
-      ["right -40px top -36px", "48% auto", "screen"]
-    ],
-    Elegant: [
-      ["right -40px bottom -32px", "46% auto", "normal"],
-      ["left -44px top -30px", "42% auto", "soft-light"],
-      ["right -36px top -34px", "48% auto", "normal"]
-    ]
-  };
-
-  const set = variants[theme] || variants.Classic;
-  const [position, size, blend] =
-    set[Math.max(0, index) % set.length];
-
-  const surface =
-    themeUI?.design?.card?.surface ||
-    themeUI?.colors?.surface ||
-    "#0f172a";
-
   return {
     ...themeUI.card,
     position: "relative",
     overflow: "hidden",
-    backgroundColor: surface,
-
-    /*
-     * Uploaded transparent PNG is the visible artwork layer.
-     * A readable dark gradient remains underneath/around the artwork.
-     */
-    backgroundImage: [
-      `url("${image}")`,
-      "linear-gradient(90deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.10) 52%, rgba(0,0,0,.28) 100%)"
-    ].join(", "),
-
-    backgroundSize: `${size}, 100% 100%`,
-    backgroundPosition: `${position}, center`,
-    backgroundRepeat: "no-repeat, no-repeat",
-    backgroundBlendMode: `${blend}, normal`,
+    background: "var(--theme-section-bg)",
+    border: "var(--theme-section-border)",
+    boxShadow: "var(--theme-section-shadow)",
+    backdropFilter: "var(--theme-section-backdrop)",
+    WebkitBackdropFilter: "var(--theme-section-backdrop)",
+    color: "var(--theme-text)",
     ...extra
   };
 }
@@ -1578,290 +1509,88 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
   const design = getThemeDesign(theme);
 
-  const backgroundImage = design.backgroundImage
-    ? `url("${design.backgroundImage}")`
-    : "none";
-
-  /*
-    Theme design language.
-    These values deliberately change structure/shape/effects, not only colors.
-  */
-  const variants = {
-    Classic: {
-      cardRadius: 16,
-      inputRadius: 9,
-      buttonRadius: 9,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 14px 34px rgba(0,0,0,.22)",
-      cardBackdrop: "blur(8px)",
-      buttonShadow: "0 8px 20px rgba(0,0,0,.20)",
-      buttonFontWeight: 800,
-      letterSpacing: ".01em",
-      cardPadding: 22,
-      inputPadding: "11px 13px",
-      buttonPadding: "11px 17px"
-    },
-
-    Royal: {
-      cardRadius: 24,
-      inputRadius: 13,
-      buttonRadius: 13,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 20px 48px rgba(35,10,55,.38), inset 0 1px 0 rgba(255,255,255,.10)",
-      cardBackdrop: "blur(14px)",
-      buttonShadow: "0 12px 30px rgba(100,55,130,.34), inset 0 1px 0 rgba(255,255,255,.16)",
-      buttonFontWeight: 900,
-      letterSpacing: ".035em",
-      cardPadding: 26,
-      inputPadding: "12px 15px",
-      buttonPadding: "12px 20px"
-    },
-
-    Party: {
-      cardRadius: 30,
-      inputRadius: 17,
-      buttonRadius: 22,
-      cardBorder: `2px solid ${design.card.border}`,
-      cardShadow: "0 18px 40px rgba(70,10,55,.28)",
-      cardBackdrop: "blur(8px)",
-      buttonShadow: "0 11px 25px rgba(230,45,115,.30)",
-      buttonFontWeight: 900,
-      letterSpacing: ".015em",
-      cardPadding: 22,
-      inputPadding: "12px 15px",
-      buttonPadding: "12px 20px"
-    },
-
-    Bollywood: {
-      cardRadius: 13,
-      inputRadius: 7,
-      buttonRadius: 7,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 18px 44px rgba(70,5,10,.34), inset 0 1px 0 rgba(255,220,150,.12)",
-      cardBackdrop: "blur(12px)",
-      buttonShadow: "0 11px 28px rgba(150,30,20,.32), inset 0 1px 0 rgba(255,220,150,.10)",
-      buttonFontWeight: 900,
-      letterSpacing: ".025em",
-      cardPadding: 24,
-      inputPadding: "11px 13px",
-      buttonPadding: "11px 19px"
-    },
-
-    // Keep the Neon design as the visual benchmark.
-    Neon: {
-      cardRadius: 8,
-      inputRadius: 6,
-      buttonRadius: 6,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: `0 0 0 1px ${design.button.primaryAlt}18 inset, 0 0 28px ${design.button.primaryAlt}20`,
-      cardBackdrop: "blur(18px)",
-      buttonShadow: `0 0 20px ${design.button.primaryAlt}45, inset 0 0 12px ${design.button.primaryAlt}15`,
-      buttonFontWeight: 900,
-      letterSpacing: ".04em",
-      cardPadding: 20,
-      inputPadding: "10px 12px",
-      buttonPadding: "10px 16px"
-    },
-
-    Elegant: {
-      cardRadius: 11,
-      inputRadius: 6,
-      buttonRadius: 6,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 13px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07)",
-      cardBackdrop: "blur(13px)",
-      buttonShadow: "0 8px 20px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.08)",
-      buttonFontWeight: 700,
-      letterSpacing: ".035em",
-      cardPadding: 25,
-      inputPadding: "11px 13px",
-      buttonPadding: "11px 19px"
-    }
-  };
-
-  const v = variants[theme] || variants.Classic;
-
-  /*
-     FULL-INTERFACE THEME VISUALS
-     These are deliberately structural: every shared card, information tile,
-     status box, prize panel and control inherits a different visual language.
-     Ticket internals are not changed here.
-  */
-  const visuals = {
-    Classic: {
-      cardBackground: `linear-gradient(145deg, rgba(12,49,35,.97), rgba(3,25,18,.98)), radial-gradient(circle at 15% 12%, rgba(245,197,66,.15), transparent 30%), radial-gradient(circle at 90% 88%, rgba(181,43,34,.12), transparent 32%)`,
-      panelBackground: `linear-gradient(145deg, rgba(17,57,42,.98), rgba(5,31,22,.98)), radial-gradient(circle at 20% 20%, rgba(245,197,66,.10), transparent 34%)`,
-      prizeBackground: `linear-gradient(135deg, rgba(24,67,48,.98), rgba(8,35,25,.98))`,
-      secondaryBackground: `linear-gradient(135deg, rgba(27,73,52,.98), rgba(9,39,28,.98))`,
-      panelBorder: `1px solid rgba(212,175,55,.62)`,
-      panelShadow: `0 10px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,244,190,.08)`,
-      statusLive: `linear-gradient(135deg, #14532d, #166534)`,
-      statusEnded: `linear-gradient(135deg, #3f3f46, #27272a)`,
-      statusUpcoming: `linear-gradient(135deg, #854d0e, #713f12)`
-    },
-    Royal: {
-      cardBackground: `linear-gradient(145deg, rgba(54,19,76,.98), rgba(23,7,38,.99)), radial-gradient(circle at 12% 10%, rgba(245,197,66,.16), transparent 28%), radial-gradient(circle at 90% 90%, rgba(139,92,246,.16), transparent 32%)`,
-      panelBackground: `linear-gradient(145deg, rgba(66,26,88,.98), rgba(28,10,45,.98)), radial-gradient(circle at 80% 15%, rgba(245,197,66,.12), transparent 30%)`,
-      prizeBackground: `linear-gradient(135deg, rgba(74,30,99,.98), rgba(31,10,49,.98))`,
-      secondaryBackground: `linear-gradient(135deg, rgba(75,34,104,.98), rgba(37,13,55,.98))`,
-      panelBorder: `1px solid rgba(231,196,91,.70)`,
-      panelShadow: `0 18px 40px rgba(20,5,32,.42), inset 0 1px 0 rgba(255,255,255,.10)`,
-      statusLive: `linear-gradient(135deg, #166534, #14532d)`,
-      statusEnded: `linear-gradient(135deg, #4c1d95, #312e81)`,
-      statusUpcoming: `linear-gradient(135deg, #92400e, #78350f)`
-    },
-    Party: {
-      cardBackground: `radial-gradient(circle at 12% 16%, rgba(236,72,153,.22) 0 2px, transparent 3px), radial-gradient(circle at 84% 24%, rgba(34,211,238,.22) 0 2px, transparent 3px), radial-gradient(circle at 68% 82%, rgba(250,204,21,.20) 0 2px, transparent 3px), linear-gradient(145deg, rgba(67,18,75,.96), rgba(38,9,48,.98))`,
-      panelBackground: `radial-gradient(circle at 18% 18%, rgba(236,72,153,.18), transparent 26%), radial-gradient(circle at 82% 82%, rgba(34,211,238,.16), transparent 28%), linear-gradient(145deg, rgba(79,22,81,.98), rgba(45,11,55,.98))`,
-      prizeBackground: `linear-gradient(135deg, rgba(110,27,92,.98), rgba(55,12,63,.98))`,
-      secondaryBackground: `linear-gradient(135deg, rgba(123,31,91,.98), rgba(52,15,68,.98))`,
-      panelBorder: `2px solid rgba(250,204,21,.58)`,
-      panelShadow: `0 16px 34px rgba(44,6,53,.34), 0 0 24px rgba(236,72,153,.10)`,
-      statusLive: `linear-gradient(135deg, #0e7490, #0891b2)`,
-      statusEnded: `linear-gradient(135deg, #6b21a8, #4c1d95)`,
-      statusUpcoming: `linear-gradient(135deg, #be185d, #9d174d)`
-    },
-    Bollywood: {
-      cardBackground: `radial-gradient(circle at 10% 10%, rgba(251,191,36,.18) 0 2px, transparent 3px), radial-gradient(circle at 90% 10%, rgba(251,191,36,.14) 0 2px, transparent 3px), linear-gradient(145deg, rgba(91,16,22,.98), rgba(44,6,12,.99))`,
-      panelBackground: `linear-gradient(145deg, rgba(111,24,30,.98), rgba(51,8,14,.98)), radial-gradient(circle at 50% 0%, rgba(251,191,36,.14), transparent 35%)`,
-      prizeBackground: `linear-gradient(135deg, rgba(128,26,28,.98), rgba(59,8,14,.98))`,
-      secondaryBackground: `linear-gradient(135deg, rgba(151,42,23,.98), rgba(70,10,15,.98))`,
-      panelBorder: `1px solid rgba(251,191,36,.72)`,
-      panelShadow: `0 18px 42px rgba(52,4,9,.42), inset 0 1px 0 rgba(255,220,150,.10)`,
-      statusLive: `linear-gradient(135deg, #15803d, #166534)`,
-      statusEnded: `linear-gradient(135deg, #7f1d1d, #991b1b)`,
-      statusUpcoming: `linear-gradient(135deg, #b45309, #92400e)`
-    },
-    Neon: {
-      cardBackground: `linear-gradient(145deg, rgba(4,18,38,.97), rgba(2,8,20,.99)), repeating-linear-gradient(90deg, transparent 0 28px, rgba(34,211,238,.055) 29px, transparent 30px), repeating-linear-gradient(0deg, transparent 0 28px, rgba(139,92,246,.045) 29px, transparent 30px)`,
-      panelBackground: `linear-gradient(145deg, rgba(8,29,55,.98), rgba(2,12,28,.98)), repeating-linear-gradient(90deg, transparent 0 22px, rgba(34,211,238,.07) 23px, transparent 24px), repeating-linear-gradient(0deg, transparent 0 22px, rgba(139,92,246,.055) 23px, transparent 24px)`,
-      prizeBackground: `linear-gradient(135deg, rgba(12,42,74,.98), rgba(4,18,40,.98)), linear-gradient(90deg, rgba(34,211,238,.08), transparent)`,
-      secondaryBackground: `linear-gradient(135deg, rgba(10,48,75,.98), rgba(20,19,61,.98))`,
-      panelBorder: `1px solid rgba(34,211,238,.72)`,
-      panelShadow: `0 0 0 1px rgba(139,92,246,.20) inset, 0 0 26px rgba(34,211,238,.13), 0 14px 34px rgba(0,0,0,.34)`,
-      statusLive: `linear-gradient(135deg, #0e7490, #155e75)`,
-      statusEnded: `linear-gradient(135deg, #5b21b6, #312e81)`,
-      statusUpcoming: `linear-gradient(135deg, #0f766e, #115e59)`
-    },
-    Elegant: {
-      cardBackground: `linear-gradient(145deg, rgba(250,248,243,.96), rgba(235,231,221,.96)), radial-gradient(circle at 85% 10%, rgba(169,139,67,.10), transparent 30%)`,
-      panelBackground: `linear-gradient(145deg, rgba(255,253,248,.98), rgba(238,234,224,.96))`,
-      prizeBackground: `linear-gradient(135deg, rgba(255,253,248,.99), rgba(239,235,226,.98))`,
-      secondaryBackground: `linear-gradient(135deg, rgba(255,253,248,.98), rgba(231,225,211,.98))`,
-      panelBorder: `1px solid rgba(169,139,67,.55)`,
-      panelShadow: `0 14px 30px rgba(48,43,34,.16), inset 0 1px 0 rgba(255,255,255,.80)`,
-      statusLive: `linear-gradient(135deg, #166534, #15803d)`,
-      statusEnded: `linear-gradient(135deg, #475569, #334155)`,
-      statusUpcoming: `linear-gradient(135deg, #a16207, #854d0e)`
-    }
-  };
-
-  const visual = visuals[theme] || visuals.Classic;
-
   return {
     themeName: theme,
     colors,
     design,
-    visual,
+    visual: {
+      cardBackground: "var(--theme-card-bg)",
+      panelBackground: "var(--theme-panel-bg)",
+      prizeBackground: "var(--theme-prize-bg)",
+      secondaryBackground: "var(--theme-secondary-bg)",
+      panelBorder: "var(--theme-panel-border)",
+      panelShadow: "var(--theme-panel-shadow)",
+      statusLive: "var(--theme-status-live)",
+      statusEnded: "var(--theme-status-ended)",
+      statusUpcoming: "var(--theme-status-upcoming)"
+    },
 
+    /*
+     * These are intentionally thin adapters.  The actual visual values are
+     * defined once in themes/themes.css, so every page and section shares the
+     * same theme surface instead of receiving independent inline designs.
+     */
     page: {
-      backgroundColor: colors.background,
-      backgroundImage: backgroundImage === "none"
-        ? "none"
-        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
+      backgroundColor: "var(--theme-bg)",
+      backgroundImage: "var(--theme-page-background)",
       backgroundSize: "cover",
       backgroundPosition: "center top",
       backgroundAttachment: "scroll",
       backgroundRepeat: "no-repeat",
       isolation: "isolate",
-      color: design.page.text,
+      color: "var(--theme-text)",
       padding: 20,
       position: "relative",
       overflowX: "hidden",
-      minHeight: "100vh",
-
-      /* Shared theme variables for the entire interface. */
-      "--theme-accent": design.hero.accent,
-      "--theme-secondary": design.button.primaryAlt,
-      "--theme-bg": colors.background,
-      "--theme-text": design.hero.text,
-      "--theme-muted": design.page.muted,
-      "--theme-surface": design.card.surface,
-      "--theme-surface2": design.card.surfaceAlt,
-      "--theme-input-bg": design.input.background,
-      "--theme-input-text": design.input.text,
-      "--theme-input-muted": design.page.muted,
-      "--theme-panel-bg": visual.panelBackground,
-      "--theme-panel-text": design.hero.text,
-      "--theme-panel-muted": design.page.muted,
-      "--theme-ticket-bg": design.input.background,
-      "--theme-ticket-text": design.input.text,
-      "--theme-glow": design.button.primaryAlt,
-      "--theme-card-bg": visual.cardBackground,
-      "--theme-prize-bg": visual.prizeBackground,
-      "--theme-secondary-bg": visual.secondaryBackground,
-      "--theme-panel-border": visual.panelBorder,
-      "--theme-panel-shadow": visual.panelShadow,
-      "--theme-status-live": visual.statusLive,
-      "--theme-status-ended": visual.statusEnded,
-      "--theme-status-upcoming": visual.statusUpcoming,
-
-      "--theme-card-radius": `${v.cardRadius}px`,
-      "--theme-input-radius": `${v.inputRadius}px`,
-      "--theme-button-radius": `${v.buttonRadius}px`,
-      "--theme-letter-spacing": v.letterSpacing,
-      "--theme-card-padding": `${v.cardPadding}px`,
-      "--theme-input-padding": v.inputPadding,
-      "--theme-button-padding": v.buttonPadding,
-      "--theme-control-shadow": v.buttonShadow
+      minHeight: "100vh"
     },
 
     card: {
-      background: visual.cardBackground,
-      border: v.cardBorder,
-      borderRadius: v.cardRadius,
+      background: "var(--theme-card-bg)",
+      border: "var(--theme-card-border)",
+      borderRadius: "var(--theme-card-radius)",
       backgroundClip: "padding-box",
-      padding: v.cardPadding,
-      color: design.hero.text,
-      boxShadow: `${v.cardShadow}, ${visual.panelShadow}`,
-      backdropFilter: v.cardBackdrop,
-      WebkitBackdropFilter: v.cardBackdrop,
+      padding: "var(--theme-card-padding)",
+      color: "var(--theme-text)",
+      boxShadow: "var(--theme-card-shadow)",
+      backdropFilter: "var(--theme-card-backdrop)",
+      WebkitBackdropFilter: "var(--theme-card-backdrop)",
       overflow: "hidden"
     },
 
     input: {
-      border: `1px solid ${design.input.border}`,
-      borderRadius: v.inputRadius,
-      padding: v.inputPadding,
-      boxShadow: v.cardShadow,
-      background: design.input.background,
-      color: design.input.text,
-      WebkitTextFillColor: design.input.text,
-      caretColor: design.hero.accent,
-      outlineColor: design.hero.accent
+      border: "var(--theme-input-border)",
+      borderRadius: "var(--theme-input-radius)",
+      padding: "var(--theme-input-padding)",
+      boxShadow: "var(--theme-input-shadow)",
+      background: "var(--theme-input-bg)",
+      color: "var(--theme-input-text)",
+      WebkitTextFillColor: "var(--theme-input-text)",
+      caretColor: "var(--theme-accent)",
+      outlineColor: "var(--theme-accent)"
     },
 
     primary: {
-      background: `linear-gradient(135deg, ${design.button.primary} 0%, ${design.button.primaryAlt} 100%)`,
-      color: design.button.text,
-      borderRadius: v.buttonRadius,
-      padding: v.buttonPadding,
-      border: `1px solid ${design.button.primary}`,
-      boxShadow: v.buttonShadow,
+      background: "var(--theme-primary-button)",
+      color: "var(--theme-button-text)",
+      borderRadius: "var(--theme-button-radius)",
+      padding: "var(--theme-button-padding)",
+      border: "var(--theme-primary-border)",
+      boxShadow: "var(--theme-button-shadow)",
       transform: "translateY(0)",
-      fontWeight: v.buttonFontWeight,
-      letterSpacing: v.letterSpacing
+      fontWeight: "var(--theme-button-weight)",
+      letterSpacing: "var(--theme-letter-spacing)"
     },
 
     secondary: {
-      border: `1px solid ${design.card.border}`,
-      borderRadius: v.buttonRadius,
-      padding: v.buttonPadding,
-      background: visual.secondaryBackground,
-      color: design.hero.text,
-      boxShadow: v.buttonShadow,
-      fontWeight: v.buttonFontWeight,
-      letterSpacing: v.letterSpacing
+      border: "var(--theme-secondary-border)",
+      borderRadius: "var(--theme-button-radius)",
+      padding: "var(--theme-button-padding)",
+      background: "var(--theme-secondary-bg)",
+      color: "var(--theme-text)",
+      boxShadow: "var(--theme-button-shadow)",
+      fontWeight: "var(--theme-button-weight)",
+      letterSpacing: "var(--theme-letter-spacing)"
     }
   };
 }
@@ -1873,6 +1602,7 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
 
   return (
     <div
+      className={`tl-theme-hero tl-theme-hero-${theme.toLowerCase()}`}
       style={{
         maxWidth: 1000,
         margin: "0 auto 18px",
@@ -1880,10 +1610,10 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         position: "relative",
         overflow: "hidden",
         borderRadius: 24,
-        border: `1px solid ${c.accent}66`,
-        background: ui.design.hero.surface,
-        boxShadow: `0 16px 42px rgba(0,0,0,.28), 0 0 32px ${c.secondary}18`,
-        color: ui.design.hero.text,
+        border: "1px solid var(--theme-hero-border)",
+        background: "var(--theme-hero-bg)",
+        boxShadow: "var(--theme-hero-shadow)",
+        color: "var(--theme-text)",
         padding: compact ? "17px 20px" : "20px 24px",
         boxSizing: "border-box"
       }}
@@ -2862,7 +2592,7 @@ function CreateGamePage({
   }
 
   return (
-    <main style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -4123,7 +3853,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -5743,7 +5473,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main style={themedPageStyle}>
+      <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -6085,7 +5815,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
