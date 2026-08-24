@@ -961,3 +961,289 @@
     background-size: 170% auto !important;
   }
 }
+
+
+/* =========================================================
+   VISUAL V3 â€” TRUE CORNER ARTWORK
+   The page background and section artwork are now separate layers.
+   IMPORTANT: use the uploaded transparent theme PNGs for section
+   decoration instead of duplicating the full-page JPG background.
+========================================================= */
+
+.tl-theme-page {
+  /* Transparent 3D section artwork supplied in /public/assets */
+  --theme-section-visual: url('/assets/classic-casino-visual.png');
+  --theme-section-visual-opacity: .16;
+  --theme-section-surface: rgba(5, 20, 16, .66);
+}
+
+.tl-theme-classic.tl-theme-page {
+  --theme-section-visual: url('/assets/classic-casino-visual.png');
+  --theme-section-visual-opacity: .17;
+  --theme-section-surface: rgba(4, 28, 20, .66);
+}
+
+.tl-theme-royal.tl-theme-page {
+  --theme-section-visual: url('/assets/royal-visual.png');
+  --theme-section-visual-opacity: .17;
+  --theme-section-surface: rgba(27, 9, 42, .67);
+}
+
+.tl-theme-party.tl-theme-page {
+  --theme-section-visual: url('/assets/party-visual.png');
+  --theme-section-visual-opacity: .16;
+  --theme-section-surface: rgba(43, 10, 48, .66);
+}
+
+.tl-theme-bollywood.tl-theme-page {
+  --theme-section-visual: url('/assets/bollywood-visual.png');
+  --theme-section-visual-opacity: .16;
+  --theme-section-surface: rgba(49, 7, 13, .68);
+}
+
+.tl-theme-neon.tl-theme-page {
+  --theme-section-visual: url('/assets/neon-visual.png');
+  --theme-section-visual-opacity: .14;
+  --theme-section-surface: rgba(2, 10, 24, .70);
+}
+
+.tl-theme-elegant.tl-theme-page {
+  --theme-section-visual: url('/assets/elegant-visual.png');
+  --theme-section-visual-opacity: .12;
+  --theme-section-surface: rgba(238, 234, 224, .72);
+}
+
+/*
+  STOP duplicating the full-page JPG inside sections/cards.
+  The JPG remains the page atmosphere. The transparent PNG becomes
+  the small decorative object at the edge.
+*/
+.tl-theme-page section,
+.tl-theme-page [style*="var(--theme-card-bg)"] {
+  background-image: none !important;
+}
+
+/* Keep the content surface dark/soft enough to read, but not opaque. */
+.tl-theme-page section {
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--theme-section-surface) 92%, transparent),
+      color-mix(in srgb, var(--theme-section-surface) 78%, transparent)
+    ) !important;
+  backdrop-filter: blur(1.5px) saturate(1.04) !important;
+  -webkit-backdrop-filter: blur(1.5px) saturate(1.04) !important;
+}
+
+/* ONE main decorative object per section, anchored to a corner. */
+.tl-theme-page section::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 43%;
+  height: 48%;
+  right: -5%;
+  top: -4%;
+  background-image: var(--theme-section-visual) !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-position: top right !important;
+  opacity: var(--theme-section-visual-opacity) !important;
+  mix-blend-mode: normal !important;
+  filter: saturate(.94) contrast(1.02) !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
+
+/* A second, much smaller echo at the opposite edge. */
+.tl-theme-page section::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 30%;
+  height: 34%;
+  left: -4%;
+  bottom: -3%;
+  background-image: var(--theme-section-visual) !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-position: bottom left !important;
+  opacity: calc(var(--theme-section-visual-opacity) * .72) !important;
+  mix-blend-mode: normal !important;
+  filter: saturate(.88) !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
+
+/* Alternate sections so the decorative object does not repeat in the same
+   corner all the way down a long page. */
+.tl-theme-page section:nth-of-type(2n)::before {
+  right: auto !important;
+  left: -5% !important;
+  top: -4% !important;
+  background-position: top left !important;
+}
+
+.tl-theme-page section:nth-of-type(2n)::after {
+  left: auto !important;
+  right: -4% !important;
+  bottom: -3% !important;
+  background-position: bottom right !important;
+}
+
+/*
+  Cards/panels get their own smaller corner treatment.
+  This is what fixes the Create New Game panel in the screenshot:
+  the Royal/Party object lives at the edge instead of the whole background
+  being visible through every input.
+*/
+.tl-theme-page [style*="var(--theme-card-bg)"] {
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--theme-bg) 64%, transparent),
+      color-mix(in srgb, var(--theme-bg) 52%, transparent)
+    ) !important;
+  backdrop-filter: blur(2px) saturate(1.03) !important;
+  -webkit-backdrop-filter: blur(2px) saturate(1.03) !important;
+}
+
+.tl-theme-page [style*="var(--theme-card-bg)"]::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 36%;
+  height: 38%;
+  right: -3%;
+  top: -3%;
+  background-image: var(--theme-section-visual) !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-position: top right !important;
+  opacity: calc(var(--theme-section-visual-opacity) * .78) !important;
+  mix-blend-mode: normal !important;
+}
+
+.tl-theme-page [style*="var(--theme-card-bg)"]::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 25%;
+  height: 28%;
+  left: -3%;
+  bottom: -3%;
+  background-image: var(--theme-section-visual) !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-position: bottom left !important;
+  opacity: calc(var(--theme-section-visual-opacity) * .52) !important;
+  mix-blend-mode: normal !important;
+}
+
+/* Make the actual content sit above the decorative objects. */
+.tl-theme-page section > *,
+.tl-theme-page [style*="var(--theme-card-bg)"] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Theme-specific corner emphasis. */
+.tl-theme-royal.tl-theme-page section::before {
+  width: 46%;
+  height: 52%;
+  opacity: .18 !important;
+}
+
+.tl-theme-party.tl-theme-page section::before {
+  width: 47%;
+  height: 52%;
+  opacity: .17 !important;
+}
+
+.tl-theme-classic.tl-theme-page section::before,
+.tl-theme-bollywood.tl-theme-page section::before {
+  width: 44%;
+  height: 50%;
+}
+
+.tl-theme-neon.tl-theme-page section::before {
+  width: 42%;
+  height: 48%;
+  opacity: .15 !important;
+}
+
+.tl-theme-elegant.tl-theme-page section::before {
+  width: 40%;
+  height: 46%;
+  opacity: .13 !important;
+}
+
+/* The hero remains an independent visual layer. Do not repeat its artwork
+   inside the form/card surfaces. */
+.tl-theme-page .tl-theme-hero {
+  overflow: hidden !important;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--theme-bg) 76%, transparent),
+    color-mix(in srgb, var(--theme-bg) 48%, transparent)
+  ) !important;
+}
+
+/* Mobile: smaller edge objects, cleaner center. */
+@media (max-width: 520px) {
+  .tl-theme-page section::before {
+    width: 40% !important;
+    height: 38% !important;
+    right: -5% !important;
+    top: -3% !important;
+  }
+
+  .tl-theme-page section::after {
+    width: 27% !important;
+    height: 26% !important;
+    left: -4% !important;
+    bottom: -3% !important;
+  }
+
+  .tl-theme-page section:nth-of-type(2n)::before {
+    left: -5% !important;
+    right: auto !important;
+  }
+
+  .tl-theme-page section:nth-of-type(2n)::after {
+    right: -4% !important;
+    left: auto !important;
+  }
+
+  .tl-theme-page [style*="var(--theme-card-bg)"]::before {
+    width: 31% !important;
+    height: 32% !important;
+  }
+
+  .tl-theme-page [style*="var(--theme-card-bg)"]::after {
+    width: 22% !important;
+    height: 23% !important;
+  }
+
+  .tl-theme-page [style*="var(--theme-card-bg)"] {
+    background:
+      linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--theme-bg) 72%, transparent),
+        color-mix(in srgb, var(--theme-bg) 62%, transparent)
+      ) !important;
+  }
+}
+
+/* Elegant: keep the decorative PNG soft and refined. */
+.tl-theme-elegant.tl-theme-page section::before,
+.tl-theme-elegant.tl-theme-page section::after,
+.tl-theme-elegant.tl-theme-page [style*="var(--theme-card-bg)"]::before,
+.tl-theme-elegant.tl-theme-page [style*="var(--theme-card-bg)"]::after {
+  filter: saturate(.62) contrast(.96) !important;
+  mix-blend-mode: multiply !important;
+}
