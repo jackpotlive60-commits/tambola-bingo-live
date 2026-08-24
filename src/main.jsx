@@ -5403,7 +5403,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
            7 All Booked Tickets
         ========================================================= */}
 
-        {/* 1. CURRENT NUMBER - ONE BIG DISPLAY ONLY */}
+        {/* 1. CURRENT NUMBER - THEME-SPECIFIC DISPLAY */}
         <section data-live-section="1-current-number" style={{ ...themedCardStyle, textAlign: "center" }}>
           <div
             style={{
@@ -5424,9 +5424,11 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                 height: 30,
                 padding: 0,
                 borderRadius: "50%",
-                border: "1px solid var(--theme-secondary, #cbd5e1)",
-                background: playerVoiceEnabled ? "#ecfdf5" : "#f1f5f9",
-                color: playerVoiceEnabled ? "#047857" : "#64748b",
+                border: `1px solid ${themeUI.colors.accent}88`,
+                background: playerVoiceEnabled
+                  ? `${themeUI.colors.secondary}22`
+                  : `${themeUI.colors.surface2}`,
+                color: playerVoiceEnabled ? themeUI.colors.accent : themeUI.colors.muted,
                 fontSize: 16,
                 lineHeight: 1,
                 display: "inline-flex",
@@ -5439,27 +5441,160 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             </button>
           </div>
 
-          <div
-            style={{
-              width: 170,
-              height: 170,
-              margin: "18px auto 12px",
-              borderRadius: "50%",
-              background: `radial-gradient(circle at 35% 30%, ${themeUI.colors.accent} 0%, ${themeUI.colors.secondary} 45%, ${themeUI.colors.background} 100%)`,
-              color: "#fff",
-              border: `2px solid ${themeUI.colors.accent}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 72,
-              fontWeight: "bold",
-              boxShadow: `0 0 28px ${themeUI.colors.secondary}55, 0 10px 30px rgba(0,0,0,.25)`
-            }}
-          >
-            {lastCalled || "-"}
-          </div>
+          {liveGame.theme === "Classic" ? (
+            <div
+              style={{
+                position: "relative",
+                width: 300,
+                height: 190,
+                margin: "18px auto 12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              {/* Left playing card */}
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: 18,
+                  top: 28,
+                  width: 70,
+                  height: 108,
+                  borderRadius: 9,
+                  background: "linear-gradient(145deg,#fff8e7,#e8dcc2)",
+                  border: `2px solid ${themeUI.colors.accent}`,
+                  boxShadow: "0 10px 22px rgba(0,0,0,.38)",
+                  transform: "rotate(-13deg)",
+                  color: "#5b1111",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                  fontSize: 25,
+                  lineHeight: 1.05
+                }}
+              >
+                <span>A</span>
+                <span style={{ fontSize: 32 }}>&#9824;</span>
+              </div>
 
-          <div style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
+              {/* Right playing card */}
+              <div
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  right: 18,
+                  top: 28,
+                  width: 70,
+                  height: 108,
+                  borderRadius: 9,
+                  background: "linear-gradient(145deg,#fff8e7,#e8dcc2)",
+                  border: `2px solid ${themeUI.colors.accent}`,
+                  boxShadow: "0 10px 22px rgba(0,0,0,.38)",
+                  transform: "rotate(13deg)",
+                  color: "#8b1e1e",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                  fontSize: 25,
+                  lineHeight: 1.05
+                }}
+              >
+                <span>K</span>
+                <span style={{ fontSize: 32 }}>&#9829;</span>
+              </div>
+
+              {/* Casino poker chip */}
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: 2,
+                  width: 168,
+                  height: 168,
+                  borderRadius: "50%",
+                  background: `
+                    radial-gradient(circle,
+                      #15110c 0 47%,
+                      #f7e8c0 48% 51%,
+                      transparent 52%
+                    ),
+                    repeating-conic-gradient(
+                      from 0deg,
+                      #b52b22 0deg 18deg,
+                      #f7e8c0 18deg 30deg,
+                      #b52b22 30deg 48deg
+                    )
+                  `,
+                  border: `3px solid ${themeUI.colors.accent}`,
+                  boxShadow: `0 0 28px ${themeUI.colors.secondary}66, 0 14px 30px rgba(0,0,0,.42)`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <div
+                  style={{
+                    width: 112,
+                    height: 112,
+                    borderRadius: "50%",
+                    background: "radial-gradient(circle at 35% 30%, #3b3326, #090806 72%)",
+                    border: "2px solid #d6b45b",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff3c9",
+                    fontSize: 68,
+                    fontWeight: 900,
+                    textShadow: "0 2px 8px rgba(0,0,0,.65)"
+                  }}
+                >
+                  {lastCalled || "-"}
+                </div>
+
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: 12,
+                    left: 0,
+                    right: 0,
+                    textAlign: "center",
+                    color: "#fff0b5",
+                    fontSize: 16
+                  }}
+                >
+                  &#9824; &#9829; &#9830; &#9827;
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                width: 170,
+                height: 170,
+                margin: "18px auto 12px",
+                borderRadius: "50%",
+                background: `radial-gradient(circle at 35% 30%, ${themeUI.colors.accent} 0%, ${themeUI.colors.secondary} 45%, ${themeUI.colors.background} 100%)`,
+                color: "#fff",
+                border: `2px solid ${themeUI.colors.accent}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 72,
+                fontWeight: "bold",
+                boxShadow: `0 0 28px ${themeUI.colors.secondary}55, 0 10px 30px rgba(0,0,0,.25)`
+              }}
+            >
+              {lastCalled || "-"}
+            </div>
+          )}
+
+          <div style={{ color: themeUI.colors.muted, fontWeight: "bold" }}>
             Total Called: {calledNumbers.length}/90
           </div>
         </section>
@@ -5567,17 +5702,44 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                 style={{
                   display: "flex",
                   justifyContent: "center",
-                  gap: 16,
-              flexWrap: "wrap",
-              marginTop: 16,
-              color: themeUI.colors.muted,
-              fontSize: 13,
-              fontWeight: 800
-            }}
-          >
-            <span style={{ color: themeUI.colors.secondary }}>â— Called</span>
-            <span style={{ color: themeUI.colors.accent }}>â— Last called</span>
-          </div>
+                  gap: 18,
+                  flexWrap: "wrap",
+                  marginTop: 16,
+                  color: themeUI.colors.muted,
+                  fontSize: 13,
+                  fontWeight: 800
+                }}
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      background: themeUI.colors.secondary,
+                      border: `1px solid ${themeUI.colors.accent}`,
+                      display: "inline-block"
+                    }}
+                  />
+                  Called
+                </span>
+
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      background: themeUI.colors.secondary,
+                      border: `3px solid ${themeUI.colors.accent}`,
+                      display: "inline-block"
+                    }}
+                  />
+                  Last called
+                </span>
+              </div>
             </>
           )}
         </section>
