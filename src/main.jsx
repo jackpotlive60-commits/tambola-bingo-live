@@ -1583,9 +1583,87 @@ function getThemeUI(theme) {
 
   const v = variants[theme] || variants.Classic;
 
+  /*
+     FULL-INTERFACE THEME VISUALS
+     These are deliberately structural: every shared card, information tile,
+     status box, prize panel and control inherits a different visual language.
+     Ticket internals are not changed here.
+  */
+  const visuals = {
+    Classic: {
+      cardBackground: `linear-gradient(145deg, rgba(12,49,35,.97), rgba(3,25,18,.98)), radial-gradient(circle at 15% 12%, rgba(245,197,66,.15), transparent 30%), radial-gradient(circle at 90% 88%, rgba(181,43,34,.12), transparent 32%)`,
+      panelBackground: `linear-gradient(145deg, rgba(17,57,42,.98), rgba(5,31,22,.98)), radial-gradient(circle at 20% 20%, rgba(245,197,66,.10), transparent 34%)`,
+      prizeBackground: `linear-gradient(135deg, rgba(24,67,48,.98), rgba(8,35,25,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(27,73,52,.98), rgba(9,39,28,.98))`,
+      panelBorder: `1px solid rgba(212,175,55,.62)`,
+      panelShadow: `0 10px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,244,190,.08)`,
+      statusLive: `linear-gradient(135deg, #14532d, #166534)`,
+      statusEnded: `linear-gradient(135deg, #3f3f46, #27272a)`,
+      statusUpcoming: `linear-gradient(135deg, #854d0e, #713f12)`
+    },
+    Royal: {
+      cardBackground: `linear-gradient(145deg, rgba(54,19,76,.98), rgba(23,7,38,.99)), radial-gradient(circle at 12% 10%, rgba(245,197,66,.16), transparent 28%), radial-gradient(circle at 90% 90%, rgba(139,92,246,.16), transparent 32%)`,
+      panelBackground: `linear-gradient(145deg, rgba(66,26,88,.98), rgba(28,10,45,.98)), radial-gradient(circle at 80% 15%, rgba(245,197,66,.12), transparent 30%)`,
+      prizeBackground: `linear-gradient(135deg, rgba(74,30,99,.98), rgba(31,10,49,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(75,34,104,.98), rgba(37,13,55,.98))`,
+      panelBorder: `1px solid rgba(231,196,91,.70)`,
+      panelShadow: `0 18px 40px rgba(20,5,32,.42), inset 0 1px 0 rgba(255,255,255,.10)`,
+      statusLive: `linear-gradient(135deg, #166534, #14532d)`,
+      statusEnded: `linear-gradient(135deg, #4c1d95, #312e81)`,
+      statusUpcoming: `linear-gradient(135deg, #92400e, #78350f)`
+    },
+    Party: {
+      cardBackground: `radial-gradient(circle at 12% 16%, rgba(236,72,153,.22) 0 2px, transparent 3px), radial-gradient(circle at 84% 24%, rgba(34,211,238,.22) 0 2px, transparent 3px), radial-gradient(circle at 68% 82%, rgba(250,204,21,.20) 0 2px, transparent 3px), linear-gradient(145deg, rgba(67,18,75,.96), rgba(38,9,48,.98))`,
+      panelBackground: `radial-gradient(circle at 18% 18%, rgba(236,72,153,.18), transparent 26%), radial-gradient(circle at 82% 82%, rgba(34,211,238,.16), transparent 28%), linear-gradient(145deg, rgba(79,22,81,.98), rgba(45,11,55,.98))`,
+      prizeBackground: `linear-gradient(135deg, rgba(110,27,92,.98), rgba(55,12,63,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(123,31,91,.98), rgba(52,15,68,.98))`,
+      panelBorder: `2px solid rgba(250,204,21,.58)`,
+      panelShadow: `0 16px 34px rgba(44,6,53,.34), 0 0 24px rgba(236,72,153,.10)`,
+      statusLive: `linear-gradient(135deg, #0e7490, #0891b2)`,
+      statusEnded: `linear-gradient(135deg, #6b21a8, #4c1d95)`,
+      statusUpcoming: `linear-gradient(135deg, #be185d, #9d174d)`
+    },
+    Bollywood: {
+      cardBackground: `radial-gradient(circle at 10% 10%, rgba(251,191,36,.18) 0 2px, transparent 3px), radial-gradient(circle at 90% 10%, rgba(251,191,36,.14) 0 2px, transparent 3px), linear-gradient(145deg, rgba(91,16,22,.98), rgba(44,6,12,.99))`,
+      panelBackground: `linear-gradient(145deg, rgba(111,24,30,.98), rgba(51,8,14,.98)), radial-gradient(circle at 50% 0%, rgba(251,191,36,.14), transparent 35%)`,
+      prizeBackground: `linear-gradient(135deg, rgba(128,26,28,.98), rgba(59,8,14,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(151,42,23,.98), rgba(70,10,15,.98))`,
+      panelBorder: `1px solid rgba(251,191,36,.72)`,
+      panelShadow: `0 18px 42px rgba(52,4,9,.42), inset 0 1px 0 rgba(255,220,150,.10)`,
+      statusLive: `linear-gradient(135deg, #15803d, #166534)`,
+      statusEnded: `linear-gradient(135deg, #7f1d1d, #991b1b)`,
+      statusUpcoming: `linear-gradient(135deg, #b45309, #92400e)`
+    },
+    Neon: {
+      cardBackground: `linear-gradient(145deg, rgba(4,18,38,.97), rgba(2,8,20,.99)), repeating-linear-gradient(90deg, transparent 0 28px, rgba(34,211,238,.055) 29px, transparent 30px), repeating-linear-gradient(0deg, transparent 0 28px, rgba(139,92,246,.045) 29px, transparent 30px)`,
+      panelBackground: `linear-gradient(145deg, rgba(8,29,55,.98), rgba(2,12,28,.98)), repeating-linear-gradient(90deg, transparent 0 22px, rgba(34,211,238,.07) 23px, transparent 24px), repeating-linear-gradient(0deg, transparent 0 22px, rgba(139,92,246,.055) 23px, transparent 24px)`,
+      prizeBackground: `linear-gradient(135deg, rgba(12,42,74,.98), rgba(4,18,40,.98)), linear-gradient(90deg, rgba(34,211,238,.08), transparent)`,
+      secondaryBackground: `linear-gradient(135deg, rgba(10,48,75,.98), rgba(20,19,61,.98))`,
+      panelBorder: `1px solid rgba(34,211,238,.72)`,
+      panelShadow: `0 0 0 1px rgba(139,92,246,.20) inset, 0 0 26px rgba(34,211,238,.13), 0 14px 34px rgba(0,0,0,.34)`,
+      statusLive: `linear-gradient(135deg, #0e7490, #155e75)`,
+      statusEnded: `linear-gradient(135deg, #5b21b6, #312e81)`,
+      statusUpcoming: `linear-gradient(135deg, #0f766e, #115e59)`
+    },
+    Elegant: {
+      cardBackground: `linear-gradient(145deg, rgba(250,248,243,.96), rgba(235,231,221,.96)), radial-gradient(circle at 85% 10%, rgba(169,139,67,.10), transparent 30%)`,
+      panelBackground: `linear-gradient(145deg, rgba(255,253,248,.98), rgba(238,234,224,.96))`,
+      prizeBackground: `linear-gradient(135deg, rgba(255,253,248,.99), rgba(239,235,226,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(255,253,248,.98), rgba(231,225,211,.98))`,
+      panelBorder: `1px solid rgba(169,139,67,.55)`,
+      panelShadow: `0 14px 30px rgba(48,43,34,.16), inset 0 1px 0 rgba(255,255,255,.80)`,
+      statusLive: `linear-gradient(135deg, #166534, #15803d)`,
+      statusEnded: `linear-gradient(135deg, #475569, #334155)`,
+      statusUpcoming: `linear-gradient(135deg, #a16207, #854d0e)`
+    }
+  };
+
+  const visual = visuals[theme] || visuals.Classic;
+
   return {
     colors,
     design,
+    visual,
 
     page: {
       backgroundColor: colors.background,
@@ -1603,7 +1681,7 @@ function getThemeUI(theme) {
       overflowX: "hidden",
       minHeight: "100vh",
 
-      /* Shared theme variables for any inline section that consumes them. */
+      /* Shared theme variables for the entire interface. */
       "--theme-accent": design.hero.accent,
       "--theme-secondary": design.button.primaryAlt,
       "--theme-bg": colors.background,
@@ -1614,12 +1692,20 @@ function getThemeUI(theme) {
       "--theme-input-bg": design.input.background,
       "--theme-input-text": design.input.text,
       "--theme-input-muted": design.page.muted,
-      "--theme-panel-bg": design.card.surface,
+      "--theme-panel-bg": visual.panelBackground,
       "--theme-panel-text": design.hero.text,
       "--theme-panel-muted": design.page.muted,
       "--theme-ticket-bg": design.input.background,
       "--theme-ticket-text": design.input.text,
       "--theme-glow": design.button.primaryAlt,
+      "--theme-card-bg": visual.cardBackground,
+      "--theme-prize-bg": visual.prizeBackground,
+      "--theme-secondary-bg": visual.secondaryBackground,
+      "--theme-panel-border": visual.panelBorder,
+      "--theme-panel-shadow": visual.panelShadow,
+      "--theme-status-live": visual.statusLive,
+      "--theme-status-ended": visual.statusEnded,
+      "--theme-status-upcoming": visual.statusUpcoming,
 
       "--theme-card-radius": `${v.cardRadius}px`,
       "--theme-input-radius": `${v.inputRadius}px`,
@@ -1632,13 +1718,13 @@ function getThemeUI(theme) {
     },
 
     card: {
-      background: design.card.surface,
+      background: visual.cardBackground,
       border: v.cardBorder,
       borderRadius: v.cardRadius,
       backgroundClip: "padding-box",
       padding: v.cardPadding,
       color: design.hero.text,
-      boxShadow: v.cardShadow,
+      boxShadow: `${v.cardShadow}, ${visual.panelShadow}`,
       backdropFilter: v.cardBackdrop,
       WebkitBackdropFilter: v.cardBackdrop,
       overflow: "hidden"
@@ -1672,8 +1758,8 @@ function getThemeUI(theme) {
       border: `1px solid ${design.card.border}`,
       borderRadius: v.buttonRadius,
       padding: v.buttonPadding,
-      background: design.input.background,
-      color: design.input.text,
+      background: visual.secondaryBackground,
+      color: design.hero.text,
       boxShadow: v.buttonShadow,
       fontWeight: v.buttonFontWeight,
       letterSpacing: v.letterSpacing
@@ -3313,7 +3399,7 @@ function TicketGridComponent({
           letterSpacing: ".01em"
         }}
       >
-        {selected ? "[OK] Tap to unselect" : "Tap to select"}
+        {selected ? "Tap to unselect" : "Tap to select"}
       </div>
     </div>
   );
@@ -5648,8 +5734,9 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                     marginTop: 16,
                     padding: 14,
                     borderRadius: 12,
-                    background: "#f0fdf4",
-                    color: "#166534",
+                    background: "var(--theme-prize-bg)",
+                    color: "var(--theme-accent)",
+                    border: "var(--theme-panel-border)",
                     fontWeight: "bold"
                   }}
                 >
@@ -5676,7 +5763,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                           borderRadius: 12,
                           background: "var(--theme-panel-bg, #f8fafc)",
                       color: "var(--theme-panel-text, #0f172a)",
-                          border: "1px solid #e2e8f0"
+                          border: "var(--theme-panel-border, 1px solid #e2e8f0)"
                         }}
                       >
                         <div style={{ fontWeight: "bold" }}>
@@ -5686,7 +5773,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                         <div
                           style={{
                             marginTop: 4,
-                            color: prize.locked ? "#166534" : "#64748b",
+                            color: prize.locked ? "var(--theme-accent)" : "var(--theme-muted, #64748b)",
                             fontWeight: "bold"
                           }}
                         >
@@ -5936,12 +6023,12 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
               display: "inline-block",
               padding: "8px 18px",
               borderRadius: 30,
-              background: "#dcfce7",
-              color: "#166534",
+              background: "var(--theme-status-live)",
+              color: "#ffffff",
               fontWeight: "bold"
             }}
           >
-            [DOT] LIVE GAME
+            LIVE GAME
           </div>
         </div>
 
@@ -6287,7 +6374,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
               onClick={() => setSearchText("")}
               style={themedSecondaryButton}
             >
-              [SEARCH] Search / Clear
+              Search / Clear
             </button>
           </div>
           <p style={{ color: "var(--theme-muted, #64748b)", marginBottom: 0 }}>
@@ -6473,7 +6560,7 @@ function LivePrizeList({ game, theme = "Classic" }) {
       style={{
         ...cardStyle,
         ...themeUI.card,
-        background: c.surface,
+        background: themeUI.visual.cardBackground,
         color: c.text,
         border: `1px solid ${c.accent}66`,
         marginBottom: 18
@@ -6500,8 +6587,8 @@ function LivePrizeList({ game, theme = "Classic" }) {
                   padding: 14,
                   borderRadius: "var(--theme-button-radius, 10px)",
                   background: locked
-                    ? `linear-gradient(135deg, ${c.secondary}30, ${c.surface2})`
-                    : c.surface2,
+                    ? `linear-gradient(135deg, ${c.secondary}35, ${c.surface2}), ${themeUI.visual.prizeBackground}`
+                    : themeUI.visual.prizeBackground,
                   border: `1px solid ${locked ? c.accent : c.secondary}88`,
                   color: c.text,
                   boxShadow: locked
@@ -8345,10 +8432,10 @@ function HostControlPage({
             ...themedCardStyle,
             border:
               isLive
-                ? "2px solid #22c55e"
+                ? `2px solid ${themeUI.colors.secondary}`
                 : isEnded
-                ? "2px solid #94a3b8"
-                : "1px solid #f59e0b"
+                ? `2px solid ${themeUI.colors.accent}88`
+                : `2px solid ${themeUI.colors.accent}`
           }}
         >
           <h2>
@@ -8365,16 +8452,11 @@ function HostControlPage({
                 25,
               background:
                 isLive
-                  ? "#dcfce7"
+                  ? "var(--theme-status-live)"
                   : isEnded
-                  ? "#e2e8f0"
-                  : "#fef3c7",
-              color:
-                isLive
-                  ? "#166534"
-                  : isEnded
-                  ? "#475569"
-                  : "#92400e",
+                  ? "var(--theme-status-ended)"
+                  : "var(--theme-status-upcoming)",
+              color: "#ffffff",
               fontWeight:
                 "bold",
               fontSize:
@@ -8382,7 +8464,7 @@ function HostControlPage({
             }}
           >
             {isLive
-              ? "[DOT] GAME LIVE"
+              ? "GAME LIVE"
               : isEnded
               ? "GAME ENDED"
               : "GAME UPCOMING"}
@@ -8670,7 +8752,7 @@ function HostControlPage({
               }
             >
               {copied
-                ? "[OK] Copied"
+                ? "Copied"
                 : "Copy Link"}
             </button>
 
@@ -8691,7 +8773,7 @@ function HostControlPage({
             >
               {posterCreating
                 ? "Creating Poster..."
-                : "[STYLE] GENERATE UPDATED PRIZE POSTER + SHARE"}
+                : "GENERATE UPDATED PRIZE POSTER + SHARE"}
             </button>
           </div>
 
@@ -8909,7 +8991,7 @@ function HostControlPage({
                                   : 1
                             }}
                           >
-                            [OK] APPROVE
+                            APPROVE
                           </button>
 
                           <button
@@ -8936,7 +9018,7 @@ function HostControlPage({
                                   : 1
                             }}
                           >
-                            [X] REJECT
+                            REJECT
                           </button>
                         </div>
                       )}
@@ -9013,7 +9095,7 @@ function HostControlPage({
               {gameAction
                 ? "STARTING..."
                 : isLive
-                ? "[OK] GAME IS LIVE"
+                ? "GAME IS LIVE"
                 : "START GAME"}
             </button>
 
@@ -9131,7 +9213,7 @@ function HostControlPage({
                       : 1
                 }}
               >
-                {autoCall ? "[STOP] STOP AUTO CALL" : "[PLAY] AUTO CALL"}
+                {autoCall ? "STOP AUTO CALL" : "AUTO CALL"}
               </button>
 
               <button
@@ -9145,7 +9227,7 @@ function HostControlPage({
                   opacity: !autoCall || callingNumber ? 0.55 : 1
                 }}
               >
-                {autoCallPaused ? "[PLAY] RESUME AUTO CALL" : "[PAUSE] PAUSE AUTO CALL"}
+                {autoCallPaused ? "RESUME AUTO CALL" : "PAUSE AUTO CALL"}
               </button>
 
               <button
@@ -9167,7 +9249,7 @@ function HostControlPage({
                       : 1
                 }}
               >
-                {callingNumber ? "CALLING..." : "[TAMBOLA] CALL NEXT"}
+                {callingNumber ? "CALLING..." : "CALL NEXT"}
               </button>
 
               <label
@@ -9228,7 +9310,7 @@ function HostControlPage({
                   fontWeight: "bold"
                 }}
               >
-                <span>[CALLER] Caller Style</span>
+                <span>Caller Style</span>
                 <select
                   value={callerMode}
                   onChange={(e) => setCallerMode(e.target.value)}
@@ -9244,7 +9326,7 @@ function HostControlPage({
                 >
                   <option value="classic">Classic</option>
                   <option value="indian"> Indian / Hinglish</option>
-                  <option value="fun">[CELEBRATE] English Rhyming</option>
+                  <option value="fun">English Rhyming</option>
                 </select>
               </label>
             </div>
@@ -9271,7 +9353,7 @@ function HostControlPage({
                   fontWeight: "bold"
                 }}
               >
-                <span>[VOICE] Voice Over</span>
+                <span>Voice Over</span>
                 <select
                   value={voicePreset}
                   onChange={(e) => {
@@ -9320,7 +9402,7 @@ function HostControlPage({
                   opacity: callingNumber ? 0.55 : 1
                 }}
               >
-                [SPEAKER] PREVIEW VOICE
+                PREVIEW VOICE
               </button>
 
               <div
@@ -9355,9 +9437,9 @@ function HostControlPage({
               }}
             >
               {autoCallPaused
-                ? "[PAUSE] AUTO CALL PAUSED"
+                ? "AUTO CALL PAUSED"
                 : autoCall
-                ? `[VOICE] AUTO CALL ACTIVE - every ${callIntervalSeconds} seconds`
+                ? `AUTO CALL ACTIVE - every ${callIntervalSeconds} seconds`
                 : "AUTO CALL OFF - use CALL NEXT or select a number manually"}
             </div>
 
@@ -9605,7 +9687,7 @@ function HostControlPage({
                   fontWeight: "bold"
                 }}
               >
-                [OK] WINNER POSTED AND PRIZE LOCKED AUTOMATICALLY
+                WINNER POSTED - PRIZE LOCKED
               </div>
 
               <div
@@ -9862,11 +9944,11 @@ function InfoBox({
     <div
       style={{
         padding: 16,
-        border: "1px solid var(--theme-secondary, #cbd5e1)",
-        borderRadius: 14,
+        border: "var(--theme-panel-border, 1px solid #cbd5e1)",
+        borderRadius: "var(--theme-input-radius, 14px)",
         background: "var(--theme-panel-bg, #f8fafc)",
         color: "var(--theme-panel-text, #0f172a)",
-        boxShadow: "0 8px 20px rgba(0,0,0,.12) inset"
+        boxShadow: "var(--theme-panel-shadow, 0 8px 20px rgba(0,0,0,.12) inset)"
       }}
     >
       <div
@@ -9903,9 +9985,9 @@ function StatusBox({
         textAlign:
           "center",
         border:
-          "1px solid var(--theme-secondary, #e5e7eb)",
+          "var(--theme-panel-border, 1px solid #e5e7eb)",
         borderRadius:
-          10,
+          "var(--theme-button-radius, 10px)",
         background:
           "var(--theme-panel-bg, #f8fafc)",
         color:
