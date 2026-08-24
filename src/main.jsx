@@ -3088,79 +3088,78 @@ function TicketGridComponent({
     switch (theme) {
       case "Royal":
         return {
-          shell: "linear-gradient(145deg, #2a123f 0%, #180b28 100%)",
-          grid: "#fff8df",
-          empty: "#f7edcf",
-          line: "#c9ad72",
-          text: "#24113f",
+          shell: "linear-gradient(145deg, #2b1242 0%, #12081e 100%)",
+          grid: "linear-gradient(145deg, #24113b 0%, #35175a 100%)",
+          empty: "#1a0d2b",
+          line: "#8e6bb0",
+          text: "#fff8df",
           muted: "#f5c542",
-          player: "rgba(245,197,66,.12)",
-          selected: "linear-gradient(145deg, #3b1b5d, #24113f)",
-          glow: "rgba(245,197,66,.28)"
+          player: "rgba(245,197,66,.14)",
+          selected: "linear-gradient(145deg, #4b216f, #21102f)",
+          glow: "rgba(245,197,66,.34)"
         };
       case "Party":
         return {
-          shell: "linear-gradient(145deg, #5a1247 0%, #2a0b25 100%)",
-          grid: "#fff7fb",
-          empty: "#f8eaf3",
-          line: "#e3a8c8",
-          text: "#3b1234",
-          muted: "#facc15",
-          player: "rgba(34,211,238,.12)",
-          selected: "linear-gradient(145deg, #7c1d5c, #4a123b)",
-          glow: "rgba(244,63,94,.30)"
+          shell: "linear-gradient(145deg, #68154f 0%, #260a23 100%)",
+          grid: "linear-gradient(145deg, #4d123d 0%, #741957 100%)",
+          empty: "#32102d",
+          line: "#d66aa7",
+          text: "#fff7fb",
+          muted: "#fde047",
+          player: "rgba(34,211,238,.14)",
+          selected: "linear-gradient(145deg, #8f246c, #47102f)",
+          glow: "rgba(244,63,94,.34)"
         };
       case "Bollywood":
         return {
-          shell: "linear-gradient(145deg, #6d1518 0%, #2c090b 100%)",
-          grid: "#fff8e9",
-          empty: "#f8ead5",
-          line: "#d9a26a",
-          text: "#4b1117",
-          muted: "#fbbf24",
-          player: "rgba(251,191,36,.14)",
-          selected: "linear-gradient(145deg, #8f1d1d, #4b1117)",
-          glow: "rgba(251,191,36,.30)"
+          shell: "linear-gradient(145deg, #71161a 0%, #28080a 100%)",
+          grid: "linear-gradient(145deg, #551013 0%, #861c20 100%)",
+          empty: "#3a0b0e",
+          line: "#d78b5b",
+          text: "#fff8e9",
+          muted: "#ffd166",
+          player: "rgba(251,191,36,.16)",
+          selected: "linear-gradient(145deg, #a92a2d, #511012)",
+          glow: "rgba(251,191,36,.34)"
         };
       case "Neon":
         return {
           shell: "linear-gradient(145deg, #0b1528 0%, #030712 100%)",
-          grid: "#0d1728",
-          empty: "#08111f",
-          line: "#334155",
+          grid: "linear-gradient(145deg, #0c1d35 0%, #081426 100%)",
+          empty: "#050c18",
+          line: "#24506c",
           text: "#f8fafc",
           muted: "#22d3ee",
-          player: "rgba(34,211,238,.10)",
-          selected: "linear-gradient(145deg, #101d38, #050814)",
-          glow: "rgba(34,211,238,.34)"
+          player: "rgba(34,211,238,.12)",
+          selected: "linear-gradient(145deg, #102b4b, #050814)",
+          glow: "rgba(34,211,238,.40)"
         };
       case "Elegant":
         return {
-          shell: "linear-gradient(145deg, #152b2a 0%, #0b1717 100%)",
-          grid: "#fff9e8",
-          empty: "#f2ead3",
-          line: "#b8a56a",
-          text: "#172033",
-          muted: "#d4af37",
-          player: "rgba(212,175,55,.12)",
-          selected: "linear-gradient(145deg, #193b37, #0c201e)",
-          glow: "rgba(212,175,55,.28)"
+          shell: "linear-gradient(145deg, #173330 0%, #091716 100%)",
+          grid: "linear-gradient(145deg, #183c38 0%, #102c29 100%)",
+          empty: "#0d211f",
+          line: "#5e8c82",
+          text: "#f8f4e8",
+          muted: "#e4c76a",
+          player: "rgba(212,175,55,.14)",
+          selected: "linear-gradient(145deg, #28534d, #0b201e)",
+          glow: "rgba(212,175,55,.34)"
         };
       default:
         return {
           shell: "linear-gradient(145deg, #102d55 0%, #07111f 100%)",
-          grid: "#f8fbff",
-          empty: "#eaf2fb",
-          line: "#9bb3cf",
-          text: "#0f172a",
+          grid: "linear-gradient(145deg, #153b68 0%, #0d294a 100%)",
+          empty: "#081a2e",
+          line: "#4b79a8",
+          text: "#f8fbff",
           muted: "#60a5fa",
-          player: "rgba(96,165,250,.12)",
+          player: "rgba(96,165,250,.14)",
           selected: "linear-gradient(145deg, #173e70, #0b1e36)",
-          glow: "rgba(96,165,250,.28)"
+          glow: "rgba(96,165,250,.34)"
         };
     }
   })();
-
   return (
     <div
       onClick={onSelect}
@@ -5636,7 +5635,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
         {playerBooking && (
           <section data-live-section="4-my-booked-tickets" style={themedCardStyle}>
             <h2>Your Booked Tickets</h2>
-            <p style={{ color: "var(--theme-muted, #64748b)" }}>
+            <p style={{ color: "var(--theme-muted, #94a3b8)", lineHeight: 1.5 }}>
               Player: <b>{playerBooking.playerName}</b>
             </p>
 
@@ -8879,11 +8878,13 @@ function HostControlPage({
                 maxWidth: 620,
                 maxHeight: "90vh",
                 overflowY: "auto",
-                background: "var(--theme-panel-bg, #fff)",
-                      color: "var(--theme-panel-text, #0f172a)",
-                borderRadius: 22,
-                padding: 24,
-                boxShadow: "0 25px 70px rgba(0,0,0,0.35)",
+                background: "var(--theme-panel-bg, #0f172a)",
+                 color: "var(--theme-panel-text, #f8fafc)",
+                 border: "1px solid var(--theme-accent, #60a5fa)55",
+                 borderRadius: "var(--theme-card-radius, 18px)",
+                 padding: "var(--theme-card-padding, 24px)",
+                 boxShadow: "0 25px 70px rgba(0,0,0,0.45), 0 0 35px var(--theme-glow, #60a5fa)22",
+                 backdropFilter: "blur(16px)",
                 textAlign: "center"
               }}
             >
