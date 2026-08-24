@@ -2,6 +2,21 @@
    TAMBOLA LIVE — THEME SYSTEM
    ========================================================= */
 
+:root {
+  --theme-primary: #d4a017;
+  --theme-secondary: #0b3d2e;
+  --theme-background: #061c14;
+  --theme-card: #09271d;
+  --theme-text: #fff8e7;
+  --theme-muted: #d8d0bd;
+  --theme-border: rgba(212, 160, 23, 0.55);
+  --theme-glow: rgba(212, 160, 23, 0.25);
+}
+
+/* =========================
+   CLASSIC
+   ========================= */
+
 .theme-classic {
   --theme-primary: #d4a017;
   --theme-secondary: #0b3d2e;
@@ -10,7 +25,12 @@
   --theme-text: #fff8e7;
   --theme-muted: #d8d0bd;
   --theme-border: rgba(212, 160, 23, 0.55);
+  --theme-glow: rgba(212, 160, 23, 0.25);
 }
+
+/* =========================
+   ROYAL
+   ========================= */
 
 .theme-royal {
   --theme-primary: #d4af37;
@@ -20,7 +40,12 @@
   --theme-text: #fff8e8;
   --theme-muted: #dfd1eb;
   --theme-border: rgba(212, 175, 55, 0.55);
+  --theme-glow: rgba(212, 175, 55, 0.25);
 }
+
+/* =========================
+   PARTY
+   ========================= */
 
 .theme-party {
   --theme-primary: #e83e8c;
@@ -30,7 +55,12 @@
   --theme-text: #ffffff;
   --theme-muted: #f1e5f4;
   --theme-border: rgba(232, 62, 140, 0.55);
+  --theme-glow: rgba(232, 62, 140, 0.25);
 }
+
+/* =========================
+   BOLLYWOOD
+   ========================= */
 
 .theme-bollywood {
   --theme-primary: #e5a21a;
@@ -40,7 +70,12 @@
   --theme-text: #fffaf0;
   --theme-muted: #f1d8cf;
   --theme-border: rgba(229, 162, 26, 0.55);
+  --theme-glow: rgba(229, 162, 26, 0.25);
 }
+
+/* =========================
+   NEON
+   ========================= */
 
 .theme-neon {
   --theme-primary: #00e5ff;
@@ -50,7 +85,12 @@
   --theme-text: #f5fbff;
   --theme-muted: #b9c9dc;
   --theme-border: rgba(0, 229, 255, 0.55);
+  --theme-glow: rgba(0, 229, 255, 0.3);
 }
+
+/* =========================
+   ELEGANT
+   ========================= */
 
 .theme-elegant {
   --theme-primary: #b18a45;
@@ -60,4 +100,232 @@
   --theme-text: #20262d;
   --theme-muted: #66717b;
   --theme-border: rgba(177, 138, 69, 0.5);
+  --theme-glow: rgba(177, 138, 69, 0.2);
+}
+
+
+/* =========================================================
+   COMMON SECTION FOUNDATION
+   ========================================================= */
+
+[data-live-section],
+[data-section-theme],
+.theme-section {
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   SECTION DECORATION
+   ========================================================= */
+
+[data-live-section]::before,
+[data-live-section]::after,
+[data-section-theme]::before,
+[data-section-theme]::after,
+.theme-section::before,
+.theme-section::after {
+  pointer-events: none;
+  position: absolute;
+  content: "";
+}
+
+
+/* =========================================================
+   CLASSIC SECTION DECORATION
+   ========================================================= */
+
+.theme-classic [data-live-section]::after,
+.theme-classic .theme-section::after {
+  width: 180px;
+  height: 180px;
+  right: -70px;
+  bottom: -80px;
+  border-radius: 50%;
+  border: 2px solid var(--theme-primary);
+  opacity: 0.12;
+  box-shadow:
+    0 0 0 20px rgba(212,160,23,.04),
+    0 0 40px var(--theme-glow);
+}
+
+
+/* =========================================================
+   ROYAL SECTION DECORATION
+   ========================================================= */
+
+.theme-royal [data-live-section]::after,
+.theme-royal .theme-section::after {
+  width: 150px;
+  height: 150px;
+  right: -55px;
+  top: -55px;
+  border-radius: 50%;
+  border: 2px solid var(--theme-primary);
+  opacity: 0.14;
+  box-shadow:
+    0 0 0 12px rgba(212,175,55,.04),
+    0 0 45px var(--theme-glow);
+}
+
+
+/* =========================================================
+   PARTY SECTION DECORATION
+   ========================================================= */
+
+.theme-party [data-live-section]::before,
+.theme-party .theme-section::before {
+  width: 90px;
+  height: 90px;
+  left: -35px;
+  bottom: -35px;
+  border-radius: 50%;
+  border: 3px dashed var(--theme-primary);
+  opacity: 0.12;
+  transform: rotate(15deg);
+}
+
+.theme-party [data-live-section]::after,
+.theme-party .theme-section::after {
+  width: 55px;
+  height: 55px;
+  right: 20px;
+  top: 18px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,.7) 0 4%, transparent 5%),
+    radial-gradient(circle, var(--theme-primary) 0 45%, transparent 46%);
+  opacity: 0.1;
+}
+
+
+/* =========================================================
+   BOLLYWOOD SECTION DECORATION
+   ========================================================= */
+
+.theme-bollywood [data-live-section]::after,
+.theme-bollywood .theme-section::after {
+  width: 190px;
+  height: 70px;
+  right: -55px;
+  bottom: -20px;
+  border: 3px solid var(--theme-primary);
+  border-radius: 50%;
+  transform: rotate(-12deg);
+  opacity: 0.12;
+}
+
+
+/* =========================================================
+   NEON SECTION DECORATION
+   ========================================================= */
+
+.theme-neon [data-live-section]::before,
+.theme-neon .theme-section::before {
+  inset: 8px;
+  border: 1px solid var(--theme-primary);
+  border-radius: inherit;
+  opacity: 0.08;
+  box-shadow:
+    0 0 18px var(--theme-glow),
+    inset 0 0 18px var(--theme-glow);
+}
+
+.theme-neon [data-live-section]::after,
+.theme-neon .theme-section::after {
+  width: 160px;
+  height: 160px;
+  right: -80px;
+  top: -80px;
+  border-radius: 50%;
+  border: 2px solid var(--theme-primary);
+  opacity: 0.14;
+  box-shadow: 0 0 35px var(--theme-glow);
+}
+
+
+/* =========================================================
+   ELEGANT SECTION DECORATION
+   ========================================================= */
+
+.theme-elegant [data-live-section]::after,
+.theme-elegant .theme-section::after {
+  width: 170px;
+  height: 170px;
+  right: -75px;
+  bottom: -75px;
+  border-radius: 50%;
+  border: 1px solid var(--theme-primary);
+  opacity: 0.13;
+}
+
+
+/* =========================================================
+   COMMON THEME ELEMENTS
+   ========================================================= */
+
+.theme-classic h1,
+.theme-classic h2,
+.theme-classic h3,
+.theme-royal h1,
+.theme-royal h2,
+.theme-royal h3,
+.theme-party h1,
+.theme-party h2,
+.theme-party h3,
+.theme-bollywood h1,
+.theme-bollywood h2,
+.theme-bollywood h3,
+.theme-neon h1,
+.theme-neon h2,
+.theme-neon h3,
+.theme-elegant h1,
+.theme-elegant h2,
+.theme-elegant h3 {
+  color: var(--theme-text);
+}
+
+.theme-classic input,
+.theme-classic select,
+.theme-classic textarea,
+.theme-royal input,
+.theme-royal select,
+.theme-royal textarea,
+.theme-party input,
+.theme-party select,
+.theme-party textarea,
+.theme-bollywood input,
+.theme-bollywood select,
+.theme-bollywood textarea,
+.theme-neon input,
+.theme-neon select,
+.theme-neon textarea,
+.theme-elegant input,
+.theme-elegant select,
+.theme-elegant textarea {
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+}
+
+.theme-classic button,
+.theme-royal button,
+.theme-party button,
+.theme-bollywood button,
+.theme-neon button,
+.theme-elegant button {
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    filter .18s ease;
+}
+
+.theme-classic button:hover,
+.theme-royal button:hover,
+.theme-party button:hover,
+.theme-bollywood button:hover,
+.theme-neon button:hover,
+.theme-elegant button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
