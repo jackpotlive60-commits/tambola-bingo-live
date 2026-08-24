@@ -67,9 +67,9 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
 
   const variants = {
     Classic: [
-      ["right -42px bottom -32px", "45% auto", "soft-light"],
-      ["left -46px bottom -28px", "40% auto", "multiply"],
-      ["right -36px top -34px", "43% auto", "soft-light"]
+      ["right -26px bottom -18px", "50% auto", "normal"],
+      ["left -30px bottom -16px", "46% auto", "normal"],
+      ["right -24px top -20px", "48% auto", "normal"]
     ],
     Royal: [
       ["right -42px top -30px", "43% auto", "soft-light"],
@@ -108,14 +108,15 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
     position: "relative",
     overflow: "hidden",
     backgroundColor: surface,
+    /* Artwork is the top background layer so it remains visible. */
     backgroundImage: [
-      `linear-gradient(90deg, ${surface} 0%, ${surface} 52%, ${surfaceAlt}e8 76%, ${surfaceAlt}24 100%)`,
-      `url("${image}")`
+      `url("${image}")`,
+      `linear-gradient(90deg, rgba(0,0,0,.34) 0%, rgba(0,0,0,.12) 48%, rgba(0,0,0,.24) 100%)`
     ].join(", "),
-    backgroundSize: `100% 100%, ${size}`,
-    backgroundPosition: `center, ${position}`,
+    backgroundSize: `${size}, 100% 100%`,
+    backgroundPosition: `${position}, center`,
     backgroundRepeat: "no-repeat, no-repeat",
-    backgroundBlendMode: `normal, ${blend}`,
+    backgroundBlendMode: `${blend}, normal`,
     ...extra
   };
 }
