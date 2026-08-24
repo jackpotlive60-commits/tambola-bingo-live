@@ -758,3 +758,206 @@
     right: -22%;
   }
 }
+
+/* =========================================================
+   VISUAL V2 â€” MOCKUP MATCH / STRONGER BLENDING
+   This override intentionally makes the theme artwork visible at
+   section edges while keeping the content area clean.
+========================================================= */
+
+.tl-theme-page {
+  --theme-section-art-opacity: .30 !important;
+  --theme-section-corner-size: 135% !important;
+}
+
+/* Use the actual theme background image as edge artwork, not the
+   whole composite page background/gradient. */
+.tl-theme-classic.tl-theme-page,
+.tl-theme-classic {
+  --theme-section-art-image: url('/assets/casino-background-mobile.jpg');
+}
+.tl-theme-royal.tl-theme-page,
+.tl-theme-royal {
+  --theme-section-art-image: url('/assets/royal-background-mobile.jpg');
+}
+.tl-theme-party.tl-theme-page,
+.tl-theme-party {
+  --theme-section-art-image: url('/assets/fun-background-mobile.jpg');
+}
+.tl-theme-bollywood.tl-theme-page,
+.tl-theme-bollywood {
+  --theme-section-art-image: url('/assets/bollywood-background-mobile.jpg');
+}
+.tl-theme-neon.tl-theme-page,
+.tl-theme-neon {
+  --theme-section-art-image: url('/assets/neon-background-mobile.jpg');
+}
+.tl-theme-elegant.tl-theme-page,
+.tl-theme-elegant {
+  --theme-section-art-image: url('/assets/elegant-background-mobile.jpg');
+}
+
+/* The application sections should feel like translucent windows into the
+   themed scene, not solid purple/green rectangles. */
+.tl-theme-page section {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--theme-bg) 48%, transparent),
+    color-mix(in srgb, var(--theme-bg) 34%, transparent)
+  ) !important;
+  backdrop-filter: blur(3px) saturate(1.08) !important;
+  -webkit-backdrop-filter: blur(3px) saturate(1.08) !important;
+  box-shadow:
+    0 12px 34px rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+
+.tl-theme-page section::before,
+.tl-theme-page section::after {
+  background-image: var(--theme-section-art-image) !important;
+  mix-blend-mode: normal !important;
+  filter: saturate(.95) contrast(1.03) !important;
+}
+
+.tl-theme-page section::before {
+  width: 68% !important;
+  height: 82% !important;
+  right: -22% !important;
+  top: -18% !important;
+  background-size: 145% auto !important;
+  opacity: var(--theme-section-art-opacity) !important;
+  mask-image: radial-gradient(ellipse at center, #000 0 42%, transparent 76%) !important;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 0 42%, transparent 76%) !important;
+}
+
+.tl-theme-page section::after {
+  width: 58% !important;
+  height: 64% !important;
+  left: -20% !important;
+  bottom: -18% !important;
+  background-size: 160% auto !important;
+  opacity: calc(var(--theme-section-art-opacity) * .72) !important;
+  mask-image: radial-gradient(ellipse at center, #000 0 38%, transparent 76%) !important;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 0 38%, transparent 76%) !important;
+}
+
+/* Main cards/panels use the same see-through treatment. */
+.tl-theme-page [style*="var(--theme-card-bg)"] {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--theme-bg) 55%, transparent),
+    color-mix(in srgb, var(--theme-bg) 40%, transparent)
+  ) !important;
+  backdrop-filter: blur(3px) saturate(1.06) !important;
+  -webkit-backdrop-filter: blur(3px) saturate(1.06) !important;
+}
+
+.tl-theme-page [style*="var(--theme-card-bg)"]::before,
+.tl-theme-page [style*="var(--theme-card-bg)"]::after {
+  background-image: var(--theme-section-art-image) !important;
+  mix-blend-mode: normal !important;
+  opacity: calc(var(--theme-section-art-opacity) * .82) !important;
+}
+
+/* Stronger visual identity per theme. */
+.tl-theme-royal.tl-theme-page {
+  --theme-section-art-opacity: .34 !important;
+  --theme-section-border: 1px solid rgba(231,196,91,.62) !important;
+}
+
+.tl-theme-classic.tl-theme-page {
+  --theme-section-art-opacity: .31 !important;
+}
+
+.tl-theme-party.tl-theme-page {
+  --theme-section-art-opacity: .30 !important;
+}
+
+.tl-theme-bollywood.tl-theme-page {
+  --theme-section-art-opacity: .30 !important;
+}
+
+.tl-theme-neon.tl-theme-page {
+  --theme-section-art-opacity: .26 !important;
+}
+
+.tl-theme-elegant.tl-theme-page {
+  --theme-section-art-opacity: .18 !important;
+}
+
+/* HERO: make it shorter and let its artwork remain visible. */
+.tl-theme-page .tl-theme-hero {
+  min-height: 108px !important;
+  margin-bottom: 12px !important;
+  padding: 14px 18px !important;
+  border-radius: 20px !important;
+  background: color-mix(in srgb, var(--theme-bg) 54%, transparent) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+}
+
+.tl-theme-page .tl-theme-hero > div:first-child {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--theme-bg) 72%, transparent) 0%,
+    color-mix(in srgb, var(--theme-bg) 46%, transparent) 48%,
+    transparent 82%
+  ) !important;
+  opacity: 1 !important;
+}
+
+.tl-theme-page .tl-theme-hero h1,
+.tl-theme-page .tl-theme-hero h2,
+.tl-theme-page .tl-theme-hero h3 {
+  position: relative;
+  z-index: 3;
+  margin: 0 0 6px !important;
+  line-height: 1.08 !important;
+}
+
+.tl-theme-page .tl-theme-hero p {
+  position: relative;
+  z-index: 3;
+  color: var(--theme-text) !important;
+  opacity: .82 !important;
+  margin: 0 !important;
+  line-height: 1.35 !important;
+}
+
+@media (max-width: 520px) {
+  .tl-theme-page {
+    padding-top: 8px !important;
+  }
+
+  .tl-theme-page .tl-theme-hero {
+    min-height: 94px !important;
+    max-height: 128px !important;
+    padding: 12px 16px !important;
+  }
+
+  .tl-theme-page .tl-theme-hero h1,
+  .tl-theme-page .tl-theme-hero h2,
+  .tl-theme-page .tl-theme-hero h3 {
+    font-size: 30px !important;
+  }
+
+  .tl-theme-page .tl-theme-hero p {
+    font-size: 15px !important;
+  }
+
+  .tl-theme-page section::before {
+    width: 72% !important;
+    height: 72% !important;
+    right: -26% !important;
+    top: -16% !important;
+    background-size: 155% auto !important;
+  }
+
+  .tl-theme-page section::after {
+    width: 62% !important;
+    height: 58% !important;
+    left: -24% !important;
+    bottom: -18% !important;
+    background-size: 170% auto !important;
+  }
+}
