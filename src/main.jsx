@@ -29,6 +29,19 @@ const THEMES = [
   "Elegant"
 ];
 
+const THEME_LOGOS = {
+  Classic: "/assets/casino-logo.png",
+  Royal: "/assets/royal-logo.png",
+  Party: "/assets/fun-logo.png",
+  Bollywood: "/assets/bollywood-logo.png",
+  Neon: "/assets/neon-logo.png",
+  Elegant: "/assets/elegant-logo.png"
+};
+
+function getThemeLogo(theme) {
+  return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
+}
+
 /* =========================================================
    THEME DESIGN SYSTEM
    Runtime definitions mirror /public/themes/theme-designs.json
@@ -1538,6 +1551,7 @@ function getThemeUI(theme) {
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
+  const logo = getThemeLogo(theme);
 
   const ball = (number, size, offset, opacity = 1) => ({
     position: "absolute",
@@ -1568,14 +1582,14 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         borderRadius: 24,
         border: `1px solid ${c.accent}66`,
         background: ui.design.hero.surface,
-         backgroundImage: ui.design.backgroundImage
-           ? `linear-gradient(${ui.design.page.overlay}, ${ui.design.page.overlay}), url("${ui.design.backgroundImage}")`
-           : undefined,
-         backgroundSize: "cover",
-         backgroundPosition: "center",
+        backgroundImage: ui.design.backgroundImage
+          ? `linear-gradient(${ui.design.page.overlay}, ${ui.design.page.overlay}), url("${ui.design.backgroundImage}")`
+          : undefined,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         boxShadow: `0 18px 50px rgba(0,0,0,.30), 0 0 40px ${c.secondary}18`,
-        color: "#fff",
-        padding: compact ? "22px 24px" : "28px 30px",
+        color: ui.design.hero.text,
+        padding: compact ? "18px 20px" : "24px 26px",
         boxSizing: "border-box"
       }}
     >
@@ -1587,23 +1601,81 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
           pointerEvents: "none"
         }}
       />
-      <div style={{ position: "relative", zIndex: 2, maxWidth: "72%" }}>
-        <div style={{ fontSize: 12, letterSpacing: 2.5, textTransform: "uppercase", color: c.accent, fontWeight: 800 }}>
-          {theme || "Classic"} - TAMBOLA LIVE
-        </div>
-        <div style={{ fontSize: compact ? 25 : 32, lineHeight: 1.08, fontWeight: 900, marginTop: 8 }}>
-          {title}
-        </div>
-        {subtitle && (
-          <div style={{ marginTop: 8, color: "var(--theme-panel-muted, #64748b)", fontSize: 14 }}>
-            {subtitle}
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: compact ? 14 : 18,
+          minHeight: compact ? 84 : 105,
+          paddingRight: compact ? 120 : 185
+        }}
+      >
+        <img
+          src={logo}
+          alt={`${theme || "Classic"} Tambola Live`}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+          style={{
+            width: compact ? 92 : 132,
+            maxWidth: compact ? 92 : 132,
+            maxHeight: compact ? 58 : 78,
+            height: "auto",
+            objectFit: "contain",
+            objectPosition: "left center",
+            flex: "0 0 auto",
+            filter: `drop-shadow(0 5px 14px ${c.secondary}55)`,
+            display: "block"
+          }}
+        />
+
+        <div style={{ minWidth: 0, maxWidth: "100%" }}>
+          <div
+            style={{
+              fontSize: compact ? 10 : 11,
+              letterSpacing: 2.2,
+              textTransform: "uppercase",
+              color: c.accent,
+              fontWeight: 800
+            }}
+          >
+            {theme || "Classic"} THEME
           </div>
-        )}
+
+          <div
+            style={{
+              fontSize: compact ? 22 : 30,
+              lineHeight: 1.08,
+              fontWeight: 900,
+              marginTop: 6,
+              overflowWrap: "anywhere"
+            }}
+          >
+            {title}
+          </div>
+
+          {subtitle && (
+            <div
+              style={{
+                marginTop: 7,
+                color: "var(--theme-panel-muted, #64748b)",
+                fontSize: compact ? 12 : 14,
+                lineHeight: 1.35
+              }}
+            >
+              {subtitle}
+            </div>
+          )}
+        </div>
       </div>
+
       <div aria-hidden="true">
-        <div style={ball(7, compact ? 68 : 86, { right: 116, top: compact ? 24 : 30 }, .88)}>7</div>
-        <div style={ball(42, compact ? 86 : 110, { right: 42, top: compact ? 14 : 18 }, 1)}>42</div>
-        <div style={ball(89, compact ? 54 : 68, { right: 178, bottom: compact ? -18 : -22 }, .62)}>89</div>
+        <div style={ball(7, compact ? 58 : 76, { right: 105, top: compact ? 24 : 28 }, .88)}>7</div>
+        <div style={ball(42, compact ? 72 : 96, { right: 30, top: compact ? 12 : 15 }, 1)}>42</div>
+        <div style={ball(89, compact ? 48 : 60, { right: 162, bottom: compact ? -16 : -20 }, .62)}>89</div>
       </div>
     </div>
   );
@@ -2523,9 +2595,21 @@ function CreateGamePage({
               25
           }}
         >
-          <h1>
-            TAMBOLA LIVE
-          </h1>
+          <img
+            src={getThemeLogo(theme)}
+            alt={`${theme} Tambola Live`}
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+            style={{
+              width: "min(260px, 78vw)",
+              maxHeight: 82,
+              objectFit: "contain",
+              display: "block",
+              margin: "0 auto 10px",
+              filter: `drop-shadow(0 5px 14px ${themeUI.colors.secondary}44)`
+            }}
+          />
 
           <p
             style={{
