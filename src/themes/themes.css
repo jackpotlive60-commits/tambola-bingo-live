@@ -1,0 +1,63 @@
+/* =========================================================
+   TAMBOLA LIVE — THEME SYSTEM
+   ========================================================= */
+
+.theme-classic {
+  --theme-primary: #d4a017;
+  --theme-secondary: #0b3d2e;
+  --theme-background: #061c14;
+  --theme-card: #09271d;
+  --theme-text: #fff8e7;
+  --theme-muted: #d8d0bd;
+  --theme-border: rgba(212, 160, 23, 0.55);
+}
+
+.theme-royal {
+  --theme-primary: #d4af37;
+  --theme-secondary: #5b1a73;
+  --theme-background: #190b25;
+  --theme-card: #24102f;
+  --theme-text: #fff8e8;
+  --theme-muted: #dfd1eb;
+  --theme-border: rgba(212, 175, 55, 0.55);
+}
+
+.theme-party {
+  --theme-primary: #e83e8c;
+  --theme-secondary: #6d174f;
+  --theme-background: #280b2c;
+  --theme-card: #38133a;
+  --theme-text: #ffffff;
+  --theme-muted: #f1e5f4;
+  --theme-border: rgba(232, 62, 140, 0.55);
+}
+
+.theme-bollywood {
+  --theme-primary: #e5a21a;
+  --theme-secondary: #681018;
+  --theme-background: #260708;
+  --theme-card: #3a0d0d;
+  --theme-text: #fffaf0;
+  --theme-muted: #f1d8cf;
+  --theme-border: rgba(229, 162, 26, 0.55);
+}
+
+.theme-neon {
+  --theme-primary: #00e5ff;
+  --theme-secondary: #7c3aed;
+  --theme-background: #030712;
+  --theme-card: #071321;
+  --theme-text: #f5fbff;
+  --theme-muted: #b9c9dc;
+  --theme-border: rgba(0, 229, 255, 0.55);
+}
+
+.theme-elegant {
+  --theme-primary: #b18a45;
+  --theme-secondary: #252b32;
+  --theme-background: #e9e5dc;
+  --theme-card: #f3f0e8;
+  --theme-text: #20262d;
+  --theme-muted: #66717b;
+  --theme-border: rgba(177, 138, 69, 0.5);
+}
