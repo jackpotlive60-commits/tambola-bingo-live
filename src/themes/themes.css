@@ -1,539 +1,613 @@
-/*
-  TambolaLive Theme Engine
-  -------------------------
-  main.jsx only selects the theme.  This file owns the visual language:
-  page, sections, cards, controls, status surfaces and responsive blending.
-*/
+/* =========================================================
+   TAMBOLA LIVE â€” PREMIUM THEME SYSTEM
+   UI-only stylesheet. No game logic or theme selection logic.
+
+   Design target:
+   - one unified page surface per theme
+   - no large photographic page background
+   - artwork only as restrained corner/edge decoration
+   - premium cards with readable content
+   - compact, polished mobile layout
+   ========================================================= */
 
 :root {
-  --theme-transition: 180ms ease;
-  --theme-page-background: #0b1d16;
-  --theme-bg: #0b1d16;
-  --theme-text: #fff8e7;
-  --theme-muted: #d8d0bd;
-  --theme-accent: #f5c542;
-  --theme-secondary: #f0c94a;
-  --theme-glow: #f0c94a;
-  --theme-card-bg: rgba(10, 36, 27, .94);
-  --theme-panel-bg: rgba(14, 48, 35, .94);
-  --theme-prize-bg: rgba(18, 58, 42, .96);
-  --theme-secondary-bg: rgba(22, 67, 49, .96);
-  --theme-section-bg: rgba(12, 43, 32, .72);
-  --theme-card-border: 1px solid rgba(212,175,55,.55);
-  --theme-section-border: 1px solid rgba(212,175,55,.45);
-  --theme-panel-border: 1px solid rgba(212,175,55,.62);
-  --theme-card-shadow: 0 14px 34px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05);
-  --theme-section-shadow: 0 10px 28px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.045);
-  --theme-panel-shadow: 0 10px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,244,190,.08);
-  --theme-card-backdrop: blur(10px);
-  --theme-section-backdrop: blur(10px);
-  --theme-card-radius: 16px;
-  --theme-input-radius: 10px;
+  --theme-transition: 220ms ease;
+  --theme-page-radius: 0;
+  --theme-card-radius: 18px;
+  --theme-input-radius: 11px;
   --theme-button-radius: 10px;
-  --theme-card-padding: 22px;
-  --theme-input-padding: 11px 13px;
-  --theme-button-padding: 11px 17px;
-  --theme-letter-spacing: .01em;
-  --theme-button-weight: 800;
-  --theme-input-bg: #f8f6ef;
-  --theme-input-text: #172018;
-  --theme-input-border: 1px solid #c9a93b;
-  --theme-input-shadow: 0 6px 16px rgba(0,0,0,.12);
-  --theme-primary-button: linear-gradient(135deg,#c99a1e,#f0c94a);
-  --theme-secondary-border: 1px solid rgba(212,175,55,.55);
-  --theme-primary-border: 1px solid #c99a1e;
-  --theme-button-text: #17120a;
-  --theme-button-shadow: 0 8px 20px rgba(0,0,0,.20);
-  --theme-status-live: linear-gradient(135deg,#14532d,#166534);
-  --theme-status-ended: linear-gradient(135deg,#3f3f46,#27272a);
-  --theme-status-upcoming: linear-gradient(135deg,#854d0e,#713f12);
-  --theme-hero-bg: rgba(5,35,25,.82);
-  --theme-hero-border: rgba(212,175,55,.55);
-  --theme-hero-shadow: 0 16px 42px rgba(0,0,0,.28);
-}
-
-/* =========================================================
-   CLASSIC / CASINO
-========================================================= */
-.tl-theme-classic {
-  --theme-visual: url('/assets/classic-casino-visual.png');
-  --theme-bg: #071c14;
-  --theme-text: #fff8e7;
-  --theme-muted: #d8d0bd;
-  --theme-accent: #f5c542;
-  --theme-secondary: #f0c94a;
-  --theme-glow: #f0c94a;
-  --theme-page-background:
-    radial-gradient(circle at 10% 8%, rgba(80,210,150,.16), transparent 28%),
-    radial-gradient(circle at 90% 82%, rgba(245,197,66,.09), transparent 30%),
-    linear-gradient(145deg,#06150f,#0b2118 55%,#06100d);
-  --theme-card-bg:
-    linear-gradient(145deg,rgba(12,49,35,.94),rgba(3,25,18,.96));
-  --theme-panel-bg:
-    linear-gradient(145deg,rgba(17,57,42,.94),rgba(5,31,22,.96));
-  --theme-prize-bg:
-    linear-gradient(135deg,rgba(24,67,48,.96),rgba(8,35,25,.98));
-  --theme-secondary-bg:
-    linear-gradient(135deg,rgba(27,73,52,.96),rgba(9,39,28,.98));
-  --theme-section-bg:
-    linear-gradient(145deg,rgba(12,47,34,.78),rgba(4,28,20,.86));
-  --theme-card-border: 1px solid rgba(212,175,55,.55);
-  --theme-section-border: 1px solid rgba(212,175,55,.44);
-  --theme-panel-border: 1px solid rgba(212,175,55,.62);
-  --theme-card-shadow: 0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,244,190,.06);
-  --theme-section-shadow: 0 10px 28px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,244,190,.05);
-  --theme-card-radius: 16px;
-  --theme-input-radius: 9px;
-  --theme-button-radius: 9px;
-  --theme-primary-button: linear-gradient(135deg,#c99a1e,#f0c94a);
-  --theme-button-text: #17120a;
-  --theme-primary-border: 1px solid #c99a1e;
-  --theme-secondary-border: 1px solid rgba(212,175,55,.55);
-  --theme-hero-bg: rgba(5,35,25,.82);
-  --theme-hero-border: rgba(212,175,55,.62);
-}
-
-/* =========================================================
-   ROYAL
-========================================================= */
-.tl-theme-royal {
-  --theme-visual: url('/assets/royal-visual.png');
-  --theme-bg: #18082a;
-  --theme-text: #fff8e8;
-  --theme-muted: #dfd1eb;
-  --theme-accent: #f5c542;
-  --theme-secondary: #f3d36a;
-  --theme-glow: #8b5cf6;
-  --theme-page-background:
-    radial-gradient(circle at 12% 8%, rgba(139,92,246,.18), transparent 30%),
-    radial-gradient(circle at 88% 78%, rgba(245,197,66,.10), transparent 28%),
-    linear-gradient(145deg,#10071b,#241032 55%,#0b0612);
-  --theme-card-bg:
-    linear-gradient(145deg,rgba(54,19,76,.95),rgba(23,7,38,.98));
-  --theme-panel-bg:
-    linear-gradient(145deg,rgba(66,26,88,.96),rgba(28,10,45,.98));
-  --theme-prize-bg:
-    linear-gradient(135deg,rgba(74,30,99,.96),rgba(31,10,49,.98));
-  --theme-secondary-bg:
-    linear-gradient(135deg,rgba(75,34,104,.96),rgba(37,13,55,.98));
-  --theme-section-bg:
-    linear-gradient(145deg,rgba(54,19,76,.76),rgba(23,7,38,.86));
-  --theme-card-border: 1px solid rgba(231,196,91,.55);
-  --theme-section-border: 1px solid rgba(231,196,91,.45);
-  --theme-panel-border: 1px solid rgba(231,196,91,.70);
-  --theme-card-shadow: 0 20px 48px rgba(35,10,55,.34),inset 0 1px 0 rgba(255,255,255,.08);
-  --theme-section-shadow: 0 14px 36px rgba(20,5,32,.30),inset 0 1px 0 rgba(255,255,255,.06);
-  --theme-card-backdrop: blur(14px);
-  --theme-section-backdrop: blur(12px);
-  --theme-card-radius: 24px;
-  --theme-input-radius: 13px;
-  --theme-button-radius: 13px;
-  --theme-card-padding: 26px;
-  --theme-input-padding: 12px 15px;
-  --theme-button-padding: 12px 20px;
-  --theme-letter-spacing: .035em;
-  --theme-button-weight: 900;
-  --theme-primary-button: linear-gradient(135deg,#d4a72c,#f3d36a);
-  --theme-button-text: #201326;
-  --theme-primary-border: 1px solid #d4a72c;
-  --theme-secondary-border: 1px solid rgba(231,196,91,.55);
-  --theme-button-shadow: 0 12px 30px rgba(100,55,130,.28),inset 0 1px 0 rgba(255,255,255,.12);
-  --theme-hero-bg: rgba(42,16,65,.82);
-  --theme-hero-border: rgba(231,196,91,.65);
-}
-
-/* =========================================================
-   PARTY / FUN
-========================================================= */
-.tl-theme-party {
-  --theme-visual: url('/assets/party-visual.png');
-  --theme-bg: #2b0c35;
-  --theme-text: #fff;
-  --theme-muted: #f1e5f4;
-  --theme-accent: #22d3ee;
-  --theme-secondary: #ec4899;
-  --theme-glow: #22d3ee;
-  --theme-page-background:
-    radial-gradient(circle at 12% 10%, rgba(236,72,153,.18), transparent 28%),
-    radial-gradient(circle at 88% 76%, rgba(34,211,238,.13), transparent 30%),
-    linear-gradient(145deg,#130817,#2a0c35 55%,#0d0610);
-  --theme-card-bg:
-    radial-gradient(circle at 12% 16%,rgba(236,72,153,.13) 0 2px,transparent 3px),
-    radial-gradient(circle at 84% 24%,rgba(34,211,238,.13) 0 2px,transparent 3px),
-    linear-gradient(145deg,rgba(67,18,75,.93),rgba(38,9,48,.97));
-  --theme-panel-bg:
-    linear-gradient(145deg,rgba(79,22,81,.95),rgba(45,11,55,.98));
-  --theme-prize-bg: linear-gradient(135deg,rgba(110,27,92,.96),rgba(55,12,63,.98));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(123,31,91,.96),rgba(52,15,68,.98));
-  --theme-section-bg: linear-gradient(145deg,rgba(67,18,75,.76),rgba(38,9,48,.86));
-  --theme-card-border: 2px solid rgba(250,204,21,.50);
-  --theme-section-border: 1px solid rgba(250,204,21,.42);
-  --theme-panel-border: 2px solid rgba(250,204,21,.58);
-  --theme-card-shadow: 0 18px 40px rgba(70,10,55,.26),0 0 18px rgba(236,72,153,.07);
-  --theme-section-shadow: 0 14px 32px rgba(44,6,53,.26),0 0 18px rgba(236,72,153,.07);
-  --theme-card-backdrop: blur(8px);
-  --theme-section-backdrop: blur(8px);
-  --theme-card-radius: 30px;
-  --theme-input-radius: 17px;
-  --theme-button-radius: 22px;
-  --theme-card-padding: 22px;
-  --theme-input-padding: 12px 15px;
-  --theme-button-padding: 12px 20px;
-  --theme-letter-spacing: .015em;
-  --theme-button-weight: 900;
-  --theme-primary-button: linear-gradient(135deg,#ec4899,#22d3ee);
-  --theme-button-text: #fff;
-  --theme-primary-border: 1px solid rgba(255,255,255,.20);
-  --theme-secondary-border: 1px solid rgba(250,204,21,.50);
-  --theme-button-shadow: 0 11px 25px rgba(230,45,115,.24),0 0 14px rgba(34,211,238,.08);
-  --theme-hero-bg: rgba(76,18,79,.78);
-  --theme-hero-border: rgba(250,204,21,.58);
-}
-
-/* =========================================================
-   BOLLYWOOD
-========================================================= */
-.tl-theme-bollywood {
-  --theme-visual: url('/assets/bollywood-visual.png');
-  --theme-bg: #3b080f;
-  --theme-text: #fffaf0;
-  --theme-muted: #f1d8cf;
-  --theme-accent: #fbbf24;
-  --theme-secondary: #f59e0b;
-  --theme-glow: #fbbf24;
-  --theme-page-background:
-    radial-gradient(circle at 10% 8%, rgba(251,191,36,.12), transparent 28%),
-    radial-gradient(circle at 90% 78%, rgba(239,68,68,.14), transparent 30%),
-    linear-gradient(145deg,#180508,#3b080f 55%,#100306);
-  --theme-card-bg:
-    radial-gradient(circle at 10% 10%,rgba(251,191,36,.12) 0 2px,transparent 3px),
-    radial-gradient(circle at 90% 10%,rgba(251,191,36,.10) 0 2px,transparent 3px),
-    linear-gradient(145deg,rgba(91,16,22,.95),rgba(44,6,12,.98));
-  --theme-panel-bg: linear-gradient(145deg,rgba(111,24,30,.96),rgba(51,8,14,.98));
-  --theme-prize-bg: linear-gradient(135deg,rgba(128,26,28,.96),rgba(59,8,14,.98));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(151,42,23,.96),rgba(70,10,15,.98));
-  --theme-section-bg: linear-gradient(145deg,rgba(91,16,22,.76),rgba(44,6,12,.88));
-  --theme-card-border: 1px solid rgba(251,191,36,.55);
-  --theme-section-border: 1px solid rgba(251,191,36,.45);
-  --theme-panel-border: 1px solid rgba(251,191,36,.72);
-  --theme-card-shadow: 0 18px 44px rgba(70,5,10,.30),inset 0 1px 0 rgba(255,220,150,.08);
-  --theme-section-shadow: 0 14px 34px rgba(52,4,9,.30),inset 0 1px 0 rgba(255,220,150,.06);
-  --theme-card-backdrop: blur(12px);
-  --theme-section-backdrop: blur(10px);
-  --theme-card-radius: 13px;
-  --theme-input-radius: 7px;
-  --theme-button-radius: 7px;
-  --theme-card-padding: 24px;
-  --theme-input-padding: 11px 13px;
-  --theme-button-padding: 11px 19px;
-  --theme-letter-spacing: .025em;
-  --theme-button-weight: 900;
-  --theme-primary-button: linear-gradient(135deg,#d97706,#fbbf24);
-  --theme-button-text: #fff;
-  --theme-primary-border: 1px solid rgba(251,191,36,.55);
-  --theme-secondary-border: 1px solid rgba(251,191,36,.55);
-  --theme-button-shadow: 0 11px 28px rgba(150,30,20,.28),inset 0 1px 0 rgba(255,220,150,.08);
-  --theme-hero-bg: rgba(89,16,22,.82);
-  --theme-hero-border: rgba(251,191,36,.66);
-}
-
-/* =========================================================
-   NEON
-========================================================= */
-.tl-theme-neon {
-  --theme-visual: url('/assets/neon-visual.png');
-  --theme-bg: #020914;
-  --theme-text: #f5fbff;
-  --theme-muted: #b9c9dc;
-  --theme-accent: #22d3ee;
-  --theme-secondary: #8b5cf6;
-  --theme-glow: #22d3ee;
-  --theme-page-background:
-    radial-gradient(circle at 10% 10%, rgba(34,211,238,.16), transparent 28%),
-    radial-gradient(circle at 90% 78%, rgba(139,92,246,.15), transparent 30%),
-    linear-gradient(145deg,#020711,#071326 55%,#01040b);
-  --theme-card-bg:
-    linear-gradient(145deg,rgba(4,18,38,.95),rgba(2,8,20,.99)),
-    repeating-linear-gradient(90deg,transparent 0 28px,rgba(34,211,238,.055) 29px,transparent 30px),
-    repeating-linear-gradient(0deg,transparent 0 28px,rgba(139,92,246,.045) 29px,transparent 30px);
-  --theme-panel-bg:
-    linear-gradient(145deg,rgba(8,29,55,.96),rgba(2,12,28,.99));
-  --theme-prize-bg:
-    linear-gradient(135deg,rgba(12,42,74,.96),rgba(4,18,40,.99));
-  --theme-secondary-bg:
-    linear-gradient(135deg,rgba(10,48,75,.96),rgba(20,19,61,.99));
-  --theme-section-bg:
-    linear-gradient(145deg,rgba(4,18,38,.78),rgba(2,8,20,.90));
-  --theme-card-border: 1px solid rgba(34,211,238,.60);
-  --theme-section-border: 1px solid rgba(34,211,238,.52);
-  --theme-panel-border: 1px solid rgba(34,211,238,.72);
-  --theme-card-shadow: 0 0 0 1px rgba(139,92,246,.20) inset,0 0 28px rgba(34,211,238,.12),0 14px 34px rgba(0,0,0,.30);
-  --theme-section-shadow: 0 0 0 1px rgba(139,92,246,.12) inset,0 0 22px rgba(34,211,238,.09),0 12px 30px rgba(0,0,0,.28);
-  --theme-card-backdrop: blur(18px);
-  --theme-section-backdrop: blur(14px);
-  --theme-card-radius: 8px;
-  --theme-input-radius: 6px;
-  --theme-button-radius: 6px;
   --theme-card-padding: 20px;
-  --theme-input-padding: 10px 12px;
-  --theme-button-padding: 10px 16px;
-  --theme-letter-spacing: .04em;
-  --theme-button-weight: 900;
-  --theme-primary-button: linear-gradient(135deg,#0891b2,#8b5cf6);
-  --theme-button-text: #fff;
-  --theme-primary-border: 1px solid rgba(34,211,238,.70);
-  --theme-secondary-border: 1px solid rgba(34,211,238,.55);
-  --theme-button-shadow: 0 0 20px rgba(34,211,238,.28),inset 0 0 12px rgba(139,92,246,.12);
-  --theme-hero-bg: rgba(3,13,30,.82);
-  --theme-hero-border: rgba(34,211,238,.72);
+  --theme-control-shadow: 0 8px 22px rgba(0,0,0,.18);
+  --theme-page-shadow: inset 0 1px 0 rgba(255,255,255,.03);
 }
 
 /* =========================================================
-   ELEGANT
-========================================================= */
+   THEME-SPECIFIC TOKENS
+   These remain available if a wrapper receives one of the
+   tl-theme-* classes. The runtime main.jsx variables are also
+   supported, so no JSX change is required.
+   ========================================================= */
+
+.tl-theme-classic {
+  --theme-page-gradient:
+    radial-gradient(circle at 12% 4%, rgba(245,197,66,.12), transparent 28%),
+    radial-gradient(circle at 92% 82%, rgba(34,197,94,.10), transparent 30%),
+    linear-gradient(145deg,#06150f 0%,#0b2118 54%,#06100d 100%);
+}
+
+.tl-theme-royal {
+  --theme-page-gradient:
+    radial-gradient(circle at 12% 5%, rgba(139,92,246,.18), transparent 30%),
+    radial-gradient(circle at 90% 82%, rgba(245,197,66,.11), transparent 30%),
+    linear-gradient(145deg,#10071b 0%,#241032 55%,#0b0612 100%);
+}
+
+.tl-theme-party {
+  --theme-page-gradient:
+    radial-gradient(circle at 10% 5%, rgba(236,72,153,.18), transparent 29%),
+    radial-gradient(circle at 90% 78%, rgba(34,211,238,.13), transparent 30%),
+    linear-gradient(145deg,#130817 0%,#2a0c35 55%,#0d0610 100%);
+}
+
+.tl-theme-bollywood {
+  --theme-page-gradient:
+    radial-gradient(circle at 10% 5%, rgba(251,191,36,.12), transparent 28%),
+    radial-gradient(circle at 90% 78%, rgba(239,68,68,.14), transparent 30%),
+    linear-gradient(145deg,#180508 0%,#3b080f 55%,#100306 100%);
+}
+
+.tl-theme-neon {
+  --theme-page-gradient:
+    radial-gradient(circle at 10% 5%, rgba(34,211,238,.16), transparent 28%),
+    radial-gradient(circle at 90% 78%, rgba(139,92,246,.16), transparent 30%),
+    linear-gradient(145deg,#020711 0%,#071326 55%,#01040b 100%);
+}
+
 .tl-theme-elegant {
-  --theme-visual: url('/assets/elegant-visual.png');
-  --theme-bg: #e9e5db;
-  --theme-text: #20262d;
-  --theme-muted: #66717b;
-  --theme-accent: #a98532;
-  --theme-secondary: #d1b56a;
-  --theme-glow: #a98532;
-  --theme-page-background:
-    radial-gradient(circle at 10% 8%, rgba(169,133,50,.09), transparent 30%),
-    radial-gradient(circle at 90% 78%, rgba(255,255,255,.06), transparent 30%),
-    linear-gradient(145deg,#d9d5cb,#ece9e1 55%,#d2cec4);
-  --theme-card-bg:
-    linear-gradient(145deg,rgba(250,248,243,.95),rgba(235,231,221,.95));
-  --theme-panel-bg:
-    linear-gradient(145deg,rgba(255,253,248,.97),rgba(238,234,224,.95));
-  --theme-prize-bg:
-    linear-gradient(135deg,rgba(255,253,248,.98),rgba(239,235,226,.97));
-  --theme-secondary-bg:
-    linear-gradient(135deg,rgba(255,253,248,.97),rgba(231,225,211,.97));
-  --theme-section-bg:
-    linear-gradient(145deg,rgba(250,248,243,.84),rgba(235,231,221,.84));
-  --theme-card-border: 1px solid rgba(169,139,67,.38);
-  --theme-section-border: 1px solid rgba(169,139,67,.30);
-  --theme-panel-border: 1px solid rgba(169,139,67,.55);
-  --theme-card-shadow: 0 14px 30px rgba(48,43,34,.15),inset 0 1px 0 rgba(255,255,255,.80);
-  --theme-section-shadow: 0 10px 26px rgba(48,43,34,.12),inset 0 1px 0 rgba(255,255,255,.72);
-  --theme-card-backdrop: blur(13px);
-  --theme-section-backdrop: blur(10px);
-  --theme-card-radius: 11px;
-  --theme-input-radius: 6px;
-  --theme-button-radius: 6px;
-  --theme-card-padding: 25px;
-  --theme-input-padding: 11px 13px;
-  --theme-button-padding: 11px 19px;
-  --theme-letter-spacing: .035em;
-  --theme-button-weight: 700;
-  --theme-input-bg: rgba(255,255,255,.94);
-  --theme-input-text: #20262d;
-  --theme-input-border: 1px solid #b99b5b;
-  --theme-primary-button: linear-gradient(135deg,#a98532,#d1b56a);
-  --theme-button-text: #fff;
-  --theme-primary-border: 1px solid #a98532;
-  --theme-secondary-border: 1px solid rgba(169,139,67,.45);
-  --theme-button-shadow: 0 8px 20px rgba(48,43,34,.15),inset 0 1px 0 rgba(255,255,255,.45);
-  --theme-hero-bg: rgba(250,248,243,.90);
-  --theme-hero-border: rgba(173,139,57,.58);
+  --theme-page-gradient:
+    radial-gradient(circle at 10% 5%, rgba(212,175,55,.10), transparent 28%),
+    radial-gradient(circle at 92% 80%, rgba(148,163,184,.10), transparent 30%),
+    linear-gradient(145deg,#0d1420 0%,#172033 58%,#0b111b 100%);
 }
+
+
+/* Runtime fallback: main.jsx already supplies the theme-specific artwork as an
+   inline background on each section. We intentionally ignore that full-surface
+   image and use a small corner layer instead. The explicit rules below recover
+   the correct asset from the theme selector on the create page. */
+main:has(select option[value="Classic"]:checked) { --theme-visual: url('/assets/classic-casino-visual.png'); }
+main:has(select option[value="Royal"]:checked) { --theme-visual: url('/assets/royal-visual.png'); }
+main:has(select option[value="Party"]:checked) { --theme-visual: url('/assets/party-visual.png'); }
+main:has(select option[value="Bollywood"]:checked) { --theme-visual: url('/assets/bollywood-visual.png'); }
+main:has(select option[value="Neon"]:checked) { --theme-visual: url('/assets/neon-visual.png'); }
+main:has(select option[value="Elegant"]:checked) { --theme-visual: url('/assets/elegant-visual.png'); }
+
+/* On already-created game pages the runtime theme variables remain the source
+   of truth. These selectors use the exact runtime background token as a stable
+   CSS hook, without changing main.jsx. */
+main[style*="23, 17, 63"], main[style*="#24113f"] { --theme-visual: url('/assets/royal-visual.png'); }
+main[style*="124, 29, 92"], main[style*="#7c1d5c"] { --theme-visual: url('/assets/party-visual.png'); }
+main[style*="127, 29, 29"], main[style*="#7f1d1d"] { --theme-visual: url('/assets/bollywood-visual.png'); }
+main[style*="7, 17, 31"], main[style*="#07111f"] { --theme-visual: url('/assets/neon-visual.png'); }
+main[style*="23, 32, 51"], main[style*="#172033"] { --theme-visual: url('/assets/elegant-visual.png'); }
+main[style*="23, 37, 84"], main[style*="#172554"] { --theme-visual: url('/assets/classic-casino-visual.png'); }
 
 /* =========================================================
-   SHARED BLENDING RULES
-========================================================= */
-.tl-theme-page {
-  position: relative;
-  isolation: isolate;
-  transition: background-color var(--theme-transition), color var(--theme-transition);
-  background: var(--theme-page-background) !important;
-  background-image: var(--theme-page-background) !important;
-  color: var(--theme-text);
-}
+   PAGE â€” remove the photographic wallpaper completely
+   ========================================================= */
 
-.tl-theme-page,
-.tl-theme-page * {
-  scrollbar-color: var(--theme-accent) transparent;
-}
-
-.tl-theme-page input,
-.tl-theme-page select,
-.tl-theme-page textarea {
-  background: var(--theme-input-bg) !important;
-  color: var(--theme-input-text) !important;
-  border-color: var(--theme-accent) !important;
-}
-
-.tl-theme-page input::placeholder,
-.tl-theme-page textarea::placeholder {
-  color: color-mix(in srgb, var(--theme-input-text) 48%, transparent);
-}
-
-/* Sections that already carry the app's data attributes receive the same
-   surface language as ordinary theme cards. */
-.tl-theme-page [data-live-section] {
-  background: var(--theme-section-bg) !important;
-  border-color: var(--theme-section-border) !important;
-  box-shadow: var(--theme-section-shadow) !important;
-  color: var(--theme-text);
-}
-
-/* Keep ticket cells themselves readable; their internal ticket styling is
-   intentionally not converted into a large themed card. */
-.tl-theme-page [data-ticket-cell] {
-  color: var(--theme-ticket-text, var(--theme-input-text));
-}
-
-/* Theme hero */
-.tl-theme-page .tl-theme-hero {
-  background: var(--theme-hero-bg) !important;
-  border-color: var(--theme-hero-border) !important;
-  box-shadow: var(--theme-hero-shadow) !important;
-}
-
-/* Buttons inherit the same visual family even when older inline declarations
-   are present. */
-.tl-theme-page button {
-  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
-}
-
-.tl-theme-page button:hover {
-  filter: brightness(1.045);
-}
-
-.tl-theme-page button:active {
-  transform: translateY(1px);
-}
-
-/* =========================================================
-   ATMOSPHERIC PAGE BACKGROUND
-   No photographic JPGs. The page stays rich but quiet.
-   Sections remain darker/brighter focal surfaces.
-========================================================= */
-.tl-theme-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
+main {
+  position: relative !important;
+  isolation: isolate !important;
+  min-height: 100dvh !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  padding: 22px 16px 34px !important;
+  margin: 0 !important;
+  color: var(--theme-text, #fff) !important;
   background:
-    radial-gradient(circle at 8% 8%, rgba(255,255,255,.035), transparent 26%),
-    radial-gradient(circle at 92% 70%, rgba(255,255,255,.025), transparent 30%);
-}
-
-/* Make the page background visible only around the content, never as a
-   second photographic layer behind the form. */
-.tl-theme-page > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Sections are the visual focus: stronger, more opaque, deeper surfaces. */
-.tl-theme-page [data-live-section] {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  background: var(--theme-section-bg) !important;
-  border-color: var(--theme-section-border) !important;
-  box-shadow: var(--theme-section-shadow) !important;
-  color: var(--theme-text);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-/* Add a restrained inner atmospheric glow to sections. */
-/* Theme-specific transparent PNG decoration. */
-.tl-theme-page [data-live-section]::before {
-  content: "";
-  position: absolute;
-  width: min(430px, 72vw);
-  height: min(430px, 72vw);
-  right: -90px;
-  bottom: -85px;
-  pointer-events: none;
-  z-index: 0;
+    radial-gradient(circle at 7% 8%, color-mix(in srgb, var(--theme-accent, #f5c542) 7%, transparent), transparent 25%),
+    radial-gradient(circle at 93% 82%, color-mix(in srgb, var(--theme-secondary, #8b5cf6) 7%, transparent), transparent 28%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--theme-bg, #071c14) 92%, #000 8%),
+      var(--theme-bg, #071c14) 54%,
+      color-mix(in srgb, var(--theme-bg, #071c14) 88%, #000 12%)
+    ) !important;
   background-image:
-    radial-gradient(circle at center, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 68%),
-    var(--theme-visual);
-  background-repeat: no-repeat;
-  background-position: center, center;
-  background-size: cover, contain;
-  opacity: .17;
-  filter: saturate(.96) contrast(1.03);
-  transform: translateZ(0);
+    radial-gradient(circle at 7% 8%, color-mix(in srgb, var(--theme-accent, #f5c542) 7%, transparent), transparent 25%),
+    radial-gradient(circle at 93% 82%, color-mix(in srgb, var(--theme-secondary, #8b5cf6) 7%, transparent), transparent 28%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--theme-bg, #071c14) 92%, #000 8%),
+      var(--theme-bg, #071c14) 54%,
+      color-mix(in srgb, var(--theme-bg, #071c14) 88%, #000 12%)
+    ) !important;
+  background-attachment: scroll !important;
+  box-shadow: var(--theme-page-shadow);
+  transition: background .25s ease, color .25s ease;
 }
 
-.tl-theme-page [data-live-section]::after {
+/* Subtle atmosphere, never a second picture. */
+main::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: -1;
   pointer-events: none;
-  z-index: 0;
   background:
-    radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--theme-accent) 8%, transparent), transparent 25%),
-    linear-gradient(135deg, rgba(255,255,255,.025), transparent 48%);
+    radial-gradient(circle at 18% 16%, rgba(255,255,255,.035), transparent 20%),
+    radial-gradient(circle at 82% 62%, rgba(255,255,255,.022), transparent 24%);
 }
 
-/* Individual visual positioning keeps every theme natural. */
-.tl-theme-royal .tl-theme-page [data-live-section]::before,
-.tl-theme-royal [data-live-section]::before { right: -105px; bottom: -90px; opacity: .18; }
-
-.tl-theme-party .tl-theme-page [data-live-section]::before,
-.tl-theme-party [data-live-section]::before { right: -110px; bottom: -95px; opacity: .16; }
-
-.tl-theme-bollywood .tl-theme-page [data-live-section]::before,
-.tl-theme-bollywood [data-live-section]::before { right: -100px; bottom: -90px; opacity: .17; }
-
-.tl-theme-neon .tl-theme-page [data-live-section]::before,
-.tl-theme-neon [data-live-section]::before { right: -95px; bottom: -85px; opacity: .16; }
-
-.tl-theme-elegant .tl-theme-page [data-live-section]::before,
-.tl-theme-elegant [data-live-section]::before { right: -95px; bottom: -90px; opacity: .14; }
-
-@media (max-width: 520px) {
-  .tl-theme-page [data-live-section]::before {
-    width: min(330px, 78vw);
-    height: min(330px, 78vw);
-    right: -75px;
-    bottom: -65px;
-    opacity: .13;
-  }
-}
-
-/* Existing section contents stay above the decorative layer. */
-.tl-theme-page [data-live-section] > * {
+/* The app's inline hero/card backgrounds are intentionally replaced by the
+   unified CSS surfaces below. */
+main > * {
   position: relative;
   z-index: 1;
 }
 
-/* Stronger section surfaces on mobile so the page atmosphere never
-   competes with the form. */
-@media (max-width: 520px) {
-  .tl-theme-page [data-live-section] {
-    background: var(--theme-panel-bg) !important;
-    box-shadow: var(--theme-section-shadow) !important;
+/* =========================================================
+   HERO â€” clean premium banner, artwork at the edge
+   ========================================================= */
+
+main > div:has(> img[src*="-hero.png"]) {
+  max-width: 920px !important;
+  min-height: 118px !important;
+  margin: 0 auto 18px !important;
+  padding: 20px 22px !important;
+  box-sizing: border-box !important;
+  border-radius: 18px !important;
+  border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 55%, transparent) !important;
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--theme-bg, #071c14) 96%, #000 4%) 0%,
+      color-mix(in srgb, var(--theme-bg, #071c14) 91%, #fff 9%) 54%,
+      color-mix(in srgb, var(--theme-bg, #071c14) 74%, transparent) 100%
+    ) !important;
+  background-image:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--theme-bg, #071c14) 97%, #000 3%) 0%,
+      color-mix(in srgb, var(--theme-bg, #071c14) 91%, #fff 9%) 54%,
+      transparent 100%
+    ) !important;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.055) !important;
+}
+
+main > div:has(> img[src*="-hero.png"]) > img[src*="-hero.png"] {
+  width: 42% !important;
+  max-width: 430px !important;
+  opacity: .48 !important;
+  object-fit: cover !important;
+  object-position: right center !important;
+  mix-blend-mode: screen;
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.75) 30%, #000 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.75) 30%, #000 100%);
+}
+
+main > div:has(> img[src*="-hero.png"]) > div:last-child {
+  max-width: 62% !important;
+}
+
+main > div:has(> img[src*="-hero.png"]) > div:last-child > div:first-child {
+  font-size: 10px !important;
+  letter-spacing: 2.4px !important;
+}
+
+main > div:has(> img[src*="-hero.png"]) > div:last-child > div:nth-child(2) {
+  font-size: clamp(23px, 5vw, 30px) !important;
+  line-height: 1.08 !important;
+  text-shadow: 0 2px 18px rgba(0,0,0,.22);
+}
+
+main > div:has(> img[src*="-hero.png"]) > div:last-child > div:last-child {
+  color: var(--theme-muted, #cbd5e1) !important;
+}
+
+/* =========================================================
+   CONTENT WIDTH / BRAND AREA
+   ========================================================= */
+
+main > div:not(:has(> img[src*="-hero.png"])) {
+  box-sizing: border-box;
+}
+
+main > div:has(form) {
+  width: min(100%, 860px) !important;
+  max-width: 860px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Logo + "Host Create Game" block */
+main > div:has(form) > div:first-child {
+  margin-bottom: 18px !important;
+  padding: 8px 8px 4px !important;
+}
+
+main > div:has(form) > div:first-child img {
+  width: min(150px, 48vw) !important;
+  max-height: 54px !important;
+  margin-bottom: 4px !important;
+}
+
+main > div:has(form) > div:first-child p {
+  margin: 4px 0 0 !important;
+  color: var(--theme-muted, #cbd5e1) !important;
+  font-size: 12px !important;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* =========================================================
+   SECTIONS / CARDS
+   ========================================================= */
+
+main section,
+main [data-live-section],
+main [data-host-section] {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  margin-bottom: 16px !important;
+  padding: var(--theme-card-padding, 20px) !important;
+  border-radius: var(--theme-card-radius, 18px) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 40%, transparent) !important;
+  color: var(--theme-text, #fff) !important;
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--theme-bg, #071c14) 78%, #fff 4%),
+      color-mix(in srgb, var(--theme-bg, #071c14) 91%, #000 9%)
+    ) !important;
+  background-image:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--theme-bg, #071c14) 78%, #fff 4%),
+      color-mix(in srgb, var(--theme-bg, #071c14) 91%, #000 9%)
+    ) !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.045) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Artwork lives only in the card's lower corner. It never tiles across the
+   form and never becomes the section's main background. */
+main section::before,
+main [data-live-section]::before,
+main [data-host-section]::before {
+  content: "";
+  position: absolute;
+  width: min(260px, 52vw);
+  height: min(260px, 52vw);
+  right: -76px;
+  bottom: -78px;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--theme-visual, none);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: .14;
+  filter: saturate(.88) contrast(1.02);
+  transform: rotate(-3deg);
+  -webkit-mask-image: radial-gradient(circle at center, #000 20%, rgba(0,0,0,.75) 62%, transparent 100%);
+  mask-image: radial-gradient(circle at center, #000 20%, rgba(0,0,0,.75) 62%, transparent 100%);
+}
+
+main section::after,
+main [data-live-section]::after,
+main [data-host-section]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--theme-accent, #f5c542) 7%, transparent), transparent 23%),
+    linear-gradient(135deg, rgba(255,255,255,.028), transparent 46%);
+}
+
+main section > *,
+main [data-live-section] > *,
+main [data-host-section] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Main headings */
+main section h1,
+main section h2,
+main section h3,
+main [data-live-section] h1,
+main [data-live-section] h2,
+main [data-live-section] h3 {
+  margin-top: 0 !important;
+  color: var(--theme-text, #fff) !important;
+  letter-spacing: -.015em;
+}
+
+main section h2,
+main [data-live-section] h2 {
+  font-size: clamp(20px, 4.5vw, 25px) !important;
+  margin-bottom: 12px !important;
+}
+
+main section p,
+main [data-live-section] p {
+  color: var(--theme-muted, #cbd5e1);
+}
+
+/* =========================================================
+   LABELS / TEXT
+   ========================================================= */
+
+main section b,
+main section label,
+main [data-live-section] b,
+main [data-live-section] label,
+main [data-host-section] b,
+main [data-host-section] label {
+  color: var(--theme-text, #fff) !important;
+  font-weight: 750 !important;
+}
+
+/* =========================================================
+   INPUTS â€” clean cream/glass controls, not giant white blocks
+   ========================================================= */
+
+main input,
+main select,
+main textarea {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 46px !important;
+  padding: 11px 13px !important;
+  border-radius: var(--theme-input-radius, 11px) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 68%, #fff 10%) !important;
+  background: color-mix(in srgb, var(--theme-input-bg, #f8f6ef) 94%, #fff 6%) !important;
+  color: var(--theme-input-text, #172018) !important;
+  -webkit-text-fill-color: var(--theme-input-text, #172018) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.65),
+    0 5px 14px rgba(0,0,0,.10) !important;
+  outline: none !important;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease !important;
+}
+
+main input:focus,
+main select:focus,
+main textarea:focus {
+  border-color: var(--theme-accent, #f5c542) !important;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--theme-accent, #f5c542) 17%, transparent),
+    0 7px 18px rgba(0,0,0,.12) !important;
+}
+
+main input::placeholder,
+main textarea::placeholder {
+  color: color-mix(in srgb, var(--theme-input-text, #172018) 48%, transparent) !important;
+}
+
+/* Date/time controls keep their native affordances. */
+main input[type="date"],
+main input[type="time"] {
+  color-scheme: light;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+main button {
+  min-height: 42px;
+  border-radius: var(--theme-button-radius, 10px) !important;
+  font-weight: var(--theme-button-weight, 800) !important;
+  letter-spacing: var(--theme-letter-spacing, .01em) !important;
+  cursor: pointer;
+  transition: transform .14s ease, filter .14s ease, box-shadow .14s ease !important;
+}
+
+main button:hover {
+  filter: brightness(1.055);
+  transform: translateY(-1px);
+}
+
+main button:active {
+  transform: translateY(0) !important;
+}
+
+/* Primary-looking buttons inherit the runtime primary gradient. */
+main button[type="submit"] {
+  background:
+    linear-gradient(135deg,
+      var(--theme-accent, #c99a1e),
+      var(--theme-secondary, #f0c94a)
+    ) !important;
+  color: #fff !important;
+  border: 1px solid color-mix(in srgb, var(--theme-accent, #c99a1e) 78%, #fff 10%) !important;
+  box-shadow:
+    0 10px 22px color-mix(in srgb, var(--theme-accent, #c99a1e) 18%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+/* Buttons inside sections that are not submit buttons still follow the theme
+   without flattening destructive/semantic states. */
+main section button:not([data-danger]):not(.danger),
+main [data-live-section] button:not([data-danger]):not(.danger) {
+  border-color: color-mix(in srgb, var(--theme-accent, #f5c542) 52%, transparent) !important;
+  box-shadow: 0 7px 16px rgba(0,0,0,.14) !important;
+}
+
+/* =========================================================
+   THEME PREVIEW â€” turn the old mini-preview into a refined strip
+   ========================================================= */
+
+main section div[style*="THEME PREVIEW"] {
+  letter-spacing: .12em !important;
+}
+
+/* =========================================================
+   FORM LAYOUT
+   ========================================================= */
+
+main form > section:first-child {
+  margin-top: 0 !important;
+}
+
+main form > section > div[style*="gridTemplateColumns"] {
+  gap: 12px !important;
+}
+
+main form > section > div[style*="gridTemplateColumns"] > div {
+  min-width: 0;
+}
+
+/* Prize rows become easier to scan on narrow screens. */
+main form > section:nth-child(2) > div[style*="gridTemplateColumns"] {
+  grid-template-columns: minmax(0,1fr) minmax(92px,130px) auto !important;
+}
+
+/* =========================================================
+   SPECIAL SURFACES
+   ========================================================= */
+
+main [data-live-section="1-current-number"] {
+  text-align: center;
+}
+
+main [data-live-section="1-current-number"] strong,
+main [data-live-section="1-current-number"] [style*="fontSize"] {
+  text-shadow: 0 4px 18px rgba(0,0,0,.25);
+}
+
+main [data-live-section="2-called-number-board"] {
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--theme-bg, #071c14) 72%, #fff 5%),
+      color-mix(in srgb, var(--theme-bg, #071c14) 90%, #000 10%)
+    ) !important;
+}
+
+/* Ticket cells keep their own game-specific visual language. */
+main [data-ticket-cell] {
+  position: relative;
+  z-index: 2;
+  color: var(--theme-ticket-text, var(--theme-input-text, #172018)) !important;
+}
+
+/* =========================================================
+   RESPONSIVE â€” the reference is mobile-first
+   ========================================================= */
+
+@media (max-width: 700px) {
+  main {
+    padding: 12px 10px 24px !important;
+  }
+
+  main > div:has(> img[src*="-hero.png"]) {
+    min-height: 108px !important;
+    margin-bottom: 14px !important;
+    padding: 17px 16px !important;
+    border-radius: 16px !important;
+  }
+
+  main > div:has(> img[src*="-hero.png"]) > img[src*="-hero.png"] {
+    width: 46% !important;
+    opacity: .38 !important;
+  }
+
+  main > div:has(> img[src*="-hero.png"]) > div:last-child {
+    max-width: 68% !important;
+  }
+
+  main > div:has(> img[src*="-hero.png"]) > div:last-child > div:nth-child(2) {
+    font-size: 22px !important;
+  }
+
+  main > div:has(form) > div:first-child {
+    margin-bottom: 12px !important;
+  }
+
+  main section,
+  main [data-live-section],
+  main [data-host-section] {
+    padding: 17px !important;
+    margin-bottom: 12px !important;
+    border-radius: max(12px, calc(var(--theme-card-radius, 18px) - 3px)) !important;
+  }
+
+  main section::before,
+  main [data-live-section]::before,
+  main [data-host-section]::before {
+    width: 190px;
+    height: 190px;
+    right: -64px;
+    bottom: -62px;
+    opacity: .11;
+  }
+
+  main input,
+  main select,
+  main textarea {
+    min-height: 44px !important;
+    font-size: 16px !important;
+  }
+
+  main button {
+    min-height: 40px;
+  }
+
+  main form > section > div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  main form > section:nth-child(2) > div[style*="gridTemplateColumns"] {
+    grid-template-columns: minmax(0,1fr) 92px auto !important;
   }
 }
 
-/* Desktop: let the original mobile-friendly backgrounds breathe without
-   stretching the section surfaces. */
-@media (min-width: 700px) {
-  .tl-theme-page {
-    padding: 28px;
+@media (max-width: 430px) {
+  main {
+    padding: 9px 8px 20px !important;
   }
 
-  .tl-theme-page [data-live-section] {
-    background: var(--theme-section-bg) !important;
+  main > div:has(> img[src*="-hero.png"]) {
+    min-height: 102px !important;
+  }
+
+  main > div:has(> img[src*="-hero.png"]) > img[src*="-hero.png"] {
+    width: 48% !important;
+    opacity: .30 !important;
+  }
+
+  main > div:has(> img[src*="-hero.png"]) > div:last-child > div:nth-child(2) {
+    font-size: 20px !important;
+  }
+
+  main > div:has(> img[src*="-hero.png"]) > div:last-child > div:last-child {
+    font-size: 12px !important;
+  }
+
+  main section,
+  main [data-live-section],
+  main [data-host-section] {
+    padding: 15px !important;
   }
 }
 
-@media (max-width: 520px) {
-  .tl-theme-page {
-    padding: 12px !important;
-  }
-
-  .tl-theme-page [data-live-section] {
-    border-radius: max(8px, calc(var(--theme-card-radius) - 4px));
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  main,
+  main * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
