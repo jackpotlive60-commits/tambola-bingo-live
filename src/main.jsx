@@ -1767,6 +1767,44 @@ function getThemeUI(theme) {
   };
 }
 
+function softenThemeSurface(surface, alpha) {
+  const value = String(surface || "");
+  if (/^rgba\(/i.test(value)) {
+    return value.replace(
+      /,\s*([0-9]*\.?[0-9]+)\s*\)$/i,
+      `, ${alpha})`
+    );
+  }
+
+  if (/^#[0-9a-f]{6}$/i.test(value)) {
+    const r = parseInt(value.slice(1, 3), 16);
+    const g = parseInt(value.slice(3, 5), 16);
+    const b = parseInt(value.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  return value;
+}
+
+function getThemeSectionStyle(themeUI) {
+  const primarySurface = softenThemeSurface(
+    themeUI?.design?.card?.surface || themeUI?.colors?.surface,
+    0.64
+  );
+  const secondarySurface = softenThemeSurface(
+    themeUI?.design?.card?.surfaceAlt || themeUI?.colors?.surface2,
+    0.50
+  );
+
+  return {
+    ...themeUI.card,
+    background: `linear-gradient(145deg, ${primarySurface}, ${secondarySurface})`,
+    backgroundClip: "padding-box",
+    backdropFilter: "blur(14px)",
+    WebkitBackdropFilter: "blur(14px)",
+    boxShadow: `${themeUI.card.boxShadow}, inset 0 1px 0 rgba(255,255,255,.06)`
+  };
+}
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
@@ -2545,6 +2583,7 @@ function CreateGamePage({
   const themeUI = getThemeUI(theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  const themedSectionStyle = getThemeSectionStyle(themeUI);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -2814,7 +2853,7 @@ function CreateGamePage({
         >
           <section
             style={
-              themedCardStyle
+              themedSectionStyle
             }
           >
             <h2>
@@ -3000,7 +3039,7 @@ function CreateGamePage({
 
           <section
             style={
-              themedCardStyle
+              themedSectionStyle
             }
           >
             <h2>
@@ -3108,7 +3147,7 @@ function CreateGamePage({
           {error && (
             <section
               style={{
-                ...themedCardStyle,
+                ...themedSectionStyle,
                 background:
                   "#fef2f2",
                 border:
@@ -3419,6 +3458,7 @@ function PlayerBookingPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  const themedSectionStyle = getThemeSectionStyle(themeUI);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -4081,7 +4121,7 @@ function PlayerBookingPage({
 
         <section
           style={
-            themedCardStyle
+            themedSectionStyle
           }
         >
           <h2>
@@ -4132,7 +4172,7 @@ function PlayerBookingPage({
 
         <section
           style={
-            themedCardStyle
+            themedSectionStyle
           }
         >
           <h2>
@@ -4381,7 +4421,7 @@ function PlayerBookingPage({
         <section
           id="player-ticket-list"
           style={
-            themedCardStyle
+            themedSectionStyle
           }
         >
           <div
@@ -4541,7 +4581,7 @@ function PlayerBookingPage({
 
         <section
           style={{
-            ...themedCardStyle,
+            ...themedSectionStyle,
             marginTop: 20
           }}
         >
@@ -6707,6 +6747,7 @@ function HostControlPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  const themedSectionStyle = getThemeSectionStyle(themeUI);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -8429,7 +8470,7 @@ function HostControlPage({
 
         <section
           style={{
-            ...themedCardStyle,
+            ...themedSectionStyle,
             border:
               isLive
                 ? `2px solid ${themeUI.colors.secondary}`
@@ -8496,7 +8537,7 @@ function HostControlPage({
 
         <section
           style={
-            themedCardStyle
+            themedSectionStyle
           }
         >
           <h2>
@@ -8564,7 +8605,7 @@ function HostControlPage({
         <section
           data-host-section="prize-amounts"
           style={{
-            ...themedCardStyle,
+            ...themedSectionStyle,
             display: "block",
             visibility: "visible",
             minHeight: 220,
@@ -8692,7 +8733,7 @@ function HostControlPage({
 
         <section
           style={
-            themedCardStyle
+            themedSectionStyle
           }
         >
           <h2>
@@ -8803,7 +8844,7 @@ function HostControlPage({
 
         <section
           style={
-            themedCardStyle
+            themedSectionStyle
           }
         >
           <h2>
@@ -8844,7 +8885,7 @@ function HostControlPage({
 
         <section
           style={
-            themedCardStyle
+            themedSectionStyle
           }
         >
           <h2>
@@ -9032,7 +9073,7 @@ function HostControlPage({
 
         <section
           style={{
-            ...themedCardStyle,
+            ...themedSectionStyle,
             border:
               isLive
                 ? "2px solid #22c55e"
@@ -9133,7 +9174,7 @@ function HostControlPage({
         {isLive && (
           <section
             style={{
-              ...themedCardStyle,
+              ...themedSectionStyle,
               border:
                 "2px solid #22c55e"
             }}
@@ -9536,7 +9577,7 @@ function HostControlPage({
         {!isLive && (
           <section
             style={
-              themedCardStyle
+              themedSectionStyle
             }
           >
             <h2>
@@ -9811,7 +9852,7 @@ function HostControlPage({
         <section
           data-host-section="prize-winners-overview"
           style={{
-            ...themedCardStyle,
+            ...themedSectionStyle,
             marginTop: 16
           }}
         >
