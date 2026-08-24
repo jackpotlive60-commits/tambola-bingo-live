@@ -5017,7 +5017,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
         />
         <div style={{ maxWidth: 800, margin: "40px auto" }}>
           <section style={{ ...themedCardStyle, textAlign: "center" }}>
-            <div style={{ fontSize: 44 }}>[WINNER]</div>
+            <div style={{ fontSize: 44 }} aria-hidden="true">&#127942;</div>
             <h1 style={{ marginBottom: 8 }}>FINAL GAME RESULTS</h1>
             <p style={{ color: "var(--theme-muted, #64748b)", fontSize: 15, marginTop: 8 }}>
               Game complete. Your final results are shown below.
@@ -5181,8 +5181,11 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                     style={{
                       padding: 15,
                       borderRadius: 12,
-                      background: prize.locked ? "#f0fdf4" : "var(--theme-panel-bg, #f8fafc)",
-                      border: `1px solid ${prize.locked ? "#bbf7d0" : "#e2e8f0"}`
+                      background: prize.locked
+                        ? `linear-gradient(135deg, ${themeUI.colors.secondary}24, ${themeUI.colors.surface2})`
+                        : themeUI.colors.surface2,
+                      color: themeUI.colors.text,
+                      border: `1px solid ${prize.locked ? themeUI.colors.accent : themeUI.colors.secondary}66`
                     }}
                   >
                     <div style={{ fontWeight: "bold", fontSize: 17 }}>
@@ -5303,21 +5306,29 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                     <div
                       key={`history-winner-${index}`}
                       style={{
-                        padding: 11,
-                        borderRadius: 10,
-                        background: "#f0fdf4",
-                        border: "1px solid #bbf7d0"
+                        padding: 13,
+                        borderRadius: 12,
+                        background: `linear-gradient(135deg, ${themeUI.colors.surface2}, ${themeUI.colors.background})`,
+                        border: `1px solid ${themeUI.colors.accent}88`,
+                        color: themeUI.colors.text,
+                        boxShadow: `0 0 18px ${themeUI.colors.secondary}18`
                       }}
                     >
-                      <b>{winner.prizeName}</b>
-                      <div style={{ marginTop: 3 }}>
+                      <b style={{ color: themeUI.colors.text }}>{winner.prizeName}</b>
+                      <div
+                        style={{
+                          marginTop: 5,
+                          color: themeUI.colors.text,
+                          fontWeight: 700
+                        }}
+                      >
                         {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
                       </div>
                       <div
                         style={{
-                          marginTop: 3,
-                          color: "#166534",
-                          fontWeight: "bold"
+                          marginTop: 5,
+                          color: themeUI.colors.accent,
+                          fontWeight: 900
                         }}
                       >
                         Share: {formatPrizeAmount(winner.prizeShare)}
@@ -6006,8 +6017,9 @@ function WinnerHistory({ history }) {
               style={{
                 padding: 12,
                 borderRadius: 10,
-                background: "#f0fdf4",
-                border: "1px solid #bbf7d0"
+                background: "var(--theme-surface2, #111827)",
+                border: "1px solid var(--theme-accent, #60a5fa)66",
+                color: "var(--theme-panel-text, #f8fafc)"
               }}
             >
               <div style={{ fontWeight: "bold" }}>
@@ -6021,7 +6033,7 @@ function WinnerHistory({ history }) {
               <div
                 style={{
                   marginTop: 4,
-                  color: "#166534",
+                  color: "var(--theme-accent, #60a5fa)",
                   fontWeight: "bold"
                 }}
               >
@@ -6072,7 +6084,7 @@ function LivePrizeList({ game, theme = "Classic" }) {
         marginBottom: 18
       }}
     >
-      <h2 style={{ marginTop: 0 }}>[WINNER] Prizes & Winners</h2>
+      <h2 style={{ marginTop: 0 }}>Prizes & Winners</h2>
 
       {prizes.length === 0 ? (
         <p style={{ color: c.muted }}>
@@ -6155,7 +6167,7 @@ function LivePrizeList({ game, theme = "Classic" }) {
                       whiteSpace: "nowrap"
                     }}
                   >
-                    {locked ? "[WINNER] WON" : "[OPEN] OPEN"}
+                    {locked ? "WON" : "OPEN"}
                   </div>
                 </div>
 
@@ -6174,7 +6186,7 @@ function LivePrizeList({ game, theme = "Classic" }) {
                       >
                         <b>{winner?.playerName || "Player"}</b>
                         <span style={{ color: c.muted }}>
-                          {" "}â€¢ Ticket #{winner?.ticketNumber || "-"}
+                          {" "} - Ticket #{winner?.ticketNumber || "-"}
                         </span>
                       </div>
                     ))}
@@ -8966,7 +8978,7 @@ function HostControlPage({
                   fontWeight: "bold"
                 }}
               >
-                [WINNER] WINNER ANNOUNCED - PRIZE AUTOMATICALLY LOCKED
+                WINNER ANNOUNCED - PRIZE AUTOMATICALLY LOCKED
               </div>
             )}
 
@@ -9095,7 +9107,7 @@ function HostControlPage({
                 textAlign: "center"
               }}
             >
-              <div style={{ fontSize: 54 }}>[WINNER]</div>
+              <div style={{ fontSize: 54 }} aria-hidden="true">&#127942;</div>
               <h2 style={{ margin: "8px 0 6px" }}>WINNER DETECTED!</h2>
               <p style={{ color: "var(--theme-muted, #64748b)", marginTop: 0 }}>
                 Winners are announced and prizes are locked automatically. Auto Call continues.
@@ -9108,18 +9120,18 @@ function HostControlPage({
                     style={{
                       padding: 16,
                       borderRadius: 14,
-                      background: "#ecfdf5",
-                      border: "2px solid #22c55e"
+                      background: themeUI.colors.surface2,
+                      border: `2px solid ${themeUI.colors.accent}`
                     }}
                   >
                     <div
                       style={{
-                        color: "#166534",
+                        color: themeUI.colors.accent,
                         fontWeight: "bold",
                         fontSize: 20
                       }}
                     >
-                      [CELEBRATE] {event.prizeName} WON!
+                      {event.prizeName} WON!
                     </div>
 
                     <div
@@ -9141,7 +9153,7 @@ function HostControlPage({
                           }}
                         >
                           <div>
-                            [PLAYER] {winner.playerName} - [TICKET] Ticket #{winner.ticketNumber}
+                            {winner.playerName} - Ticket #{winner.ticketNumber}
                           </div>
                           <div
                             style={{
