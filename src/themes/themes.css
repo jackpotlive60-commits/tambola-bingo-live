@@ -56,6 +56,7 @@
    CLASSIC / CASINO
 ========================================================= */
 .tl-theme-classic {
+  --theme-visual: url('/assets/classic-casino-visual.png');
   --theme-bg: #071c14;
   --theme-text: #fff8e7;
   --theme-muted: #d8d0bd;
@@ -96,6 +97,7 @@
    ROYAL
 ========================================================= */
 .tl-theme-royal {
+  --theme-visual: url('/assets/royal-visual.png');
   --theme-bg: #18082a;
   --theme-text: #fff8e8;
   --theme-muted: #dfd1eb;
@@ -144,6 +146,7 @@
    PARTY / FUN
 ========================================================= */
 .tl-theme-party {
+  --theme-visual: url('/assets/party-visual.png');
   --theme-bg: #2b0c35;
   --theme-text: #fff;
   --theme-muted: #f1e5f4;
@@ -191,6 +194,7 @@
    BOLLYWOOD
 ========================================================= */
 .tl-theme-bollywood {
+  --theme-visual: url('/assets/bollywood-visual.png');
   --theme-bg: #3b080f;
   --theme-text: #fffaf0;
   --theme-muted: #f1d8cf;
@@ -237,6 +241,7 @@
    NEON
 ========================================================= */
 .tl-theme-neon {
+  --theme-visual: url('/assets/neon-visual.png');
   --theme-bg: #020914;
   --theme-text: #f5fbff;
   --theme-muted: #b9c9dc;
@@ -287,6 +292,7 @@
    ELEGANT
 ========================================================= */
 .tl-theme-elegant {
+  --theme-visual: url('/assets/elegant-visual.png');
   --theme-bg: #e9e5db;
   --theme-text: #20262d;
   --theme-muted: #66717b;
@@ -437,7 +443,28 @@
 }
 
 /* Add a restrained inner atmospheric glow to sections. */
+/* Theme-specific transparent PNG decoration. */
 .tl-theme-page [data-live-section]::before {
+  content: "";
+  position: absolute;
+  width: min(430px, 72vw);
+  height: min(430px, 72vw);
+  right: -90px;
+  bottom: -85px;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle at center, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 68%),
+    var(--theme-visual);
+  background-repeat: no-repeat;
+  background-position: center, center;
+  background-size: cover, contain;
+  opacity: .17;
+  filter: saturate(.96) contrast(1.03);
+  transform: translateZ(0);
+}
+
+.tl-theme-page [data-live-section]::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -446,6 +473,32 @@
   background:
     radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--theme-accent) 8%, transparent), transparent 25%),
     linear-gradient(135deg, rgba(255,255,255,.025), transparent 48%);
+}
+
+/* Individual visual positioning keeps every theme natural. */
+.tl-theme-royal .tl-theme-page [data-live-section]::before,
+.tl-theme-royal [data-live-section]::before { right: -105px; bottom: -90px; opacity: .18; }
+
+.tl-theme-party .tl-theme-page [data-live-section]::before,
+.tl-theme-party [data-live-section]::before { right: -110px; bottom: -95px; opacity: .16; }
+
+.tl-theme-bollywood .tl-theme-page [data-live-section]::before,
+.tl-theme-bollywood [data-live-section]::before { right: -100px; bottom: -90px; opacity: .17; }
+
+.tl-theme-neon .tl-theme-page [data-live-section]::before,
+.tl-theme-neon [data-live-section]::before { right: -95px; bottom: -85px; opacity: .16; }
+
+.tl-theme-elegant .tl-theme-page [data-live-section]::before,
+.tl-theme-elegant [data-live-section]::before { right: -95px; bottom: -90px; opacity: .14; }
+
+@media (max-width: 520px) {
+  .tl-theme-page [data-live-section]::before {
+    width: min(330px, 78vw);
+    height: min(330px, 78vw);
+    right: -75px;
+    bottom: -65px;
+    opacity: .13;
+  }
 }
 
 /* Existing section contents stay above the decorative layer. */
