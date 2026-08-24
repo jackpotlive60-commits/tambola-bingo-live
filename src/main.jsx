@@ -6261,6 +6261,293 @@ function HostControlPage({
     );
 
     try {
+      /*
+       * Ticket approval must be checked against the CURRENT database state.
+       *
+       * Players can submit overlapping pending requests (for example:
+       * Player 1 -> #1,#2,#3
+       * Player 2 -> #4,#5,#1
+       *
+       * The old code changed the booking status directly, which meant the
+       * second approval could also mark #1 as accepted. Before accepting a
+       * booking, we now re-read the booking and every other accepted booking
+       * for this game and refuse the approval if any ticket is already owned.
+       */
+      if (status === "accepted") {
+        const {
+          data: currentBooking,
+          error: currentBookingError
+        } = await supabase
+          .from("ticket_bookings")
+          .select(
+            "id, game_id, player_name, ticket_numbers, status"
+          )
+          .eq(
+            "id",
+            bookingId
+          )
+          .maybeSingle();
+
+        if (currentBookingError) {
+          throw currentBookingError;
+        }
+
+        if (!currentBooking) {
+          throw new Error("Booking could not be found.");
+        }
+
+        if (
+          String(currentBooking.status || "").toLowerCase() !==
+          "pending"
+        ) {
+          await loadBookings();
+          return;
+        }
+
+        const requestedTickets = [
+          ...new Set(
+            (
+              Array.isArray(currentBooking.ticket_numbers)
+                ? currentBooking.ticket_numbers
+                : []
+            )
+              .map((number) => Number(number))
+              .filter(
+                (number) =>
+                  Number.isInteger(number) &&
+                  number >= 1
+              )
+          )
+        ];
+
+        if (!requestedTickets.length) {
+          throw new Error(
+            "This booking does not contain any valid ticket numbers."
+          );
+        }
+
+        const {
+          data: acceptedBookings,
+          error: acceptedBookingsError
+        } = await supabase
+          .from("ticket_bookings")
+          .select(
+            "id, player_name, ticket_numbers, status"
+          )
+          .eq(
+            "game_id",
+            currentBooking.game_id
+          )
+          .eq(
+            "status",
+            "accepted"
+          );
+
+        if (acceptedBookingsError) {
+          throw acceptedBookingsError;
+        }
+
+        const acceptedTicketOwners = {};
+
+        (
+          acceptedBookings || []
+        ).forEach((acceptedBooking) => {
+          const numbers = Array.isArray(
+            acceptedBooking.ticket_numbers
+          )
+            ? acceptedBooking.ticket_numbers
+            : [];
+
+          numbers.forEach((number) => {
+            const n = Number(number);
+
+            if (
+              Number.isInteger(n) &&
+              n >= 1
+            ) {
+              acceptedTicketOwners[n] = {
+                bookingId: acceptedBooking.id,
+                playerName:
+                  acceptedBooking.player_name ||
+                  "Another player"
+              };
+            }
+          });
+        });
+
+        const conflictingTickets =
+          requestedTickets.filter(
+            (number) =>
+              acceptedTicketOwners[number]
+          );
+
+        if (conflictingTickets.length) {
+          const conflictText =
+            conflictingTickets
+              .map((number) => {
+                const owner =
+                  acceptedTicketOwners[number];
+
+                return `#${number} (${owner.playerName})`;
+              })
+              .join(", ");
+
+          alert(
+            `Cannot approve this booking because ${conflictText} ${
+              conflictingTickets.length === 1
+                ? "is"
+                : "are"
+            } already booked by another player. The booking remains pending.`
+          );
+
+          await loadBookings();
+          return;
+        }
+
+        /*
+         * Only change a booking that is still pending. This prevents a stale
+         * host screen from changing an already-processed booking.
+         */
+        const {
+          data: updatedRows,
+          error: updateError
+        } = await supabase
+          .from("ticket_bookings")
+          .update({
+            status: "accepted"
+          })
+          .eq(
+            "id",
+            bookingId
+          )
+          .eq(
+            "status",
+            "pending"
+          )
+          .select(
+            "id, game_id, player_name, ticket_numbers, status"
+          );
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        if (
+          !updatedRows ||
+          !updatedRows.length
+        ) {
+          await loadBookings();
+          return;
+        }
+
+        /*
+         * Re-check immediately after approval. This protects against the
+         * normal sequential case where another host action accepted one of
+         * these tickets between our initial read and update.
+         *
+         * If an overlap is detected, the booking is returned to pending
+         * rather than leaving duplicate ownership in the UI.
+         */
+        const {
+          data: acceptedAfterUpdate,
+          error: acceptedAfterUpdateError
+        } = await supabase
+          .from("ticket_bookings")
+          .select(
+            "id, player_name, ticket_numbers, status"
+          )
+          .eq(
+            "game_id",
+            currentBooking.game_id
+          )
+          .eq(
+            "status",
+            "accepted"
+          );
+
+        if (acceptedAfterUpdateError) {
+          throw acceptedAfterUpdateError;
+        }
+
+        const ownersAfterUpdate = {};
+
+        (
+          acceptedAfterUpdate || []
+        ).forEach((acceptedBooking) => {
+          const numbers = Array.isArray(
+            acceptedBooking.ticket_numbers
+          )
+            ? acceptedBooking.ticket_numbers
+            : [];
+
+          numbers.forEach((number) => {
+            const n = Number(number);
+
+            if (
+              Number.isInteger(n) &&
+              n >= 1
+            ) {
+              if (
+                !ownersAfterUpdate[n] ||
+                String(acceptedBooking.id) <
+                  String(ownersAfterUpdate[n].bookingId)
+              ) {
+                ownersAfterUpdate[n] = {
+                  bookingId: acceptedBooking.id,
+                  playerName:
+                    acceptedBooking.player_name ||
+                    "Player"
+                };
+              }
+            }
+          });
+        });
+
+        const postUpdateConflicts =
+          requestedTickets.filter(
+            (number) =>
+              ownersAfterUpdate[number] &&
+              String(
+                ownersAfterUpdate[number].bookingId
+              ) !== String(bookingId)
+          );
+
+        if (postUpdateConflicts.length) {
+          await supabase
+            .from("ticket_bookings")
+            .update({
+              status: "pending"
+            })
+            .eq(
+              "id",
+              bookingId
+            )
+            .eq(
+              "status",
+              "accepted"
+            );
+
+          alert(
+            `This booking could not be approved because ${
+              postUpdateConflicts.length === 1
+                ? "a requested ticket"
+                : "requested tickets"
+            } ${
+              postUpdateConflicts
+                .map((number) => `#${number}`)
+                .join(", ")
+            } ${
+              postUpdateConflicts.length === 1
+                ? "is"
+                : "are"
+            } already owned by another approved booking. The booking remains pending.`
+          );
+        }
+
+        await loadBookings();
+        return;
+      }
+
       const {
         error
       } =
@@ -6274,6 +6561,10 @@ function HostControlPage({
           .eq(
             "id",
             bookingId
+          )
+          .eq(
+            "status",
+            "pending"
           );
 
       if (error) {
@@ -6283,6 +6574,7 @@ function HostControlPage({
       await loadBookings();
     } catch (err) {
       console.error(
+        "Could not update booking:",
         err
       );
 
@@ -6296,6 +6588,7 @@ function HostControlPage({
       );
     }
   }
+
 
   function updateEditablePrizeAmount(index, amount) {
     setEditablePrizes((current) =>
