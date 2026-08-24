@@ -4576,6 +4576,548 @@ function PlayerBookingPage({
    LIVE GAME PAGE
 ========================================================= */
 
+
+function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
+  const value = number || "-";
+  const c = themeUI.colors;
+
+  if (theme === "Classic") {
+    return (
+      <div
+        style={{
+          position: "relative",
+          width: 300,
+          height: 190,
+          margin: "18px auto 12px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: 18,
+            top: 28,
+            width: 70,
+            height: 108,
+            borderRadius: 9,
+            background: "linear-gradient(145deg,#fff8e7,#e8dcc2)",
+            border: `2px solid ${c.accent}`,
+            boxShadow: "0 10px 22px rgba(0,0,0,.38)",
+            transform: "rotate(-13deg)",
+            color: "#5b1111",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: 900,
+            fontSize: 25,
+            lineHeight: 1.05
+          }}
+        >
+          <span>A</span>
+          <span style={{ fontSize: 32 }}>&#9824;</span>
+        </div>
+
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            right: 18,
+            top: 28,
+            width: 70,
+            height: 108,
+            borderRadius: 9,
+            background: "linear-gradient(145deg,#fff8e7,#e8dcc2)",
+            border: `2px solid ${c.accent}`,
+            boxShadow: "0 10px 22px rgba(0,0,0,.38)",
+            transform: "rotate(13deg)",
+            color: "#8b1e1e",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: 900,
+            fontSize: 25,
+            lineHeight: 1.05
+          }}
+        >
+          <span>K</span>
+          <span style={{ fontSize: 32 }}>&#9829;</span>
+        </div>
+
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            width: 168,
+            height: 168,
+            borderRadius: "50%",
+            background: `
+              radial-gradient(circle,#15110c 0 47%,#f7e8c0 48% 51%,transparent 52%),
+              repeating-conic-gradient(from 0deg,#b52b22 0deg 18deg,#f7e8c0 18deg 30deg,#b52b22 30deg 48deg)
+            `,
+            border: `3px solid ${c.accent}`,
+            boxShadow: `0 0 28px ${c.secondary}66,0 14px 30px rgba(0,0,0,.42)`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          <div
+            style={{
+              width: 112,
+              height: 112,
+              borderRadius: "50%",
+              background: "radial-gradient(circle at 35% 30%,#3b3326,#090806 72%)",
+              border: "2px solid #d6b45b",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff3c9",
+              fontSize: 68,
+              fontWeight: 900,
+              textShadow: "0 2px 8px rgba(0,0,0,.65)"
+            }}
+          >
+            {value}
+          </div>
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 12,
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              color: "#fff0b5",
+              fontSize: 16
+            }}
+          >
+            &#9824; &#9829; &#9830; &#9827;
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (theme === "Royal") {
+    return (
+      <div
+        style={{
+          width: 300,
+          height: 190,
+          margin: "18px auto 12px",
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 5,
+            fontSize: 38,
+            color: c.accent,
+            textShadow: `0 0 18px ${c.accent}66`
+          }}
+        >
+          &#9819;
+        </div>
+        <div
+          style={{
+            width: 150,
+            height: 150,
+            transform: "rotate(45deg)",
+            borderRadius: 28,
+            background: `linear-gradient(145deg,${c.secondary},${c.background})`,
+            border: `3px solid ${c.accent}`,
+            boxShadow: `0 0 30px ${c.secondary}55,0 14px 30px rgba(0,0,0,.38)`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          <div
+            style={{
+              width: 104,
+              height: 104,
+              transform: "rotate(-45deg)",
+              borderRadius: 18,
+              border: `2px solid ${c.accent}`,
+              background: `linear-gradient(145deg,${c.surface2},${c.background})`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: c.text,
+              fontSize: 62,
+              fontWeight: 900,
+              textShadow: `0 2px 10px ${c.secondary}`
+            }}
+          >
+            {value}
+          </div>
+        </div>
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: 42,
+            bottom: 20,
+            color: c.accent,
+            fontSize: 22
+          }}
+        >
+          &#9670;
+        </span>
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            right: 42,
+            bottom: 20,
+            color: c.accent,
+            fontSize: 22
+          }}
+        >
+          &#9670;
+        </span>
+      </div>
+    );
+  }
+
+  if (theme === "Party") {
+    return (
+      <div
+        style={{
+          width: 310,
+          height: 190,
+          margin: "18px auto 12px",
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        {[
+          { left: 18, top: 25, color: "#ec4899", rotate: -16 },
+          { right: 20, top: 18, color: "#22d3ee", rotate: 15 },
+          { left: 54, bottom: 5, color: "#facc15", rotate: 9 },
+          { right: 52, bottom: 7, color: "#8b5cf6", rotate: -9 }
+        ].map((balloon, index) => (
+          <div
+            key={`party-balloon-${index}`}
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              ...balloon,
+              width: 52,
+              height: 68,
+              borderRadius: "50% 50% 46% 46%",
+              background: balloon.color,
+              boxShadow: `0 8px 18px ${balloon.color}55`,
+              transform: `rotate(${balloon.rotate}deg)`
+            }}
+          />
+        ))}
+
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            width: 148,
+            height: 148,
+            borderRadius: "32% 68% 58% 42% / 42% 38% 62% 58%",
+            background: `linear-gradient(135deg,${c.secondary},${c.accent})`,
+            border: `4px solid ${c.accent}`,
+            boxShadow: `0 0 28px ${c.accent}66,0 14px 28px rgba(0,0,0,.28)`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#fff",
+            fontSize: 64,
+            fontWeight: 900
+          }}
+        >
+          {value}
+        </div>
+
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 2,
+            left: 105,
+            color: "#facc15",
+            fontSize: 25
+          }}
+        >
+          &#10022; &#10022;
+        </div>
+      </div>
+    );
+  }
+
+  if (theme === "Bollywood") {
+    return (
+      <div
+        style={{
+          width: 320,
+          height: 190,
+          margin: "18px auto 12px",
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: "18px 8px",
+            borderRadius: 18,
+            background: `linear-gradient(145deg,${c.background},${c.secondary})`,
+            border: `3px solid ${c.accent}`,
+            boxShadow: `0 0 28px ${c.accent}44,0 14px 28px rgba(0,0,0,.35)`
+          }}
+        />
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 2,
+            left: 24,
+            right: 24,
+            display: "flex",
+            justifyContent: "space-between",
+            color: c.accent,
+            fontSize: 18,
+            letterSpacing: 5
+          }}
+        >
+          &#9679; &#9679; &#9679; &#9679; &#9679; &#9679; &#9679; &#9679;
+        </div>
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: 24,
+            top: 70,
+            color: c.accent,
+            fontSize: 32
+          }}
+        >
+          &#9733;
+        </div>
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            right: 24,
+            top: 70,
+            color: c.accent,
+            fontSize: 32
+          }}
+        >
+          &#9733;
+        </div>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            minWidth: 130,
+            padding: "18px 30px",
+            borderRadius: 12,
+            background: `linear-gradient(135deg,${c.accent},${c.secondary})`,
+            border: "3px solid #fff3cf",
+            boxShadow: "0 8px 24px rgba(0,0,0,.38)",
+            color: "#fffaf0",
+            fontSize: 66,
+            fontWeight: 900,
+            textAlign: "center",
+            textShadow: "0 3px 10px rgba(0,0,0,.45)"
+          }}
+        >
+          {value}
+        </div>
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 35,
+            right: 35,
+            height: 8,
+            borderRadius: 8,
+            background: `linear-gradient(90deg,transparent,${c.accent},transparent)`
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (theme === "Neon") {
+    return (
+      <div
+        style={{
+          width: 300,
+          height: 190,
+          margin: "18px auto 12px",
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            width: 170,
+            height: 170,
+            border: `2px solid ${c.accent}`,
+            transform: "rotate(45deg)",
+            boxShadow: `0 0 22px ${c.accent}66, inset 0 0 22px ${c.accent}22`,
+            background: `linear-gradient(135deg,${c.secondary}22,transparent)`
+          }}
+        />
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            width: 205,
+            height: 110,
+            borderTop: `2px solid ${c.secondary}`,
+            borderBottom: `2px solid ${c.secondary}`,
+            transform: "skewX(-20deg)",
+            opacity: .7
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            width: 145,
+            height: 120,
+            clipPath: "polygon(15% 0,85% 0,100% 50%,85% 100%,15% 100%,0 50%)",
+            background: `linear-gradient(135deg,${c.secondary},${c.background})`,
+            border: `2px solid ${c.accent}`,
+            boxShadow: `0 0 30px ${c.secondary}77`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#f5fbff",
+            fontSize: 64,
+            fontWeight: 900,
+            textShadow: `0 0 14px ${c.accent}`
+          }}
+        >
+          {value}
+        </div>
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 12,
+            color: c.accent,
+            fontSize: 14,
+            letterSpacing: 5,
+            textShadow: `0 0 10px ${c.accent}`
+          }}
+        >
+          N E O N
+        </div>
+      </div>
+    );
+  }
+
+  // Elegant
+  return (
+    <div
+      style={{
+        width: 310,
+        height: 185,
+        margin: "18px auto 12px",
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          width: 250,
+          height: 140,
+          border: `1px solid ${c.accent}99`,
+          background: `linear-gradient(145deg,${c.surface2},${c.background}cc)`,
+          boxShadow: `0 14px 30px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.55)`,
+          transform: "rotate(-2deg)"
+        }}
+      />
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          width: 160,
+          height: 118,
+          border: `2px solid ${c.accent}`,
+          background: `linear-gradient(145deg,${c.surface2},${c.background})`,
+          boxShadow: `0 10px 25px rgba(0,0,0,.20), 0 0 18px ${c.accent}22`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: c.text,
+          fontSize: 62,
+          fontWeight: 800,
+          letterSpacing: ".02em"
+        }}
+      >
+        {value}
+      </div>
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: 5,
+          left: 55,
+          color: c.accent,
+          fontSize: 18
+        }}
+      >
+        &#10022;
+      </span>
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: 5,
+          right: 55,
+          color: c.accent,
+          fontSize: 18
+        }}
+      >
+        &#10022;
+      </span>
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          bottom: 5,
+          width: 190,
+          height: 1,
+          background: `linear-gradient(90deg,transparent,${c.accent},transparent)`
+        }}
+      />
+    </div>
+  );
+}
+
 function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
@@ -5452,158 +5994,11 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             </button>
           </div>
 
-          {liveGame.theme === "Classic" ? (
-            <div
-              style={{
-                position: "relative",
-                width: 300,
-                height: 190,
-                margin: "18px auto 12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              {/* Left playing card */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  left: 18,
-                  top: 28,
-                  width: 70,
-                  height: 108,
-                  borderRadius: 9,
-                  background: "linear-gradient(145deg,#fff8e7,#e8dcc2)",
-                  border: `2px solid ${themeUI.colors.accent}`,
-                  boxShadow: "0 10px 22px rgba(0,0,0,.38)",
-                  transform: "rotate(-13deg)",
-                  color: "#5b1111",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 900,
-                  fontSize: 25,
-                  lineHeight: 1.05
-                }}
-              >
-                <span>A</span>
-                <span style={{ fontSize: 32 }}>&#9824;</span>
-              </div>
-
-              {/* Right playing card */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  right: 18,
-                  top: 28,
-                  width: 70,
-                  height: 108,
-                  borderRadius: 9,
-                  background: "linear-gradient(145deg,#fff8e7,#e8dcc2)",
-                  border: `2px solid ${themeUI.colors.accent}`,
-                  boxShadow: "0 10px 22px rgba(0,0,0,.38)",
-                  transform: "rotate(13deg)",
-                  color: "#8b1e1e",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 900,
-                  fontSize: 25,
-                  lineHeight: 1.05
-                }}
-              >
-                <span>K</span>
-                <span style={{ fontSize: 32 }}>&#9829;</span>
-              </div>
-
-              {/* Casino poker chip */}
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: 2,
-                  width: 168,
-                  height: 168,
-                  borderRadius: "50%",
-                  background: `
-                    radial-gradient(circle,
-                      #15110c 0 47%,
-                      #f7e8c0 48% 51%,
-                      transparent 52%
-                    ),
-                    repeating-conic-gradient(
-                      from 0deg,
-                      #b52b22 0deg 18deg,
-                      #f7e8c0 18deg 30deg,
-                      #b52b22 30deg 48deg
-                    )
-                  `,
-                  border: `3px solid ${themeUI.colors.accent}`,
-                  boxShadow: `0 0 28px ${themeUI.colors.secondary}66, 0 14px 30px rgba(0,0,0,.42)`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center"
-                }}
-              >
-                <div
-                  style={{
-                    width: 112,
-                    height: 112,
-                    borderRadius: "50%",
-                    background: "radial-gradient(circle at 35% 30%, #3b3326, #090806 72%)",
-                    border: "2px solid #d6b45b",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#fff3c9",
-                    fontSize: 68,
-                    fontWeight: 900,
-                    textShadow: "0 2px 8px rgba(0,0,0,.65)"
-                  }}
-                >
-                  {lastCalled || "-"}
-                </div>
-
-                <span
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    top: 12,
-                    left: 0,
-                    right: 0,
-                    textAlign: "center",
-                    color: "#fff0b5",
-                    fontSize: 16
-                  }}
-                >
-                  &#9824; &#9829; &#9830; &#9827;
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{
-                width: 170,
-                height: 170,
-                margin: "18px auto 12px",
-                borderRadius: "50%",
-                background: `radial-gradient(circle at 35% 30%, ${themeUI.colors.accent} 0%, ${themeUI.colors.secondary} 45%, ${themeUI.colors.background} 100%)`,
-                color: "#fff",
-                border: `2px solid ${themeUI.colors.accent}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 72,
-                fontWeight: "bold",
-                boxShadow: `0 0 28px ${themeUI.colors.secondary}55, 0 10px 30px rgba(0,0,0,.25)`
-              }}
-            >
-              {lastCalled || "-"}
-            </div>
-          )}
+          <ThemeCurrentNumberVisual
+            theme={liveGame.theme || "Classic"}
+            number={lastCalled}
+            themeUI={themeUI}
+          />
 
           <div style={{ color: themeUI.colors.muted, fontWeight: "bold" }}>
             Total Called: {calledNumbers.length}/90
