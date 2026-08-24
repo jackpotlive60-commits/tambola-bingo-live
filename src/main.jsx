@@ -6,7 +6,6 @@ import React, {
 } from "react";
 
 import { createRoot } from "react-dom/client";
-import "./themes.css";
 
 import { supabase } from "./lib/supabase";
 
@@ -1872,7 +1871,6 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
 
   return (
     <div
-      className="tl-theme-hero"
       style={{
         maxWidth: 1000,
         margin: "0 auto 18px",
@@ -2862,7 +2860,7 @@ function CreateGamePage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -4123,7 +4121,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(game.theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -5743,7 +5741,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${String(liveGame.theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+      <main style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -6085,7 +6083,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(liveGame.theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
