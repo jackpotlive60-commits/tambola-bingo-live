@@ -1789,31 +1789,38 @@ function softenThemeSurface(surface, alpha) {
 function getThemeSectionStyle(themeUI, theme) {
   const primarySurface = softenThemeSurface(
     themeUI?.design?.card?.surface || themeUI?.colors?.surface,
-    0.64
+    0.88
   );
   const secondarySurface = softenThemeSurface(
     themeUI?.design?.card?.surfaceAlt || themeUI?.colors?.surface2,
-    0.50
+    0.80
   );
 
   const sectionImage = getThemeHeroImage(theme);
 
   return {
     ...themeUI.card,
+
     /*
-       Section visuals: keep the theme surface readable while letting the
-       theme's artwork appear inside the section instead of a flat colour.
-       The first layer is the readable themed overlay; the second layer is
-       the theme-specific visual artwork.
+      Section visuals:
+      Keep the form/content area clean and readable. The theme artwork is
+      deliberately treated as a small decorative visual at the lower-right
+      edge rather than a full section background. This prevents the artwork
+      from sitting behind labels and input fields.
     */
-    backgroundImage: `linear-gradient(145deg, ${primarySurface}, ${secondarySurface}), url("${sectionImage}")`,
-    backgroundSize: "cover, cover",
-    backgroundPosition: "center, center",
-    backgroundRepeat: "no-repeat, no-repeat",
+    backgroundImage: [
+      `radial-gradient(circle at 88% 88%, ${secondarySurface}, transparent 42%)`,
+      `linear-gradient(145deg, ${primarySurface}, ${secondarySurface})`,
+      `url("${sectionImage}")`
+    ].join(", "),
+    backgroundSize: "100% 100%, 100% 100%, 44% auto",
+    backgroundPosition: "center, center, right bottom",
+    backgroundRepeat: "no-repeat, no-repeat, no-repeat",
     backgroundClip: "padding-box",
-    backdropFilter: "blur(14px)",
-    WebkitBackdropFilter: "blur(14px)",
-    boxShadow: `${themeUI.card.boxShadow}, inset 0 1px 0 rgba(255,255,255,.06)`
+    backgroundColor: primarySurface,
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
+    boxShadow: `${themeUI.card.boxShadow}, inset 0 1px 0 rgba(255,255,255,.08)`
   };
 }
 function ThemeHero({ theme, title, subtitle, compact = false }) {
