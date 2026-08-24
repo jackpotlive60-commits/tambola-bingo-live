@@ -42,6 +42,19 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
+const THEME_HERO_IMAGES = {
+  Classic: "/assets/casino-hero.png",
+  Royal: "/assets/royal-hero.png",
+  Party: "/assets/fun-hero.png",
+  Bollywood: "/assets/bollywood-hero.png",
+  Neon: "/assets/neon-hero.png",
+  Elegant: "/assets/elegant-hero.png"
+};
+
+function getThemeHeroImage(theme) {
+  return THEME_HERO_IMAGES[theme] || THEME_HERO_IMAGES.Classic;
+}
+
 /* =========================================================
    THEME DESIGN SYSTEM
    Runtime definitions mirror /public/themes/theme-designs.json
@@ -1551,44 +1564,22 @@ function getThemeUI(theme) {
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
-
-  const ball = (number, size, offset, opacity = 1) => ({
-    position: "absolute",
-    width: size,
-    height: size,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 900,
-    fontSize: Math.max(14, size * .28),
-    color: "#fff",
-    background: `radial-gradient(circle at 32% 25%, #fff 0%, ${c.secondary} 18%, ${c.background} 82%)`,
-    border: `2px solid ${c.accent}`,
-    boxShadow: `0 0 28px ${c.secondary}66, inset -8px -10px 18px rgba(0,0,0,.25)`,
-    opacity,
-    ...offset
-  });
+  const heroImage = getThemeHeroImage(theme);
 
   return (
     <div
       style={{
         maxWidth: 1000,
         margin: "0 auto 18px",
-        minHeight: compact ? 120 : 155,
+        minHeight: compact ? 108 : 132,
         position: "relative",
         overflow: "hidden",
         borderRadius: 24,
         border: `1px solid ${c.accent}66`,
         background: ui.design.hero.surface,
-        backgroundImage: ui.design.backgroundImage
-          ? `linear-gradient(${ui.design.page.overlay}, ${ui.design.page.overlay}), url("${ui.design.backgroundImage}")`
-          : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        boxShadow: `0 18px 50px rgba(0,0,0,.30), 0 0 40px ${c.secondary}18`,
+        boxShadow: `0 16px 42px rgba(0,0,0,.28), 0 0 32px ${c.secondary}18`,
         color: ui.design.hero.text,
-        padding: compact ? "18px 20px" : "24px 26px",
+        padding: compact ? "17px 20px" : "20px 24px",
         boxSizing: "border-box"
       }}
     >
@@ -1596,8 +1587,27 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         style={{
           position: "absolute",
           inset: 0,
-          background: `radial-gradient(circle at 70% 35%, ${c.accent}1f, transparent 28%), radial-gradient(circle at 25% 80%, ${c.secondary}22, transparent 30%)`,
+          background: `linear-gradient(90deg, ${c.background} 0%, ${c.background}e8 42%, ${c.background}66 67%, transparent 100%)`,
+          zIndex: 1,
           pointerEvents: "none"
+        }}
+      />
+
+      <img
+        src={heroImage}
+        alt=""
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          width: "52%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "right center",
+          opacity: .92,
+          zIndex: 0,
+          display: "block"
         }}
       />
 
@@ -1605,8 +1615,8 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         style={{
           position: "relative",
           zIndex: 2,
-          minHeight: compact ? 84 : 105,
-          paddingRight: compact ? 120 : 185
+          maxWidth: compact ? "68%" : "66%",
+          minHeight: compact ? 74 : 88
         }}
       >
         <div
@@ -1618,13 +1628,13 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
             fontWeight: 800
           }}
         >
-          {theme || "Classic"} THEME
+          {theme || "Classic"} - TAMBOLA LIVE
         </div>
 
         <div
           style={{
-            fontSize: compact ? 22 : 30,
-            lineHeight: 1.08,
+            fontSize: compact ? 24 : 30,
+            lineHeight: 1.06,
             fontWeight: 900,
             marginTop: 6,
             overflowWrap: "anywhere"
@@ -1639,18 +1649,13 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
               marginTop: 7,
               color: "var(--theme-panel-muted, #64748b)",
               fontSize: compact ? 12 : 14,
-              lineHeight: 1.35
+              lineHeight: 1.3,
+              maxWidth: 440
             }}
           >
             {subtitle}
           </div>
         )}
-      </div>
-
-      <div aria-hidden="true">
-        <div style={ball(7, compact ? 58 : 76, { right: 105, top: compact ? 24 : 28 }, .88)}>7</div>
-        <div style={ball(42, compact ? 72 : 96, { right: 30, top: compact ? 12 : 15 }, 1)}>42</div>
-        <div style={ball(89, compact ? 48 : 60, { right: 162, bottom: compact ? -16 : -20 }, .62)}>89</div>
       </div>
     </div>
   );
