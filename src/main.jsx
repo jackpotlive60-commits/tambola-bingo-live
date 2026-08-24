@@ -1,3 +1,5 @@
+import "./themes/themes.css";
+
 import React, {
   useEffect,
   useMemo,
