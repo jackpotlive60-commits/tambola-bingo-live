@@ -519,3 +519,242 @@
     min-height: 104px !important;
   }
 }
+
+/* =========================================================
+   SECTION VISUAL TREATMENT â€” MOCKUP DIRECTION
+   Premium / subtle / theme-specific / non-distracting.
+
+   The section is treated as part of the themed scene, not as a generic
+   opaque card. Existing theme background artwork is reused as low-opacity
+   edge decoration so no new JSX or image assets are required.
+========================================================= */
+
+.tl-theme-page {
+  --theme-section-art: var(--theme-page-background);
+  --theme-section-art-opacity: .20;
+  --theme-section-surface-opacity: .54;
+  --theme-section-corner-size: 180%;
+}
+
+/* Every application section becomes a composed visual surface. */
+.tl-theme-page section {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate;
+  background: var(--theme-section-bg) !important;
+  border: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+  color: var(--theme-text) !important;
+  backdrop-filter: var(--theme-section-backdrop);
+  -webkit-backdrop-filter: var(--theme-section-backdrop);
+}
+
+/* Edge artwork â€” upper/right corner. */
+.tl-theme-page section::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 72%;
+  height: 78%;
+  right: -27%;
+  top: -22%;
+  background-image: var(--theme-section-art);
+  background-size: var(--theme-section-corner-size) auto;
+  background-position: top right;
+  background-repeat: no-repeat;
+  opacity: var(--theme-section-art-opacity);
+  filter: saturate(.92) contrast(1.04);
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(ellipse at center, #000 0 45%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 0 45%, transparent 78%);
+}
+
+/* Edge artwork â€” lower/left corner. */
+.tl-theme-page section::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  width: 62%;
+  height: 62%;
+  left: -25%;
+  bottom: -24%;
+  background-image: var(--theme-section-art);
+  background-size: var(--theme-section-corner-size) auto;
+  background-position: bottom left;
+  background-repeat: no-repeat;
+  opacity: calc(var(--theme-section-art-opacity) * .82);
+  filter: saturate(.86) contrast(1.02);
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(ellipse at center, #000 0 42%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 0 42%, transparent 78%);
+}
+
+/* Keep all actual content above the artwork. */
+.tl-theme-page section > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* A very subtle surface sheen gives the panel depth without making it look
+   like a separate floating rectangle. */
+.tl-theme-page section > *:first-child::before {
+  pointer-events: none;
+}
+
+/* Main content cards inherit the same visual language. */
+.tl-theme-page [style*="var(--theme-card-bg)"] {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate;
+  background: var(--theme-card-bg) !important;
+  border: var(--theme-card-border) !important;
+  box-shadow: var(--theme-card-shadow) !important;
+  backdrop-filter: var(--theme-card-backdrop);
+  -webkit-backdrop-filter: var(--theme-card-backdrop);
+}
+
+.tl-theme-page [style*="var(--theme-card-bg)"]::before,
+.tl-theme-page [style*="var(--theme-card-bg)"]::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--theme-section-art);
+  background-repeat: no-repeat;
+  opacity: calc(var(--theme-section-art-opacity) * .72);
+  mix-blend-mode: screen;
+}
+
+.tl-theme-page [style*="var(--theme-card-bg)"]::before {
+  width: 58%;
+  height: 55%;
+  right: -20%;
+  top: -17%;
+  background-size: 205% auto;
+  background-position: top right;
+  mask-image: radial-gradient(ellipse, #000 0 38%, transparent 76%);
+  -webkit-mask-image: radial-gradient(ellipse, #000 0 38%, transparent 76%);
+}
+
+.tl-theme-page [style*="var(--theme-card-bg)"]::after {
+  width: 46%;
+  height: 46%;
+  left: -16%;
+  bottom: -17%;
+  background-size: 220% auto;
+  background-position: bottom left;
+  mask-image: radial-gradient(ellipse, #000 0 36%, transparent 76%);
+  -webkit-mask-image: radial-gradient(ellipse, #000 0 36%, transparent 76%);
+}
+
+.tl-theme-page [style*="var(--theme-card-bg)"] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Theme-specific opacity and surface character. */
+.tl-theme-classic.tl-theme-page {
+  --theme-section-art-opacity: .23;
+  --theme-section-bg: linear-gradient(145deg, rgba(8,39,28,.47), rgba(3,23,17,.58));
+  --theme-section-border: 1px solid rgba(212,175,55,.48);
+  --theme-section-shadow: 0 12px 30px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,244,190,.055);
+}
+
+.tl-theme-royal.tl-theme-page {
+  --theme-section-art-opacity: .24;
+  --theme-section-bg: linear-gradient(145deg, rgba(57,18,78,.42), rgba(22,7,37,.56));
+  --theme-section-border: 1px solid rgba(231,196,91,.50);
+  --theme-section-shadow: 0 14px 34px rgba(18,4,30,.26), inset 0 1px 0 rgba(255,255,255,.065);
+}
+
+.tl-theme-party.tl-theme-page {
+  --theme-section-art-opacity: .22;
+  --theme-section-bg: linear-gradient(145deg, rgba(67,16,74,.42), rgba(34,7,44,.56));
+  --theme-section-border: 1px solid rgba(250,204,21,.48);
+  --theme-section-shadow: 0 13px 32px rgba(40,4,48,.26), 0 0 18px rgba(236,72,153,.055);
+}
+
+.tl-theme-bollywood.tl-theme-page {
+  --theme-section-art-opacity: .22;
+  --theme-section-bg: linear-gradient(145deg, rgba(84,15,21,.44), rgba(39,5,11,.58));
+  --theme-section-border: 1px solid rgba(251,191,36,.50);
+  --theme-section-shadow: 0 13px 32px rgba(45,3,8,.28), inset 0 1px 0 rgba(255,220,150,.055);
+}
+
+.tl-theme-neon.tl-theme-page {
+  --theme-section-art-opacity: .18;
+  --theme-section-bg: linear-gradient(145deg, rgba(4,18,38,.42), rgba(2,7,18,.58));
+  --theme-section-border: 1px solid rgba(34,211,238,.54);
+  --theme-section-shadow: 0 0 0 1px rgba(139,92,246,.10) inset, 0 0 22px rgba(34,211,238,.075), 0 12px 30px rgba(0,0,0,.28);
+}
+
+.tl-theme-elegant.tl-theme-page {
+  --theme-section-art-opacity: .14;
+  --theme-section-bg: linear-gradient(145deg, rgba(248,245,238,.66), rgba(230,225,214,.60));
+  --theme-section-border: 1px solid rgba(169,139,67,.38);
+  --theme-section-shadow: 0 12px 28px rgba(48,43,34,.12), inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+/* Elegant is the one light theme: darken the artwork slightly instead of
+   using a bright screen blend. */
+.tl-theme-elegant.tl-theme-page section::before,
+.tl-theme-elegant.tl-theme-page section::after,
+.tl-theme-elegant.tl-theme-page [style*="var(--theme-card-bg)"]::before,
+.tl-theme-elegant.tl-theme-page [style*="var(--theme-card-bg)"]::after {
+  mix-blend-mode: multiply;
+  filter: saturate(.70) contrast(.98);
+}
+
+/* Make repeated sections feel intentionally related while avoiding a tiled
+   wallpaper effect. */
+.tl-theme-page section:nth-of-type(2n)::before {
+  right: auto;
+  left: -27%;
+  background-position: top left;
+}
+
+.tl-theme-page section:nth-of-type(2n)::after {
+  left: auto;
+  right: -25%;
+  background-position: bottom right;
+}
+
+.tl-theme-page section:nth-of-type(3n) {
+  --theme-section-art-opacity: calc(var(--theme-section-art-opacity) * .78);
+}
+
+/* Mobile: artwork becomes smaller and quieter so it never competes with
+   form fields or ticket content. */
+@media (max-width: 520px) {
+  .tl-theme-page section {
+    border-radius: max(10px, calc(var(--theme-card-radius) - 3px)) !important;
+  }
+
+  .tl-theme-page section::before {
+    width: 62%;
+    height: 58%;
+    right: -23%;
+    top: -18%;
+    background-size: 205% auto;
+    opacity: calc(var(--theme-section-art-opacity) * .82);
+  }
+
+  .tl-theme-page section::after {
+    width: 52%;
+    height: 50%;
+    left: -22%;
+    bottom: -20%;
+    background-size: 220% auto;
+    opacity: calc(var(--theme-section-art-opacity) * .70);
+  }
+
+  .tl-theme-page section:nth-of-type(2n)::before {
+    left: -23%;
+  }
+
+  .tl-theme-page section:nth-of-type(2n)::after {
+    right: -22%;
+  }
+}
