@@ -1,331 +1,424 @@
-/* =========================================================
-   TAMBOLA LIVE — THEME SYSTEM
-   ========================================================= */
+/*
+  TambolaLive Theme Engine
+  -------------------------
+  main.jsx only selects the theme.  This file owns the visual language:
+  page, sections, cards, controls, status surfaces and responsive blending.
+*/
 
 :root {
-  --theme-primary: #d4a017;
-  --theme-secondary: #0b3d2e;
-  --theme-background: #061c14;
-  --theme-card: #09271d;
+  --theme-transition: 180ms ease;
+  --theme-page-background: #0b1d16;
+  --theme-bg: #0b1d16;
   --theme-text: #fff8e7;
   --theme-muted: #d8d0bd;
-  --theme-border: rgba(212, 160, 23, 0.55);
-  --theme-glow: rgba(212, 160, 23, 0.25);
+  --theme-accent: #f5c542;
+  --theme-secondary: #f0c94a;
+  --theme-glow: #f0c94a;
+  --theme-card-bg: rgba(10, 36, 27, .94);
+  --theme-panel-bg: rgba(14, 48, 35, .94);
+  --theme-prize-bg: rgba(18, 58, 42, .96);
+  --theme-secondary-bg: rgba(22, 67, 49, .96);
+  --theme-section-bg: rgba(12, 43, 32, .72);
+  --theme-card-border: 1px solid rgba(212,175,55,.55);
+  --theme-section-border: 1px solid rgba(212,175,55,.45);
+  --theme-panel-border: 1px solid rgba(212,175,55,.62);
+  --theme-card-shadow: 0 14px 34px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05);
+  --theme-section-shadow: 0 10px 28px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.045);
+  --theme-panel-shadow: 0 10px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,244,190,.08);
+  --theme-card-backdrop: blur(10px);
+  --theme-section-backdrop: blur(10px);
+  --theme-card-radius: 16px;
+  --theme-input-radius: 10px;
+  --theme-button-radius: 10px;
+  --theme-card-padding: 22px;
+  --theme-input-padding: 11px 13px;
+  --theme-button-padding: 11px 17px;
+  --theme-letter-spacing: .01em;
+  --theme-button-weight: 800;
+  --theme-input-bg: #f8f6ef;
+  --theme-input-text: #172018;
+  --theme-input-border: 1px solid #c9a93b;
+  --theme-input-shadow: 0 6px 16px rgba(0,0,0,.12);
+  --theme-primary-button: linear-gradient(135deg,#c99a1e,#f0c94a);
+  --theme-secondary-border: 1px solid rgba(212,175,55,.55);
+  --theme-primary-border: 1px solid #c99a1e;
+  --theme-button-text: #17120a;
+  --theme-button-shadow: 0 8px 20px rgba(0,0,0,.20);
+  --theme-status-live: linear-gradient(135deg,#14532d,#166534);
+  --theme-status-ended: linear-gradient(135deg,#3f3f46,#27272a);
+  --theme-status-upcoming: linear-gradient(135deg,#854d0e,#713f12);
+  --theme-hero-bg: rgba(5,35,25,.82);
+  --theme-hero-border: rgba(212,175,55,.55);
+  --theme-hero-shadow: 0 16px 42px rgba(0,0,0,.28);
 }
 
-/* =========================
-   CLASSIC
-   ========================= */
-
-.theme-classic {
-  --theme-primary: #d4a017;
-  --theme-secondary: #0b3d2e;
-  --theme-background: #061c14;
-  --theme-card: #09271d;
+/* =========================================================
+   CLASSIC / CASINO
+========================================================= */
+.tl-theme-classic {
+  --theme-bg: #071c14;
   --theme-text: #fff8e7;
   --theme-muted: #d8d0bd;
-  --theme-border: rgba(212, 160, 23, 0.55);
-  --theme-glow: rgba(212, 160, 23, 0.25);
+  --theme-accent: #f5c542;
+  --theme-secondary: #f0c94a;
+  --theme-glow: #f0c94a;
+  --theme-page-background:
+    linear-gradient(rgba(3,20,15,.46),rgba(3,20,15,.46)),
+    url('/assets/casino-background-mobile.jpg');
+  --theme-card-bg:
+    linear-gradient(145deg,rgba(12,49,35,.94),rgba(3,25,18,.96));
+  --theme-panel-bg:
+    linear-gradient(145deg,rgba(17,57,42,.94),rgba(5,31,22,.96));
+  --theme-prize-bg:
+    linear-gradient(135deg,rgba(24,67,48,.96),rgba(8,35,25,.98));
+  --theme-secondary-bg:
+    linear-gradient(135deg,rgba(27,73,52,.96),rgba(9,39,28,.98));
+  --theme-section-bg:
+    linear-gradient(145deg,rgba(12,47,34,.78),rgba(4,28,20,.86));
+  --theme-card-border: 1px solid rgba(212,175,55,.55);
+  --theme-section-border: 1px solid rgba(212,175,55,.44);
+  --theme-panel-border: 1px solid rgba(212,175,55,.62);
+  --theme-card-shadow: 0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,244,190,.06);
+  --theme-section-shadow: 0 10px 28px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,244,190,.05);
+  --theme-card-radius: 16px;
+  --theme-input-radius: 9px;
+  --theme-button-radius: 9px;
+  --theme-primary-button: linear-gradient(135deg,#c99a1e,#f0c94a);
+  --theme-button-text: #17120a;
+  --theme-primary-border: 1px solid #c99a1e;
+  --theme-secondary-border: 1px solid rgba(212,175,55,.55);
+  --theme-hero-bg: rgba(5,35,25,.82);
+  --theme-hero-border: rgba(212,175,55,.62);
 }
 
-/* =========================
+/* =========================================================
    ROYAL
-   ========================= */
-
-.theme-royal {
-  --theme-primary: #d4af37;
-  --theme-secondary: #5b1a73;
-  --theme-background: #190b25;
-  --theme-card: #24102f;
+========================================================= */
+.tl-theme-royal {
+  --theme-bg: #18082a;
   --theme-text: #fff8e8;
   --theme-muted: #dfd1eb;
-  --theme-border: rgba(212, 175, 55, 0.55);
-  --theme-glow: rgba(212, 175, 55, 0.25);
+  --theme-accent: #f5c542;
+  --theme-secondary: #f3d36a;
+  --theme-glow: #8b5cf6;
+  --theme-page-background:
+    linear-gradient(rgba(28,9,48,.42),rgba(28,9,48,.42)),
+    url('/assets/royal-background-mobile.jpg');
+  --theme-card-bg:
+    linear-gradient(145deg,rgba(54,19,76,.95),rgba(23,7,38,.98));
+  --theme-panel-bg:
+    linear-gradient(145deg,rgba(66,26,88,.96),rgba(28,10,45,.98));
+  --theme-prize-bg:
+    linear-gradient(135deg,rgba(74,30,99,.96),rgba(31,10,49,.98));
+  --theme-secondary-bg:
+    linear-gradient(135deg,rgba(75,34,104,.96),rgba(37,13,55,.98));
+  --theme-section-bg:
+    linear-gradient(145deg,rgba(54,19,76,.76),rgba(23,7,38,.86));
+  --theme-card-border: 1px solid rgba(231,196,91,.55);
+  --theme-section-border: 1px solid rgba(231,196,91,.45);
+  --theme-panel-border: 1px solid rgba(231,196,91,.70);
+  --theme-card-shadow: 0 20px 48px rgba(35,10,55,.34),inset 0 1px 0 rgba(255,255,255,.08);
+  --theme-section-shadow: 0 14px 36px rgba(20,5,32,.30),inset 0 1px 0 rgba(255,255,255,.06);
+  --theme-card-backdrop: blur(14px);
+  --theme-section-backdrop: blur(12px);
+  --theme-card-radius: 24px;
+  --theme-input-radius: 13px;
+  --theme-button-radius: 13px;
+  --theme-card-padding: 26px;
+  --theme-input-padding: 12px 15px;
+  --theme-button-padding: 12px 20px;
+  --theme-letter-spacing: .035em;
+  --theme-button-weight: 900;
+  --theme-primary-button: linear-gradient(135deg,#d4a72c,#f3d36a);
+  --theme-button-text: #201326;
+  --theme-primary-border: 1px solid #d4a72c;
+  --theme-secondary-border: 1px solid rgba(231,196,91,.55);
+  --theme-button-shadow: 0 12px 30px rgba(100,55,130,.28),inset 0 1px 0 rgba(255,255,255,.12);
+  --theme-hero-bg: rgba(42,16,65,.82);
+  --theme-hero-border: rgba(231,196,91,.65);
 }
 
-/* =========================
-   PARTY
-   ========================= */
-
-.theme-party {
-  --theme-primary: #e83e8c;
-  --theme-secondary: #6d174f;
-  --theme-background: #280b2c;
-  --theme-card: #38133a;
-  --theme-text: #ffffff;
+/* =========================================================
+   PARTY / FUN
+========================================================= */
+.tl-theme-party {
+  --theme-bg: #2b0c35;
+  --theme-text: #fff;
   --theme-muted: #f1e5f4;
-  --theme-border: rgba(232, 62, 140, 0.55);
-  --theme-glow: rgba(232, 62, 140, 0.25);
+  --theme-accent: #22d3ee;
+  --theme-secondary: #ec4899;
+  --theme-glow: #22d3ee;
+  --theme-page-background:
+    linear-gradient(rgba(52,11,55,.28),rgba(52,11,55,.28)),
+    url('/assets/fun-background-mobile.jpg');
+  --theme-card-bg:
+    radial-gradient(circle at 12% 16%,rgba(236,72,153,.13) 0 2px,transparent 3px),
+    radial-gradient(circle at 84% 24%,rgba(34,211,238,.13) 0 2px,transparent 3px),
+    linear-gradient(145deg,rgba(67,18,75,.93),rgba(38,9,48,.97));
+  --theme-panel-bg:
+    linear-gradient(145deg,rgba(79,22,81,.95),rgba(45,11,55,.98));
+  --theme-prize-bg: linear-gradient(135deg,rgba(110,27,92,.96),rgba(55,12,63,.98));
+  --theme-secondary-bg: linear-gradient(135deg,rgba(123,31,91,.96),rgba(52,15,68,.98));
+  --theme-section-bg: linear-gradient(145deg,rgba(67,18,75,.76),rgba(38,9,48,.86));
+  --theme-card-border: 2px solid rgba(250,204,21,.50);
+  --theme-section-border: 1px solid rgba(250,204,21,.42);
+  --theme-panel-border: 2px solid rgba(250,204,21,.58);
+  --theme-card-shadow: 0 18px 40px rgba(70,10,55,.26),0 0 18px rgba(236,72,153,.07);
+  --theme-section-shadow: 0 14px 32px rgba(44,6,53,.26),0 0 18px rgba(236,72,153,.07);
+  --theme-card-backdrop: blur(8px);
+  --theme-section-backdrop: blur(8px);
+  --theme-card-radius: 30px;
+  --theme-input-radius: 17px;
+  --theme-button-radius: 22px;
+  --theme-card-padding: 22px;
+  --theme-input-padding: 12px 15px;
+  --theme-button-padding: 12px 20px;
+  --theme-letter-spacing: .015em;
+  --theme-button-weight: 900;
+  --theme-primary-button: linear-gradient(135deg,#ec4899,#22d3ee);
+  --theme-button-text: #fff;
+  --theme-primary-border: 1px solid rgba(255,255,255,.20);
+  --theme-secondary-border: 1px solid rgba(250,204,21,.50);
+  --theme-button-shadow: 0 11px 25px rgba(230,45,115,.24),0 0 14px rgba(34,211,238,.08);
+  --theme-hero-bg: rgba(76,18,79,.78);
+  --theme-hero-border: rgba(250,204,21,.58);
 }
 
-/* =========================
+/* =========================================================
    BOLLYWOOD
-   ========================= */
-
-.theme-bollywood {
-  --theme-primary: #e5a21a;
-  --theme-secondary: #681018;
-  --theme-background: #260708;
-  --theme-card: #3a0d0d;
+========================================================= */
+.tl-theme-bollywood {
+  --theme-bg: #3b080f;
   --theme-text: #fffaf0;
   --theme-muted: #f1d8cf;
-  --theme-border: rgba(229, 162, 26, 0.55);
-  --theme-glow: rgba(229, 162, 26, 0.25);
+  --theme-accent: #fbbf24;
+  --theme-secondary: #f59e0b;
+  --theme-glow: #fbbf24;
+  --theme-page-background:
+    linear-gradient(rgba(76,8,13,.40),rgba(76,8,13,.40)),
+    url('/assets/bollywood-background-mobile.jpg');
+  --theme-card-bg:
+    radial-gradient(circle at 10% 10%,rgba(251,191,36,.12) 0 2px,transparent 3px),
+    radial-gradient(circle at 90% 10%,rgba(251,191,36,.10) 0 2px,transparent 3px),
+    linear-gradient(145deg,rgba(91,16,22,.95),rgba(44,6,12,.98));
+  --theme-panel-bg: linear-gradient(145deg,rgba(111,24,30,.96),rgba(51,8,14,.98));
+  --theme-prize-bg: linear-gradient(135deg,rgba(128,26,28,.96),rgba(59,8,14,.98));
+  --theme-secondary-bg: linear-gradient(135deg,rgba(151,42,23,.96),rgba(70,10,15,.98));
+  --theme-section-bg: linear-gradient(145deg,rgba(91,16,22,.76),rgba(44,6,12,.88));
+  --theme-card-border: 1px solid rgba(251,191,36,.55);
+  --theme-section-border: 1px solid rgba(251,191,36,.45);
+  --theme-panel-border: 1px solid rgba(251,191,36,.72);
+  --theme-card-shadow: 0 18px 44px rgba(70,5,10,.30),inset 0 1px 0 rgba(255,220,150,.08);
+  --theme-section-shadow: 0 14px 34px rgba(52,4,9,.30),inset 0 1px 0 rgba(255,220,150,.06);
+  --theme-card-backdrop: blur(12px);
+  --theme-section-backdrop: blur(10px);
+  --theme-card-radius: 13px;
+  --theme-input-radius: 7px;
+  --theme-button-radius: 7px;
+  --theme-card-padding: 24px;
+  --theme-input-padding: 11px 13px;
+  --theme-button-padding: 11px 19px;
+  --theme-letter-spacing: .025em;
+  --theme-button-weight: 900;
+  --theme-primary-button: linear-gradient(135deg,#d97706,#fbbf24);
+  --theme-button-text: #fff;
+  --theme-primary-border: 1px solid rgba(251,191,36,.55);
+  --theme-secondary-border: 1px solid rgba(251,191,36,.55);
+  --theme-button-shadow: 0 11px 28px rgba(150,30,20,.28),inset 0 1px 0 rgba(255,220,150,.08);
+  --theme-hero-bg: rgba(89,16,22,.82);
+  --theme-hero-border: rgba(251,191,36,.66);
 }
 
-/* =========================
+/* =========================================================
    NEON
-   ========================= */
-
-.theme-neon {
-  --theme-primary: #00e5ff;
-  --theme-secondary: #7c3aed;
-  --theme-background: #030712;
-  --theme-card: #071321;
+========================================================= */
+.tl-theme-neon {
+  --theme-bg: #020914;
   --theme-text: #f5fbff;
   --theme-muted: #b9c9dc;
-  --theme-border: rgba(0, 229, 255, 0.55);
-  --theme-glow: rgba(0, 229, 255, 0.3);
+  --theme-accent: #22d3ee;
+  --theme-secondary: #8b5cf6;
+  --theme-glow: #22d3ee;
+  --theme-page-background:
+    linear-gradient(rgba(1,7,18,.42),rgba(1,7,18,.42)),
+    url('/assets/neon-background-mobile.jpg');
+  --theme-card-bg:
+    linear-gradient(145deg,rgba(4,18,38,.95),rgba(2,8,20,.99)),
+    repeating-linear-gradient(90deg,transparent 0 28px,rgba(34,211,238,.055) 29px,transparent 30px),
+    repeating-linear-gradient(0deg,transparent 0 28px,rgba(139,92,246,.045) 29px,transparent 30px);
+  --theme-panel-bg:
+    linear-gradient(145deg,rgba(8,29,55,.96),rgba(2,12,28,.99));
+  --theme-prize-bg:
+    linear-gradient(135deg,rgba(12,42,74,.96),rgba(4,18,40,.99));
+  --theme-secondary-bg:
+    linear-gradient(135deg,rgba(10,48,75,.96),rgba(20,19,61,.99));
+  --theme-section-bg:
+    linear-gradient(145deg,rgba(4,18,38,.78),rgba(2,8,20,.90));
+  --theme-card-border: 1px solid rgba(34,211,238,.60);
+  --theme-section-border: 1px solid rgba(34,211,238,.52);
+  --theme-panel-border: 1px solid rgba(34,211,238,.72);
+  --theme-card-shadow: 0 0 0 1px rgba(139,92,246,.20) inset,0 0 28px rgba(34,211,238,.12),0 14px 34px rgba(0,0,0,.30);
+  --theme-section-shadow: 0 0 0 1px rgba(139,92,246,.12) inset,0 0 22px rgba(34,211,238,.09),0 12px 30px rgba(0,0,0,.28);
+  --theme-card-backdrop: blur(18px);
+  --theme-section-backdrop: blur(14px);
+  --theme-card-radius: 8px;
+  --theme-input-radius: 6px;
+  --theme-button-radius: 6px;
+  --theme-card-padding: 20px;
+  --theme-input-padding: 10px 12px;
+  --theme-button-padding: 10px 16px;
+  --theme-letter-spacing: .04em;
+  --theme-button-weight: 900;
+  --theme-primary-button: linear-gradient(135deg,#0891b2,#8b5cf6);
+  --theme-button-text: #fff;
+  --theme-primary-border: 1px solid rgba(34,211,238,.70);
+  --theme-secondary-border: 1px solid rgba(34,211,238,.55);
+  --theme-button-shadow: 0 0 20px rgba(34,211,238,.28),inset 0 0 12px rgba(139,92,246,.12);
+  --theme-hero-bg: rgba(3,13,30,.82);
+  --theme-hero-border: rgba(34,211,238,.72);
 }
 
-/* =========================
+/* =========================================================
    ELEGANT
-   ========================= */
-
-.theme-elegant {
-  --theme-primary: #b18a45;
-  --theme-secondary: #252b32;
-  --theme-background: #e9e5dc;
-  --theme-card: #f3f0e8;
+========================================================= */
+.tl-theme-elegant {
+  --theme-bg: #e9e5db;
   --theme-text: #20262d;
   --theme-muted: #66717b;
-  --theme-border: rgba(177, 138, 69, 0.5);
-  --theme-glow: rgba(177, 138, 69, 0.2);
+  --theme-accent: #a98532;
+  --theme-secondary: #d1b56a;
+  --theme-glow: #a98532;
+  --theme-page-background:
+    linear-gradient(rgba(245,241,232,.18),rgba(245,241,232,.18)),
+    url('/assets/elegant-background-mobile.jpg');
+  --theme-card-bg:
+    linear-gradient(145deg,rgba(250,248,243,.95),rgba(235,231,221,.95));
+  --theme-panel-bg:
+    linear-gradient(145deg,rgba(255,253,248,.97),rgba(238,234,224,.95));
+  --theme-prize-bg:
+    linear-gradient(135deg,rgba(255,253,248,.98),rgba(239,235,226,.97));
+  --theme-secondary-bg:
+    linear-gradient(135deg,rgba(255,253,248,.97),rgba(231,225,211,.97));
+  --theme-section-bg:
+    linear-gradient(145deg,rgba(250,248,243,.84),rgba(235,231,221,.84));
+  --theme-card-border: 1px solid rgba(169,139,67,.38);
+  --theme-section-border: 1px solid rgba(169,139,67,.30);
+  --theme-panel-border: 1px solid rgba(169,139,67,.55);
+  --theme-card-shadow: 0 14px 30px rgba(48,43,34,.15),inset 0 1px 0 rgba(255,255,255,.80);
+  --theme-section-shadow: 0 10px 26px rgba(48,43,34,.12),inset 0 1px 0 rgba(255,255,255,.72);
+  --theme-card-backdrop: blur(13px);
+  --theme-section-backdrop: blur(10px);
+  --theme-card-radius: 11px;
+  --theme-input-radius: 6px;
+  --theme-button-radius: 6px;
+  --theme-card-padding: 25px;
+  --theme-input-padding: 11px 13px;
+  --theme-button-padding: 11px 19px;
+  --theme-letter-spacing: .035em;
+  --theme-button-weight: 700;
+  --theme-input-bg: rgba(255,255,255,.94);
+  --theme-input-text: #20262d;
+  --theme-input-border: 1px solid #b99b5b;
+  --theme-primary-button: linear-gradient(135deg,#a98532,#d1b56a);
+  --theme-button-text: #fff;
+  --theme-primary-border: 1px solid #a98532;
+  --theme-secondary-border: 1px solid rgba(169,139,67,.45);
+  --theme-button-shadow: 0 8px 20px rgba(48,43,34,.15),inset 0 1px 0 rgba(255,255,255,.45);
+  --theme-hero-bg: rgba(250,248,243,.90);
+  --theme-hero-border: rgba(173,139,57,.58);
 }
 
-
 /* =========================================================
-   COMMON SECTION FOUNDATION
-   ========================================================= */
-
-[data-live-section],
-[data-section-theme],
-.theme-section {
-  position: relative;
-  overflow: hidden;
+   SHARED BLENDING RULES
+========================================================= */
+.tl-theme-page {
+  transition: background-color var(--theme-transition), color var(--theme-transition);
 }
 
+.tl-theme-page,
+.tl-theme-page * {
+  scrollbar-color: var(--theme-accent) transparent;
+}
 
-/* =========================================================
-   SECTION DECORATION
-   ========================================================= */
+.tl-theme-page input,
+.tl-theme-page select,
+.tl-theme-page textarea {
+  background: var(--theme-input-bg) !important;
+  color: var(--theme-input-text) !important;
+  border-color: var(--theme-accent) !important;
+}
 
-[data-live-section]::before,
-[data-live-section]::after,
-[data-section-theme]::before,
-[data-section-theme]::after,
-.theme-section::before,
-.theme-section::after {
-  pointer-events: none;
-  position: absolute;
+.tl-theme-page input::placeholder,
+.tl-theme-page textarea::placeholder {
+  color: color-mix(in srgb, var(--theme-input-text) 48%, transparent);
+}
+
+/* Sections that already carry the app's data attributes receive the same
+   surface language as ordinary theme cards. */
+.tl-theme-page [data-live-section] {
+  background: var(--theme-section-bg) !important;
+  border-color: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+  color: var(--theme-text);
+}
+
+/* Keep ticket cells themselves readable; their internal ticket styling is
+   intentionally not converted into a large themed card. */
+.tl-theme-page [data-ticket-cell] {
+  color: var(--theme-ticket-text, var(--theme-input-text));
+}
+
+/* Theme hero */
+.tl-theme-page .tl-theme-hero {
+  background: var(--theme-hero-bg) !important;
+  border-color: var(--theme-hero-border) !important;
+  box-shadow: var(--theme-hero-shadow) !important;
+}
+
+/* Buttons inherit the same visual family even when older inline declarations
+   are present. */
+.tl-theme-page button {
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+}
+
+.tl-theme-page button:hover {
+  filter: brightness(1.045);
+}
+
+.tl-theme-page button:active {
+  transform: translateY(1px);
+}
+
+/* Subtle theme atmosphere behind the content without another PNG layer. */
+.tl-theme-page::before {
   content: "";
-}
-
-
-/* =========================================================
-   CLASSIC SECTION DECORATION
-   ========================================================= */
-
-.theme-classic [data-live-section]::after,
-.theme-classic .theme-section::after {
-  width: 180px;
-  height: 180px;
-  right: -70px;
-  bottom: -80px;
-  border-radius: 50%;
-  border: 2px solid var(--theme-primary);
-  opacity: 0.12;
-  box-shadow:
-    0 0 0 20px rgba(212,160,23,.04),
-    0 0 40px var(--theme-glow);
-}
-
-
-/* =========================================================
-   ROYAL SECTION DECORATION
-   ========================================================= */
-
-.theme-royal [data-live-section]::after,
-.theme-royal .theme-section::after {
-  width: 150px;
-  height: 150px;
-  right: -55px;
-  top: -55px;
-  border-radius: 50%;
-  border: 2px solid var(--theme-primary);
-  opacity: 0.14;
-  box-shadow:
-    0 0 0 12px rgba(212,175,55,.04),
-    0 0 45px var(--theme-glow);
-}
-
-
-/* =========================================================
-   PARTY SECTION DECORATION
-   ========================================================= */
-
-.theme-party [data-live-section]::before,
-.theme-party .theme-section::before {
-  width: 90px;
-  height: 90px;
-  left: -35px;
-  bottom: -35px;
-  border-radius: 50%;
-  border: 3px dashed var(--theme-primary);
-  opacity: 0.12;
-  transform: rotate(15deg);
-}
-
-.theme-party [data-live-section]::after,
-.theme-party .theme-section::after {
-  width: 55px;
-  height: 55px;
-  right: 20px;
-  top: 18px;
-  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
   background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,.7) 0 4%, transparent 5%),
-    radial-gradient(circle, var(--theme-primary) 0 45%, transparent 46%);
-  opacity: 0.1;
+    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--theme-accent) 10%, transparent), transparent 28%),
+    radial-gradient(circle at 92% 72%, color-mix(in srgb, var(--theme-secondary) 9%, transparent), transparent 30%);
 }
 
+/* Desktop: let the original mobile-friendly backgrounds breathe without
+   stretching the section surfaces. */
+@media (min-width: 700px) {
+  .tl-theme-page {
+    padding: 28px;
+  }
 
-/* =========================================================
-   BOLLYWOOD SECTION DECORATION
-   ========================================================= */
-
-.theme-bollywood [data-live-section]::after,
-.theme-bollywood .theme-section::after {
-  width: 190px;
-  height: 70px;
-  right: -55px;
-  bottom: -20px;
-  border: 3px solid var(--theme-primary);
-  border-radius: 50%;
-  transform: rotate(-12deg);
-  opacity: 0.12;
+  .tl-theme-page [data-live-section] {
+    background: var(--theme-section-bg) !important;
+  }
 }
 
+@media (max-width: 520px) {
+  .tl-theme-page {
+    padding: 12px !important;
+  }
 
-/* =========================================================
-   NEON SECTION DECORATION
-   ========================================================= */
-
-.theme-neon [data-live-section]::before,
-.theme-neon .theme-section::before {
-  inset: 8px;
-  border: 1px solid var(--theme-primary);
-  border-radius: inherit;
-  opacity: 0.08;
-  box-shadow:
-    0 0 18px var(--theme-glow),
-    inset 0 0 18px var(--theme-glow);
-}
-
-.theme-neon [data-live-section]::after,
-.theme-neon .theme-section::after {
-  width: 160px;
-  height: 160px;
-  right: -80px;
-  top: -80px;
-  border-radius: 50%;
-  border: 2px solid var(--theme-primary);
-  opacity: 0.14;
-  box-shadow: 0 0 35px var(--theme-glow);
-}
-
-
-/* =========================================================
-   ELEGANT SECTION DECORATION
-   ========================================================= */
-
-.theme-elegant [data-live-section]::after,
-.theme-elegant .theme-section::after {
-  width: 170px;
-  height: 170px;
-  right: -75px;
-  bottom: -75px;
-  border-radius: 50%;
-  border: 1px solid var(--theme-primary);
-  opacity: 0.13;
-}
-
-
-/* =========================================================
-   COMMON THEME ELEMENTS
-   ========================================================= */
-
-.theme-classic h1,
-.theme-classic h2,
-.theme-classic h3,
-.theme-royal h1,
-.theme-royal h2,
-.theme-royal h3,
-.theme-party h1,
-.theme-party h2,
-.theme-party h3,
-.theme-bollywood h1,
-.theme-bollywood h2,
-.theme-bollywood h3,
-.theme-neon h1,
-.theme-neon h2,
-.theme-neon h3,
-.theme-elegant h1,
-.theme-elegant h2,
-.theme-elegant h3 {
-  color: var(--theme-text);
-}
-
-.theme-classic input,
-.theme-classic select,
-.theme-classic textarea,
-.theme-royal input,
-.theme-royal select,
-.theme-royal textarea,
-.theme-party input,
-.theme-party select,
-.theme-party textarea,
-.theme-bollywood input,
-.theme-bollywood select,
-.theme-bollywood textarea,
-.theme-neon input,
-.theme-neon select,
-.theme-neon textarea,
-.theme-elegant input,
-.theme-elegant select,
-.theme-elegant textarea {
-  border-color: var(--theme-border);
-  color: var(--theme-text);
-}
-
-.theme-classic button,
-.theme-royal button,
-.theme-party button,
-.theme-bollywood button,
-.theme-neon button,
-.theme-elegant button {
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    filter .18s ease;
-}
-
-.theme-classic button:hover,
-.theme-royal button:hover,
-.theme-party button:hover,
-.theme-bollywood button:hover,
-.theme-neon button:hover,
-.theme-elegant button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
+  .tl-theme-page [data-live-section] {
+    border-radius: max(8px, calc(var(--theme-card-radius) - 4px));
+  }
 }
