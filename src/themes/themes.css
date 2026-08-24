@@ -63,8 +63,9 @@
   --theme-secondary: #f0c94a;
   --theme-glow: #f0c94a;
   --theme-page-background:
-    linear-gradient(rgba(3,20,15,.46),rgba(3,20,15,.46)),
-    url('/assets/casino-background-mobile.jpg');
+    radial-gradient(circle at 10% 8%, rgba(80,210,150,.16), transparent 28%),
+    radial-gradient(circle at 90% 82%, rgba(245,197,66,.09), transparent 30%),
+    linear-gradient(145deg,#06150f,#0b2118 55%,#06100d);
   --theme-card-bg:
     linear-gradient(145deg,rgba(12,49,35,.94),rgba(3,25,18,.96));
   --theme-panel-bg:
@@ -102,8 +103,9 @@
   --theme-secondary: #f3d36a;
   --theme-glow: #8b5cf6;
   --theme-page-background:
-    linear-gradient(rgba(28,9,48,.42),rgba(28,9,48,.42)),
-    url('/assets/royal-background-mobile.jpg');
+    radial-gradient(circle at 12% 8%, rgba(139,92,246,.18), transparent 30%),
+    radial-gradient(circle at 88% 78%, rgba(245,197,66,.10), transparent 28%),
+    linear-gradient(145deg,#10071b,#241032 55%,#0b0612);
   --theme-card-bg:
     linear-gradient(145deg,rgba(54,19,76,.95),rgba(23,7,38,.98));
   --theme-panel-bg:
@@ -149,8 +151,9 @@
   --theme-secondary: #ec4899;
   --theme-glow: #22d3ee;
   --theme-page-background:
-    linear-gradient(rgba(52,11,55,.28),rgba(52,11,55,.28)),
-    url('/assets/fun-background-mobile.jpg');
+    radial-gradient(circle at 12% 10%, rgba(236,72,153,.18), transparent 28%),
+    radial-gradient(circle at 88% 76%, rgba(34,211,238,.13), transparent 30%),
+    linear-gradient(145deg,#130817,#2a0c35 55%,#0d0610);
   --theme-card-bg:
     radial-gradient(circle at 12% 16%,rgba(236,72,153,.13) 0 2px,transparent 3px),
     radial-gradient(circle at 84% 24%,rgba(34,211,238,.13) 0 2px,transparent 3px),
@@ -195,8 +198,9 @@
   --theme-secondary: #f59e0b;
   --theme-glow: #fbbf24;
   --theme-page-background:
-    linear-gradient(rgba(76,8,13,.40),rgba(76,8,13,.40)),
-    url('/assets/bollywood-background-mobile.jpg');
+    radial-gradient(circle at 10% 8%, rgba(251,191,36,.12), transparent 28%),
+    radial-gradient(circle at 90% 78%, rgba(239,68,68,.14), transparent 30%),
+    linear-gradient(145deg,#180508,#3b080f 55%,#100306);
   --theme-card-bg:
     radial-gradient(circle at 10% 10%,rgba(251,191,36,.12) 0 2px,transparent 3px),
     radial-gradient(circle at 90% 10%,rgba(251,191,36,.10) 0 2px,transparent 3px),
@@ -240,8 +244,9 @@
   --theme-secondary: #8b5cf6;
   --theme-glow: #22d3ee;
   --theme-page-background:
-    linear-gradient(rgba(1,7,18,.42),rgba(1,7,18,.42)),
-    url('/assets/neon-background-mobile.jpg');
+    radial-gradient(circle at 10% 10%, rgba(34,211,238,.16), transparent 28%),
+    radial-gradient(circle at 90% 78%, rgba(139,92,246,.15), transparent 30%),
+    linear-gradient(145deg,#020711,#071326 55%,#01040b);
   --theme-card-bg:
     linear-gradient(145deg,rgba(4,18,38,.95),rgba(2,8,20,.99)),
     repeating-linear-gradient(90deg,transparent 0 28px,rgba(34,211,238,.055) 29px,transparent 30px),
@@ -289,8 +294,9 @@
   --theme-secondary: #d1b56a;
   --theme-glow: #a98532;
   --theme-page-background:
-    linear-gradient(rgba(245,241,232,.18),rgba(245,241,232,.18)),
-    url('/assets/elegant-background-mobile.jpg');
+    radial-gradient(circle at 10% 8%, rgba(169,133,50,.09), transparent 30%),
+    radial-gradient(circle at 90% 78%, rgba(255,255,255,.06), transparent 30%),
+    linear-gradient(145deg,#d9d5cb,#ece9e1 55%,#d2cec4);
   --theme-card-bg:
     linear-gradient(145deg,rgba(250,248,243,.95),rgba(235,231,221,.95));
   --theme-panel-bg:
@@ -332,7 +338,12 @@
    SHARED BLENDING RULES
 ========================================================= */
 .tl-theme-page {
+  position: relative;
+  isolation: isolate;
   transition: background-color var(--theme-transition), color var(--theme-transition);
+  background: var(--theme-page-background) !important;
+  background-image: var(--theme-page-background) !important;
+  color: var(--theme-text);
 }
 
 .tl-theme-page,
@@ -389,7 +400,11 @@
   transform: translateY(1px);
 }
 
-/* Subtle theme atmosphere behind the content without another PNG layer. */
+/* =========================================================
+   ATMOSPHERIC PAGE BACKGROUND
+   No photographic JPGs. The page stays rich but quiet.
+   Sections remain darker/brighter focal surfaces.
+========================================================= */
 .tl-theme-page::before {
   content: "";
   position: absolute;
@@ -397,8 +412,55 @@
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--theme-accent) 10%, transparent), transparent 28%),
-    radial-gradient(circle at 92% 72%, color-mix(in srgb, var(--theme-secondary) 9%, transparent), transparent 30%);
+    radial-gradient(circle at 8% 8%, rgba(255,255,255,.035), transparent 26%),
+    radial-gradient(circle at 92% 70%, rgba(255,255,255,.025), transparent 30%);
+}
+
+/* Make the page background visible only around the content, never as a
+   second photographic layer behind the form. */
+.tl-theme-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Sections are the visual focus: stronger, more opaque, deeper surfaces. */
+.tl-theme-page [data-live-section] {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--theme-section-bg) !important;
+  border-color: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+  color: var(--theme-text);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Add a restrained inner atmospheric glow to sections. */
+.tl-theme-page [data-live-section]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--theme-accent) 8%, transparent), transparent 25%),
+    linear-gradient(135deg, rgba(255,255,255,.025), transparent 48%);
+}
+
+/* Existing section contents stay above the decorative layer. */
+.tl-theme-page [data-live-section] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Stronger section surfaces on mobile so the page atmosphere never
+   competes with the form. */
+@media (max-width: 520px) {
+  .tl-theme-page [data-live-section] {
+    background: var(--theme-panel-bg) !important;
+    box-shadow: var(--theme-section-shadow) !important;
+  }
 }
 
 /* Desktop: let the original mobile-friendly backgrounds breathe without
