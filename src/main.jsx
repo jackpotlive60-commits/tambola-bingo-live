@@ -72,11 +72,11 @@ function getThemeHeroImage(theme) {
  *   elegant-section-visuals.png
  */
 const THEME_SECTION_VISUALS = {
-  Classic: "/assets/classic-section-visuals.png",
+  Classic: "/assets/casino-section-visuals.png",
   Royal: "/assets/royal-section-visuals.png",
   Party: "/assets/party-section-visuals.png",
   Bollywood: "/assets/bollywood-section-visuals.png",
-  Neon: "/assets/neon-section-visuals.png",
+  Neon: "/assets/neon-section.png",
   Elegant: "/assets/elegant-section-visuals.png"
 };
 
