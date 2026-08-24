@@ -14,19 +14,19 @@
   --theme-accent: #f5c542;
   --theme-secondary: #f0c94a;
   --theme-glow: #f0c94a;
-  --theme-card-bg: rgba(10, 36, 27, .94);
-  --theme-panel-bg: rgba(14, 48, 35, .94);
-  --theme-prize-bg: rgba(18, 58, 42, .96);
-  --theme-secondary-bg: rgba(22, 67, 49, .96);
-  --theme-section-bg: rgba(12, 43, 32, .72);
+  --theme-card-bg: rgba(10, 36, 27, .68);
+  --theme-panel-bg: rgba(14, 48, 35, .72);
+  --theme-prize-bg: rgba(18, 58, 42, .76);
+  --theme-secondary-bg: rgba(22, 67, 49, .76);
+  --theme-section-bg: rgba(12, 43, 32, .52);
   --theme-card-border: 1px solid rgba(212,175,55,.55);
   --theme-section-border: 1px solid rgba(212,175,55,.45);
   --theme-panel-border: 1px solid rgba(212,175,55,.62);
   --theme-card-shadow: 0 14px 34px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05);
   --theme-section-shadow: 0 10px 28px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.045);
   --theme-panel-shadow: 0 10px 26px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,244,190,.08);
-  --theme-card-backdrop: blur(10px);
-  --theme-section-backdrop: blur(10px);
+  --theme-card-backdrop: blur(8px);
+  --theme-section-backdrop: blur(7px);
   --theme-card-radius: 16px;
   --theme-input-radius: 10px;
   --theme-button-radius: 10px;
@@ -47,7 +47,7 @@
   --theme-status-live: linear-gradient(135deg,#14532d,#166534);
   --theme-status-ended: linear-gradient(135deg,#3f3f46,#27272a);
   --theme-status-upcoming: linear-gradient(135deg,#854d0e,#713f12);
-  --theme-hero-bg: rgba(5,35,25,.82);
+  --theme-hero-bg: rgba(5,35,25,.54);
   --theme-hero-border: rgba(212,175,55,.55);
   --theme-hero-shadow: 0 16px 42px rgba(0,0,0,.28);
 }
@@ -87,7 +87,7 @@
   --theme-button-text: #17120a;
   --theme-primary-border: 1px solid #c99a1e;
   --theme-secondary-border: 1px solid rgba(212,175,55,.55);
-  --theme-hero-bg: rgba(5,35,25,.82);
+  --theme-hero-bg: rgba(5,35,25,.54);
   --theme-hero-border: rgba(212,175,55,.62);
 }
 
@@ -105,15 +105,15 @@
     linear-gradient(rgba(28,9,48,.42),rgba(28,9,48,.42)),
     url('/assets/royal-background-mobile.jpg');
   --theme-card-bg:
-    linear-gradient(145deg,rgba(54,19,76,.95),rgba(23,7,38,.98));
+    linear-gradient(145deg,rgba(54,19,76,.66),rgba(23,7,38,.78));
   --theme-panel-bg:
-    linear-gradient(145deg,rgba(66,26,88,.96),rgba(28,10,45,.98));
+    linear-gradient(145deg,rgba(66,26,88,.70),rgba(28,10,45,.82));
   --theme-prize-bg:
-    linear-gradient(135deg,rgba(74,30,99,.96),rgba(31,10,49,.98));
+    linear-gradient(135deg,rgba(74,30,99,.74),rgba(31,10,49,.84));
   --theme-secondary-bg:
-    linear-gradient(135deg,rgba(75,34,104,.96),rgba(37,13,55,.98));
+    linear-gradient(135deg,rgba(75,34,104,.72),rgba(37,13,55,.84));
   --theme-section-bg:
-    linear-gradient(145deg,rgba(54,19,76,.76),rgba(23,7,38,.86));
+    linear-gradient(145deg,rgba(54,19,76,.48),rgba(23,7,38,.62));
   --theme-card-border: 1px solid rgba(231,196,91,.55);
   --theme-section-border: 1px solid rgba(231,196,91,.45);
   --theme-panel-border: 1px solid rgba(231,196,91,.70);
@@ -134,7 +134,7 @@
   --theme-primary-border: 1px solid #d4a72c;
   --theme-secondary-border: 1px solid rgba(231,196,91,.55);
   --theme-button-shadow: 0 12px 30px rgba(100,55,130,.28),inset 0 1px 0 rgba(255,255,255,.12);
-  --theme-hero-bg: rgba(42,16,65,.82);
+  --theme-hero-bg: rgba(42,16,65,.52);
   --theme-hero-border: rgba(231,196,91,.65);
 }
 
@@ -154,12 +154,12 @@
   --theme-card-bg:
     radial-gradient(circle at 12% 16%,rgba(236,72,153,.13) 0 2px,transparent 3px),
     radial-gradient(circle at 84% 24%,rgba(34,211,238,.13) 0 2px,transparent 3px),
-    linear-gradient(145deg,rgba(67,18,75,.93),rgba(38,9,48,.97));
+    linear-gradient(145deg,rgba(67,18,75,.64),rgba(38,9,48,.78));
   --theme-panel-bg:
-    linear-gradient(145deg,rgba(79,22,81,.95),rgba(45,11,55,.98));
-  --theme-prize-bg: linear-gradient(135deg,rgba(110,27,92,.96),rgba(55,12,63,.98));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(123,31,91,.96),rgba(52,15,68,.98));
-  --theme-section-bg: linear-gradient(145deg,rgba(67,18,75,.76),rgba(38,9,48,.86));
+    linear-gradient(145deg,rgba(79,22,81,.68),rgba(45,11,55,.80));
+  --theme-prize-bg: linear-gradient(135deg,rgba(110,27,92,.72),rgba(55,12,63,.82));
+  --theme-secondary-bg: linear-gradient(135deg,rgba(123,31,91,.70),rgba(52,15,68,.82));
+  --theme-section-bg: linear-gradient(145deg,rgba(67,18,75,.46),rgba(38,9,48,.60));
   --theme-card-border: 2px solid rgba(250,204,21,.50);
   --theme-section-border: 1px solid rgba(250,204,21,.42);
   --theme-panel-border: 2px solid rgba(250,204,21,.58);
@@ -180,7 +180,7 @@
   --theme-primary-border: 1px solid rgba(255,255,255,.20);
   --theme-secondary-border: 1px solid rgba(250,204,21,.50);
   --theme-button-shadow: 0 11px 25px rgba(230,45,115,.24),0 0 14px rgba(34,211,238,.08);
-  --theme-hero-bg: rgba(76,18,79,.78);
+  --theme-hero-bg: rgba(76,18,79,.52);
   --theme-hero-border: rgba(250,204,21,.58);
 }
 
@@ -200,18 +200,18 @@
   --theme-card-bg:
     radial-gradient(circle at 10% 10%,rgba(251,191,36,.12) 0 2px,transparent 3px),
     radial-gradient(circle at 90% 10%,rgba(251,191,36,.10) 0 2px,transparent 3px),
-    linear-gradient(145deg,rgba(91,16,22,.95),rgba(44,6,12,.98));
-  --theme-panel-bg: linear-gradient(145deg,rgba(111,24,30,.96),rgba(51,8,14,.98));
-  --theme-prize-bg: linear-gradient(135deg,rgba(128,26,28,.96),rgba(59,8,14,.98));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(151,42,23,.96),rgba(70,10,15,.98));
-  --theme-section-bg: linear-gradient(145deg,rgba(91,16,22,.76),rgba(44,6,12,.88));
+    linear-gradient(145deg,rgba(91,16,22,.66),rgba(44,6,12,.80));
+  --theme-panel-bg: linear-gradient(145deg,rgba(111,24,30,.70),rgba(51,8,14,.82));
+  --theme-prize-bg: linear-gradient(135deg,rgba(128,26,28,.74),rgba(59,8,14,.84));
+  --theme-secondary-bg: linear-gradient(135deg,rgba(151,42,23,.72),rgba(70,10,15,.84));
+  --theme-section-bg: linear-gradient(145deg,rgba(91,16,22,.48),rgba(44,6,12,.64));
   --theme-card-border: 1px solid rgba(251,191,36,.55);
   --theme-section-border: 1px solid rgba(251,191,36,.45);
   --theme-panel-border: 1px solid rgba(251,191,36,.72);
   --theme-card-shadow: 0 18px 44px rgba(70,5,10,.30),inset 0 1px 0 rgba(255,220,150,.08);
   --theme-section-shadow: 0 14px 34px rgba(52,4,9,.30),inset 0 1px 0 rgba(255,220,150,.06);
   --theme-card-backdrop: blur(12px);
-  --theme-section-backdrop: blur(10px);
+  --theme-section-backdrop: blur(7px);
   --theme-card-radius: 13px;
   --theme-input-radius: 7px;
   --theme-button-radius: 7px;
@@ -225,7 +225,7 @@
   --theme-primary-border: 1px solid rgba(251,191,36,.55);
   --theme-secondary-border: 1px solid rgba(251,191,36,.55);
   --theme-button-shadow: 0 11px 28px rgba(150,30,20,.28),inset 0 1px 0 rgba(255,220,150,.08);
-  --theme-hero-bg: rgba(89,16,22,.82);
+  --theme-hero-bg: rgba(89,16,22,.54);
   --theme-hero-border: rgba(251,191,36,.66);
 }
 
@@ -243,17 +243,17 @@
     linear-gradient(rgba(1,7,18,.42),rgba(1,7,18,.42)),
     url('/assets/neon-background-mobile.jpg');
   --theme-card-bg:
-    linear-gradient(145deg,rgba(4,18,38,.95),rgba(2,8,20,.99)),
+    linear-gradient(145deg,rgba(4,18,38,.68),rgba(2,8,20,.84)),
     repeating-linear-gradient(90deg,transparent 0 28px,rgba(34,211,238,.055) 29px,transparent 30px),
     repeating-linear-gradient(0deg,transparent 0 28px,rgba(139,92,246,.045) 29px,transparent 30px);
   --theme-panel-bg:
-    linear-gradient(145deg,rgba(8,29,55,.96),rgba(2,12,28,.99));
+    linear-gradient(145deg,rgba(8,29,55,.72),rgba(2,12,28,.86));
   --theme-prize-bg:
-    linear-gradient(135deg,rgba(12,42,74,.96),rgba(4,18,40,.99));
+    linear-gradient(135deg,rgba(12,42,74,.74),rgba(4,18,40,.88));
   --theme-secondary-bg:
-    linear-gradient(135deg,rgba(10,48,75,.96),rgba(20,19,61,.99));
+    linear-gradient(135deg,rgba(10,48,75,.72),rgba(20,19,61,.88));
   --theme-section-bg:
-    linear-gradient(145deg,rgba(4,18,38,.78),rgba(2,8,20,.90));
+    linear-gradient(145deg,rgba(4,18,38,.50),rgba(2,8,20,.66));
   --theme-card-border: 1px solid rgba(34,211,238,.60);
   --theme-section-border: 1px solid rgba(34,211,238,.52);
   --theme-panel-border: 1px solid rgba(34,211,238,.72);
@@ -307,7 +307,7 @@
   --theme-card-shadow: 0 14px 30px rgba(48,43,34,.15),inset 0 1px 0 rgba(255,255,255,.80);
   --theme-section-shadow: 0 10px 26px rgba(48,43,34,.12),inset 0 1px 0 rgba(255,255,255,.72);
   --theme-card-backdrop: blur(13px);
-  --theme-section-backdrop: blur(10px);
+  --theme-section-backdrop: blur(7px);
   --theme-card-radius: 11px;
   --theme-input-radius: 6px;
   --theme-button-radius: 6px;
@@ -316,7 +316,7 @@
   --theme-button-padding: 11px 19px;
   --theme-letter-spacing: .035em;
   --theme-button-weight: 700;
-  --theme-input-bg: rgba(255,255,255,.94);
+  --theme-input-bg: rgba(255,255,255,.72);
   --theme-input-text: #20262d;
   --theme-input-border: 1px solid #b99b5b;
   --theme-primary-button: linear-gradient(135deg,#a98532,#d1b56a);
@@ -324,15 +324,24 @@
   --theme-primary-border: 1px solid #a98532;
   --theme-secondary-border: 1px solid rgba(169,139,67,.45);
   --theme-button-shadow: 0 8px 20px rgba(48,43,34,.15),inset 0 1px 0 rgba(255,255,255,.45);
-  --theme-hero-bg: rgba(250,248,243,.90);
+  --theme-hero-bg: rgba(250,248,243,.68);
   --theme-hero-border: rgba(173,139,57,.58);
 }
 
 /* =========================================================
    SHARED BLENDING RULES
+   The page background remains visible. Surfaces are atmospheric layers,
+   not opaque boxes.
 ========================================================= */
 .tl-theme-page {
   transition: background-color var(--theme-transition), color var(--theme-transition);
+  background-color: var(--theme-bg) !important;
+  background-image: var(--theme-page-background) !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  background-repeat: no-repeat !important;
+  background-attachment: scroll !important;
+  color: var(--theme-text) !important;
 }
 
 .tl-theme-page,
@@ -340,6 +349,7 @@
   scrollbar-color: var(--theme-accent) transparent;
 }
 
+/* Keep form controls crisp against the atmospheric surfaces. */
 .tl-theme-page input,
 .tl-theme-page select,
 .tl-theme-page textarea {
@@ -353,30 +363,40 @@
   color: color-mix(in srgb, var(--theme-input-text) 48%, transparent);
 }
 
-/* Sections that already carry the app's data attributes receive the same
-   surface language as ordinary theme cards. */
+/* Data sections become translucent layers. */
 .tl-theme-page [data-live-section] {
   background: var(--theme-section-bg) !important;
   border-color: var(--theme-section-border) !important;
   box-shadow: var(--theme-section-shadow) !important;
-  color: var(--theme-text);
+  color: var(--theme-text) !important;
+  backdrop-filter: var(--theme-section-backdrop);
+  -webkit-backdrop-filter: var(--theme-section-backdrop);
 }
 
-/* Keep ticket cells themselves readable; their internal ticket styling is
-   intentionally not converted into a large themed card. */
 .tl-theme-page [data-ticket-cell] {
   color: var(--theme-ticket-text, var(--theme-input-text));
 }
 
-/* Theme hero */
+/* Hero: short, translucent and image-led rather than a second full card. */
 .tl-theme-page .tl-theme-hero {
   background: var(--theme-hero-bg) !important;
   border-color: var(--theme-hero-border) !important;
   box-shadow: var(--theme-hero-shadow) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-/* Buttons inherit the same visual family even when older inline declarations
-   are present. */
+/* The hero's internal dark gradient is softened so the background artwork
+   can remain visible behind the title. */
+.tl-theme-page .tl-theme-hero > div:first-child {
+  opacity: .72;
+}
+
+.tl-theme-page .tl-theme-hero img {
+  opacity: .88 !important;
+}
+
+/* Buttons get a little depth without becoming separate visual islands. */
 .tl-theme-page button {
   transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
 }
@@ -389,36 +409,113 @@
   transform: translateY(1px);
 }
 
-/* Subtle theme atmosphere behind the content without another PNG layer. */
+/* Atmospheric lighting. Keep this behind content and subtle enough that the
+   original background remains the hero of the page. */
 .tl-theme-page::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
   background:
-    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--theme-accent) 10%, transparent), transparent 28%),
-    radial-gradient(circle at 92% 72%, color-mix(in srgb, var(--theme-secondary) 9%, transparent), transparent 30%);
+    radial-gradient(circle at 8% 8%, color-mix(in srgb, var(--theme-accent) 8%, transparent), transparent 25%),
+    radial-gradient(circle at 92% 72%, color-mix(in srgb, var(--theme-secondary) 7%, transparent), transparent 28%);
 }
 
-/* Desktop: let the original mobile-friendly backgrounds breathe without
-   stretching the section surfaces. */
+.tl-theme-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Generic cards produced by the existing inline style system use these CSS
+   variables, so we can tune the visual language without changing JSX. */
+.tl-theme-page [style*="var(--theme-card-bg)"] {
+  background: var(--theme-card-bg) !important;
+  border-color: var(--theme-card-border) !important;
+  box-shadow: var(--theme-card-shadow) !important;
+  backdrop-filter: var(--theme-card-backdrop);
+  -webkit-backdrop-filter: var(--theme-card-backdrop);
+}
+
 @media (min-width: 700px) {
   .tl-theme-page {
-    padding: 28px;
-  }
-
-  .tl-theme-page [data-live-section] {
-    background: var(--theme-section-bg) !important;
+    padding: 28px !important;
+    background-position: center top !important;
   }
 }
 
 @media (max-width: 520px) {
   .tl-theme-page {
-    padding: 12px !important;
+    padding: 10px !important;
+    background-position: center top !important;
+    background-attachment: scroll !important;
   }
 
   .tl-theme-page [data-live-section] {
-    border-radius: max(8px, calc(var(--theme-card-radius) - 4px));
+    border-radius: max(8px, calc(var(--theme-card-radius) - 5px));
+  }
+
+  /* Mobile hero: reclaim vertical space. The title/description remain readable
+     while the artwork gets to be part of the composition. */
+  .tl-theme-page .tl-theme-hero {
+    min-height: 108px !important;
+    margin-bottom: 12px !important;
+    border-radius: 20px !important;
+    padding: 15px 17px !important;
+  }
+
+  .tl-theme-page .tl-theme-hero > div:last-child {
+    min-height: 74px !important;
+    max-width: 72% !important;
+  }
+
+  .tl-theme-page .tl-theme-hero img {
+    width: 55% !important;
+    opacity: .82 !important;
+  }
+
+  /* Give the first main content card a little more transparency than the
+     following data sections, so the background establishes the theme. */
+  .tl-theme-page [style*="var(--theme-card-bg)"] {
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+  }
+}
+
+/* =========================================================
+   ROYAL POLISH
+   Designed around the screenshot: purple velvet remains visible through
+   the surfaces, while gold defines hierarchy instead of filling everything.
+========================================================= */
+.tl-theme-royal.tl-theme-page {
+  background-position: center top !important;
+}
+
+.tl-theme-royal.tl-theme-page .tl-theme-hero {
+  background: linear-gradient(105deg, rgba(43,14,64,.56), rgba(57,18,79,.42)) !important;
+  border-color: rgba(231,196,91,.62) !important;
+}
+
+.tl-theme-royal.tl-theme-page [style*="var(--theme-card-bg)"] {
+  background:
+    linear-gradient(145deg, rgba(63,23,86,.60), rgba(24,7,40,.66)) !important;
+  border-color: rgba(231,196,91,.48) !important;
+  box-shadow: 0 18px 42px rgba(16,3,28,.28), inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+
+.tl-theme-royal.tl-theme-page [data-live-section] {
+  background: linear-gradient(145deg, rgba(63,23,86,.44), rgba(24,7,40,.56)) !important;
+  border-color: rgba(231,196,91,.40) !important;
+}
+
+.tl-theme-royal.tl-theme-page input,
+.tl-theme-royal.tl-theme-page select,
+.tl-theme-royal.tl-theme-page textarea {
+  box-shadow: 0 5px 15px rgba(23,7,37,.18), inset 0 1px 0 rgba(255,255,255,.75) !important;
+}
+
+@media (max-width: 520px) {
+  .tl-theme-royal.tl-theme-page .tl-theme-hero {
+    min-height: 104px !important;
   }
 }
