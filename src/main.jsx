@@ -1484,6 +1484,81 @@ function getThemeUI(theme) {
     ? `url("${design.backgroundImage}")`
     : "none";
 
+  /*
+    Theme design language.
+    These values deliberately change structure/shape/effects, not only colors.
+  */
+  const variants = {
+    Classic: {
+      cardRadius: 18,
+      inputRadius: 10,
+      buttonRadius: 10,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 14px 34px rgba(0,0,0,.22)",
+      cardBackdrop: "blur(10px)",
+      buttonShadow: "0 9px 22px rgba(0,0,0,.20)",
+      buttonFontWeight: 800,
+      letterSpacing: ".01em"
+    },
+    Royal: {
+      cardRadius: 26,
+      inputRadius: 14,
+      buttonRadius: 14,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 18px 42px rgba(35,10,55,.34), inset 0 1px 0 rgba(255,255,255,.08)",
+      cardBackdrop: "blur(14px)",
+      buttonShadow: "0 12px 30px rgba(100,55,130,.34), inset 0 1px 0 rgba(255,255,255,.16)",
+      buttonFontWeight: 900,
+      letterSpacing: ".025em"
+    },
+    Party: {
+      cardRadius: 30,
+      inputRadius: 18,
+      buttonRadius: 22,
+      cardBorder: `2px solid ${design.card.border}`,
+      cardShadow: "0 16px 36px rgba(70,10,55,.25)",
+      cardBackdrop: "blur(8px)",
+      buttonShadow: "0 10px 24px rgba(230,45,115,.28)",
+      buttonFontWeight: 900,
+      letterSpacing: ".015em"
+    },
+    Bollywood: {
+      cardRadius: 14,
+      inputRadius: 8,
+      buttonRadius: 8,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 16px 40px rgba(70,5,10,.30), inset 0 1px 0 rgba(255,220,150,.10)",
+      cardBackdrop: "blur(12px)",
+      buttonShadow: "0 10px 28px rgba(150,30,20,.30)",
+      buttonFontWeight: 900,
+      letterSpacing: ".02em"
+    },
+    Neon: {
+      cardRadius: 8,
+      inputRadius: 6,
+      buttonRadius: 6,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: `0 0 0 1px ${design.button.primaryAlt}18 inset, 0 0 28px ${design.button.primaryAlt}20`,
+      cardBackdrop: "blur(18px)",
+      buttonShadow: `0 0 20px ${design.button.primaryAlt}45, inset 0 0 12px ${design.button.primaryAlt}15`,
+      buttonFontWeight: 900,
+      letterSpacing: ".04em"
+    },
+    Elegant: {
+      cardRadius: 12,
+      inputRadius: 7,
+      buttonRadius: 7,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 12px 32px rgba(0,0,0,.18)",
+      cardBackdrop: "blur(12px)",
+      buttonShadow: "0 8px 20px rgba(0,0,0,.18)",
+      buttonFontWeight: 700,
+      letterSpacing: ".02em"
+    }
+  };
+
+  const v = variants[theme] || variants.Classic;
+
   return {
     colors,
     design,
@@ -1503,6 +1578,8 @@ function getThemeUI(theme) {
       position: "relative",
       overflowX: "hidden",
       minHeight: "100vh",
+
+      /* Shared theme variables for any inline section that consumes them. */
       "--theme-accent": design.hero.accent,
       "--theme-secondary": design.button.primaryAlt,
       "--theme-bg": colors.background,
@@ -1518,45 +1595,56 @@ function getThemeUI(theme) {
       "--theme-panel-muted": design.page.muted,
       "--theme-ticket-bg": design.input.background,
       "--theme-ticket-text": design.input.text,
-      "--theme-glow": design.button.primaryAlt
+      "--theme-glow": design.button.primaryAlt,
+
+      "--theme-card-radius": `${v.cardRadius}px`,
+      "--theme-input-radius": `${v.inputRadius}px`,
+      "--theme-button-radius": `${v.buttonRadius}px`,
+      "--theme-letter-spacing": v.letterSpacing
     },
 
     card: {
       background: design.card.surface,
-      border: `1px solid ${design.card.border}`,
-      borderRadius: design.card.radius,
+      border: v.cardBorder,
+      borderRadius: v.cardRadius,
       padding: 24,
       color: design.hero.text,
-      boxShadow: design.card.shadow,
-      backdropFilter: "blur(16px)",
-      WebkitBackdropFilter: "blur(16px)"
+      boxShadow: v.cardShadow,
+      backdropFilter: v.cardBackdrop,
+      WebkitBackdropFilter: v.cardBackdrop,
+      overflow: "hidden"
     },
 
     input: {
       border: `1px solid ${design.input.border}`,
-      borderRadius: design.input.radius,
-      boxShadow: `0 6px 18px rgba(0,0,0,.10)`,
+      borderRadius: v.inputRadius,
+      boxShadow: v.cardShadow,
       background: design.input.background,
       color: design.input.text,
       WebkitTextFillColor: design.input.text,
-      caretColor: design.hero.accent
+      caretColor: design.hero.accent,
+      outlineColor: design.hero.accent
     },
 
     primary: {
       background: `linear-gradient(135deg, ${design.button.primary} 0%, ${design.button.primaryAlt} 100%)`,
       color: design.button.text,
-      borderRadius: design.button.radius,
+      borderRadius: v.buttonRadius,
       border: `1px solid ${design.button.primary}`,
-      boxShadow: design.card.shadow,
-      transform: "translateY(0)"
+      boxShadow: v.buttonShadow,
+      transform: "translateY(0)",
+      fontWeight: v.buttonFontWeight,
+      letterSpacing: v.letterSpacing
     },
 
     secondary: {
       border: `1px solid ${design.card.border}`,
-      borderRadius: design.button.radius,
+      borderRadius: v.buttonRadius,
       background: design.input.background,
       color: design.input.text,
-      boxShadow: `0 6px 16px rgba(0,0,0,.10)`
+      boxShadow: v.buttonShadow,
+      fontWeight: v.buttonFontWeight,
+      letterSpacing: v.letterSpacing
     }
   };
 }
