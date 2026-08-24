@@ -1786,7 +1786,7 @@ function softenThemeSurface(surface, alpha) {
   return value;
 }
 
-function getThemeSectionStyle(themeUI) {
+function getThemeSectionStyle(themeUI, theme) {
   const primarySurface = softenThemeSurface(
     themeUI?.design?.card?.surface || themeUI?.colors?.surface,
     0.64
@@ -1796,9 +1796,20 @@ function getThemeSectionStyle(themeUI) {
     0.50
   );
 
+  const sectionImage = getThemeHeroImage(theme);
+
   return {
     ...themeUI.card,
-    background: `linear-gradient(145deg, ${primarySurface}, ${secondarySurface})`,
+    /*
+       Section visuals: keep the theme surface readable while letting the
+       theme's artwork appear inside the section instead of a flat colour.
+       The first layer is the readable themed overlay; the second layer is
+       the theme-specific visual artwork.
+    */
+    backgroundImage: `linear-gradient(145deg, ${primarySurface}, ${secondarySurface}), url("${sectionImage}")`,
+    backgroundSize: "cover, cover",
+    backgroundPosition: "center, center",
+    backgroundRepeat: "no-repeat, no-repeat",
     backgroundClip: "padding-box",
     backdropFilter: "blur(14px)",
     WebkitBackdropFilter: "blur(14px)",
@@ -2583,7 +2594,7 @@ function CreateGamePage({
   const themeUI = getThemeUI(theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  const themedSectionStyle = getThemeSectionStyle(themeUI);
+  const themedSectionStyle = getThemeSectionStyle(themeUI, theme);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -3458,7 +3469,7 @@ function PlayerBookingPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  const themedSectionStyle = getThemeSectionStyle(themeUI);
+  const themedSectionStyle = getThemeSectionStyle(themeUI, game.theme);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -6747,7 +6758,7 @@ function HostControlPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  const themedSectionStyle = getThemeSectionStyle(themeUI);
+  const themedSectionStyle = getThemeSectionStyle(themeUI, game.theme);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
