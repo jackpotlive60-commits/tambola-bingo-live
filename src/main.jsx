@@ -2595,21 +2595,9 @@ function CreateGamePage({
               25
           }}
         >
-          <img
-            src={getThemeLogo(theme)}
-            alt={`${theme} Tambola Live`}
-            onError={(event) => {
-              event.currentTarget.style.display = "none";
-            }}
-            style={{
-              width: "min(260px, 78vw)",
-              maxHeight: 82,
-              objectFit: "contain",
-              display: "block",
-              margin: "0 auto 10px",
-              filter: `drop-shadow(0 5px 14px ${themeUI.colors.secondary}44)`
-            }}
-          />
+          <h1>
+            TAMBOLA LIVE
+          </h1>
 
           <p
             style={{
