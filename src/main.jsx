@@ -55,6 +55,72 @@ function getThemeHeroImage(theme) {
   return THEME_HERO_IMAGES[theme] || THEME_HERO_IMAGES.Classic;
 }
 
+/*
+ * Section visual treatment: reuse the existing theme assets, but crop and
+ * place them differently for successive sections. The content side remains
+ * protected by a strong themed gradient so artwork never sits directly under
+ * labels and inputs. No new image files are required.
+ */
+function getThemedSectionStyle(themeUI, index, extra = {}) {
+  const theme = themeUI?.themeName || "Classic";
+  const image = getThemeHeroImage(theme);
+
+  const variants = {
+    Classic: [
+      ["right -26px bottom -18px", "50% auto", "normal"],
+      ["left -30px bottom -16px", "46% auto", "normal"],
+      ["right -24px top -20px", "48% auto", "normal"]
+    ],
+    Royal: [
+      ["right -42px top -30px", "43% auto", "soft-light"],
+      ["left -44px bottom -34px", "39% auto", "multiply"],
+      ["right -38px bottom -34px", "46% auto", "soft-light"]
+    ],
+    Party: [
+      ["right -42px bottom -34px", "48% auto", "screen"],
+      ["left -44px top -30px", "42% auto", "screen"],
+      ["right -36px top -36px", "46% auto", "screen"]
+    ],
+    Bollywood: [
+      ["left -46px bottom -32px", "42% auto", "multiply"],
+      ["right -40px top -30px", "45% auto", "soft-light"],
+      ["right -42px bottom -34px", "44% auto", "multiply"]
+    ],
+    Neon: [
+      ["right -42px center", "48% auto", "screen"],
+      ["left -44px bottom -28px", "43% auto", "screen"],
+      ["right -36px top -34px", "46% auto", "screen"]
+    ],
+    Elegant: [
+      ["right -38px bottom -30px", "42% auto", "luminosity"],
+      ["left -42px top -30px", "39% auto", "soft-light"],
+      ["right -34px top -34px", "44% auto", "luminosity"]
+    ]
+  };
+
+  const set = variants[theme] || variants.Classic;
+  const [position, size, blend] = set[Math.max(0, index) % set.length];
+  const surface = themeUI?.design?.card?.surface || themeUI?.colors?.surface || "#0f172a";
+  const surfaceAlt = themeUI?.design?.card?.surfaceAlt || themeUI?.colors?.surface2 || surface;
+
+  return {
+    ...themeUI.card,
+    position: "relative",
+    overflow: "hidden",
+    backgroundColor: surface,
+    /* Artwork is the top background layer so it remains visible. */
+    backgroundImage: [
+      `url("${image}")`,
+      `linear-gradient(90deg, rgba(0,0,0,.34) 0%, rgba(0,0,0,.12) 48%, rgba(0,0,0,.24) 100%)`
+    ].join(", "),
+    backgroundSize: `${size}, 100% 100%`,
+    backgroundPosition: `${position}, center`,
+    backgroundRepeat: "no-repeat, no-repeat",
+    backgroundBlendMode: `${blend}, normal`,
+    ...extra
+  };
+}
+
 /* =========================================================
    THEME DESIGN SYSTEM
    Runtime definitions mirror /public/themes/theme-designs.json
@@ -1661,6 +1727,7 @@ function getThemeUI(theme) {
   const visual = visuals[theme] || visuals.Classic;
 
   return {
+    themeName: theme,
     colors,
     design,
     visual,
@@ -1767,72 +1834,6 @@ function getThemeUI(theme) {
   };
 }
 
-function softenThemeSurface(surface, alpha) {
-  const value = String(surface || "");
-  if (/^rgba\(/i.test(value)) {
-    return value.replace(
-      /,\s*([0-9]*\.?[0-9]+)\s*\)$/i,
-      `, ${alpha})`
-    );
-  }
-
-  if (/^#[0-9a-f]{6}$/i.test(value)) {
-    const r = parseInt(value.slice(1, 3), 16);
-    const g = parseInt(value.slice(3, 5), 16);
-    const b = parseInt(value.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-
-  return value;
-}
-
-const THEME_SECTION_VISUALS = {
-  Classic: "/assets/classic-section-visuals.png",
-  Royal: "/assets/royal-section-visuals.png",
-  Party: "/assets/party-section-visuals.png",
-  Bollywood: "/assets/bollywood-section-visuals.png",
-  Neon: "/assets/casino-section-visuals.png",
-  Elegant: "/assets/elegant-section-visuals.png"
-};
-
-function getThemeSectionVisual(theme) {
-  return THEME_SECTION_VISUALS[theme] || THEME_SECTION_VISUALS.Classic;
-}
-
-function getThemeSectionStyle(themeUI, theme) {
-  const primarySurface = softenThemeSurface(
-    themeUI?.design?.card?.surface || themeUI?.colors?.surface,
-    0.64
-  );
-  const secondarySurface = softenThemeSurface(
-    themeUI?.design?.card?.surfaceAlt || themeUI?.colors?.surface2,
-    0.50
-  );
-
-  const sectionImage = getThemeSectionVisual(theme);
-
-  return {
-    ...themeUI.card,
-    /*
-       SECTION-SPECIFIC VISUAL SYSTEM
-       Each theme uses its own uploaded section PNG.
-       The PNG is placed as decorative artwork behind the readable
-       themed surface, so headings, inputs and controls remain clear.
-    */
-    backgroundImage: [
-      `linear-gradient(145deg, ${primarySurface}, ${secondarySurface})`,
-      `url("${sectionImage}")`
-    ].join(", "),
-    backgroundSize: "100% 100%, 100% 100%",
-    backgroundPosition: "center, center",
-    backgroundRepeat: "no-repeat, no-repeat",
-    backgroundClip: "padding-box",
-    backgroundBlendMode: "normal, normal",
-    backdropFilter: "blur(14px)",
-    WebkitBackdropFilter: "blur(14px)",
-    boxShadow: `${themeUI.card.boxShadow}, inset 0 1px 0 rgba(255,255,255,.06)`
-  };
-}
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
@@ -2611,7 +2612,9 @@ function CreateGamePage({
   const themeUI = getThemeUI(theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  const themedSectionStyle = getThemeSectionStyle(themeUI, theme);
+  let sectionVisualIndex = 0;
+  const nextSectionStyle = (extra = {}) =>
+    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -2881,7 +2884,7 @@ function CreateGamePage({
         >
           <section
             style={
-              themedSectionStyle
+              nextSectionStyle()
             }
           >
             <h2>
@@ -3067,7 +3070,7 @@ function CreateGamePage({
 
           <section
             style={
-              themedSectionStyle
+              nextSectionStyle()
             }
           >
             <h2>
@@ -3175,7 +3178,7 @@ function CreateGamePage({
           {error && (
             <section
               style={{
-                ...themedSectionStyle,
+                ...themedCardStyle,
                 background:
                   "#fef2f2",
                 border:
@@ -3486,7 +3489,9 @@ function PlayerBookingPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  const themedSectionStyle = getThemeSectionStyle(themeUI, game.theme);
+  let sectionVisualIndex = 0;
+  const nextSectionStyle = (extra = {}) =>
+    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -4149,7 +4154,7 @@ function PlayerBookingPage({
 
         <section
           style={
-            themedSectionStyle
+            nextSectionStyle()
           }
         >
           <h2>
@@ -4200,7 +4205,7 @@ function PlayerBookingPage({
 
         <section
           style={
-            themedSectionStyle
+            nextSectionStyle()
           }
         >
           <h2>
@@ -4449,7 +4454,7 @@ function PlayerBookingPage({
         <section
           id="player-ticket-list"
           style={
-            themedSectionStyle
+            themedCardStyle
           }
         >
           <div
@@ -4608,10 +4613,9 @@ function PlayerBookingPage({
         </section>
 
         <section
-          style={{
-            ...themedSectionStyle,
+          style={nextSectionStyle({
             marginTop: 20
-          }}
+          })}
         >
           <h2>
             Booking Details
@@ -5276,6 +5280,9 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  let sectionVisualIndex = 0;
+  const nextSectionStyle = (extra = {}) =>
+    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -5867,7 +5874,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             </div>
           )}
 
-          <section style={themedCardStyle}>
+          <section style={nextSectionStyle()}>
             <h2>Prize Results</h2>
             <div style={{ display: "grid", gap: 12 }}>
               {finalPrizes.map((prize, prizeIndex) => {
@@ -5913,7 +5920,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             </div>
           </section>
 
-          <section style={themedCardStyle}>
+          <section style={nextSectionStyle()}>
             <div
               style={{
                 display: "flex",
@@ -6775,7 +6782,9 @@ function HostControlPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  const themedSectionStyle = getThemeSectionStyle(themeUI, game.theme);
+  let sectionVisualIndex = 0;
+  const nextSectionStyle = (extra = {}) =>
+    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -8498,7 +8507,7 @@ function HostControlPage({
 
         <section
           style={{
-            ...themedSectionStyle,
+            ...themedCardStyle,
             border:
               isLive
                 ? `2px solid ${themeUI.colors.secondary}`
@@ -8565,7 +8574,7 @@ function HostControlPage({
 
         <section
           style={
-            themedSectionStyle
+            nextSectionStyle()
           }
         >
           <h2>
@@ -8632,14 +8641,13 @@ function HostControlPage({
 
         <section
           data-host-section="prize-amounts"
-          style={{
-            ...themedSectionStyle,
+          style={nextSectionStyle({
             display: "block",
             visibility: "visible",
             minHeight: 220,
             position: "relative",
             zIndex: 2
-          }}
+          })}
         >
           <h2 style={{ marginTop: 0 }}>
             Prize Amounts
@@ -8761,7 +8769,7 @@ function HostControlPage({
 
         <section
           style={
-            themedSectionStyle
+            nextSectionStyle()
           }
         >
           <h2>
@@ -8872,7 +8880,7 @@ function HostControlPage({
 
         <section
           style={
-            themedSectionStyle
+            nextSectionStyle()
           }
         >
           <h2>
@@ -8913,7 +8921,7 @@ function HostControlPage({
 
         <section
           style={
-            themedSectionStyle
+            nextSectionStyle()
           }
         >
           <h2>
@@ -9100,13 +9108,12 @@ function HostControlPage({
         </section>
 
         <section
-          style={{
-            ...themedSectionStyle,
+          style={nextSectionStyle({
             border:
               isLive
                 ? "2px solid #22c55e"
                 : "1px solid #e5e7eb"
-          }}
+          })}
         >
           <h2>
             Game Control
@@ -9201,11 +9208,10 @@ function HostControlPage({
 
         {isLive && (
           <section
-            style={{
-              ...themedSectionStyle,
+            style={nextSectionStyle({
               border:
                 "2px solid #22c55e"
-            }}
+            })}
           >
             <h2>
               Live Game Number Control
@@ -9605,7 +9611,7 @@ function HostControlPage({
         {!isLive && (
           <section
             style={
-              themedSectionStyle
+              themedCardStyle
             }
           >
             <h2>
@@ -9879,10 +9885,9 @@ function HostControlPage({
 
         <section
           data-host-section="prize-winners-overview"
-          style={{
-            ...themedSectionStyle,
+          style={nextSectionStyle({
             marginTop: 16
-          }}
+          })}
         >
           <h2 style={{ marginTop: 0 }}>
             Prize Winners
