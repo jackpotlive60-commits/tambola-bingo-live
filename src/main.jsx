@@ -1490,49 +1490,66 @@ function getThemeUI(theme) {
   */
   const variants = {
     Classic: {
-      cardRadius: 18,
-      inputRadius: 10,
-      buttonRadius: 10,
+      cardRadius: 16,
+      inputRadius: 9,
+      buttonRadius: 9,
       cardBorder: `1px solid ${design.card.border}`,
       cardShadow: "0 14px 34px rgba(0,0,0,.22)",
-      cardBackdrop: "blur(10px)",
-      buttonShadow: "0 9px 22px rgba(0,0,0,.20)",
+      cardBackdrop: "blur(8px)",
+      buttonShadow: "0 8px 20px rgba(0,0,0,.20)",
       buttonFontWeight: 800,
-      letterSpacing: ".01em"
+      letterSpacing: ".01em",
+      cardPadding: 22,
+      inputPadding: "11px 13px",
+      buttonPadding: "11px 17px"
     },
+
     Royal: {
-      cardRadius: 26,
-      inputRadius: 14,
-      buttonRadius: 14,
+      cardRadius: 24,
+      inputRadius: 13,
+      buttonRadius: 13,
       cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 18px 42px rgba(35,10,55,.34), inset 0 1px 0 rgba(255,255,255,.08)",
+      cardShadow: "0 20px 48px rgba(35,10,55,.38), inset 0 1px 0 rgba(255,255,255,.10)",
       cardBackdrop: "blur(14px)",
       buttonShadow: "0 12px 30px rgba(100,55,130,.34), inset 0 1px 0 rgba(255,255,255,.16)",
       buttonFontWeight: 900,
-      letterSpacing: ".025em"
+      letterSpacing: ".035em",
+      cardPadding: 26,
+      inputPadding: "12px 15px",
+      buttonPadding: "12px 20px"
     },
+
     Party: {
       cardRadius: 30,
-      inputRadius: 18,
+      inputRadius: 17,
       buttonRadius: 22,
       cardBorder: `2px solid ${design.card.border}`,
-      cardShadow: "0 16px 36px rgba(70,10,55,.25)",
+      cardShadow: "0 18px 40px rgba(70,10,55,.28)",
       cardBackdrop: "blur(8px)",
-      buttonShadow: "0 10px 24px rgba(230,45,115,.28)",
+      buttonShadow: "0 11px 25px rgba(230,45,115,.30)",
       buttonFontWeight: 900,
-      letterSpacing: ".015em"
+      letterSpacing: ".015em",
+      cardPadding: 22,
+      inputPadding: "12px 15px",
+      buttonPadding: "12px 20px"
     },
+
     Bollywood: {
-      cardRadius: 14,
-      inputRadius: 8,
-      buttonRadius: 8,
+      cardRadius: 13,
+      inputRadius: 7,
+      buttonRadius: 7,
       cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 16px 40px rgba(70,5,10,.30), inset 0 1px 0 rgba(255,220,150,.10)",
+      cardShadow: "0 18px 44px rgba(70,5,10,.34), inset 0 1px 0 rgba(255,220,150,.12)",
       cardBackdrop: "blur(12px)",
-      buttonShadow: "0 10px 28px rgba(150,30,20,.30)",
+      buttonShadow: "0 11px 28px rgba(150,30,20,.32), inset 0 1px 0 rgba(255,220,150,.10)",
       buttonFontWeight: 900,
-      letterSpacing: ".02em"
+      letterSpacing: ".025em",
+      cardPadding: 24,
+      inputPadding: "11px 13px",
+      buttonPadding: "11px 19px"
     },
+
+    // Keep the Neon design as the visual benchmark.
     Neon: {
       cardRadius: 8,
       inputRadius: 6,
@@ -1542,18 +1559,25 @@ function getThemeUI(theme) {
       cardBackdrop: "blur(18px)",
       buttonShadow: `0 0 20px ${design.button.primaryAlt}45, inset 0 0 12px ${design.button.primaryAlt}15`,
       buttonFontWeight: 900,
-      letterSpacing: ".04em"
+      letterSpacing: ".04em",
+      cardPadding: 20,
+      inputPadding: "10px 12px",
+      buttonPadding: "10px 16px"
     },
+
     Elegant: {
-      cardRadius: 12,
-      inputRadius: 7,
-      buttonRadius: 7,
+      cardRadius: 11,
+      inputRadius: 6,
+      buttonRadius: 6,
       cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 12px 32px rgba(0,0,0,.18)",
-      cardBackdrop: "blur(12px)",
-      buttonShadow: "0 8px 20px rgba(0,0,0,.18)",
+      cardShadow: "0 13px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07)",
+      cardBackdrop: "blur(13px)",
+      buttonShadow: "0 8px 20px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.08)",
       buttonFontWeight: 700,
-      letterSpacing: ".02em"
+      letterSpacing: ".035em",
+      cardPadding: 25,
+      inputPadding: "11px 13px",
+      buttonPadding: "11px 19px"
     }
   };
 
@@ -1600,7 +1624,11 @@ function getThemeUI(theme) {
       "--theme-card-radius": `${v.cardRadius}px`,
       "--theme-input-radius": `${v.inputRadius}px`,
       "--theme-button-radius": `${v.buttonRadius}px`,
-      "--theme-letter-spacing": v.letterSpacing
+      "--theme-letter-spacing": v.letterSpacing,
+      "--theme-card-padding": `${v.cardPadding}px`,
+      "--theme-input-padding": v.inputPadding,
+      "--theme-button-padding": v.buttonPadding,
+      "--theme-control-shadow": v.buttonShadow
     },
 
     card: {
@@ -1608,7 +1636,7 @@ function getThemeUI(theme) {
       border: v.cardBorder,
       borderRadius: v.cardRadius,
       backgroundClip: "padding-box",
-      padding: 24,
+      padding: v.cardPadding,
       color: design.hero.text,
       boxShadow: v.cardShadow,
       backdropFilter: v.cardBackdrop,
@@ -1619,6 +1647,7 @@ function getThemeUI(theme) {
     input: {
       border: `1px solid ${design.input.border}`,
       borderRadius: v.inputRadius,
+      padding: v.inputPadding,
       boxShadow: v.cardShadow,
       background: design.input.background,
       color: design.input.text,
@@ -1631,6 +1660,7 @@ function getThemeUI(theme) {
       background: `linear-gradient(135deg, ${design.button.primary} 0%, ${design.button.primaryAlt} 100%)`,
       color: design.button.text,
       borderRadius: v.buttonRadius,
+      padding: v.buttonPadding,
       border: `1px solid ${design.button.primary}`,
       boxShadow: v.buttonShadow,
       transform: "translateY(0)",
@@ -1641,6 +1671,7 @@ function getThemeUI(theme) {
     secondary: {
       border: `1px solid ${design.card.border}`,
       borderRadius: v.buttonRadius,
+      padding: v.buttonPadding,
       background: design.input.background,
       color: design.input.text,
       boxShadow: v.buttonShadow,
