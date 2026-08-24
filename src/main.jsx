@@ -1551,7 +1551,6 @@ function getThemeUI(theme) {
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
-  const logo = getThemeLogo(theme);
 
   const ball = (number, size, offset, opacity = 1) => ({
     position: "absolute",
@@ -1606,70 +1605,46 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         style={{
           position: "relative",
           zIndex: 2,
-          display: "flex",
-          alignItems: "center",
-          gap: compact ? 14 : 18,
           minHeight: compact ? 84 : 105,
           paddingRight: compact ? 120 : 185
         }}
       >
-        <img
-          src={logo}
-          alt={`${theme || "Classic"} Tambola Live`}
-          onError={(event) => {
-            event.currentTarget.style.display = "none";
-          }}
+        <div
           style={{
-            width: compact ? 92 : 132,
-            maxWidth: compact ? 92 : 132,
-            maxHeight: compact ? 58 : 78,
-            height: "auto",
-            objectFit: "contain",
-            objectPosition: "left center",
-            flex: "0 0 auto",
-            filter: `drop-shadow(0 5px 14px ${c.secondary}55)`,
-            display: "block"
+            fontSize: compact ? 10 : 11,
+            letterSpacing: 2.2,
+            textTransform: "uppercase",
+            color: c.accent,
+            fontWeight: 800
           }}
-        />
-
-        <div style={{ minWidth: 0, maxWidth: "100%" }}>
-          <div
-            style={{
-              fontSize: compact ? 10 : 11,
-              letterSpacing: 2.2,
-              textTransform: "uppercase",
-              color: c.accent,
-              fontWeight: 800
-            }}
-          >
-            {theme || "Classic"} THEME
-          </div>
-
-          <div
-            style={{
-              fontSize: compact ? 22 : 30,
-              lineHeight: 1.08,
-              fontWeight: 900,
-              marginTop: 6,
-              overflowWrap: "anywhere"
-            }}
-          >
-            {title}
-          </div>
-
-          {subtitle && (
-            <div
-              style={{
-                marginTop: 7,
-                color: "var(--theme-panel-muted, #64748b)",
-                fontSize: compact ? 12 : 14,
-                lineHeight: 1.35
-              }}
-            >
-              {subtitle}
-            </div>
-          )}
+        >
+          {theme || "Classic"} THEME
         </div>
+
+        <div
+          style={{
+            fontSize: compact ? 22 : 30,
+            lineHeight: 1.08,
+            fontWeight: 900,
+            marginTop: 6,
+            overflowWrap: "anywhere"
+          }}
+        >
+          {title}
+        </div>
+
+        {subtitle && (
+          <div
+            style={{
+              marginTop: 7,
+              color: "var(--theme-panel-muted, #64748b)",
+              fontSize: compact ? 12 : 14,
+              lineHeight: 1.35
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
       </div>
 
       <div aria-hidden="true">
