@@ -5445,14 +5445,15 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
               height: 170,
               margin: "18px auto 12px",
               borderRadius: "50%",
-              background: "#2563eb",
+              background: `radial-gradient(circle at 35% 30%, ${themeUI.colors.accent} 0%, ${themeUI.colors.secondary} 45%, ${themeUI.colors.background} 100%)`,
               color: "#fff",
+              border: `2px solid ${themeUI.colors.accent}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 72,
               fontWeight: "bold",
-              boxShadow: "0 10px 30px rgba(37,99,235,.25)"
+              boxShadow: `0 0 28px ${themeUI.colors.secondary}55, 0 10px 30px rgba(0,0,0,.25)`
             }}
           >
             {lastCalled || "-"}
@@ -5464,7 +5465,15 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
         </section>
 
         {/* 2. CALLED NUMBER BOARD */}
-        <section data-live-section="2-called-number-board" style={themedCardStyle}>
+        <section
+          data-live-section="2-called-number-board"
+          style={{
+            ...themedCardStyle,
+            background: themeUI.colors.surface,
+            color: themeUI.colors.text,
+            border: `1px solid ${themeUI.colors.accent}66`
+          }}
+        >
           <div
             style={{
               display: "flex",
@@ -5527,15 +5536,17 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                     justifyContent: "center",
                     borderRadius: 10,
                     border: isCalled
-                      ? "2px solid #2563eb"
-                      : "1px solid #e2e8f0",
-                    background: isCalled ? "#2563eb" : "#fff",
-                    color: isCalled ? "#fff" : "var(--theme-panel-text, #0f172a)",
-                    fontWeight: "bold",
+                      ? `2px solid ${themeUI.colors.accent}`
+                      : `1px solid ${themeUI.colors.secondary}66`,
+                    background: isCalled
+                      ? `linear-gradient(145deg, ${themeUI.colors.secondary}, ${themeUI.colors.background})`
+                      : themeUI.colors.surface2,
+                    color: "#ffffff",
+                    fontWeight: 900,
                     fontSize: 16,
                     boxShadow: isLast
-                      ? "0 0 0 3px #facc15, 0 5px 14px rgba(37,99,235,.18)"
-                      : "none",
+                      ? `0 0 0 3px ${themeUI.colors.accent}, 0 0 22px ${themeUI.colors.secondary}66`
+                      : `0 0 0 1px ${themeUI.colors.secondary}18 inset`,
                     transform: isLast ? "scale(1.04)" : "none"
                   }}
                   title={
@@ -5559,13 +5570,13 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                   gap: 16,
               flexWrap: "wrap",
               marginTop: 16,
-              color: "var(--theme-muted, #64748b)",
+              color: themeUI.colors.muted,
               fontSize: 13,
-              fontWeight: "bold"
+              fontWeight: 800
             }}
           >
-            <span>Blue = called</span>
-            <span>Yellow outline = last called</span>
+            <span style={{ color: themeUI.colors.secondary }}>â— Called</span>
+            <span style={{ color: themeUI.colors.accent }}>â— Last called</span>
           </div>
             </>
           )}
@@ -5610,17 +5621,25 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                     padding: "10px 8px",
                     borderRadius: 10,
                     border: index === 0
-                      ? "2px solid #2563eb"
-                      : "1px solid #e2e8f0",
-                    background: index === 0 ? `${themeUI.colors.secondary}18` : "var(--theme-panel-bg, #f8fafc)",
-                    textAlign: "center"
+                      ? `2px solid ${themeUI.colors.accent}`
+                      : `1px solid ${themeUI.colors.secondary}55`,
+                    background: index === 0
+                      ? `${themeUI.colors.secondary}25`
+                      : "var(--theme-surface2, #111827)",
+                    color: "var(--theme-panel-text, #f8fafc)",
+                    textAlign: "center",
+                    boxShadow: index === 0
+                      ? `0 0 18px ${themeUI.colors.secondary}30`
+                      : "none"
                   }}
                 >
                   <div
                     style={{
                       fontSize: 30,
                       fontWeight: "bold",
-                      color: "#1e3a8a"
+                      color: index === 0
+                        ? themeUI.colors.accent
+                        : "var(--theme-panel-text, #f8fafc)"
                     }}
                   >
                     {number}
@@ -5677,7 +5696,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
         )}
 
         {/* 5. PRIZES */}
-        <div data-live-section="5-prizes"><LivePrizeList game={liveGame} /></div>
+        <div data-live-section="5-prizes"><LivePrizeList game={liveGame} theme={liveGame.theme} /></div>
 
         {/* 6. SEARCH */}
         <section data-live-section="6-search" style={themedCardStyle}>
@@ -5732,8 +5751,9 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
               style={{
                 padding: "8px 12px",
                 borderRadius: 9,
-                background: "#eff6ff",
-                color: "#1d4ed8",
+                background: `${themeUI.colors.secondary}20`,
+                color: themeUI.colors.accent,
+                border: `1px solid ${themeUI.colors.secondary}55`,
                 fontWeight: "bold"
               }}
             >
@@ -5872,37 +5892,52 @@ function WinnerHistory({ history }) {
    LIVE PRIZE LIST
 ========================================================= */
 
-function LivePrizeList({ game }) {
-  const prizes = Array.isArray(game.selected_prizes)
+function LivePrizeList({ game, theme = "Classic" }) {
+  const prizes = Array.isArray(game?.selected_prizes)
     ? game.selected_prizes
     : [];
+  const themeUI = getThemeUI(theme);
+  const c = themeUI.colors;
 
   return (
-    <section style={cardStyle}>
-      <h2>[WINNER] Prizes & Winners</h2>
+    <section
+      style={{
+        ...cardStyle,
+        ...themeUI.card,
+        background: c.surface,
+        color: c.text,
+        border: `1px solid ${c.accent}66`,
+        marginBottom: 18
+      }}
+    >
+      <h2 style={{ marginTop: 0 }}>[WINNER] Prizes & Winners</h2>
 
       {prizes.length === 0 ? (
-        <p style={{ color: "var(--theme-muted, #64748b)" }}>
+        <p style={{ color: c.muted }}>
           No prizes have been configured for this game.
         </p>
       ) : (
-        <div style={{ display: "grid", gap: 10 }}>
+        <div style={{ display: "grid", gap: 12 }}>
           {prizes.map((prize, index) => {
-            const winners = Array.isArray(prize.winners)
+            const winners = Array.isArray(prize?.winners)
               ? prize.winners
               : [];
-            const locked = Boolean(prize.locked);
+            const locked = Boolean(prize?.locked);
 
             return (
               <div
-                key={`${prize.name || "prize"}-${index}`}
+                key={`${prize?.name || "prize"}-${index}`}
                 style={{
-                  padding: 12,
-                  borderRadius: 10,
-                  background: locked ? "#ecfdf5" : "#fffbeb",
-                  border: locked
-                    ? "2px solid #22c55e"
-                    : "2px solid #f59e0b"
+                  padding: 14,
+                  borderRadius: "var(--theme-button-radius, 10px)",
+                  background: locked
+                    ? `linear-gradient(135deg, ${c.secondary}30, ${c.surface2})`
+                    : c.surface2,
+                  border: `1px solid ${locked ? c.accent : c.secondary}88`,
+                  color: c.text,
+                  boxShadow: locked
+                    ? `0 0 22px ${c.secondary}30`
+                    : `0 8px 20px rgba(0,0,0,.20)`
                 }}
               >
                 <div
@@ -5915,30 +5950,47 @@ function LivePrizeList({ game }) {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: "bold", fontSize: 16 }}>
-                      {prize.name || `Prize ${index + 1}`}
+                    <div style={{ fontWeight: 900, fontSize: 16 }}>
+                      {prize?.name || `Prize ${index + 1}`}
                     </div>
-                    {prize.description && (
+
+                    {prize?.description && (
                       <div
                         style={{
-                          color: "var(--theme-muted, #64748b)",
+                          color: c.muted,
                           fontSize: 13,
-                          marginTop: 3
+                          marginTop: 4,
+                          lineHeight: 1.4
                         }}
                       >
                         {prize.description}
                       </div>
                     )}
+
+                    <div
+                      style={{
+                        color: c.accent,
+                        fontWeight: 900,
+                        marginTop: 5
+                      }}
+                    >
+                      INR {Number(prize?.amount || 0).toLocaleString("en-IN")}
+                    </div>
                   </div>
 
                   <div
                     style={{
-                      padding: "7px 10px",
+                      padding: "7px 11px",
                       borderRadius: 999,
-                      background: locked ? "#16a34a" : "#f59e0b",
-                      color: "#fff",
-                      fontWeight: "bold",
-                      fontSize: 12
+                      background: locked
+                        ? `linear-gradient(135deg, ${c.secondary}, ${c.background})`
+                        : `${c.secondary}20`,
+                      color: locked ? "#fff" : c.secondary,
+                      border: `1px solid ${locked ? c.accent : c.secondary}88`,
+                      fontWeight: 900,
+                      fontSize: 12,
+                      letterSpacing: ".03em",
+                      whiteSpace: "nowrap"
                     }}
                   >
                     {locked ? "[WINNER] WON" : "[OPEN] OPEN"}
@@ -5946,31 +5998,22 @@ function LivePrizeList({ game }) {
                 </div>
 
                 {locked && winners.length > 0 ? (
-                  <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                  <div style={{ marginTop: 11, display: "grid", gap: 7 }}>
                     {winners.map((winner, winnerIndex) => (
                       <div
-                        key={`${winner.bookingId || winnerIndex}-${winner.ticketNumber || "ticket"}`}
+                        key={`${winner?.bookingId || winnerIndex}-${winner?.ticketNumber || "ticket"}`}
                         style={{
-                          padding: "9px 10px",
-                          borderRadius: 8,
-                          background: "var(--theme-panel-bg, #fff)",
-                      color: "var(--theme-panel-text, #0f172a)",
-                          border: "1px solid #bbf7d0",
-                          fontWeight: "bold"
+                          padding: "10px 11px",
+                          borderRadius: "var(--theme-input-radius, 8px)",
+                          background: `${c.secondary}16`,
+                          border: `1px solid ${c.accent}55`,
+                          color: c.text
                         }}
                       >
-                        <div>
-                          [WINNER] {winner.playerName || "Player"} - Ticket #{winner.ticketNumber}
-                        </div>
-                        <div
-                          style={{
-                            marginTop: 4,
-                            color: "#166534",
-                            fontSize: 13
-                          }}
-                        >
-                          Prize Share: {formatPrizeAmount(winner.prizeShare)}
-                        </div>
+                        <b>{winner?.playerName || "Player"}</b>
+                        <span style={{ color: c.muted }}>
+                          {" "}â€¢ Ticket #{winner?.ticketNumber || "-"}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -5978,11 +6021,12 @@ function LivePrizeList({ game }) {
                   <div
                     style={{
                       marginTop: 10,
-                      color: "#92400e",
-                      fontWeight: "bold"
+                      color: c.muted,
+                      fontSize: 13,
+                      fontWeight: 700
                     }}
                   >
-                    Remaining prize - waiting for a winner
+                    Waiting for a winner
                   </div>
                 )}
               </div>
@@ -5993,6 +6037,7 @@ function LivePrizeList({ game }) {
     </section>
   );
 }
+
 
 /* =========================================================
    HOST CONTROL CENTRE
