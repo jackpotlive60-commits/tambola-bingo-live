@@ -1565,14 +1565,14 @@ function getThemeUI(theme) {
 
     page: {
       backgroundColor: colors.background,
-      backgroundImage: `
-        linear-gradient(${design.page.overlay}, ${design.page.overlay}),
-        ${backgroundImage}
-      `,
+      backgroundImage: backgroundImage === "none"
+        ? "none"
+        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
       backgroundSize: "cover",
       backgroundPosition: "center top",
-      backgroundAttachment: "fixed",
+      backgroundAttachment: "scroll",
       backgroundRepeat: "no-repeat",
+      isolation: "isolate",
       color: design.page.text,
       padding: 20,
       position: "relative",
@@ -1607,6 +1607,7 @@ function getThemeUI(theme) {
       background: design.card.surface,
       border: v.cardBorder,
       borderRadius: v.cardRadius,
+      backgroundClip: "padding-box",
       padding: 24,
       color: design.hero.text,
       boxShadow: v.cardShadow,
