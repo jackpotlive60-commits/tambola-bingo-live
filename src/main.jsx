@@ -56,62 +56,96 @@ function getThemeHeroImage(theme) {
 }
 
 /*
- * Section visual treatment: reuse the existing theme assets, but crop and
- * place them differently for successive sections. The content side remains
- * protected by a strong themed gradient so artwork never sits directly under
- * labels and inputs. No new image files are required.
+ * Section visual treatment.
+ *
+ * Each theme has its own transparent section-art PNG.  The same PNG is
+ * deliberately repositioned/cropped for successive sections so different
+ * motifs become visible without placing a giant image behind the content.
+ *
+ * IMPORTANT: these files must be extracted into /public/assets/ (not left
+ * inside the ZIP):
+ *   classic-section-visuals.png
+ *   royal-section-visuals.png
+ *   party-section-visuals.png
+ *   bollywood-section-visuals.png
+ *   neon-section-visuals.png
+ *   elegant-section-visuals.png
  */
+const THEME_SECTION_VISUALS = {
+  Classic: "/assets/classic-section-visuals.png",
+  Royal: "/assets/royal-section-visuals.png",
+  Party: "/assets/party-section-visuals.png",
+  Bollywood: "/assets/bollywood-section-visuals.png",
+  Neon: "/assets/neon-section-visuals.png",
+  Elegant: "/assets/elegant-section-visuals.png"
+};
+
+function getThemeSectionVisual(theme) {
+  return THEME_SECTION_VISUALS[theme] || THEME_SECTION_VISUALS.Classic;
+}
+
 function getThemedSectionStyle(themeUI, index, extra = {}) {
   const theme = themeUI?.themeName || "Classic";
-  const image = getThemeHeroImage(theme);
+  const image = getThemeSectionVisual(theme);
 
+  /*
+   * Four placements expose different artwork areas as the page progresses.
+   * The sixth section cycles back to the first placement, so long pages still
+   * feel varied rather than repeating one identical corner treatment.
+   */
   const variants = {
     Classic: [
-      ["right -26px bottom -18px", "50% auto", "normal"],
-      ["left -30px bottom -16px", "46% auto", "normal"],
-      ["right -24px top -20px", "48% auto", "normal"]
+      ["right -18px top -12px", "54% auto", "normal"],
+      ["left -18px top -14px", "52% auto", "normal"],
+      ["right -20px bottom -14px", "50% auto", "normal"],
+      ["left -20px bottom -12px", "52% auto", "normal"]
     ],
     Royal: [
-      ["right -42px top -30px", "43% auto", "soft-light"],
-      ["left -44px bottom -34px", "39% auto", "multiply"],
-      ["right -38px bottom -34px", "46% auto", "soft-light"]
+      ["left -22px top -16px", "50% auto", "soft-light"],
+      ["right -20px top -14px", "48% auto", "soft-light"],
+      ["left -18px bottom -16px", "50% auto", "multiply"],
+      ["right -22px bottom -14px", "48% auto", "soft-light"]
     ],
     Party: [
-      ["right -42px bottom -34px", "48% auto", "screen"],
-      ["left -44px top -30px", "42% auto", "screen"],
-      ["right -36px top -36px", "46% auto", "screen"]
+      ["right -22px top -18px", "54% auto", "screen"],
+      ["left -22px top -14px", "50% auto", "screen"],
+      ["right -20px bottom -16px", "52% auto", "screen"],
+      ["left -20px bottom -14px", "50% auto", "screen"]
     ],
     Bollywood: [
-      ["left -46px bottom -32px", "42% auto", "multiply"],
-      ["right -40px top -30px", "45% auto", "soft-light"],
-      ["right -42px bottom -34px", "44% auto", "multiply"]
+      ["left -24px bottom -16px", "50% auto", "multiply"],
+      ["right -22px top -14px", "52% auto", "soft-light"],
+      ["left -20px top -16px", "50% auto", "multiply"],
+      ["right -24px bottom -14px", "50% auto", "multiply"]
     ],
     Neon: [
-      ["right -42px center", "48% auto", "screen"],
-      ["left -44px bottom -28px", "43% auto", "screen"],
-      ["right -36px top -34px", "46% auto", "screen"]
+      ["right -22px top -16px", "54% auto", "screen"],
+      ["left -22px center", "50% auto", "screen"],
+      ["right -20px bottom -14px", "52% auto", "screen"],
+      ["left -20px bottom -16px", "50% auto", "screen"]
     ],
     Elegant: [
-      ["right -38px bottom -30px", "42% auto", "luminosity"],
-      ["left -42px top -30px", "39% auto", "soft-light"],
-      ["right -34px top -34px", "44% auto", "luminosity"]
+      ["right -20px bottom -14px", "50% auto", "luminosity"],
+      ["left -22px top -14px", "48% auto", "soft-light"],
+      ["right -20px top -16px", "52% auto", "luminosity"],
+      ["left -20px bottom -14px", "50% auto", "soft-light"]
     ]
   };
 
   const set = variants[theme] || variants.Classic;
   const [position, size, blend] = set[Math.max(0, index) % set.length];
-  const surface = themeUI?.design?.card?.surface || themeUI?.colors?.surface || "#0f172a";
-  const surfaceAlt = themeUI?.design?.card?.surfaceAlt || themeUI?.colors?.surface2 || surface;
+  const surface =
+    themeUI?.design?.card?.surface || themeUI?.colors?.surface || "#0f172a";
 
   return {
     ...themeUI.card,
     position: "relative",
     overflow: "hidden",
     backgroundColor: surface,
-    /* Artwork is the top background layer so it remains visible. */
+    /* Transparent PNG artwork + a readability gradient. */
     backgroundImage: [
       `url("${image}")`,
-      `linear-gradient(90deg, rgba(0,0,0,.34) 0%, rgba(0,0,0,.12) 48%, rgba(0,0,0,.24) 100%)`
+      "linear-gradient(90deg, rgba(0,0,0,.30) 0%, rgba(0,0,0,.08) 48%, rgba(0,0,0,.24) 100%)"
     ].join(", "),
     backgroundSize: `${size}, 100% 100%`,
     backgroundPosition: `${position}, center`,
