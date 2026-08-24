@@ -63,56 +63,86 @@ function getThemeHeroImage(theme) {
  */
 function getThemedSectionStyle(themeUI, index, extra = {}) {
   const theme = themeUI?.themeName || "Classic";
-  const image = getThemeHeroImage(theme);
 
+  /*
+   * SECTION ARTWORK
+   * These are the six uploaded transparent 3D PNGs in /public/assets.
+   * Each theme uses its own artwork instead of reusing the hero image.
+   */
+  const SECTION_VISUALS = {
+    Classic: "/assets/classic-casino-visual.png",
+    Royal: "/assets/royal-visual.png",
+    Elegant: "/assets/elegant-visual.png",
+    Bollywood: "/assets/bollywood-visual.png",
+    Neon: "/assets/neon-visual.png",
+    Party: "/assets/party-visual.png"
+  };
+
+  const image =
+    SECTION_VISUALS[theme] || SECTION_VISUALS.Classic;
+
+  /*
+   * Rotate the placement so successive sections do not all look identical.
+   * The same theme artwork can therefore appear in different corners/edges
+   * while the actual section content stays readable.
+   */
   const variants = {
     Classic: [
-      ["right -26px bottom -18px", "50% auto", "normal"],
-      ["left -30px bottom -16px", "46% auto", "normal"],
-      ["right -24px top -20px", "48% auto", "normal"]
+      ["right -28px bottom -24px", "52% auto", "normal"],
+      ["left -34px bottom -22px", "48% auto", "normal"],
+      ["right -30px top -26px", "50% auto", "normal"]
     ],
     Royal: [
-      ["right -42px top -30px", "43% auto", "soft-light"],
-      ["left -44px bottom -34px", "39% auto", "multiply"],
-      ["right -38px bottom -34px", "46% auto", "soft-light"]
+      ["right -42px top -30px", "46% auto", "soft-light"],
+      ["left -46px bottom -34px", "42% auto", "soft-light"],
+      ["right -40px bottom -34px", "48% auto", "soft-light"]
     ],
     Party: [
-      ["right -42px bottom -34px", "48% auto", "screen"],
-      ["left -44px top -30px", "42% auto", "screen"],
-      ["right -36px top -36px", "46% auto", "screen"]
+      ["right -42px bottom -34px", "50% auto", "screen"],
+      ["left -46px top -30px", "45% auto", "screen"],
+      ["right -38px top -38px", "48% auto", "screen"]
     ],
     Bollywood: [
-      ["left -46px bottom -32px", "42% auto", "multiply"],
-      ["right -40px top -30px", "45% auto", "soft-light"],
-      ["right -42px bottom -34px", "44% auto", "multiply"]
+      ["left -46px bottom -34px", "46% auto", "normal"],
+      ["right -42px top -30px", "48% auto", "soft-light"],
+      ["right -44px bottom -36px", "46% auto", "normal"]
     ],
     Neon: [
-      ["right -42px center", "48% auto", "screen"],
-      ["left -44px bottom -28px", "43% auto", "screen"],
-      ["right -36px top -34px", "46% auto", "screen"]
+      ["right -42px center", "50% auto", "screen"],
+      ["left -46px bottom -30px", "46% auto", "screen"],
+      ["right -40px top -36px", "48% auto", "screen"]
     ],
     Elegant: [
-      ["right -38px bottom -30px", "42% auto", "luminosity"],
-      ["left -42px top -30px", "39% auto", "soft-light"],
-      ["right -34px top -34px", "44% auto", "luminosity"]
+      ["right -40px bottom -32px", "46% auto", "normal"],
+      ["left -44px top -30px", "42% auto", "soft-light"],
+      ["right -36px top -34px", "48% auto", "normal"]
     ]
   };
 
   const set = variants[theme] || variants.Classic;
-  const [position, size, blend] = set[Math.max(0, index) % set.length];
-  const surface = themeUI?.design?.card?.surface || themeUI?.colors?.surface || "#0f172a";
-  const surfaceAlt = themeUI?.design?.card?.surfaceAlt || themeUI?.colors?.surface2 || surface;
+  const [position, size, blend] =
+    set[Math.max(0, index) % set.length];
+
+  const surface =
+    themeUI?.design?.card?.surface ||
+    themeUI?.colors?.surface ||
+    "#0f172a";
 
   return {
     ...themeUI.card,
     position: "relative",
     overflow: "hidden",
     backgroundColor: surface,
-    /* Artwork is the top background layer so it remains visible. */
+
+    /*
+     * Uploaded transparent PNG is the visible artwork layer.
+     * A readable dark gradient remains underneath/around the artwork.
+     */
     backgroundImage: [
       `url("${image}")`,
-      `linear-gradient(90deg, rgba(0,0,0,.34) 0%, rgba(0,0,0,.12) 48%, rgba(0,0,0,.24) 100%)`
+      "linear-gradient(90deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.10) 52%, rgba(0,0,0,.28) 100%)"
     ].join(", "),
+
     backgroundSize: `${size}, 100% 100%`,
     backgroundPosition: `${position}, center`,
     backgroundRepeat: "no-repeat, no-repeat",
