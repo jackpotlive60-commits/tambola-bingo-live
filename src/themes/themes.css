@@ -390,6 +390,43 @@
   background: var(--theme-hero-bg) !important;
   border-color: var(--theme-hero-border) !important;
   box-shadow: var(--theme-hero-shadow) !important;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.tl-theme-page .tl-theme-hero > img {
+  z-index: 0 !important;
+  object-fit: contain !important;
+  object-position: right center !important;
+  pointer-events: none;
+}
+
+.tl-theme-page .tl-theme-hero > div {
+  position: relative;
+  z-index: 2;
+}
+
+.tl-theme-page .tl-theme-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0,0,0,.04) 0%,
+      transparent 48%,
+      rgba(0,0,0,.08) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.025),
+      transparent 28%,
+      transparent 72%,
+      rgba(0,0,0,.10)
+    );
 }
 
 /* Buttons inherit the same visual family even when older inline declarations
@@ -443,25 +480,45 @@
 }
 
 /* Add a restrained inner atmospheric glow to sections. */
-/* Theme-specific transparent PNG decoration. */
+/* =========================================================
+   SECTION ARTWORK
+   The uploaded transparent PNG is an edge decoration, not a
+   full-card background. Keep the center clean and let the artwork
+   fade naturally into the theme surface.
+========================================================= */
 .tl-theme-page [data-live-section]::before {
   content: "";
   position: absolute;
-  width: min(430px, 72vw);
-  height: min(430px, 72vw);
-  right: -90px;
-  bottom: -85px;
+  top: 0;
+  right: -18px;
+  bottom: 0;
+  width: min(300px, 62vw);
   pointer-events: none;
   z-index: 0;
-  background-image:
-    radial-gradient(circle at center, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 68%),
-    var(--theme-visual);
+
+  background-image: var(--theme-visual);
   background-repeat: no-repeat;
-  background-position: center, center;
-  background-size: cover, contain;
-  opacity: .17;
-  filter: saturate(.96) contrast(1.03);
+  background-position: right center;
+  background-size: contain;
+
+  opacity: .15;
+  filter: saturate(.92) contrast(1.02);
   transform: translateZ(0);
+
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,.35) 18%,
+    #000 48%,
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,.35) 18%,
+    #000 48%,
+    #000 100%
+  );
 }
 
 .tl-theme-page [data-live-section]::after {
@@ -471,8 +528,33 @@
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--theme-accent) 8%, transparent), transparent 25%),
-    linear-gradient(135deg, rgba(255,255,255,.025), transparent 48%);
+    linear-gradient(
+      90deg,
+      rgba(0,0,0,.04) 0%,
+      transparent 35%,
+      transparent 72%,
+      rgba(0,0,0,.08) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.018),
+      transparent 24%,
+      transparent 76%,
+      rgba(0,0,0,.07)
+    );
+}
+
+.tl-theme-page [data-live-section] > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 520px) {
+  .tl-theme-page [data-live-section]::before {
+    right: -12px;
+    width: min(250px, 58vw);
+    opacity: .13;
+  }
 }
 
 /* Individual visual positioning keeps every theme natural. */
