@@ -44,19 +44,24 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
+const THEME_HERO_IMAGES = {
+  Classic: "/assets/classic-casino-visual.png",
+  Royal: "/assets/royal-visual.png",
+  Party: "/assets/party-visual.png",
+  Bollywood: "/assets/bollywood-visual.png",
+  Neon: "/assets/neon-visual.png",
+  Elegant: "/assets/elegant-visual.png"
+};
 
-/*
- * Section visual treatment: reuse the existing theme assets, but crop and
- * place them differently for successive sections. The content side remains
- * protected by a strong themed gradient so artwork never sits directly under
- * labels and inputs. No new image files are required.
- */
+function getThemeHeroImage(theme) {
+  return THEME_HERO_IMAGES[theme] || THEME_HERO_IMAGES.Classic;
+}
+
 function getThemedSectionStyle(themeUI, extra = {}) {
   /*
-   * Section visuals are intentionally NOT loaded from public/assets here.
-   * themes.css owns the decorative visual layer so main.jsx only controls
-   * theme state and content. This prevents old PNGs from being reintroduced
-   * by inline React styles.
+   * Sections intentionally have NO image background here.
+   * themes.css owns the clean themed surfaces.
+   * The new transparent section PNGs will be added later as a separate layer.
    */
   return {
     ...themeUI.card,
@@ -64,12 +69,11 @@ function getThemedSectionStyle(themeUI, extra = {}) {
     overflow: "hidden",
     isolation: "isolate",
     background: "var(--theme-section-bg)",
-    backgroundImage: "none",
     border: "var(--theme-section-border)",
     boxShadow: "var(--theme-section-shadow)",
     color: "var(--theme-text)",
-    backdropFilter: "var(--theme-section-backdrop, none)",
-    WebkitBackdropFilter: "var(--theme-section-backdrop, none)",
+    backdropFilter: "none",
+    WebkitBackdropFilter: "none",
     ...extra
   };
 }
@@ -1494,7 +1498,6 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
   const design = getThemeDesign(theme);
 
-  
   /*
     Theme design language.
     These values deliberately change structure/shape/effects, not only colors.
@@ -1725,7 +1728,6 @@ function getThemeUI(theme) {
       "--theme-input-padding": v.inputPadding,
       "--theme-button-padding": v.buttonPadding,
       "--theme-control-shadow": v.buttonShadow
-      /* Theme artwork is owned entirely by themes.css. */
     },
 
     card: {
@@ -1781,10 +1783,11 @@ function getThemeUI(theme) {
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
+  const heroImage = getThemeHeroImage(theme);
+
   return (
     <div
       className="tl-theme-hero"
-      data-theme={theme || "Classic"}
       style={{
         maxWidth: 1000,
         margin: "0 auto 18px",
@@ -1810,6 +1813,23 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         }}
       />
 
+      <img
+        src={heroImage}
+        alt=""
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          width: "54%",
+          height: "100%",
+          objectFit: "contain",
+          objectPosition: "right center",
+          opacity: .96,
+          zIndex: 0,
+          display: "block"
+        }}
+      />
 
       <div
         style={{
