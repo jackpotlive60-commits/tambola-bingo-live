@@ -140,15 +140,18 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
      * Uploaded transparent PNG is the visible artwork layer.
      * A readable dark gradient remains underneath/around the artwork.
      */
-    backgroundImage: [
-      `url("${image}")`,
-      "linear-gradient(90deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.10) 52%, rgba(0,0,0,.28) 100%)"
-    ].join(", "),
-
-    backgroundSize: `${size}, 100% 100%`,
-    backgroundPosition: `${position}, center`,
-    backgroundRepeat: "no-repeat, no-repeat",
-    backgroundBlendMode: `${blend}, normal`,
+    // Do not paint the artwork directly as the section background.
+    // themes.css places this transparent PNG in a corner pseudo-element so
+    // it cannot sit underneath labels, inputs, or buttons.
+    backgroundImage: "none",
+    backgroundSize: "auto",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundBlendMode: "normal",
+    "--theme-visual": `url("${image}")`,
+    "--theme-visual-position": position,
+    "--theme-visual-size": size,
+    "--theme-visual-blend": blend,
     ...extra
   };
 }
@@ -1578,10 +1581,6 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
   const design = getThemeDesign(theme);
 
-  const backgroundImage = design.backgroundImage
-    ? `url("${design.backgroundImage}")`
-    : "none";
-
   /*
     Theme design language.
     These values deliberately change structure/shape/effects, not only colors.
@@ -1766,13 +1765,14 @@ function getThemeUI(theme) {
 
     page: {
       backgroundColor: colors.background,
-      backgroundImage: backgroundImage === "none"
-        ? "none"
-        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
-      backgroundSize: "cover",
+      // Keep the page itself photographic-free. Theme artwork is handled by
+      // themes.css as restrained corner decoration on individual sections.
+      backgroundImage: "none",
+      backgroundSize: "auto",
       backgroundPosition: "center top",
       backgroundAttachment: "scroll",
       backgroundRepeat: "no-repeat",
+      "--theme-page-photo": "none",
       isolation: "isolate",
       color: design.page.text,
       padding: 20,
@@ -1873,6 +1873,7 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
 
   return (
     <div
+      className="tl-theme-hero"
       style={{
         maxWidth: 1000,
         margin: "0 auto 18px",
@@ -2862,7 +2863,7 @@ function CreateGamePage({
   }
 
   return (
-    <main style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${String(theme).toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -4123,7 +4124,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${String(game.theme).toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -5743,7 +5744,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main style={themedPageStyle}>
+      <main className={`tl-theme-page tl-theme-${String(liveGame.theme).toLowerCase()}`} style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -6085,7 +6086,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${String(liveGame.theme).toLowerCase()}`} style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
