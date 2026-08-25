@@ -390,43 +390,6 @@
   background: var(--theme-hero-bg) !important;
   border-color: var(--theme-hero-border) !important;
   box-shadow: var(--theme-hero-shadow) !important;
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.tl-theme-page .tl-theme-hero > img {
-  z-index: 0 !important;
-  object-fit: contain !important;
-  object-position: right center !important;
-  pointer-events: none;
-}
-
-.tl-theme-page .tl-theme-hero > div {
-  position: relative;
-  z-index: 2;
-}
-
-.tl-theme-page .tl-theme-hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(0,0,0,.04) 0%,
-      transparent 48%,
-      rgba(0,0,0,.08) 100%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.025),
-      transparent 28%,
-      transparent 72%,
-      rgba(0,0,0,.10)
-    );
 }
 
 /* Buttons inherit the same visual family even when older inline declarations
@@ -480,45 +443,25 @@
 }
 
 /* Add a restrained inner atmospheric glow to sections. */
-/* =========================================================
-   SECTION ARTWORK
-   The uploaded transparent PNG is an edge decoration, not a
-   full-card background. Keep the center clean and let the artwork
-   fade naturally into the theme surface.
-========================================================= */
+/* Theme-specific transparent PNG decoration. */
 .tl-theme-page [data-live-section]::before {
   content: "";
   position: absolute;
-  top: 0;
-  right: -18px;
-  bottom: 0;
-  width: min(300px, 62vw);
+  width: min(430px, 72vw);
+  height: min(430px, 72vw);
+  right: -90px;
+  bottom: -85px;
   pointer-events: none;
   z-index: 0;
-
-  background-image: var(--theme-visual);
+  background-image:
+    radial-gradient(circle at center, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 68%),
+    var(--theme-visual);
   background-repeat: no-repeat;
-  background-position: right center;
-  background-size: contain;
-
-  opacity: .15;
-  filter: saturate(.92) contrast(1.02);
+  background-position: center, center;
+  background-size: cover, contain;
+  opacity: .17;
+  filter: saturate(.96) contrast(1.03);
   transform: translateZ(0);
-
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0,0,0,.35) 18%,
-    #000 48%,
-    #000 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0,0,0,.35) 18%,
-    #000 48%,
-    #000 100%
-  );
 }
 
 .tl-theme-page [data-live-section]::after {
@@ -528,33 +471,8 @@
   pointer-events: none;
   z-index: 0;
   background:
-    linear-gradient(
-      90deg,
-      rgba(0,0,0,.04) 0%,
-      transparent 35%,
-      transparent 72%,
-      rgba(0,0,0,.08) 100%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.018),
-      transparent 24%,
-      transparent 76%,
-      rgba(0,0,0,.07)
-    );
-}
-
-.tl-theme-page [data-live-section] > * {
-  position: relative;
-  z-index: 1;
-}
-
-@media (max-width: 520px) {
-  .tl-theme-page [data-live-section]::before {
-    right: -12px;
-    width: min(250px, 58vw);
-    opacity: .13;
-  }
+    radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--theme-accent) 8%, transparent), transparent 25%),
+    linear-gradient(135deg, rgba(255,255,255,.025), transparent 48%);
 }
 
 /* Individual visual positioning keeps every theme natural. */
@@ -1255,5 +1173,171 @@ main [data-host-section="prize-amounts"] + section p {
   .tl-theme-page.tl-theme-elegant [data-live-section]::before,
   .tl-theme-page.tl-theme-elegant .tl-theme-section::before {
     opacity: .085 !important;
+  }
+}
+
+/* =========================================================
+   FINAL FIX â€” HERO IMAGE + BLENDED CORNER ART
+   ---------------------------------------------------------
+   The hero remains a true focal image. Section PNGs are decorative
+   transparent corner art only; they are NEVER used as section wallpapers.
+========================================================= */
+
+/* One image source per theme. These are the latest hero PNGs. */
+.tl-theme-classic { --theme-hero-image: url('/assets/casino-hero.png'); }
+.tl-theme-royal { --theme-hero-image: url('/assets/royal-hero.png'); }
+.tl-theme-party { --theme-hero-image: url('/assets/fun-hero.png'); }
+.tl-theme-bollywood { --theme-hero-image: url('/assets/bollywood-hero.png'); }
+.tl-theme-neon { --theme-hero-image: url('/assets/neon-hero.png'); }
+.tl-theme-elegant { --theme-hero-image: url('/assets/elegant-hero.png'); }
+
+/* Hero: artwork lives on the right, with a soft fade into the theme surface. */
+.tl-theme-page .tl-theme-hero {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background: var(--theme-hero-bg, rgba(20,20,20,.86)) !important;
+  background-image: none !important;
+}
+
+.tl-theme-page .tl-theme-hero::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 0 0 auto !important;
+  width: 56% !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background-image:
+    linear-gradient(90deg,
+      var(--theme-hero-bg, rgba(20,20,20,.86)) 0%,
+      color-mix(in srgb, var(--theme-hero-bg, #181818) 74%, transparent) 25%,
+      transparent 72%),
+    var(--theme-hero-image) !important;
+  background-repeat: no-repeat !important;
+  background-position: left center, center right !important;
+  background-size: 100% 100%, cover !important;
+  opacity: .98 !important;
+}
+
+/* Never let the hero image sit on top of the heading/copy. */
+.tl-theme-page .tl-theme-hero > * {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Sections are clean theme surfaces. No photographic/repeating wallpaper. */
+.tl-theme-page > section,
+.tl-theme-page [data-host-section],
+.tl-theme-page [data-live-section],
+.tl-theme-page .tl-theme-section {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background: var(--theme-section-bg) !important;
+  background-image: var(--theme-section-bg) !important;
+  background-size: auto !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  border: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Small corner artwork â€” visible, but never large enough to read as a backdrop. */
+.tl-theme-page > section::before,
+.tl-theme-page [data-host-section]::before,
+.tl-theme-page [data-live-section]::before,
+.tl-theme-page .tl-theme-section::before {
+  content: "" !important;
+  position: absolute !important;
+  left: auto !important;
+  top: auto !important;
+  right: -34px !important;
+  bottom: -38px !important;
+  width: min(170px, 42vw) !important;
+  height: min(170px, 42vw) !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background: var(--theme-visual) !important;
+  background-repeat: no-repeat !important;
+  background-position: right bottom !important;
+  background-size: contain !important;
+  opacity: .10 !important;
+  filter: saturate(.88) contrast(.96) !important;
+  mix-blend-mode: screen !important;
+}
+
+/* Keep a soft theme glow, but not a second visible image layer. */
+.tl-theme-page > section::after,
+.tl-theme-page [data-host-section]::after,
+.tl-theme-page [data-live-section]::after,
+.tl-theme-page .tl-theme-section::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background: radial-gradient(
+    circle at 92% 88%,
+    color-mix(in srgb, var(--theme-accent) 7%, transparent),
+    transparent 32%
+  ) !important;
+}
+
+/* Content always wins over decoration. */
+.tl-theme-page > section > *,
+.tl-theme-page [data-host-section] > *,
+.tl-theme-page [data-live-section] > *,
+.tl-theme-page .tl-theme-section > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Slightly more visible corner art on Royal/Bollywood, still not wallpaper. */
+.tl-theme-page.tl-theme-royal > section::before,
+.tl-theme-page.tl-theme-royal [data-host-section]::before,
+.tl-theme-page.tl-theme-royal [data-live-section]::before,
+.tl-theme-page.tl-theme-royal .tl-theme-section::before,
+.tl-theme-page.tl-theme-bollywood > section::before,
+.tl-theme-page.tl-theme-bollywood [data-host-section]::before,
+.tl-theme-page.tl-theme-bollywood [data-live-section]::before,
+.tl-theme-page.tl-theme-bollywood .tl-theme-section::before {
+  opacity: .13 !important;
+}
+
+/* Elegant artwork is lighter; keep it restrained. */
+.tl-theme-page.tl-theme-elegant > section::before,
+.tl-theme-page.tl-theme-elegant [data-host-section]::before,
+.tl-theme-page.tl-theme-elegant [data-live-section]::before,
+.tl-theme-page.tl-theme-elegant .tl-theme-section::before {
+  opacity: .075 !important;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page .tl-theme-hero::before {
+    width: 52% !important;
+    background-size: 100% 100%, cover !important;
+  }
+
+  .tl-theme-page > section::before,
+  .tl-theme-page [data-host-section]::before,
+  .tl-theme-page [data-live-section]::before,
+  .tl-theme-page .tl-theme-section::before {
+    width: min(145px, 36vw) !important;
+    height: min(145px, 36vw) !important;
+    right: -30px !important;
+    bottom: -32px !important;
+    opacity: .085 !important;
+  }
+
+  .tl-theme-page.tl-theme-royal > section::before,
+  .tl-theme-page.tl-theme-royal [data-host-section]::before,
+  .tl-theme-page.tl-theme-royal [data-live-section]::before,
+  .tl-theme-page.tl-theme-royal .tl-theme-section::before,
+  .tl-theme-page.tl-theme-bollywood > section::before,
+  .tl-theme-page.tl-theme-bollywood [data-host-section]::before,
+  .tl-theme-page.tl-theme-bollywood [data-live-section]::before,
+  .tl-theme-page.tl-theme-bollywood .tl-theme-section::before {
+    opacity: .11 !important;
   }
 }
