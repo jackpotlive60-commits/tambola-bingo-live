@@ -56,7 +56,7 @@
    CLASSIC / CASINO
 ========================================================= */
 .tl-theme-classic {
-  --theme-visual: url('/assets/classic-casino-visual.png');
+  --theme-visual: none;
   --theme-bg: #071c14;
   --theme-text: #fff8e7;
   --theme-muted: #d8d0bd;
@@ -97,7 +97,7 @@
    ROYAL
 ========================================================= */
 .tl-theme-royal {
-  --theme-visual: url('/assets/royal-visual.png');
+  --theme-visual: none;
   --theme-bg: #18082a;
   --theme-text: #fff8e8;
   --theme-muted: #dfd1eb;
@@ -146,7 +146,7 @@
    PARTY / FUN
 ========================================================= */
 .tl-theme-party {
-  --theme-visual: url('/assets/party-visual.png');
+  --theme-visual: none;
   --theme-bg: #2b0c35;
   --theme-text: #fff;
   --theme-muted: #f1e5f4;
@@ -194,7 +194,7 @@
    BOLLYWOOD
 ========================================================= */
 .tl-theme-bollywood {
-  --theme-visual: url('/assets/bollywood-visual.png');
+  --theme-visual: none;
   --theme-bg: #3b080f;
   --theme-text: #fffaf0;
   --theme-muted: #f1d8cf;
@@ -241,7 +241,7 @@
    NEON
 ========================================================= */
 .tl-theme-neon {
-  --theme-visual: url('/assets/neon-visual.png');
+  --theme-visual: none;
   --theme-bg: #020914;
   --theme-text: #f5fbff;
   --theme-muted: #b9c9dc;
@@ -292,7 +292,7 @@
    ELEGANT
 ========================================================= */
 .tl-theme-elegant {
-  --theme-visual: url('/assets/elegant-visual.png');
+  --theme-visual: none;
   --theme-bg: #e9e5db;
   --theme-text: #20262d;
   --theme-muted: #66717b;
@@ -383,6 +383,44 @@
    intentionally not converted into a large themed card. */
 .tl-theme-page [data-ticket-cell] {
   color: var(--theme-ticket-text, var(--theme-input-text));
+}
+
+/* =========================================================
+   REACT THEMED SECTIONS
+   main.jsx supplies the tl-theme-section hook; this file owns the artwork.
+   Visual is currently disabled for the verification pass. New transparent
+   PNGs can be connected later by changing only --theme-visual per theme.
+========================================================= */
+.tl-theme-page .tl-theme-section {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--theme-section-bg) !important;
+  border: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+  color: var(--theme-text) !important;
+  backdrop-filter: var(--theme-section-backdrop, none);
+  -webkit-backdrop-filter: var(--theme-section-backdrop, none);
+}
+
+.tl-theme-page .tl-theme-section::before {
+  content: "";
+  position: absolute;
+  inset: auto -70px -70px auto;
+  width: min(390px, 72vw);
+  height: min(390px, 72vw);
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--theme-visual);
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: contain;
+  opacity: .18;
+}
+
+.tl-theme-page .tl-theme-section > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Theme hero */
@@ -535,397 +573,5 @@
 
   .tl-theme-page [data-live-section] {
     border-radius: max(8px, calc(var(--theme-card-radius) - 4px));
-  }
-}
-
-/* =========================================================
-   FINAL UI TREATMENT â€” PREMIUM CORNER ART / CLEAN CONTENT
-   ---------------------------------------------------------
-   The existing React component supplies the active theme through
-   CSS variables on <main>. These rules intentionally work without
-   changing main.jsx.
-========================================================= */
-
-/* The page should feel like a dark premium canvas, not a full-screen
-   photographic wallpaper behind the form. */
-main {
-  position: relative !important;
-  isolation: isolate !important;
-  overflow-x: hidden !important;
-  min-height: 100vh;
-  box-sizing: border-box;
-  background-color: var(--theme-bg, #071c14) !important;
-  background-image:
-    radial-gradient(circle at 8% 5%, color-mix(in srgb, var(--theme-accent, #f5c542) 10%, transparent), transparent 24%),
-    radial-gradient(circle at 92% 90%, color-mix(in srgb, var(--theme-secondary, #f0c94a) 8%, transparent), transparent 28%),
-    linear-gradient(145deg, rgba(0,0,0,.10), rgba(0,0,0,.34)) !important;
-  color: var(--theme-text, #fff8e7) !important;
-  padding: clamp(14px, 3vw, 30px) !important;
-}
-
-/* Give the main content a controlled width so mobile does not become a
-   giant stretched form and desktop remains card-like. */
-main > * {
-  max-width: 1120px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* ---------------------------------------------------------
-   SECTION CARDS
---------------------------------------------------------- */
-main > section,
-main [data-host-section],
-main [data-live-section] {
-  position: relative !important;
-  overflow: hidden !important;
-  isolation: isolate !important;
-  box-sizing: border-box !important;
-  color: var(--theme-text, #fff8e7) !important;
-  background-color: var(--theme-surface, #0c3123) !important;
-  border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 52%, transparent) !important;
-  border-radius: clamp(12px, 1.8vw, 18px) !important;
-  box-shadow:
-    0 14px 34px rgba(0,0,0,.28),
-    inset 0 1px 0 rgba(255,255,255,.045) !important;
-  margin-top: 14px !important;
-  padding: clamp(16px, 2.4vw, 24px) !important;
-}
-
-/* Override the inline photographic background sizing produced by
-   getThemedSectionStyle(). Keep the asset, but make it a small edge accent. */
-main > section,
-main [data-host-section],
-main [data-live-section] {
-  background-size: 235px auto, 100% 100% !important;
-  background-position: right bottom, center !important;
-  background-repeat: no-repeat, no-repeat !important;
-}
-
-/* A protective content veil: the central reading area stays quiet while
-   the original theme artwork remains visible at the edges. */
-main > section::before,
-main [data-host-section]::before,
-main [data-live-section]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg,
-      rgba(0,0,0,.20) 0%,
-      rgba(0,0,0,.10) 58%,
-      rgba(0,0,0,.54) 100%),
-    linear-gradient(180deg,
-      rgba(0,0,0,.08) 0%,
-      rgba(0,0,0,.06) 62%,
-      rgba(0,0,0,.48) 100%);
-}
-
-/* Keep every real control/text node above the decorative layer. */
-main > section > *,
-main [data-host-section] > *,
-main [data-live-section] > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Don't let nested cards accidentally become photographic layers. */
-main [data-host-section] > div,
-main [data-live-section] > div {
-  box-sizing: border-box;
-}
-
-/* ---------------------------------------------------------
-   HEADINGS / COPY
---------------------------------------------------------- */
-main h1,
-main h2,
-main h3 {
-  color: var(--theme-text, #fff8e7) !important;
-  text-shadow: 0 1px 10px rgba(0,0,0,.22);
-}
-
-main h2 {
-  margin-top: 0 !important;
-  margin-bottom: 10px !important;
-  font-size: clamp(20px, 2.6vw, 27px) !important;
-  line-height: 1.15 !important;
-  letter-spacing: .01em;
-}
-
-main p {
-  line-height: 1.5;
-}
-
-main label,
-main b {
-  color: var(--theme-text, #fff8e7);
-}
-
-/* The labels in the Create New Game form were visually oversized on mobile. */
-main > section > div > b,
-main > section > b,
-main > section label,
-main [data-host-section] > div > b,
-main [data-host-section] > b {
-  display: inline-block;
-  font-size: 14px !important;
-  line-height: 1.25 !important;
-  letter-spacing: .015em;
-}
-
-/* ---------------------------------------------------------
-   INPUTS / SELECTS
---------------------------------------------------------- */
-main input,
-main select,
-main textarea {
-  box-sizing: border-box !important;
-  width: 100%;
-  min-height: 46px;
-  margin-top: 7px;
-  padding: 10px 13px !important;
-  border-radius: var(--theme-input-radius, 9px) !important;
-  border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 72%, #8b6d2c) !important;
-  background: var(--theme-input-bg, #f8f6ef) !important;
-  color: var(--theme-input-text, #172018) !important;
-  font-size: 15px !important;
-  line-height: 1.2 !important;
-  box-shadow: 0 5px 14px rgba(0,0,0,.13) !important;
-  outline: none;
-}
-
-main input:focus,
-main select:focus,
-main textarea:focus {
-  border-color: var(--theme-accent, #f5c542) !important;
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--theme-accent, #f5c542) 20%, transparent),
-    0 6px 16px rgba(0,0,0,.14) !important;
-}
-
-main select {
-  appearance: auto;
-  -webkit-appearance: auto;
-}
-
-/* ---------------------------------------------------------
-   BUTTONS
---------------------------------------------------------- */
-main button {
-  min-height: 40px;
-  border-radius: var(--theme-button-radius, 9px) !important;
-  font-size: 13px !important;
-  font-weight: var(--theme-button-weight, 800) !important;
-  letter-spacing: var(--theme-letter-spacing, .01em);
-  box-shadow: var(--theme-button-shadow, 0 8px 20px rgba(0,0,0,.20)) !important;
-}
-
-main button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-}
-
-main button:active {
-  transform: translateY(0);
-}
-
-/* ---------------------------------------------------------
-   CREATE GAME FORM
---------------------------------------------------------- */
-main > section:first-of-type {
-  margin-top: 10px !important;
-}
-
-/* The four setup fields should breathe on desktop but stack cleanly on phones. */
-main > section:first-of-type > div[style*="grid"] {
-  gap: 12px !important;
-}
-
-/* Theme preview: make it look like a deliberate premium panel rather than
-   another large photographic block. */
-main > section:first-of-type > div > div[style*="THEME PREVIEW"] {
-  border-radius: 12px !important;
-  padding: 13px !important;
-  background:
-    linear-gradient(135deg,
-      color-mix(in srgb, var(--theme-accent, #f5c542) 12%, var(--theme-surface, #0c3123)),
-      rgba(0,0,0,.32)) !important;
-  border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 52%, transparent) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 8px 20px rgba(0,0,0,.18) !important;
-}
-
-/* ---------------------------------------------------------
-   PRIZE AMOUNTS / SHARE GAME
---------------------------------------------------------- */
-main [data-host-section="prize-amounts"] {
-  margin-top: 14px !important;
-}
-
-main [data-host-section="prize-amounts"] > p {
-  color: var(--theme-muted, #d8d0bd) !important;
-  font-size: 13px !important;
-}
-
-/* Prize table header. */
-main [data-host-section="prize-amounts"] div[style*="gridTemplateColumns: 1fr 160px"] {
-  border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 30%, transparent) !important;
-  background: color-mix(in srgb, var(--theme-accent, #f5c542) 10%, var(--theme-panel-bg, #123a2b)) !important;
-  border-radius: 9px !important;
-}
-
-/* Individual prize rows stay compact and readable. */
-main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div {
-  min-width: 0;
-}
-
-main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div > div {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  border-color: color-mix(in srgb, var(--theme-accent, #f5c542) 30%, transparent) !important;
-  background: color-mix(in srgb, var(--theme-panel-bg, #123a2b) 88%, transparent) !important;
-  color: var(--theme-panel-text, var(--theme-text, #fff8e7)) !important;
-}
-
-main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div > div b {
-  color: var(--theme-panel-text, var(--theme-text, #fff8e7)) !important;
-  font-size: 14px !important;
-}
-
-/* Share section is visually separated like the reference mockup. */
-main [data-host-section="prize-amounts"] + section {
-  border-top: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 58%, transparent) !important;
-  border-left-color: color-mix(in srgb, var(--theme-accent, #f5c542) 42%, transparent) !important;
-}
-
-main [data-host-section="prize-amounts"] + section p {
-  font-size: 13px !important;
-}
-
-/* ---------------------------------------------------------
-   DESKTOP: premium card composition
---------------------------------------------------------- */
-@media (min-width: 760px) {
-  main {
-    padding: 26px 28px 34px !important;
-  }
-
-  main > section,
-  main [data-host-section],
-  main [data-live-section] {
-    padding: 22px 24px !important;
-  }
-
-  main > section::before,
-  main [data-host-section]::before,
-  main [data-live-section]::before {
-    background:
-      linear-gradient(90deg,
-        rgba(0,0,0,.10) 0%,
-        rgba(0,0,0,.04) 68%,
-        rgba(0,0,0,.48) 100%),
-      linear-gradient(180deg,
-        rgba(0,0,0,.04) 0%,
-        rgba(0,0,0,.02) 65%,
-        rgba(0,0,0,.40) 100%);
-  }
-
-  main > section,
-  main [data-host-section],
-  main [data-live-section] {
-    background-size: 285px auto, 100% 100% !important;
-  }
-}
-
-/* ---------------------------------------------------------
-   MOBILE: match the clean stacked mockup instead of the current
-   giant repeating-photo appearance.
---------------------------------------------------------- */
-@media (max-width: 600px) {
-  main {
-    padding: 10px 10px 24px !important;
-  }
-
-  main > section,
-  main [data-host-section],
-  main [data-live-section] {
-    margin-top: 10px !important;
-    padding: 16px !important;
-    border-radius: 12px !important;
-    background-size: 190px auto, 100% 100% !important;
-    background-position: right bottom, center !important;
-  }
-
-  main > section::before,
-  main [data-host-section]::before,
-  main [data-live-section]::before {
-    background:
-      linear-gradient(90deg,
-        rgba(0,0,0,.18) 0%,
-        rgba(0,0,0,.10) 64%,
-        rgba(0,0,0,.62) 100%),
-      linear-gradient(180deg,
-        rgba(0,0,0,.12) 0%,
-        rgba(0,0,0,.06) 62%,
-        rgba(0,0,0,.56) 100%);
-  }
-
-  main h2 {
-    font-size: 21px !important;
-  }
-
-  main input,
-  main select,
-  main textarea {
-    min-height: 44px;
-    font-size: 15px !important;
-  }
-
-  main button {
-    min-height: 40px;
-    font-size: 12px !important;
-  }
-
-  main > section:first-of-type > div[style*="gridTemplateColumns"] {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Keep artwork away from the input-heavy top of the setup card. */
-  main > section:first-of-type {
-    background-position: right bottom, center !important;
-    background-size: 155px auto, 100% 100% !important;
-  }
-
-  main [data-host-section="prize-amounts"] > div[style*="gridTemplateColumns: 1fr 160px"] {
-    grid-template-columns: 1fr 110px !important;
-  }
-
-  main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div {
-    grid-template-columns: 1fr 110px !important;
-  }
-}
-
-/* Extra-small phones: never let the two-column prize editor overflow. */
-@media (max-width: 380px) {
-  main [data-host-section="prize-amounts"] > div[style*="gridTemplateColumns"] {
-    grid-template-columns: 1fr !important;
-  }
-
-  main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-/* Accessibility / motion preference. */
-@media (prefers-reduced-motion: reduce) {
-  main button,
-  main input,
-  main select,
-  main textarea {
-    transition: none !important;
   }
 }
