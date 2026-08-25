@@ -44,7 +44,6 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
-
 /*
  * Section visual treatment: reuse the existing theme assets, but crop and
  * place them differently for successive sections. The content side remains
@@ -64,7 +63,6 @@ function getThemedSectionStyle(themeUI, extra = {}) {
     overflow: "hidden",
     isolation: "isolate",
     background: "var(--theme-section-bg)",
-    backgroundImage: "none",
     border: "var(--theme-section-border)",
     boxShadow: "var(--theme-section-shadow)",
     color: "var(--theme-text)",
@@ -82,6 +80,7 @@ function getThemedSectionStyle(themeUI, extra = {}) {
 
 const THEME_DESIGNS = {
   "Classic": {
+    "backgroundImage": "/assets/casino-background-mobile.jpg",
     "identity": "Traditional tambola and casino game-room",
     "page": {
       "overlay": "rgba(3, 20, 15, 0.42)",
@@ -116,6 +115,7 @@ const THEME_DESIGNS = {
     }
   },
   "Royal": {
+    "backgroundImage": "/assets/royal-background-mobile.jpg",
     "identity": "Regal palace, velvet and gold",
     "page": {
       "overlay": "rgba(28, 9, 48, 0.38)",
@@ -150,6 +150,7 @@ const THEME_DESIGNS = {
     }
   },
   "Party": {
+    "backgroundImage": "/assets/fun-background-mobile.jpg",
     "identity": "Bright celebration, playful and energetic",
     "page": {
       "overlay": "rgba(52, 11, 55, 0.24)",
@@ -184,6 +185,7 @@ const THEME_DESIGNS = {
     }
   },
   "Bollywood": {
+    "backgroundImage": "/assets/bollywood-background-mobile.jpg",
     "identity": "Indian cinema glamour, lights and celebration",
     "page": {
       "overlay": "rgba(76, 8, 13, 0.36)",
@@ -218,6 +220,7 @@ const THEME_DESIGNS = {
     }
   },
   "Neon": {
+    "backgroundImage": "/assets/neon-background-mobile.jpg",
     "identity": "Futuristic arcade, cyan and violet glow",
     "page": {
       "overlay": "rgba(1, 7, 18, 0.38)",
@@ -252,6 +255,7 @@ const THEME_DESIGNS = {
     }
   },
   "Elegant": {
+    "backgroundImage": "/assets/elegant-background-mobile.jpg",
     "identity": "Refined contemporary luxury",
     "page": {
       "overlay": "rgba(245, 241, 232, 0.16)",
@@ -1494,7 +1498,10 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
   const design = getThemeDesign(theme);
 
-  
+  const backgroundImage = design.backgroundImage
+    ? `url("${design.backgroundImage}")`
+    : "none";
+
   /*
     Theme design language.
     These values deliberately change structure/shape/effects, not only colors.
@@ -1679,7 +1686,9 @@ function getThemeUI(theme) {
 
     page: {
       backgroundColor: colors.background,
-      backgroundImage: "none",
+      backgroundImage: backgroundImage === "none"
+        ? "none"
+        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
       backgroundSize: "cover",
       backgroundPosition: "center top",
       backgroundAttachment: "scroll",
@@ -1725,7 +1734,6 @@ function getThemeUI(theme) {
       "--theme-input-padding": v.inputPadding,
       "--theme-button-padding": v.buttonPadding,
       "--theme-control-shadow": v.buttonShadow
-      /* Theme artwork is owned entirely by themes.css. */
     },
 
     card: {
@@ -1781,28 +1789,64 @@ function getThemeUI(theme) {
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
-  const heroImage = getThemeHeroImage(theme);
-  const logo = getThemeLogo(theme);
 
   return (
-    <div className={`tl-theme-hero ${compact ? "tl-theme-hero--compact" : ""}`} style={{
-      "--hero-bg": ui.design.hero.surface,
-      "--hero-border": `${c.accent}66`,
-      "--hero-accent": c.accent,
-      "--hero-text": ui.design.hero.text,
-      "--hero-theme-bg": c.background,
-      "--hero-secondary": c.secondary,
-      "--hero-art": `url("${heroImage}")`
-    }}>
+    <div
+      className="tl-theme-hero"
+      style={{
+        maxWidth: 1000,
+        margin: "0 auto 18px",
+        minHeight: compact ? 108 : 132,
+        position: "relative",
+        overflow: "hidden",
+        borderRadius: 24,
+        border: `1px solid ${c.accent}66`,
+        color: ui.design.hero.text,
+        padding: compact ? "17px 20px" : "20px 24px",
+        boxSizing: "border-box"
+      }}
+    >
+      {/* Theme artwork is owned by themes.css. No inline PNG/background here. */}
       <div className="tl-theme-hero-art" aria-hidden="true" />
-      <div className="tl-theme-hero-blend" aria-hidden="true" />
-      <div className="tl-theme-hero-content">
-        <div className="tl-theme-hero-brand">
-          <span className="tl-theme-hero-brand-name">Tambola Live</span>
-          <span className="tl-theme-hero-theme">{theme || "Classic"}</span>
+
+      <div className="tl-theme-hero-copy">
+        <div
+          style={{
+            fontSize: compact ? 10 : 11,
+            letterSpacing: 2.2,
+            textTransform: "uppercase",
+            color: c.accent,
+            fontWeight: 800
+          }}
+        >
+          {theme || "Classic"} - TAMBOLA LIVE
         </div>
-        <div className="tl-theme-hero-title">{title}</div>
-        {subtitle && <div className="tl-theme-hero-subtitle">{subtitle}</div>}
+
+        <div
+          style={{
+            fontSize: compact ? 24 : 30,
+            lineHeight: 1.06,
+            fontWeight: 900,
+            marginTop: 6,
+            overflowWrap: "anywhere"
+          }}
+        >
+          {title}
+        </div>
+
+        {subtitle && (
+          <div
+            style={{
+              marginTop: 7,
+              color: "var(--theme-muted, #d8d0bd)",
+              fontSize: compact ? 12 : 14,
+              lineHeight: 1.3,
+              maxWidth: 440
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2716,6 +2760,39 @@ function CreateGamePage({
             "0 auto"
         }}
       >
+        <div
+          style={{
+            textAlign:
+              "center",
+            marginBottom:
+              25
+          }}
+        >
+          <img
+            src={getThemeLogo(theme)}
+            alt={`${theme || "Classic"} Tambola Live`}
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+            style={{
+              width: "min(190px, 58vw)",
+              maxHeight: 58,
+              objectFit: "contain",
+              display: "block",
+              margin: "0 auto 6px",
+              filter: `drop-shadow(0 4px 10px ${themeUI.colors.secondary}44)`
+            }}
+          />
+
+          <p
+            style={{
+              color:
+                "#64748b"
+            }}
+          >
+            Host Create Game
+          </p>
+        </div>
 
         <form
           onSubmit={
