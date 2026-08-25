@@ -1783,12 +1783,16 @@ function getThemeUI(theme) {
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
-  const heroImage = getThemeHeroImage(theme);
 
   return (
     <div
       className="tl-theme-hero"
+      data-theme={theme}
       style={{
+        "--hero-accent": c.accent,
+        "--hero-secondary": c.secondary,
+        "--hero-text": ui.design.hero.text,
+        "--hero-surface": ui.design.hero.surface,
         maxWidth: 1000,
         margin: "0 auto 18px",
         minHeight: compact ? 108 : 132,
@@ -1796,49 +1800,16 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         overflow: "hidden",
         borderRadius: 24,
         border: `1px solid ${c.accent}66`,
-        background: ui.design.hero.surface,
-        boxShadow: `0 16px 42px rgba(0,0,0,.28), 0 0 32px ${c.secondary}18`,
+        background: "var(--theme-hero-bg)",
+        boxShadow: "var(--theme-hero-shadow)",
         color: ui.design.hero.text,
         padding: compact ? "17px 20px" : "20px 24px",
         boxSizing: "border-box"
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: `linear-gradient(90deg, ${c.background} 0%, ${c.background}e8 42%, ${c.background}66 67%, transparent 100%)`,
-          zIndex: 1,
-          pointerEvents: "none"
-        }}
-      />
+      <div className="tl-theme-hero-art" aria-hidden="true" />
 
-      <img
-        src={heroImage}
-        alt=""
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          right: 0,
-          top: 0,
-          width: "54%",
-          height: "100%",
-          objectFit: "contain",
-          objectPosition: "right center",
-          opacity: .96,
-          zIndex: 0,
-          display: "block"
-        }}
-      />
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          maxWidth: compact ? "68%" : "66%",
-          minHeight: compact ? 74 : 88
-        }}
-      >
+      <div className="tl-theme-hero-copy">
         <div
           style={{
             fontSize: compact ? 10 : 11,
