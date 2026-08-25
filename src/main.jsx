@@ -44,40 +44,54 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
-const THEME_HERO_IMAGES = {
-  Classic: "/assets/classic-casino-visual.png",
-  Royal: "/assets/royal-visual.png",
-  Party: "/assets/party-visual.png",
-  Bollywood: "/assets/bollywood-visual.png",
-  Neon: "/assets/neon-visual.png",
-  Elegant: "/assets/elegant-visual.png"
-};
+/*
+ * Section visual treatment: reuse the existing theme assets, but crop and
+ * place them differently for successive sections. The content side remains
+ * protected by a strong themed gradient so artwork never sits directly under
+ * labels and inputs. No new image files are required.
+ */
+function getThemedSectionStyle(themeUI, index, extra = {}) {
+  const theme = themeUI?.themeName || "Classic";
 
-function getThemeHeroImage(theme) {
-  return THEME_HERO_IMAGES[theme] || THEME_HERO_IMAGES.Classic;
-}
+  const surface =
+    themeUI?.design?.card?.surface ||
+    themeUI?.colors?.surface ||
+    "#0f172a";
 
-function getThemedSectionStyle(themeUI, extra = {}) {
-  /*
-   * Sections intentionally have NO image background here.
-   * themes.css owns the clean themed surfaces.
-   * The new transparent section PNGs will be added later as a separate layer.
-   */
+  const border =
+    themeUI?.design?.card?.border ||
+    themeUI?.colors?.accent ||
+    "rgba(212,175,55,.55)";
+
   return {
     ...themeUI.card,
     position: "relative",
     overflow: "hidden",
-    isolation: "isolate",
-    background: "var(--theme-section-bg)",
-    border: "var(--theme-section-border)",
-    boxShadow: "var(--theme-section-shadow)",
-    color: "var(--theme-text)",
-    backdropFilter: "none",
-    WebkitBackdropFilter: "none",
+    backgroundColor: surface,
+
+    /*
+     * Keep the section surface clean. The transparent PNG is applied by
+     * themes.css as a masked decorative layer, never as the section
+     * background itself.
+     */
+    backgroundImage: "none",
+
+    border: `1px solid ${border}`,
+    boxShadow:
+      themeUI?.design?.card?.shadow ||
+      "0 18px 45px rgba(0,0,0,.35)",
+
+    /*
+     * Keep the visual layer behind the section's text and controls.
+     */
+    color:
+      themeUI?.design?.card?.text ||
+      themeUI?.design?.hero?.text ||
+      "#fff",
+
     ...extra
   };
 }
-
 
 /* =========================================================
    THEME DESIGN SYSTEM
@@ -1498,6 +1512,10 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
   const design = getThemeDesign(theme);
 
+  const backgroundImage = design.backgroundImage
+    ? `url("${design.backgroundImage}")`
+    : "none";
+
   /*
     Theme design language.
     These values deliberately change structure/shape/effects, not only colors.
@@ -1682,7 +1700,9 @@ function getThemeUI(theme) {
 
     page: {
       backgroundColor: colors.background,
-      backgroundImage: "none",
+      backgroundImage: backgroundImage === "none"
+        ? "none"
+        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
       backgroundSize: "cover",
       backgroundPosition: "center top",
       backgroundAttachment: "scroll",
@@ -1787,12 +1807,7 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
   return (
     <div
       className="tl-theme-hero"
-      data-theme={theme}
       style={{
-        "--hero-accent": c.accent,
-        "--hero-secondary": c.secondary,
-        "--hero-text": ui.design.hero.text,
-        "--hero-surface": ui.design.hero.surface,
         maxWidth: 1000,
         margin: "0 auto 18px",
         minHeight: compact ? 108 : 132,
@@ -1800,16 +1815,36 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         overflow: "hidden",
         borderRadius: 24,
         border: `1px solid ${c.accent}66`,
-        background: "var(--theme-hero-bg)",
-        boxShadow: "var(--theme-hero-shadow)",
+        background: ui.design.hero.surface,
+        boxShadow: `0 16px 42px rgba(0,0,0,.28), 0 0 32px ${c.secondary}18`,
         color: ui.design.hero.text,
         padding: compact ? "17px 20px" : "20px 24px",
         boxSizing: "border-box"
       }}
     >
-      <div className="tl-theme-hero-art" aria-hidden="true" />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(90deg, ${c.background} 0%, ${c.background}e8 42%, ${c.background}66 67%, transparent 100%)`,
+          zIndex: 1,
+          pointerEvents: "none"
+        }}
+      />
 
-      <div className="tl-theme-hero-copy">
+      <div
+        className="tl-theme-hero-art"
+        aria-hidden="true"
+      />
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          maxWidth: compact ? "68%" : "66%",
+          minHeight: compact ? 74 : 88
+        }}
+      >
         <div
           style={{
             fontSize: compact ? 10 : 11,
@@ -2530,8 +2565,9 @@ function CreateGamePage({
   const themeUI = getThemeUI(theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  let sectionVisualIndex = 0;
   const nextSectionStyle = (extra = {}) =>
-    getThemedSectionStyle(themeUI, extra);
+    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -2747,7 +2783,7 @@ function CreateGamePage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -2799,7 +2835,7 @@ function CreateGamePage({
             createGame
           }
         >
-          <section className="tl-theme-section"
+          <section
             style={
               nextSectionStyle()
             }
@@ -2985,7 +3021,7 @@ function CreateGamePage({
             </div>
           </section>
 
-          <section className="tl-theme-section"
+          <section
             style={
               nextSectionStyle()
             }
@@ -3406,8 +3442,9 @@ function PlayerBookingPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  let sectionVisualIndex = 0;
   const nextSectionStyle = (extra = {}) =>
-    getThemedSectionStyle(themeUI, extra);
+    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -4007,7 +4044,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -4068,7 +4105,7 @@ function PlayerBookingPage({
           </div>
         </div>
 
-        <section className="tl-theme-section"
+        <section
           style={
             nextSectionStyle()
           }
@@ -4119,7 +4156,7 @@ function PlayerBookingPage({
           </div>
         </section>
 
-        <section className="tl-theme-section"
+        <section
           style={
             nextSectionStyle()
           }
@@ -5196,8 +5233,9 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  let sectionVisualIndex = 0;
   const nextSectionStyle = (extra = {}) =>
-    getThemedSectionStyle(themeUI, extra);
+    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -5626,7 +5664,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
+      <main style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -5789,7 +5827,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             </div>
           )}
 
-          <section className="tl-theme-section" style={nextSectionStyle()}>
+          <section style={nextSectionStyle()}>
             <h2>Prize Results</h2>
             <div style={{ display: "grid", gap: 12 }}>
               {finalPrizes.map((prize, prizeIndex) => {
@@ -5835,7 +5873,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             </div>
           </section>
 
-          <section className="tl-theme-section" style={nextSectionStyle()}>
+          <section style={nextSectionStyle()}>
             <div
               style={{
                 display: "flex",
@@ -5968,7 +6006,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
@@ -6697,8 +6735,9 @@ function HostControlPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
+  let sectionVisualIndex = 0;
   const nextSectionStyle = (extra = {}) =>
-    getThemedSectionStyle(themeUI, extra);
+    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -8377,7 +8416,6 @@ function HostControlPage({
 
   return (
     <main
-      className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`}
       style={
         themedPageStyle
       }
@@ -8487,7 +8525,7 @@ function HostControlPage({
           )}
         </section>
 
-        <section className="tl-theme-section"
+        <section
           style={
             nextSectionStyle()
           }
@@ -8682,7 +8720,7 @@ function HostControlPage({
           </button>
         </section>
 
-        <section className="tl-theme-section"
+        <section
           style={
             nextSectionStyle()
           }
@@ -8793,7 +8831,7 @@ function HostControlPage({
           )}
         </section>
 
-        <section className="tl-theme-section"
+        <section
           style={
             nextSectionStyle()
           }
@@ -8834,7 +8872,7 @@ function HostControlPage({
           </div>
         </section>
 
-        <section className="tl-theme-section"
+        <section
           style={
             nextSectionStyle()
           }
