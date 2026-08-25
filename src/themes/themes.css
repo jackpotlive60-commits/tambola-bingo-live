@@ -951,3 +951,269 @@ main [data-host-section="prize-amounts"] + section p {
     background-image: none !important;
   }
 }
+
+
+/* =========================================================
+   LATEST THEME ARTWORK
+   These transparent PNGs are decorative layers only.
+   They are never used as full section backgrounds.
+========================================================= */
+.tl-theme-classic {
+  --theme-hero-art: url("/assets/classic-casino-visual.png");
+  --theme-section-art: url("/assets/classic-casino-visual.png");
+}
+
+.tl-theme-royal {
+  --theme-hero-art: url("/assets/royal-visual.png");
+  --theme-section-art: url("/assets/royal-visual.png");
+}
+
+.tl-theme-party {
+  --theme-hero-art: url("/assets/party-visual.png");
+  --theme-section-art: url("/assets/party-visual.png");
+}
+
+.tl-theme-bollywood {
+  --theme-hero-art: url("/assets/bollywood-visual.png");
+  --theme-section-art: url("/assets/bollywood-visual.png");
+}
+
+.tl-theme-neon {
+  --theme-hero-art: url("/assets/neon-visual.png");
+  --theme-section-art: url("/assets/neon-visual.png");
+}
+
+.tl-theme-elegant {
+  --theme-hero-art: url("/assets/elegant-visual.png");
+  --theme-section-art: url("/assets/elegant-visual.png");
+}
+
+
+/* =========================================================
+   HERO â€” BLENDED ARTWORK
+========================================================= */
+
+.tl-theme-hero {
+  isolation: isolate;
+  background:
+    radial-gradient(
+      circle at 88% 50%,
+      color-mix(in srgb, var(--hero-secondary, var(--theme-secondary)) 18%, transparent),
+      transparent 42%
+    ),
+    var(--theme-hero-bg) !important;
+}
+
+.tl-theme-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      var(--theme-bg) 0%,
+      color-mix(in srgb, var(--theme-bg) 92%, transparent) 34%,
+      color-mix(in srgb, var(--theme-bg) 62%, transparent) 56%,
+      transparent 78%
+    );
+}
+
+.tl-theme-hero-art {
+  position: absolute;
+  z-index: 0;
+  right: -3%;
+  top: -8%;
+  width: 58%;
+  height: 116%;
+  background-image: var(--theme-hero-art);
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: contain;
+  opacity: .78;
+  pointer-events: none;
+  -webkit-mask-image:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.35) 18%,
+      #000 42%,
+      #000 82%,
+      rgba(0,0,0,.75) 100%
+    );
+  mask-image:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.35) 18%,
+      #000 42%,
+      #000 82%,
+      rgba(0,0,0,.75) 100%
+    );
+}
+
+.tl-theme-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      transparent 55%,
+      color-mix(in srgb, var(--theme-bg) 22%, transparent) 100%
+    );
+}
+
+.tl-theme-hero-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 66%;
+  min-height: 88px;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-hero {
+    min-height: 118px !important;
+    border-radius: 18px !important;
+    padding: 16px 17px !important;
+  }
+
+  .tl-theme-hero-art {
+    right: -9%;
+    top: 0;
+    width: 58%;
+    height: 100%;
+    opacity: .62;
+    background-size: contain;
+  }
+
+  .tl-theme-hero-copy {
+    max-width: 72%;
+  }
+
+  .tl-theme-hero::before {
+    background:
+      linear-gradient(
+        90deg,
+        var(--theme-bg) 0%,
+        color-mix(in srgb, var(--theme-bg) 94%, transparent) 45%,
+        transparent 82%
+      );
+  }
+}
+
+/* =========================================================
+   SECTIONS â€” EDGE DECORATION, NOT WALLPAPER
+========================================================= */
+
+.tl-theme-page main > section,
+.tl-theme-page main [data-host-section],
+.tl-theme-page main [data-live-section],
+.tl-theme-page .tl-theme-section {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background: var(--theme-section-bg) !important;
+  background-image: none !important;
+}
+
+.tl-theme-page main > section::before,
+.tl-theme-page main [data-host-section]::before,
+.tl-theme-page main [data-live-section]::before,
+.tl-theme-page .tl-theme-section::before {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  right: -54px !important;
+  bottom: -56px !important;
+  width: 260px !important;
+  height: 230px !important;
+  background-image: var(--theme-section-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: right bottom !important;
+  background-size: contain !important;
+  opacity: .16 !important;
+  -webkit-mask-image:
+    radial-gradient(
+      ellipse at 100% 100%,
+      #000 0%,
+      rgba(0,0,0,.72) 42%,
+      rgba(0,0,0,.22) 68%,
+      transparent 100%
+    ) !important;
+  mask-image:
+    radial-gradient(
+      ellipse at 100% 100%,
+      #000 0%,
+      rgba(0,0,0,.72) 42%,
+      rgba(0,0,0,.22) 68%,
+      transparent 100%
+    ) !important;
+}
+
+.tl-theme-page main > section::after,
+.tl-theme-page main [data-host-section]::after,
+.tl-theme-page main [data-live-section]::after,
+.tl-theme-page .tl-theme-section::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0%,
+      transparent 60%,
+      color-mix(in srgb, var(--theme-bg) 10%, transparent) 100%
+    ) !important;
+}
+
+.tl-theme-page main > section > *,
+.tl-theme-page main [data-host-section] > *,
+.tl-theme-page main [data-live-section] > *,
+.tl-theme-page .tl-theme-section > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Give the first setup section a slightly quieter decoration because it
+   contains the most inputs. */
+.tl-theme-page main > section:first-of-type::before {
+  width: 210px !important;
+  height: 190px !important;
+  right: -62px !important;
+  bottom: -66px !important;
+  opacity: .11 !important;
+}
+
+/* Prize / secondary sections can carry a little more artwork. */
+.tl-theme-page main [data-host-section="prize-amounts"]::before,
+.tl-theme-page main [data-host-section="ticket-bookings"]::before,
+.tl-theme-page main [data-host-section="player-bookings"]::before,
+.tl-theme-page main [data-host-section="game-control"]::before {
+  opacity: .18 !important;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page main > section::before,
+  .tl-theme-page main [data-host-section]::before,
+  .tl-theme-page main [data-live-section]::before,
+  .tl-theme-page .tl-theme-section::before {
+    right: -70px !important;
+    bottom: -66px !important;
+    width: 190px !important;
+    height: 165px !important;
+    opacity: .12 !important;
+  }
+
+  .tl-theme-page main > section:first-of-type::before {
+    width: 155px !important;
+    height: 140px !important;
+    opacity: .08 !important;
+  }
+}
