@@ -1603,157 +1603,162 @@ main [data-host-section="prize-amounts"] + section p {
   }
 }
 
+/* ============================================================
+   TAMBOLALIVE â€” FINAL ARTWORK FIX
+   IMPORTANT:
+   The theme PNGs are decorative artwork only.
+   They must NEVER render as normal <img> elements or as
+   full-size/full-page images.
+   ============================================================ */
 
-/* =========================================================
-   FINAL ARTWORK OVERRIDE â€” EMBEDDED, NEVER A PICTURE BLOCK
-   ---------------------------------------------------------
-   Keep the six supplied PNGs as decorative artwork only.
-   The artwork is blended into the existing theme surface.
-   No PNG is used as a section wallpaper.
-========================================================= */
-
-/* Theme artwork sources */
-.tl-theme-classic,
-.tl-theme-page.tl-theme-classic {
-  --theme-hero-art: url("/assets/classic-casino-visual.png");
-  --theme-section-art: url("/assets/classic-casino-visual.png");
+/* 1. If an older ThemeHero implementation still outputs one of
+      the visual PNGs as an <img>, completely disable that image.
+      The CSS artwork layer below is the only artwork renderer. */
+.tl-theme-page img[src*="classic-casino-visual.png"],
+.tl-theme-page img[src*="royal-visual.png"],
+.tl-theme-page img[src*="party-visual.png"],
+.tl-theme-page img[src*="bollywood-visual.png"],
+.tl-theme-page img[src*="neon-visual.png"],
+.tl-theme-page img[src*="elegant-visual.png"] {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
 }
 
-.tl-theme-royal,
-.tl-theme-page.tl-theme-royal {
-  --theme-hero-art: url("/assets/royal-visual.png");
-  --theme-section-art: url("/assets/royal-visual.png");
-}
-
-.tl-theme-party,
-.tl-theme-page.tl-theme-party {
-  --theme-hero-art: url("/assets/party-visual.png");
-  --theme-section-art: url("/assets/party-visual.png");
-}
-
-.tl-theme-bollywood,
-.tl-theme-page.tl-theme-bollywood {
-  --theme-hero-art: url("/assets/bollywood-visual.png");
-  --theme-section-art: url("/assets/bollywood-visual.png");
-}
-
-.tl-theme-neon,
-.tl-theme-page.tl-theme-neon {
-  --theme-hero-art: url("/assets/neon-visual.png");
-  --theme-section-art: url("/assets/neon-visual.png");
-}
-
-.tl-theme-elegant,
-.tl-theme-page.tl-theme-elegant {
-  --theme-hero-art: url("/assets/elegant-visual.png");
-  --theme-section-art: url("/assets/elegant-visual.png");
-}
-
-/* ---------- HERO ---------- */
-
+/* 2. HERO itself is the containing surface. */
 .tl-theme-page .tl-theme-hero {
   position: relative !important;
   overflow: hidden !important;
   isolation: isolate !important;
+  box-sizing: border-box !important;
   background: var(--theme-hero-bg) !important;
   background-image: none !important;
 }
 
-.tl-theme-page .tl-theme-hero-art {
+/* 3. THE ONLY HERO ARTWORK LAYER.
+      Small, contained, right-side decoration â€” never a poster. */
+.tl-theme-page .tl-theme-hero > .tl-theme-hero-art {
+  display: block !important;
   position: absolute !important;
   z-index: 0 !important;
-  pointer-events: none !important;
 
-  top: -12% !important;
-  right: -4% !important;
-  width: 61% !important;
-  height: 124% !important;
+  left: auto !important;
+  top: 0 !important;
+  right: -1% !important;
+  bottom: auto !important;
+
+  width: 36% !important;
+  height: 100% !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
 
   background-image: var(--theme-hero-art) !important;
   background-repeat: no-repeat !important;
   background-position: right center !important;
   background-size: contain !important;
 
-  opacity: .72 !important;
-  filter: saturate(.94) contrast(.98) !important;
+  opacity: .30 !important;
+  filter: saturate(.88) contrast(.96) !important;
 
-  /* The PNG disappears into the left and outer edges. */
+  pointer-events: none !important;
+  transform: none !important;
+
   -webkit-mask-image:
-    radial-gradient(
-      ellipse at 100% 50%,
-      #000 0%,
-      rgba(0,0,0,.96) 42%,
-      rgba(0,0,0,.68) 66%,
-      rgba(0,0,0,.30) 84%,
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.10) 20%,
+      rgba(0,0,0,.45) 42%,
+      #000 66%,
+      rgba(0,0,0,.65) 90%,
       transparent 100%
     ) !important;
+
   mask-image:
-    radial-gradient(
-      ellipse at 100% 50%,
-      #000 0%,
-      rgba(0,0,0,.96) 42%,
-      rgba(0,0,0,.68) 66%,
-      rgba(0,0,0,.30) 84%,
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.10) 20%,
+      rgba(0,0,0,.45) 42%,
+      #000 66%,
+      rgba(0,0,0,.65) 90%,
       transparent 100%
     ) !important;
 }
 
-/* A second horizontal fade removes the rectangular feel completely. */
+/* 4. Strong content veil on the left.
+      This makes the artwork feel printed into the hero rather
+      than pasted on top of it. */
 .tl-theme-page .tl-theme-hero::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
   z-index: 1 !important;
   pointer-events: none !important;
+
   background:
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--theme-bg) 98%, transparent) 0%,
-      color-mix(in srgb, var(--theme-bg) 94%, transparent) 28%,
-      color-mix(in srgb, var(--theme-bg) 70%, transparent) 48%,
-      color-mix(in srgb, var(--theme-bg) 28%, transparent) 70%,
+      var(--theme-bg) 0%,
+      color-mix(in srgb, var(--theme-bg) 96%, transparent) 32%,
+      color-mix(in srgb, var(--theme-bg) 76%, transparent) 52%,
+      color-mix(in srgb, var(--theme-bg) 32%, transparent) 74%,
       transparent 100%
     ) !important;
 }
 
-/* Soft vignette over the artwork â€” not a hard overlay. */
+/* 5. Soft bottom fade. */
 .tl-theme-page .tl-theme-hero::after {
-  z-index: 1 !important;
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2 !important;
   pointer-events: none !important;
+
   background:
     linear-gradient(
       180deg,
-      rgba(0,0,0,.10) 0%,
-      transparent 24%,
-      transparent 72%,
-      rgba(0,0,0,.24) 100%
+      transparent 55%,
+      color-mix(in srgb, var(--theme-bg) 18%, transparent) 82%,
+      color-mix(in srgb, var(--theme-bg) 45%, transparent) 100%
     ) !important;
 }
 
-/* Hero copy must always sit above artwork. */
+/* 6. Hero copy always above every decorative layer. */
 .tl-theme-page .tl-theme-hero-copy,
 .tl-theme-page .tl-theme-hero-copy * {
   position: relative !important;
-  z-index: 3 !important;
+  z-index: 4 !important;
 }
 
-/* Blend modes by visual family. */
-.tl-theme-page.tl-theme-classic .tl-theme-hero-art,
-.tl-theme-page.tl-theme-royal .tl-theme-hero-art,
-.tl-theme-page.tl-theme-bollywood .tl-theme-hero-art {
+/* 7. Theme-specific treatment. */
+.tl-theme-page.tl-theme-party > .tl-theme-hero > .tl-theme-hero-art,
+.tl-theme-page.tl-theme-neon > .tl-theme-hero > .tl-theme-hero-art {
   mix-blend-mode: screen !important;
+  opacity: .26 !important;
 }
 
-.tl-theme-page.tl-theme-party .tl-theme-hero-art,
-.tl-theme-page.tl-theme-neon .tl-theme-hero-art {
-  mix-blend-mode: screen !important;
-}
-
-.tl-theme-page.tl-theme-elegant .tl-theme-hero-art {
+.tl-theme-page.tl-theme-elegant > .tl-theme-hero > .tl-theme-hero-art {
   mix-blend-mode: normal !important;
-  opacity: .58 !important;
-  filter: saturate(.68) contrast(.94) brightness(.88) !important;
+  opacity: .20 !important;
+  filter: saturate(.62) contrast(.94) brightness(.88) !important;
 }
 
-/* ---------- ALL CONTENT SECTIONS ---------- */
+.tl-theme-page.tl-theme-bollywood > .tl-theme-hero > .tl-theme-hero-art {
+  opacity: .28 !important;
+}
 
+.tl-theme-page.tl-theme-royal > .tl-theme-hero > .tl-theme-hero-art {
+  opacity: .28 !important;
+}
+
+/* 8. Sections: keep artwork as a tiny atmospheric corner detail.
+      Never allow a section to inherit the full PNG. */
 .tl-theme-page main > section,
 .tl-theme-page main [data-host-section],
 .tl-theme-page main [data-live-section],
@@ -1761,180 +1766,76 @@ main [data-host-section="prize-amounts"] + section p {
   position: relative !important;
   overflow: hidden !important;
   isolation: isolate !important;
-  background: var(--theme-section-bg) !important;
-  background-image: none !important;
 }
 
-/* Decorative artwork lives only in one corner. */
 .tl-theme-page main > section::before,
 .tl-theme-page main [data-host-section]::before,
 .tl-theme-page main [data-live-section]::before,
 .tl-theme-page .tl-theme-section::before {
-  content: "" !important;
-  position: absolute !important;
-  z-index: 0 !important;
-  pointer-events: none !important;
-
-  right: -82px !important;
-  bottom: -76px !important;
-  width: 250px !important;
-  height: 220px !important;
+  right: -55px !important;
+  bottom: -55px !important;
+  width: 175px !important;
+  height: 155px !important;
 
   background-image: var(--theme-section-art) !important;
   background-repeat: no-repeat !important;
   background-position: right bottom !important;
   background-size: contain !important;
 
-  opacity: .13 !important;
-  filter: saturate(.82) contrast(.96) !important;
-
-  -webkit-mask-image:
-    radial-gradient(
-      ellipse at 100% 100%,
-      #000 0%,
-      rgba(0,0,0,.76) 34%,
-      rgba(0,0,0,.30) 62%,
-      transparent 100%
-    ) !important;
-  mask-image:
-    radial-gradient(
-      ellipse at 100% 100%,
-      #000 0%,
-      rgba(0,0,0,.76) 34%,
-      rgba(0,0,0,.30) 62%,
-      transparent 100%
-    ) !important;
+  opacity: .065 !important;
 }
 
-/* Keep content completely above the decorative layer. */
-.tl-theme-page main > section > *,
-.tl-theme-page main [data-host-section] > *,
-.tl-theme-page main [data-live-section] > *,
-.tl-theme-page .tl-theme-section > * {
-  position: relative !important;
-  z-index: 2 !important;
-}
-
-/* Slightly stronger decoration for information/result sections. */
-.tl-theme-page main [data-live-section]::before,
-.tl-theme-page main [data-host-section="ticket-bookings"]::before,
-.tl-theme-page main [data-host-section="player-bookings"]::before,
-.tl-theme-page main [data-host-section="game-control"]::before {
-  opacity: .16 !important;
-}
-
-/* The create-game form stays quieter because it contains many inputs. */
-.tl-theme-page main > section:first-of-type::before {
-  width: 205px !important;
-  height: 180px !important;
-  right: -72px !important;
-  bottom: -62px !important;
-  opacity: .08 !important;
-}
-
-/* Small ambient glow makes the art feel part of the surface. */
-.tl-theme-page main > section::after,
-.tl-theme-page main [data-host-section]::after,
-.tl-theme-page main [data-live-section]::after,
-.tl-theme-page .tl-theme-section::after {
-  content: "" !important;
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 1 !important;
-  pointer-events: none !important;
-  background:
-    radial-gradient(
-      circle at 96% 94%,
-      color-mix(in srgb, var(--theme-accent) 7%, transparent),
-      transparent 30%
-    ) !important;
-}
-
-/* Elegant: subtle line-art, never a bright pasted photograph. */
-.tl-theme-page.tl-theme-elegant main > section::before,
-.tl-theme-page.tl-theme-elegant main [data-host-section]::before,
-.tl-theme-page.tl-theme-elegant main [data-live-section]::before,
-.tl-theme-page.tl-theme-elegant .tl-theme-section::before {
-  opacity: .075 !important;
-  filter: saturate(.55) contrast(.90) brightness(.82) !important;
-  mix-blend-mode: normal !important;
-}
-
-/* ---------- MOBILE ---------- */
-
+/* 9. MOBILE â€” artwork remains a small edge accent.
+      It cannot expand into a giant image. */
 @media (max-width: 600px) {
   .tl-theme-page .tl-theme-hero {
+    overflow: hidden !important;
     min-height: 118px !important;
   }
 
-  .tl-theme-page .tl-theme-hero-art {
-    top: -4% !important;
-    right: -9% !important;
-    width: 62% !important;
-    height: 108% !important;
-    opacity: .60 !important;
+  .tl-theme-page .tl-theme-hero > .tl-theme-hero-art {
+    left: auto !important;
+    top: 0 !important;
+    right: -3% !important;
+    bottom: auto !important;
+
+    width: 38% !important;
+    height: 100% !important;
+
     background-size: contain !important;
+    background-position: right center !important;
+
+    opacity: .24 !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 76% !important;
   }
 
   .tl-theme-page .tl-theme-hero::before {
     background:
       linear-gradient(
         90deg,
-        color-mix(in srgb, var(--theme-bg) 98%, transparent) 0%,
-        color-mix(in srgb, var(--theme-bg) 94%, transparent) 40%,
-        color-mix(in srgb, var(--theme-bg) 58%, transparent) 66%,
+        var(--theme-bg) 0%,
+        color-mix(in srgb, var(--theme-bg) 97%, transparent) 38%,
+        color-mix(in srgb, var(--theme-bg) 72%, transparent) 66%,
         transparent 100%
       ) !important;
   }
 
-  .tl-theme-page main > section::before,
-  .tl-theme-page main [data-host-section]::before,
-  .tl-theme-page main [data-live-section]::before,
-  .tl-theme-page .tl-theme-section::before {
-    right: -70px !important;
-    bottom: -68px !important;
-    width: 190px !important;
-    height: 165px !important;
-    opacity: .105 !important;
-  }
-
-  .tl-theme-page main > section:first-of-type::before {
-    width: 155px !important;
-    height: 138px !important;
-    opacity: .065 !important;
-  }
-
-  .tl-theme-page.tl-theme-elegant .tl-theme-hero-art {
-    opacity: .46 !important;
-    width: 62% !important;
-  }
-
-  .tl-theme-page.tl-theme-elegant main > section::before,
-  .tl-theme-page.tl-theme-elegant main [data-host-section]::before,
-  .tl-theme-page.tl-theme-elegant main [data-live-section]::before,
-  .tl-theme-page.tl-theme-elegant .tl-theme-section::before {
-    opacity: .055 !important;
-  }
-}
-
-/* Very small phones: reduce decoration rather than letting it compete
-   with the form. */
-@media (max-width: 380px) {
-  .tl-theme-page .tl-theme-hero-art {
-    right: -12% !important;
-    width: 58% !important;
-    opacity: .54 !important;
+  .tl-theme-page.tl-theme-elegant > .tl-theme-hero > .tl-theme-hero-art {
+    width: 38% !important;
+    opacity: .17 !important;
   }
 
   .tl-theme-page main > section::before,
   .tl-theme-page main [data-host-section]::before,
   .tl-theme-page main [data-live-section]::before,
   .tl-theme-page .tl-theme-section::before {
-    right: -82px !important;
-    bottom: -76px !important;
-    width: 165px !important;
-    height: 145px !important;
-    opacity: .08 !important;
+    right: -48px !important;
+    bottom: -48px !important;
+    width: 145px !important;
+    height: 130px !important;
+    opacity: .05 !important;
   }
 }
-\n\n/* =========================================================\n   FINAL HERO / MOBILE POLISH\n   Target: text brand in hero, subtle artwork, separate logo below.\n   ========================================================= */\n.tl-theme-page .tl-theme-hero { position: relative !important; box-sizing: border-box !important; overflow: hidden !important; isolation: isolate !important; min-height: 300px !important; height: auto !important; padding: 30px 34px 28px !important; border-radius: 22px !important; }\n.tl-theme-page .tl-theme-hero-content { position: relative !important; z-index: 3 !important; width: 100% !important; max-width: 70% !important; min-height: 0 !important; box-sizing: border-box !important; }\n.tl-theme-page .tl-theme-hero-brand { display: flex !important; align-items: center !important; gap: 12px !important; margin: 0 0 14px !important; }\n.tl-theme-page .tl-theme-hero-brand-text { display: block !important; color: var(--theme-text, #fff8e7) !important; font-size: 17px !important; line-height: 1.2 !important; font-weight: 700 !important; letter-spacing: .18em !important; text-transform: uppercase !important; text-shadow: 0 1px 10px rgba(0,0,0,.24) !important; }\n.tl-theme-page .tl-theme-hero-theme { display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 7px 15px !important; min-width: 92px !important; border: 1px solid var(--theme-accent, #f5c542) !important; border-radius: 10px !important; color: var(--theme-accent, #f5c542) !important; background: rgba(0,0,0,.08) !important; font-size: 12px !important; line-height: 1 !important; font-weight: 700 !important; letter-spacing: .08em !important; text-transform: uppercase !important; }\n.tl-theme-page .tl-theme-hero-title { position: relative !important; z-index: 3 !important; margin: 0 !important; color: var(--theme-text, #fff8e7) !important; font-size: clamp(34px, 5vw, 58px) !important; line-height: 1.05 !important; font-weight: 800 !important; letter-spacing: -.025em !important; text-shadow: 0 2px 14px rgba(0,0,0,.22) !important; }\n.tl-theme-page .tl-theme-hero-subtitle { position: relative !important; z-index: 3 !important; margin-top: 18px !important; max-width: 680px !important; color: var(--theme-text, #fff8e7) !important; font-size: clamp(17px, 2.2vw, 23px) !important; line-height: 1.45 !important; font-weight: 500 !important; }\n.tl-theme-page .tl-theme-hero-art { position: absolute !important; z-index: 0 !important; top: -2% !important; right: -2% !important; width: 48% !important; height: 104% !important; max-width: 560px !important; background-image: var(--theme-hero-art) !important; background-repeat: no-repeat !important; background-position: right center !important; background-size: contain !important; opacity: .46 !important; filter: saturate(.88) contrast(.98) !important; pointer-events: none !important; }\n.tl-theme-page .tl-theme-hero-blend { position: absolute !important; inset: 0 !important; z-index: 1 !important; pointer-events: none !important; background: linear-gradient(90deg, color-mix(in srgb, var(--theme-bg) 98%, transparent) 0%, color-mix(in srgb, var(--theme-bg) 93%, transparent) 38%, color-mix(in srgb, var(--theme-bg) 62%, transparent) 64%, transparent 100%) !important; }\n.tl-theme-page .tl-theme-hero::after { z-index: 2 !important; background: linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--theme-bg) 18%, transparent) 100%) !important; }\n.tl-theme-page.tl-theme-elegant .tl-theme-hero { min-height: 300px !important; }\n.tl-theme-page.tl-theme-elegant .tl-theme-hero-art { opacity: .32 !important; filter: saturate(.55) contrast(.92) brightness(.78) !important; }\n.tl-theme-page.tl-theme-elegant .tl-theme-hero-brand-text { color: #f4efe5 !important; }\n.tl-theme-page.tl-theme-elegant .tl-theme-hero-theme { color: #cbb477 !important; border-color: rgba(203,180,119,.55) !important; }\n\n@media (max-width: 600px) {\n  .tl-theme-page .tl-theme-hero { min-height: 345px !important; height: auto !important; padding: 29px 29px 27px !important; border-radius: 20px !important; }\n  .tl-theme-page .tl-theme-hero-content { max-width: 88% !important; }\n  .tl-theme-page .tl-theme-hero-brand { gap: 0 !important; margin-bottom: 15px !important; }\n  .tl-theme-page .tl-theme-hero-brand-text { font-size: 16px !important; letter-spacing: .14em !important; }\n  .tl-theme-page .tl-theme-hero-theme { position: absolute !important; top: 0 !important; right: 0 !important; min-width: 82px !important; padding: 7px 13px !important; font-size: 11px !important; }\n  .tl-theme-page .tl-theme-hero-title { max-width: 92% !important; font-size: 40px !important; line-height: 1.06 !important; letter-spacing: -.02em !important; }\n  .tl-theme-page .tl-theme-hero-subtitle { max-width: 96% !important; margin-top: 16px !important; font-size: 19px !important; line-height: 1.42 !important; }\n  .tl-theme-page .tl-theme-hero-art { top: 0 !important; right: -7% !important; width: 52% !important; height: 100% !important; max-width: 270px !important; opacity: .30 !important; background-size: contain !important; background-position: right center !important; }\n  .tl-theme-page .tl-theme-hero-blend { background: linear-gradient(90deg, color-mix(in srgb, var(--theme-bg) 99%, transparent) 0%, color-mix(in srgb, var(--theme-bg) 95%, transparent) 43%, color-mix(in srgb, var(--theme-bg) 64%, transparent) 72%, transparent 100%) !important; }\n  .tl-theme-page.tl-theme-elegant .tl-theme-hero { min-height: 345px !important; }\n  .tl-theme-page.tl-theme-elegant .tl-theme-hero-art { opacity: .23 !important; }\n}\n\n@media (max-width: 380px) {\n  .tl-theme-page .tl-theme-hero { min-height: 325px !important; padding: 25px 24px !important; }\n  .tl-theme-page .tl-theme-hero-title { font-size: 34px !important; }\n  .tl-theme-page .tl-theme-hero-subtitle { font-size: 17px !important; }\n}\n
