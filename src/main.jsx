@@ -3395,6 +3395,49 @@ function TicketGridComponent({
 /* Keep ticket DOM stable while live game state updates. This prevents mobile scroll blinking/repainting. */
 const TicketGrid = React.memo(TicketGridComponent);
 
+
+/* =========================================================
+   TICKET PACKAGE PRICING
+   Single ticket = full price.
+   Half Sheet (3) and Full Sheet (6) receive the agreed 11.1111%
+   bundle discount. Larger selections automatically use as many
+   Full Sheets as possible, then one Half Sheet when applicable,
+   then any remaining single tickets.
+========================================================= */
+
+const PACKAGE_PRICE_FACTOR = 8 / 9;
+
+function calculateTicketPackagePrice(ticketCount, ticketPrice) {
+  const count = Math.max(0, Math.floor(Number(ticketCount) || 0));
+  const singlePrice = Math.max(0, Math.round(Number(ticketPrice) || 0));
+  const halfSheetPrice = Math.round(singlePrice * 3 * PACKAGE_PRICE_FACTOR);
+  const fullSheetPrice = Math.round(singlePrice * 6 * PACKAGE_PRICE_FACTOR);
+
+  const fullSheets = Math.floor(count / 6);
+  let remaining = count % 6;
+  const halfSheets = remaining >= 3 ? 1 : 0;
+
+  if (halfSheets) {
+    remaining -= 3;
+  }
+
+  const singleTickets = remaining;
+  const total =
+    fullSheets * fullSheetPrice +
+    halfSheets * halfSheetPrice +
+    singleTickets * singlePrice;
+
+  return {
+    total,
+    singlePrice,
+    halfSheetPrice,
+    fullSheetPrice,
+    fullSheets,
+    halfSheets,
+    singleTickets
+  };
+}
+
 /* =========================================================
    PLAYER BOOKING PAGE
 ========================================================= */
@@ -3426,6 +3469,11 @@ function PlayerBookingPage({
     selected,
     setSelected
   ] = useState([]);
+
+  const pricing = calculateTicketPackagePrice(
+    selected.length,
+    game.ticket_price
+  );
 
   const [
     playerName,
@@ -3971,12 +4019,37 @@ function PlayerBookingPage({
 
       // Open WhatsApp with an approval request. No host phone number is
       // hard-coded; WhatsApp lets the player choose the host/contact.
+      const bookingPricing = calculateTicketPackagePrice(
+        sortedTickets.length,
+        game.ticket_price
+      );
+
+      const pricingParts = [];
+      if (bookingPricing.fullSheets > 0) {
+        pricingParts.push(
+          `${bookingPricing.fullSheets} Full Sheet${bookingPricing.fullSheets > 1 ? "s" : ""} @ â‚¹${bookingPricing.fullSheetPrice}`
+        );
+      }
+      if (bookingPricing.halfSheets > 0) {
+        pricingParts.push(
+          `${bookingPricing.halfSheets} Half Sheet${bookingPricing.halfSheets > 1 ? "s" : ""} @ â‚¹${bookingPricing.halfSheetPrice}`
+        );
+      }
+      if (bookingPricing.singleTickets > 0) {
+        pricingParts.push(
+          `${bookingPricing.singleTickets} Single Ticket${bookingPricing.singleTickets > 1 ? "s" : ""} @ â‚¹${bookingPricing.singlePrice}`
+        );
+      }
+
       const whatsappMessage =
         `Hello, I am ${name}. I have requested ticket${
           sortedTickets.length === 1 ? "" : "s"
         } ${sortedTickets
           .map((n) => `#${n}`)
-          .join(", ")} for ${game.game_name}. Please approve my booking.`;
+          .join(", ")} for ${game.game_name}.\n\n` +
+        `Pricing: ${pricingParts.join(" + ")}\n` +
+        `Total Amount: â‚¹${bookingPricing.total}\n\n` +
+        `Please approve my booking.`;
 
       const whatsappUrl =
         `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
@@ -4329,6 +4402,44 @@ function PlayerBookingPage({
               } selected
             </div>
 
+            {selected.length > 0 && (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: "12px 13px",
+                  borderRadius: 10,
+                  background: "var(--theme-panel-bg, #f8fafc)",
+                  color: "var(--theme-panel-text, #0f172a)",
+                  border: "1px solid var(--theme-accent, #cbd5e1)66"
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 800,
+                    fontSize: 15
+                  }}
+                >
+                  Estimated Total: â‚¹{pricing.total}
+                </div>
+                <div
+                  style={{
+                    marginTop: 5,
+                    fontSize: 13,
+                    opacity: 0.85
+                  }}
+                >
+                  {pricing.fullSheets > 0 &&
+                    `${pricing.fullSheets} Full Sheet${pricing.fullSheets > 1 ? "s" : ""}`}
+                  {pricing.fullSheets > 0 && pricing.halfSheets > 0 ? " + " : ""}
+                  {pricing.halfSheets > 0 &&
+                    `${pricing.halfSheets} Half Sheet${pricing.halfSheets > 1 ? "s" : ""}`}
+                  {(pricing.fullSheets > 0 || pricing.halfSheets > 0) && pricing.singleTickets > 0 ? " + " : ""}
+                  {pricing.singleTickets > 0 &&
+                    `${pricing.singleTickets} Single Ticket${pricing.singleTickets > 1 ? "s" : ""}`}
+                </div>
+              </div>
+            )}
+
             {selected.length >
               0 && (
               <button
@@ -4594,7 +4705,7 @@ function PlayerBookingPage({
                   1
                     ? ""
                     : "S"
-                }`}
+                } â€” â‚¹${pricing.total}`}
           </button>
 
           <p
