@@ -456,7 +456,7 @@
   main > section,
   main [data-host-section],
   main [data-live-section] {
-    background-size: 100% 100%, cover !important;
+    background-size: 100% 100%, 112% 112% !important;
     background-position: center, center !important;
     background-repeat: no-repeat, no-repeat !important;
   }
@@ -532,11 +532,11 @@ main [data-live-section] {
   background-image:
     radial-gradient(ellipse 72% 60% at 50% 48%,
       var(--theme-section-bg, #0c3123) 0%,
-      color-mix(in srgb, var(--theme-section-bg, #0c3123) 96%, transparent) 50%,
-      color-mix(in srgb, var(--theme-section-bg, #0c3123) 82%, transparent) 68%,
-      transparent 92%),
-    var(--theme-visual) !important;
-  background-size: 100% 100%, cover !important;
+      color-mix(in srgb, var(--theme-section-bg, #0c3123) 96%, transparent) 45%,
+      color-mix(in srgb, var(--theme-section-bg, #0c3123) 68%, transparent) 66%,
+      transparent 94%),
+    var(--theme-visual, none) !important;
+  background-size: 100% 100%, 112% 112% !important;
   background-position: center, center !important;
   background-repeat: no-repeat, no-repeat !important;
   border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 52%, transparent) !important;
