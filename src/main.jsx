@@ -63,22 +63,28 @@ function getThemeHeroImage(theme) {
  * protected by a strong themed gradient so artwork never sits directly under
  * labels and inputs. No new image files are required.
  */
-function getThemedSectionStyle(themeUI, index, extra = {}) {
+function getThemedSectionStyle(themeUI, extra = {}) {
   /*
-   * Section artwork is rendered by themes.css as a restrained transparent
-   * pseudo-element. Do not put PNG/JPG artwork into the inline section
-   * background: that makes the artwork cover/tile the whole form.
+   * Section visuals are intentionally NOT loaded from public/assets here.
+   * themes.css owns the decorative visual layer so main.jsx only controls
+   * theme state and content. This prevents old PNGs from being reintroduced
+   * by inline React styles.
    */
   return {
     ...themeUI.card,
     position: "relative",
     overflow: "hidden",
     isolation: "isolate",
-    background: themeUI.visual?.cardBackground || themeUI.card?.background,
-    backgroundImage: "none",
+    background: "var(--theme-section-bg)",
+    border: "var(--theme-section-border)",
+    boxShadow: "var(--theme-section-shadow)",
+    color: "var(--theme-text)",
+    backdropFilter: "var(--theme-section-backdrop, none)",
+    WebkitBackdropFilter: "var(--theme-section-backdrop, none)",
     ...extra
   };
 }
+
 
 /* =========================================================
    THEME DESIGN SYSTEM
@@ -87,7 +93,7 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
 
 const THEME_DESIGNS = {
   "Classic": {
-    "backgroundImage": null,
+    "backgroundImage": "/assets/casino-background-mobile.jpg",
     "identity": "Traditional tambola and casino game-room",
     "page": {
       "overlay": "rgba(3, 20, 15, 0.42)",
@@ -122,7 +128,7 @@ const THEME_DESIGNS = {
     }
   },
   "Royal": {
-    "backgroundImage": null,
+    "backgroundImage": "/assets/royal-background-mobile.jpg",
     "identity": "Regal palace, velvet and gold",
     "page": {
       "overlay": "rgba(28, 9, 48, 0.38)",
@@ -157,7 +163,7 @@ const THEME_DESIGNS = {
     }
   },
   "Party": {
-    "backgroundImage": null,
+    "backgroundImage": "/assets/fun-background-mobile.jpg",
     "identity": "Bright celebration, playful and energetic",
     "page": {
       "overlay": "rgba(52, 11, 55, 0.24)",
@@ -192,7 +198,7 @@ const THEME_DESIGNS = {
     }
   },
   "Bollywood": {
-    "backgroundImage": null,
+    "backgroundImage": "/assets/bollywood-background-mobile.jpg",
     "identity": "Indian cinema glamour, lights and celebration",
     "page": {
       "overlay": "rgba(76, 8, 13, 0.36)",
@@ -227,7 +233,7 @@ const THEME_DESIGNS = {
     }
   },
   "Neon": {
-    "backgroundImage": null,
+    "backgroundImage": "/assets/neon-background-mobile.jpg",
     "identity": "Futuristic arcade, cyan and violet glow",
     "page": {
       "overlay": "rgba(1, 7, 18, 0.38)",
@@ -262,30 +268,30 @@ const THEME_DESIGNS = {
     }
   },
   "Elegant": {
-    "backgroundImage": null,
+    "backgroundImage": "/assets/elegant-background-mobile.jpg",
     "identity": "Refined contemporary luxury",
     "page": {
-      "overlay": "rgba(5, 7, 9, 0.30)",
-      "text": "#f5f0e5",
-      "muted": "#c9c0ad"
+      "overlay": "rgba(245, 241, 232, 0.16)",
+      "text": "#20262d",
+      "muted": "#66717b"
     },
     "hero": {
-      "surface": "rgba(16, 20, 23, 0.88)",
+      "surface": "rgba(250, 248, 243, 0.88)",
       "border": "rgba(173, 139, 57, 0.72)",
       "accent": "#a98532",
-      "text": "#f5f0e5",
+      "text": "#20262d",
       "decoration": "minimal-gold"
     },
     "card": {
-      "surface": "rgba(18, 22, 25, 0.92)",
-      "surfaceAlt": "rgba(11, 14, 16, 0.88)",
+      "surface": "rgba(250, 248, 243, 0.90)",
+      "surfaceAlt": "rgba(238, 233, 222, 0.82)",
       "border": "rgba(169,139,67,0.38)",
       "radius": 22,
       "shadow": "0 18px 45px rgba(48,43,34,0.18)"
     },
     "input": {
       "background": "rgba(255,255,255,0.94)",
-      "text": "#f5f0e5",
+      "text": "#20262d",
       "border": "#b99b5b",
       "radius": 12
     },
@@ -1671,14 +1677,14 @@ function getThemeUI(theme) {
       statusUpcoming: `linear-gradient(135deg, #0f766e, #115e59)`
     },
     Elegant: {
-      cardBackground: `linear-gradient(145deg, rgba(18,22,25,.97), rgba(8,11,13,.985)), radial-gradient(circle at 84% 10%, rgba(169,139,67,.10), transparent 30%)`,
-      panelBackground: `linear-gradient(145deg, rgba(24,29,32,.98), rgba(10,13,15,.98))`,
-      prizeBackground: `linear-gradient(135deg, rgba(27,32,35,.98), rgba(10,13,15,.98))`,
-      secondaryBackground: `linear-gradient(135deg, rgba(31,36,39,.98), rgba(12,15,17,.98))`,
+      cardBackground: `linear-gradient(145deg, rgba(250,248,243,.96), rgba(235,231,221,.96)), radial-gradient(circle at 85% 10%, rgba(169,139,67,.10), transparent 30%)`,
+      panelBackground: `linear-gradient(145deg, rgba(255,253,248,.98), rgba(238,234,224,.96))`,
+      prizeBackground: `linear-gradient(135deg, rgba(255,253,248,.99), rgba(239,235,226,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(255,253,248,.98), rgba(231,225,211,.98))`,
       panelBorder: `1px solid rgba(169,139,67,.55)`,
-      panelShadow: `0 14px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06)`,
+      panelShadow: `0 14px 30px rgba(48,43,34,.16), inset 0 1px 0 rgba(255,255,255,.80)`,
       statusLive: `linear-gradient(135deg, #166534, #15803d)`,
-      statusEnded: `linear-gradient(135deg, #3f3f46, #27272a)`,
+      statusEnded: `linear-gradient(135deg, #475569, #334155)`,
       statusUpcoming: `linear-gradient(135deg, #a16207, #854d0e)`
     }
   };
@@ -2571,9 +2577,8 @@ function CreateGamePage({
   const themeUI = getThemeUI(theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  let sectionVisualIndex = 0;
   const nextSectionStyle = (extra = {}) =>
-    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
+    getThemedSectionStyle(themeUI, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -2789,7 +2794,7 @@ function CreateGamePage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -3448,9 +3453,8 @@ function PlayerBookingPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  let sectionVisualIndex = 0;
   const nextSectionStyle = (extra = {}) =>
-    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
+    getThemedSectionStyle(themeUI, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -4050,7 +4054,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -4571,7 +4575,7 @@ function PlayerBookingPage({
           )}
         </section>
 
-        <section className="tl-theme-section"
+        <section
           style={nextSectionStyle({
             marginTop: 20
           })}
@@ -5239,9 +5243,8 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  let sectionVisualIndex = 0;
   const nextSectionStyle = (extra = {}) =>
-    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
+    getThemedSectionStyle(themeUI, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -5670,7 +5673,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${String(theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+      <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -6012,7 +6015,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
@@ -6741,9 +6744,8 @@ function HostControlPage({
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
   const themedCardStyle = { ...cardStyle, ...themeUI.card };
-  let sectionVisualIndex = 0;
   const nextSectionStyle = (extra = {}) =>
-    getThemedSectionStyle(themeUI, sectionVisualIndex++, extra);
+    getThemedSectionStyle(themeUI, extra);
   const themedInputStyle = { ...inputStyle, ...themeUI.input };
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
@@ -8422,8 +8424,10 @@ function HostControlPage({
 
   return (
     <main
-      className={`tl-theme-page tl-theme-${String(game.theme || "Classic").toLowerCase()}`}
-      style={themedPageStyle}
+      className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`}
+      style={
+        themedPageStyle
+      }
     >
       <ThemeHero
         theme={game.theme}
@@ -9065,7 +9069,7 @@ function HostControlPage({
           )}
         </section>
 
-        <section className="tl-theme-section"
+        <section
           style={nextSectionStyle({
             border:
               isLive
@@ -9165,7 +9169,7 @@ function HostControlPage({
         </section>
 
         {isLive && (
-          <section className="tl-theme-section"
+          <section
             style={nextSectionStyle({
               border:
                 "2px solid #22c55e"
