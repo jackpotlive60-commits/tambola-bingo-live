@@ -1029,3 +1029,149 @@ main [data-host-section="prize-amounts"] + section p {
     ),
     var(--theme-visual) !important;
 }
+
+
+/* =========================================================
+   FINAL CLEAN SECTION VISUAL LAYER
+   ---------------------------------------------------------
+   Keep the existing hero exactly as-is. Sections use the new
+   transparent theme PNGs as subtle corner artwork only.
+   No photographic/repeating section backgrounds.
+========================================================= */
+
+.tl-theme-page > section,
+.tl-theme-page [data-host-section],
+.tl-theme-page [data-live-section],
+.tl-theme-page .tl-theme-section {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background: var(--theme-section-bg) !important;
+  background-image: var(--theme-section-bg) !important;
+  background-size: auto !important;
+  background-position: initial !important;
+  background-repeat: no-repeat !important;
+  border: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+  color: var(--theme-text) !important;
+}
+
+/* New transparent PNG: decorative edge only, never a wallpaper. */
+.tl-theme-page > section::before,
+.tl-theme-page [data-host-section]::before,
+.tl-theme-page [data-live-section]::before,
+.tl-theme-page .tl-theme-section::before {
+  content: "" !important;
+  position: absolute !important;
+  width: min(260px, 58vw) !important;
+  height: min(260px, 58vw) !important;
+  right: -58px !important;
+  bottom: -62px !important;
+  inset: auto -58px -62px auto !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background: var(--theme-visual) !important;
+  background-repeat: no-repeat !important;
+  background-position: right bottom !important;
+  background-size: contain !important;
+  opacity: .18 !important;
+  filter: saturate(.92) contrast(1.02) !important;
+  transform: translateZ(0) !important;
+}
+
+/* Very soft theme glow behind the artwork. */
+.tl-theme-page > section::after,
+.tl-theme-page [data-host-section]::after,
+.tl-theme-page [data-live-section]::after,
+.tl-theme-page .tl-theme-section::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(
+      circle at 94% 90%,
+      color-mix(in srgb, var(--theme-accent) 8%, transparent),
+      transparent 32%
+    ) !important;
+}
+
+/* Content always sits above the decorative layers. */
+.tl-theme-page > section > *,
+.tl-theme-page [data-host-section] > *,
+.tl-theme-page [data-live-section] > *,
+.tl-theme-page .tl-theme-section > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Setup/form sections get the artwork further down/right so it never fights labels. */
+.tl-theme-page > section:first-of-type::before,
+.tl-theme-page [data-host-section="prize-amounts"]::before {
+  width: min(220px, 52vw) !important;
+  height: min(220px, 52vw) !important;
+  right: -48px !important;
+  bottom: -52px !important;
+  opacity: .15 !important;
+}
+
+/* The elegant PNG is lighter, so keep it especially subtle. */
+.tl-theme-page.tl-theme-elegant > section::before,
+.tl-theme-page.tl-theme-elegant [data-host-section]::before,
+.tl-theme-page.tl-theme-elegant [data-live-section]::before,
+.tl-theme-page.tl-theme-elegant .tl-theme-section::before {
+  opacity: .105 !important;
+  filter: saturate(.78) contrast(.98) !important;
+}
+
+/* Royal and Bollywood can carry a touch more decorative presence. */
+.tl-theme-page.tl-theme-royal > section::before,
+.tl-theme-page.tl-theme-royal [data-host-section]::before,
+.tl-theme-page.tl-theme-royal [data-live-section]::before,
+.tl-theme-page.tl-theme-royal .tl-theme-section::before,
+.tl-theme-page.tl-theme-bollywood > section::before,
+.tl-theme-page.tl-theme-bollywood [data-host-section]::before,
+.tl-theme-page.tl-theme-bollywood [data-live-section]::before,
+.tl-theme-page.tl-theme-bollywood .tl-theme-section::before {
+  opacity: .20 !important;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page > section,
+  .tl-theme-page [data-host-section],
+  .tl-theme-page [data-live-section],
+  .tl-theme-page .tl-theme-section {
+    background: var(--theme-section-bg) !important;
+    background-image: var(--theme-section-bg) !important;
+    background-size: auto !important;
+    background-position: initial !important;
+  }
+
+  .tl-theme-page > section::before,
+  .tl-theme-page [data-host-section]::before,
+  .tl-theme-page [data-live-section]::before,
+  .tl-theme-page .tl-theme-section::before {
+    width: min(190px, 48vw) !important;
+    height: min(190px, 48vw) !important;
+    right: -42px !important;
+    bottom: -45px !important;
+    opacity: .145 !important;
+  }
+
+  .tl-theme-page > section:first-of-type::before,
+  .tl-theme-page [data-host-section="prize-amounts"]::before {
+    width: min(165px, 42vw) !important;
+    height: min(165px, 42vw) !important;
+    right: -38px !important;
+    bottom: -40px !important;
+    opacity: .12 !important;
+  }
+
+  .tl-theme-page.tl-theme-elegant > section::before,
+  .tl-theme-page.tl-theme-elegant [data-host-section]::before,
+  .tl-theme-page.tl-theme-elegant [data-live-section]::before,
+  .tl-theme-page.tl-theme-elegant .tl-theme-section::before {
+    opacity: .085 !important;
+  }
+}
