@@ -4027,17 +4027,17 @@ function PlayerBookingPage({
       const pricingParts = [];
       if (bookingPricing.fullSheets > 0) {
         pricingParts.push(
-          `${bookingPricing.fullSheets} Full Sheet${bookingPricing.fullSheets > 1 ? "s" : ""} @ â‚¹${bookingPricing.fullSheetPrice}`
+          `${bookingPricing.fullSheets} Full Sheet${bookingPricing.fullSheets > 1 ? "s" : ""} @ \u20B9${bookingPricing.fullSheetPrice}`
         );
       }
       if (bookingPricing.halfSheets > 0) {
         pricingParts.push(
-          `${bookingPricing.halfSheets} Half Sheet${bookingPricing.halfSheets > 1 ? "s" : ""} @ â‚¹${bookingPricing.halfSheetPrice}`
+          `${bookingPricing.halfSheets} Half Sheet${bookingPricing.halfSheets > 1 ? "s" : ""} @ \u20B9${bookingPricing.halfSheetPrice}`
         );
       }
       if (bookingPricing.singleTickets > 0) {
         pricingParts.push(
-          `${bookingPricing.singleTickets} Single Ticket${bookingPricing.singleTickets > 1 ? "s" : ""} @ â‚¹${bookingPricing.singlePrice}`
+          `${bookingPricing.singleTickets} Single Ticket${bookingPricing.singleTickets > 1 ? "s" : ""} @ \u20B9${bookingPricing.singlePrice}`
         );
       }
 
@@ -4048,7 +4048,7 @@ function PlayerBookingPage({
           .map((n) => `#${n}`)
           .join(", ")} for ${game.game_name}.\n\n` +
         `Pricing: ${pricingParts.join(" + ")}\n` +
-        `Total Amount: â‚¹${bookingPricing.total}\n\n` +
+        `Total Amount: \u20B9${bookingPricing.total}\n\n` +
         `Please approve my booking.`;
 
       const whatsappUrl =
@@ -4419,7 +4419,7 @@ function PlayerBookingPage({
                     fontSize: 15
                   }}
                 >
-                  Estimated Total: â‚¹{pricing.total}
+                  Estimated Total: \u20B9{pricing.total}
                 </div>
                 <div
                   style={{
@@ -4705,7 +4705,7 @@ function PlayerBookingPage({
                   1
                     ? ""
                     : "S"
-                } â€” â‚¹${pricing.total}`}
+                } \u2014 \u20B9${pricing.total}`}
           </button>
 
           <p
