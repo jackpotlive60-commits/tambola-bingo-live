@@ -9,6 +9,8 @@ import { createRoot } from "react-dom/client";
 
 import { supabase } from "./lib/supabase";
 
+import "./themes.css";
+
 /* =========================================================
    SETTINGS
 ========================================================= */
