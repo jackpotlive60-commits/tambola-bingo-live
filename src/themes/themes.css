@@ -1445,3 +1445,209 @@ main [data-host-section="prize-amounts"] + section p {
     opacity: .075 !important;
   }
 }
+
+
+/* =========================================================
+   FINAL ELEGANT THEME FIX
+   ---------------------------------------------------------
+   Elegant is intentionally a dark luxury theme.
+   The uploaded elegant PNG remains artwork only; it must
+   never wash the page or sit behind the form like wallpaper.
+========================================================= */
+
+.tl-theme-page.tl-theme-elegant {
+  --theme-bg: #12151d;
+  --theme-page-background:
+    radial-gradient(circle at 8% 5%, rgba(169,133,50,.14), transparent 28%),
+    radial-gradient(circle at 92% 82%, rgba(92,105,130,.10), transparent 30%),
+    linear-gradient(145deg, #11141b 0%, #191b23 54%, #0e1117 100%);
+  --theme-text: #f7f1e6;
+  --theme-muted: #d2c7b5;
+  --theme-accent: #c7a85a;
+  --theme-secondary: #e0c77f;
+  --theme-glow: #c7a85a;
+
+  --theme-card-bg:
+    linear-gradient(145deg, rgba(25,28,36,.96), rgba(15,18,25,.96));
+  --theme-panel-bg:
+    linear-gradient(145deg, rgba(28,31,40,.97), rgba(16,19,26,.97));
+  --theme-prize-bg:
+    linear-gradient(135deg, rgba(29,32,40,.98), rgba(17,20,27,.98));
+  --theme-secondary-bg:
+    linear-gradient(135deg, rgba(27,30,38,.97), rgba(15,18,24,.97));
+
+  --theme-section-bg:
+    linear-gradient(145deg, rgba(27,30,38,.96), rgba(16,19,26,.96));
+
+  --theme-card-border: 1px solid rgba(199,168,90,.38);
+  --theme-section-border: 1px solid rgba(199,168,90,.42);
+  --theme-panel-border: 1px solid rgba(199,168,90,.52);
+
+  --theme-card-shadow:
+    0 18px 38px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.045);
+  --theme-section-shadow:
+    0 14px 32px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.045);
+
+  --theme-hero-bg:
+    linear-gradient(135deg, rgba(24,27,35,.96), rgba(14,17,23,.90));
+  --theme-hero-border: rgba(199,168,90,.62);
+
+  --theme-input-bg: rgba(255,253,248,.98);
+  --theme-input-text: #20262d;
+  --theme-input-border: 1px solid #c7a85a;
+  --theme-primary-button: linear-gradient(135deg,#b18d3e,#e0c77f);
+  --theme-button-text: #17181c;
+  --theme-primary-border: 1px solid #c7a85a;
+}
+
+/* Elegant hero: artwork stays on the right and fades into the
+   dark hero surface instead of appearing as a rectangular image. */
+.tl-theme-page.tl-theme-elegant .tl-theme-hero {
+  background: var(--theme-hero-bg) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-hero-border) !important;
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+.tl-theme-page.tl-theme-elegant .tl-theme-hero > img {
+  opacity: .62 !important;
+  object-fit: cover !important;
+  object-position: right center !important;
+  mix-blend-mode: normal !important;
+
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,.16) 22%,
+    rgba(0,0,0,.72) 55%,
+    #000 82%
+  ) !important;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,.16) 22%,
+    rgba(0,0,0,.72) 55%,
+    #000 82%
+  ) !important;
+}
+
+.tl-theme-page.tl-theme-elegant .tl-theme-hero::after {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(13,16,22,.72) 0%,
+      rgba(13,16,22,.42) 38%,
+      rgba(13,16,22,.08) 72%,
+      rgba(13,16,22,.28) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.035),
+      transparent 30%,
+      transparent 72%,
+      rgba(0,0,0,.24)
+    ) !important;
+}
+
+.tl-theme-page.tl-theme-elegant .tl-theme-hero h1,
+.tl-theme-page.tl-theme-elegant .tl-theme-hero h2,
+.tl-theme-page.tl-theme-elegant .tl-theme-hero p,
+.tl-theme-page.tl-theme-elegant .tl-theme-hero div {
+  color: var(--theme-text);
+}
+
+.tl-theme-page.tl-theme-elegant .tl-theme-hero h1 {
+  text-shadow: 0 2px 14px rgba(0,0,0,.30);
+}
+
+/* Elegant sections: solid luxury surfaces with a small,
+   faded corner decoration. */
+.tl-theme-page.tl-theme-elegant > section,
+.tl-theme-page.tl-theme-elegant [data-host-section],
+.tl-theme-page.tl-theme-elegant [data-live-section],
+.tl-theme-page.tl-theme-elegant .tl-theme-section {
+  background: var(--theme-section-bg) !important;
+  background-image: none !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+}
+
+.tl-theme-page.tl-theme-elegant > section::before,
+.tl-theme-page.tl-theme-elegant [data-host-section]::before,
+.tl-theme-page.tl-theme-elegant [data-live-section]::before,
+.tl-theme-page.tl-theme-elegant .tl-theme-section::before {
+  width: min(235px, 48vw) !important;
+  height: min(235px, 48vw) !important;
+  right: -52px !important;
+  bottom: -55px !important;
+  background: var(--theme-visual) !important;
+  background-repeat: no-repeat !important;
+  background-position: right bottom !important;
+  background-size: contain !important;
+  opacity: .10 !important;
+  filter: saturate(.70) brightness(.90) contrast(1.02) !important;
+
+  -webkit-mask-image: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(0,0,0,.20) 28%,
+    #000 62%,
+    #000 100%
+  ) !important;
+  mask-image: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(0,0,0,.20) 28%,
+    #000 62%,
+    #000 100%
+  ) !important;
+}
+
+.tl-theme-page.tl-theme-elegant > section::after,
+.tl-theme-page.tl-theme-elegant [data-host-section]::after,
+.tl-theme-page.tl-theme-elegant [data-live-section]::after,
+.tl-theme-page.tl-theme-elegant .tl-theme-section::after {
+  background:
+    radial-gradient(
+      circle at 94% 90%,
+      rgba(199,168,90,.075),
+      transparent 34%
+    ) !important;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page.tl-theme-elegant .tl-theme-hero > img {
+    opacity: .48 !important;
+    object-position: 100% center !important;
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.18) 35%,
+      rgba(0,0,0,.78) 70%,
+      #000 100%
+    ) !important;
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.18) 35%,
+      rgba(0,0,0,.78) 70%,
+      #000 100%
+    ) !important;
+  }
+
+  .tl-theme-page.tl-theme-elegant > section::before,
+  .tl-theme-page.tl-theme-elegant [data-host-section]::before,
+  .tl-theme-page.tl-theme-elegant [data-live-section]::before,
+  .tl-theme-page.tl-theme-elegant .tl-theme-section::before {
+    width: 180px !important;
+    height: 180px !important;
+    right: -42px !important;
+    bottom: -45px !important;
+    opacity: .075 !important;
+  }
+}
