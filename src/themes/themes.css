@@ -293,268 +293,88 @@
 ========================================================= */
 .tl-theme-elegant {
   --theme-visual: url('/assets/elegant-visual.png');
-  --theme-bg: #0b0d0f;
-  --theme-text: #f7f2e8;
-  --theme-muted: #c8bfad;
-  --theme-accent: #d4af37;
-  --theme-secondary: #9b8451;
-  --theme-glow: #d4af37;
+  --theme-bg: #090c0d;
+  --theme-text: #f5f1e8;
+  --theme-muted: #c8c1b3;
+  --theme-accent: #d1b56a;
+  --theme-secondary: #a98532;
+  --theme-glow: #d1b56a;
   --theme-page-background:
-    radial-gradient(circle at 8% 10%, rgba(212,175,55,.07), transparent 28%),
-    radial-gradient(circle at 92% 78%, rgba(212,175,55,.05), transparent 30%),
-    linear-gradient(145deg,#07090a,#101315 55%,#070809);
+    radial-gradient(circle at 10% 8%, rgba(169,133,50,.09), transparent 30%),
+    radial-gradient(circle at 90% 78%, rgba(255,255,255,.06), transparent 30%),
+    linear-gradient(145deg,#07090a,#111516 55%,#080a0b);
   --theme-card-bg:
-    linear-gradient(145deg,rgba(18,21,23,.96),rgba(9,11,12,.98));
+    linear-gradient(145deg,rgba(17,20,21,.97),rgba(8,11,12,.99));
   --theme-panel-bg:
-    linear-gradient(145deg,rgba(24,27,29,.97),rgba(11,13,15,.99));
+    linear-gradient(145deg,rgba(24,27,28,.98),rgba(10,13,14,.99));
   --theme-prize-bg:
-    linear-gradient(135deg,rgba(27,29,31,.98),rgba(12,14,16,.99));
+    linear-gradient(135deg,rgba(27,30,30,.98),rgba(10,13,14,.99));
   --theme-secondary-bg:
-    linear-gradient(135deg,rgba(22,25,27,.97),rgba(9,11,12,.99));
+    linear-gradient(135deg,rgba(32,34,33,.98),rgba(12,15,15,.99));
   --theme-section-bg:
-    linear-gradient(145deg,rgba(17,20,22,.94),rgba(8,10,11,.97));
-  --theme-card-border: 1px solid rgba(212,175,55,.42);
-  --theme-section-border: 1px solid rgba(212,175,55,.46);
-  --theme-panel-border: 1px solid rgba(212,175,55,.62);
-  --theme-card-shadow: 0 18px 42px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.045);
-  --theme-section-shadow: 0 16px 38px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.035);
-  --theme-card-backdrop: none;
-  --theme-section-backdrop: none;
-  --theme-card-radius: 16px;
+    linear-gradient(145deg,rgba(17,20,21,.92),rgba(8,11,12,.96));
+  --theme-card-border: 1px solid rgba(169,139,67,.42);
+  --theme-section-border: 1px solid rgba(169,139,67,.36);
+  --theme-panel-border: 1px solid rgba(169,139,67,.55);
+  --theme-card-shadow: 0 16px 34px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.045);
+  --theme-section-shadow: 0 12px 28px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.035);
+  --theme-card-backdrop: blur(13px);
+  --theme-section-backdrop: blur(10px);
+  --theme-card-radius: 18px;
   --theme-input-radius: 8px;
   --theme-button-radius: 8px;
-  --theme-card-padding: 24px;
+  --theme-card-padding: 25px;
   --theme-input-padding: 11px 13px;
   --theme-button-padding: 11px 19px;
-  --theme-letter-spacing: .025em;
-  --theme-button-weight: 800;
-  --theme-input-bg: #f8f6ef;
-  --theme-input-text: #1a1a18;
+  --theme-letter-spacing: .035em;
+  --theme-button-weight: 700;
+  --theme-input-bg: rgba(255,255,255,.94);
+  --theme-input-text: #20262d;
   --theme-input-border: 1px solid #b99b5b;
   --theme-primary-button: linear-gradient(135deg,#a98532,#d1b56a);
-  --theme-button-text: #fff;
+  --theme-button-text: #17130d;
   --theme-primary-border: 1px solid #a98532;
-  --theme-secondary-border: 1px solid rgba(212,175,55,.50);
-  --theme-button-shadow: 0 8px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.12);
-  --theme-hero-bg: rgba(12,14,16,.90);
-  --theme-hero-border: rgba(212,175,55,.68);
+  --theme-secondary-border: 1px solid rgba(169,139,67,.45);
+  --theme-button-shadow: 0 8px 20px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.08);
+  --theme-hero-bg: rgba(12,15,16,.90);
+  --theme-hero-border: rgba(173,139,57,.58);
 }
 
 /* =========================================================
    SHARED BLENDING RULES
+   One owner for page/section visuals. main.jsx supplies only theme state.
 ========================================================= */
-.tl-theme-page {
-  position: relative;
-  isolation: isolate;
-  transition: background-color var(--theme-transition), color var(--theme-transition);
-  background: var(--theme-page-background) !important;
-  background-image: var(--theme-page-background) !important;
-  color: var(--theme-text);
-}
+.tl-theme-page { position: relative; isolation: isolate; min-height: 100vh; transition: background-color var(--theme-transition), color var(--theme-transition); background: var(--theme-page-background) !important; background-image: var(--theme-page-background) !important; color: var(--theme-text); }
+.tl-theme-page, .tl-theme-page * { scrollbar-color: var(--theme-accent) transparent; }
+.tl-theme-page input, .tl-theme-page select, .tl-theme-page textarea { background: var(--theme-input-bg) !important; color: var(--theme-input-text) !important; border-color: var(--theme-accent) !important; }
+.tl-theme-page input::placeholder, .tl-theme-page textarea::placeholder { color: color-mix(in srgb, var(--theme-input-text) 48%, transparent); }
 
-.tl-theme-page,
-.tl-theme-page * {
-  scrollbar-color: var(--theme-accent) transparent;
-}
+.tl-theme-page [data-live-section], .tl-theme-page [data-theme-section] { position: relative; overflow: hidden; isolation: isolate; background: var(--theme-section-bg) !important; border-color: var(--theme-section-border) !important; box-shadow: var(--theme-section-shadow) !important; color: var(--theme-text); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.tl-theme-page [data-ticket-cell] { color: var(--theme-ticket-text, var(--theme-input-text)); }
+.tl-theme-page .tl-theme-hero { background: var(--theme-hero-bg) !important; border-color: var(--theme-hero-border) !important; box-shadow: var(--theme-hero-shadow) !important; }
+.tl-theme-page button { transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease; }
+.tl-theme-page button:hover { filter: brightness(1.045); }
+.tl-theme-page button:active { transform: translateY(1px); }
 
-.tl-theme-page input,
-.tl-theme-page select,
-.tl-theme-page textarea {
-  background: var(--theme-input-bg) !important;
-  color: var(--theme-input-text) !important;
-  border-color: var(--theme-accent) !important;
-}
+.tl-theme-page::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: -1; background: radial-gradient(circle at 8% 8%, rgba(255,255,255,.035), transparent 26%), radial-gradient(circle at 92% 70%, rgba(255,255,255,.025), transparent 30%); }
+.tl-theme-page > * { position: relative; z-index: 1; }
 
-.tl-theme-page input::placeholder,
-.tl-theme-page textarea::placeholder {
-  color: color-mix(in srgb, var(--theme-input-text) 48%, transparent);
-}
+/* Transparent corner artwork: small, offset, low-opacity, never tiled. */
+.tl-theme-page [data-live-section]::before, .tl-theme-page [data-theme-section]::before { content: ""; position: absolute; width: min(270px, 58vw); height: min(270px, 58vw); right: -72px; bottom: -62px; pointer-events: none; z-index: 0; background-image: var(--theme-visual); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: .14; filter: saturate(.92) contrast(1.02); transform: translateZ(0); }
+.tl-theme-page [data-live-section]::after, .tl-theme-page [data-theme-section]::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--theme-accent) 6%, transparent), transparent 24%), linear-gradient(135deg, rgba(255,255,255,.018), transparent 48%); }
 
-/* Sections that already carry the app's data attributes receive the same
-   surface language as ordinary theme cards. */
-.tl-theme-page [data-live-section] {
-  background: var(--theme-section-bg) !important;
-  background-color: var(--theme-bg) !important;
-  border-color: var(--theme-section-border) !important;
-  box-shadow: var(--theme-section-shadow) !important;
-  color: var(--theme-text);
-}
+.tl-theme-classic [data-live-section]::before, .tl-theme-classic [data-theme-section]::before { right: -70px; bottom: -64px; opacity: .14; }
+.tl-theme-royal [data-live-section]::before, .tl-theme-royal [data-theme-section]::before { right: -78px; bottom: -68px; opacity: .15; }
+.tl-theme-party [data-live-section]::before, .tl-theme-party [data-theme-section]::before { right: -82px; bottom: -70px; opacity: .13; }
+.tl-theme-bollywood [data-live-section]::before, .tl-theme-bollywood [data-theme-section]::before { right: -76px; bottom: -66px; opacity: .14; }
+.tl-theme-neon [data-live-section]::before, .tl-theme-neon [data-theme-section]::before { right: -74px; bottom: -64px; opacity: .14; }
+.tl-theme-elegant [data-live-section]::before, .tl-theme-elegant [data-theme-section]::before { right: -68px; bottom: -60px; opacity: .12; }
 
-/* Keep ticket cells themselves readable; their internal ticket styling is
-   intentionally not converted into a large themed card. */
-.tl-theme-page [data-ticket-cell] {
-  color: var(--theme-ticket-text, var(--theme-input-text));
-}
-
-/* Theme hero */
-.tl-theme-page .tl-theme-hero {
-  background: var(--theme-hero-bg) !important;
-  border-color: var(--theme-hero-border) !important;
-  box-shadow: var(--theme-hero-shadow) !important;
-}
-
-/* Buttons inherit the same visual family even when older inline declarations
-   are present. */
-.tl-theme-page button {
-  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
-}
-
-.tl-theme-page button:hover {
-  filter: brightness(1.045);
-}
-
-.tl-theme-page button:active {
-  transform: translateY(1px);
-}
-
-/* =========================================================
-   ATMOSPHERIC PAGE BACKGROUND
-   No photographic JPGs. The page stays rich but quiet.
-   Sections remain darker/brighter focal surfaces.
-========================================================= */
-.tl-theme-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  background:
-    radial-gradient(circle at 8% 8%, rgba(255,255,255,.035), transparent 26%),
-    radial-gradient(circle at 92% 70%, rgba(255,255,255,.025), transparent 30%);
-}
-
-/* Make the page background visible only around the content, never as a
-   second photographic layer behind the form. */
-.tl-theme-page > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Sections are the visual focus: stronger, more opaque, deeper surfaces. */
-.tl-theme-page [data-live-section] {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  background: var(--theme-section-bg) !important;
-  border-color: var(--theme-section-border) !important;
-  box-shadow: var(--theme-section-shadow) !important;
-  color: var(--theme-text);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-/* Add a restrained inner atmospheric glow to sections. */
-/* Theme-specific transparent PNG decoration.
-   IMPORTANT: the theme class is now applied by main.jsx, so --theme-visual
-   resolves for every section. The artwork stays at the edges and never
-   replaces the readable section surface. */
-.tl-theme-page [data-live-section]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(90deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.04) 52%, rgba(0,0,0,.20) 100%),
-    var(--theme-visual);
-  background-repeat: no-repeat, no-repeat;
-  background-position: center, right bottom;
-  background-size: 100% 100%, min(360px, 78vw) auto;
-  opacity: .24;
-  filter: saturate(.92) contrast(1.04);
-  mix-blend-mode: normal;
-}
-
-.tl-theme-page [data-live-section]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    linear-gradient(90deg,
-      rgba(0,0,0,.06) 0%,
-      transparent 34%,
-      transparent 66%,
-      rgba(0,0,0,.10) 100%),
-    linear-gradient(180deg,
-      rgba(255,255,255,.025),
-      transparent 28%,
-      transparent 72%,
-      rgba(0,0,0,.08));
-}
-
-.tl-theme-page [data-live-section] > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Theme-specific edge placement. */
-.tl-theme-classic [data-live-section]::before {
-  background-position: center, right bottom;
-  background-size: 100% 100%, min(350px, 76vw) auto;
-  opacity: .24;
-}
-.tl-theme-royal [data-live-section]::before {
-  background-position: center, right top;
-  background-size: 100% 100%, min(360px, 78vw) auto;
-  opacity: .26;
-}
-.tl-theme-party [data-live-section]::before {
-  background-position: center, right bottom;
-  background-size: 100% 100%, min(350px, 76vw) auto;
-  opacity: .24;
-}
-.tl-theme-bollywood [data-live-section]::before {
-  background-position: center, left bottom;
-  background-size: 100% 100%, min(360px, 78vw) auto;
-  opacity: .24;
-}
-.tl-theme-neon [data-live-section]::before {
-  background-position: center, right center;
-  background-size: 100% 100%, min(350px, 76vw) auto;
-  opacity: .23;
-}
-.tl-theme-elegant [data-live-section]::before {
-  background-position: center, right top;
-  background-size: 100% 100%, min(365px, 78vw) auto;
-  opacity: .26;
-}
-
-/* Existing section contents stay above the decorative layer. */
-.tl-theme-page [data-live-section] > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Stronger section surfaces on mobile so the page atmosphere never
-   competes with the form. */
-@media (max-width: 520px) {
-  .tl-theme-page [data-live-section] {
-    background: var(--theme-section-bg) !important;
-    background-color: var(--theme-bg) !important;
-    box-shadow: var(--theme-section-shadow) !important;
-  }
-}
-
-/* Desktop: let the original mobile-friendly backgrounds breathe without
-   stretching the section surfaces. */
-@media (min-width: 700px) {
-  .tl-theme-page {
-    padding: 28px;
-  }
-
-  .tl-theme-page [data-live-section] {
-    background: var(--theme-section-bg) !important;
-  }
-}
+.tl-theme-page [data-live-section] > *, .tl-theme-page [data-theme-section] > * { position: relative; z-index: 1; }
 
 @media (max-width: 520px) {
-  .tl-theme-page {
-    padding: 12px !important;
-  }
-
-  .tl-theme-page [data-live-section] {
-    border-radius: max(8px, calc(var(--theme-card-radius) - 4px));
-  }
+  .tl-theme-page { padding: 12px !important; }
+  .tl-theme-page [data-live-section], .tl-theme-page [data-theme-section] { border-radius: max(8px, calc(var(--theme-card-radius) - 4px)); background: var(--theme-panel-bg) !important; }
+  .tl-theme-page [data-live-section]::before, .tl-theme-page [data-theme-section]::before { width: min(205px, 50vw); height: min(205px, 50vw); right: -58px; bottom: -52px; opacity: .11; }
 }
+@media (min-width: 700px) { .tl-theme-page { padding: 28px; } }
