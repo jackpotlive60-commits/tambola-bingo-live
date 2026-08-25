@@ -4419,7 +4419,7 @@ function PlayerBookingPage({
                     fontSize: 15
                   }}
                 >
-                  Estimated Total: \u20B9{pricing.total}
+                  Estimated Total: {"\u20B9"}{pricing.total}
                 </div>
                 <div
                   style={{
@@ -6841,6 +6841,11 @@ function HostControlPage({
   ] = useState(null);
 
   const [
+    expandedBookingIds,
+    setExpandedBookingIds
+  ] = useState(() => new Set());
+
+  const [
     copied,
     setCopied
   ] = useState(false);
@@ -9034,9 +9039,89 @@ function HostControlPage({
 
                         <InfoBox
                           title="Ticket Numbers"
-                          value={ticketNumbersText(
-                            booking
-                          )}
+                          value={(() => {
+                            const ticketList = Array.isArray(
+                              booking.ticket_numbers
+                            )
+                              ? booking.ticket_numbers.map(Number).filter(
+                                  (number) => Number.isFinite(number)
+                                )
+                              : [];
+
+                            const isExpanded =
+                              expandedBookingIds.has(
+                                String(booking.id)
+                              );
+
+                            const visibleTickets = isExpanded
+                              ? ticketList
+                              : ticketList.slice(0, 6);
+
+                            const hasMore =
+                              ticketList.length > 6;
+
+                            return (
+                              <div>
+                                <div
+                                  style={{
+                                    lineHeight: 1.7,
+                                    wordBreak: "break-word"
+                                  }}
+                                >
+                                  {visibleTickets.length
+                                    ? visibleTickets.join(", ")
+                                    : "-"}
+                                  {hasMore && !isExpanded
+                                    ? " ..."
+                                    : ""}
+                                </div>
+
+                                {hasMore && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setExpandedBookingIds(
+                                        (previous) => {
+                                          const next = new Set(
+                                            previous
+                                          );
+
+                                          const key =
+                                            String(booking.id);
+
+                                          if (next.has(key)) {
+                                            next.delete(key);
+                                          } else {
+                                            next.add(key);
+                                          }
+
+                                          return next;
+                                        }
+                                      );
+                                    }}
+                                    style={{
+                                      marginTop: 8,
+                                      padding: "6px 10px",
+                                      borderRadius: 8,
+                                      border:
+                                        "1px solid var(--theme-primary, #c99a1e)",
+                                      background:
+                                        "transparent",
+                                      color:
+                                        "var(--theme-primary, #c99a1e)",
+                                      cursor: "pointer",
+                                      fontWeight: 700,
+                                      fontSize: 12
+                                    }}
+                                  >
+                                    {isExpanded
+                                      ? "SHOW LESS"
+                                      : `SHOW MORE (${ticketList.length})`}
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })()}
                         />
 
                         <InfoBox
