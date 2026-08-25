@@ -45,12 +45,12 @@ function getThemeLogo(theme) {
 }
 
 const THEME_HERO_IMAGES = {
-  Classic: "/assets/classic-casino-visual.png",
-  Royal: "/assets/royal-visual.png",
-  Party: "/assets/party-visual.png",
-  Bollywood: "/assets/bollywood-visual.png",
-  Neon: "/assets/neon-visual.png",
-  Elegant: "/assets/elegant-visual.png"
+  Classic: "/assets/casino-hero.png",
+  Royal: "/assets/royal-hero.png",
+  Party: "/assets/fun-hero.png",
+  Bollywood: "/assets/bollywood-hero.png",
+  Neon: "/assets/neon-hero.png",
+  Elegant: "/assets/elegant-hero.png"
 };
 
 function getThemeHeroImage(theme) {
@@ -66,50 +66,89 @@ function getThemeHeroImage(theme) {
 function getThemedSectionStyle(themeUI, index, extra = {}) {
   const theme = themeUI?.themeName || "Classic";
 
+  /*
+   * SECTION ARTWORK
+   * These are the six uploaded transparent 3D PNGs in /public/assets.
+   * Each theme uses its own artwork instead of reusing the hero image.
+   */
   const SECTION_VISUALS = {
     Classic: "/assets/classic-casino-visual.png",
     Royal: "/assets/royal-visual.png",
-    Party: "/assets/party-visual.png",
+    Elegant: "/assets/elegant-visual.png",
     Bollywood: "/assets/bollywood-visual.png",
     Neon: "/assets/neon-visual.png",
-    Elegant: "/assets/elegant-visual.png"
+    Party: "/assets/party-visual.png"
   };
 
-  const image = SECTION_VISUALS[theme] || SECTION_VISUALS.Classic;
+  const image =
+    SECTION_VISUALS[theme] || SECTION_VISUALS.Classic;
+
+  /*
+   * Rotate the placement so successive sections do not all look identical.
+   * The same theme artwork can therefore appear in different corners/edges
+   * while the actual section content stays readable.
+   */
+  const variants = {
+    Classic: [
+      ["right -28px bottom -24px", "52% auto", "normal"],
+      ["left -34px bottom -22px", "48% auto", "normal"],
+      ["right -30px top -26px", "50% auto", "normal"]
+    ],
+    Royal: [
+      ["right -42px top -30px", "46% auto", "soft-light"],
+      ["left -46px bottom -34px", "42% auto", "soft-light"],
+      ["right -40px bottom -34px", "48% auto", "soft-light"]
+    ],
+    Party: [
+      ["right -42px bottom -34px", "50% auto", "screen"],
+      ["left -46px top -30px", "45% auto", "screen"],
+      ["right -38px top -38px", "48% auto", "screen"]
+    ],
+    Bollywood: [
+      ["left -46px bottom -34px", "46% auto", "normal"],
+      ["right -42px top -30px", "48% auto", "soft-light"],
+      ["right -44px bottom -36px", "46% auto", "normal"]
+    ],
+    Neon: [
+      ["right -42px center", "50% auto", "screen"],
+      ["left -46px bottom -30px", "46% auto", "screen"],
+      ["right -40px top -36px", "48% auto", "screen"]
+    ],
+    Elegant: [
+      ["right -40px bottom -32px", "46% auto", "normal"],
+      ["left -44px top -30px", "42% auto", "soft-light"],
+      ["right -36px top -34px", "48% auto", "normal"]
+    ]
+  };
+
+  const set = variants[theme] || variants.Classic;
+  const [position, size, blend] =
+    set[Math.max(0, index) % set.length];
+
   const surface =
     themeUI?.design?.card?.surface ||
     themeUI?.colors?.surface ||
     "#0f172a";
-  const border =
-    themeUI?.design?.card?.border ||
-    themeUI?.colors?.accent ||
-    "rgba(212,175,55,.55)";
-
-  /*
-   * Keep the same visual skin across the theme, but protect the central
-   * reading area. The uploaded artwork stays at the edges and is never
-   * allowed to become a giant stretched background behind the form.
-   */
-  const protection =
-    `radial-gradient(ellipse 72% 60% at 50% 48%, ${surface} 0%, ${surface}f7 50%, ${surface}d8 68%, transparent 92%)`;
 
   return {
     ...themeUI.card,
     position: "relative",
     overflow: "hidden",
     backgroundColor: surface,
-    backgroundImage: "none",
-    backgroundSize: "auto",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    border: `1px solid ${border}`,
-    boxShadow:
-      themeUI?.design?.card?.shadow ||
-      "0 18px 45px rgba(0,0,0,.35)",
-    color:
-      themeUI?.design?.hero?.text ||
-      themeUI?.colors?.text ||
-      "#fff",
+
+    /*
+     * Uploaded transparent PNG is the visible artwork layer.
+     * A readable dark gradient remains underneath/around the artwork.
+     */
+    backgroundImage: [
+      `url("${image}")`,
+      "linear-gradient(90deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.10) 52%, rgba(0,0,0,.28) 100%)"
+    ].join(", "),
+
+    backgroundSize: `${size}, 100% 100%`,
+    backgroundPosition: `${position}, center`,
+    backgroundRepeat: "no-repeat, no-repeat",
+    backgroundBlendMode: `${blend}, normal`,
     ...extra
   };
 }
@@ -293,27 +332,27 @@ const THEME_DESIGNS = {
   "Elegant": {
     "identity": "Refined contemporary luxury",
     "page": {
-      "overlay": "rgba(5, 7, 9, 0.12)",
-      "text": "#f8f1df",
-      "muted": "#c9c0ae"
+      "overlay": "rgba(0, 0, 0, 0.10)",
+      "text": "#f7f2e8",
+      "muted": "#c8bfad"
     },
     "hero": {
-      "surface": "rgba(12, 14, 16, 0.92)",
-      "border": "rgba(212, 175, 55, 0.72)",
+      "surface": "rgba(13, 15, 17, 0.90)",
+      "border": "rgba(212,175,55,0.72)",
       "accent": "#d4af37",
-      "text": "#f8f1df",
+      "text": "#f7f2e8",
       "decoration": "minimal-gold"
     },
     "card": {
-      "surface": "rgba(13, 15, 17, 0.94)",
-      "surfaceAlt": "rgba(28, 29, 29, 0.90)",
-      "border": "rgba(212,175,55,0.48)",
-      "radius": 18,
-      "shadow": "0 18px 45px rgba(0,0,0,0.42)"
+      "surface": "rgba(14, 17, 19, 0.92)",
+      "surfaceAlt": "rgba(24, 27, 29, 0.88)",
+      "border": "rgba(212,175,55,0.46)",
+      "radius": 20,
+      "shadow": "0 20px 50px rgba(0,0,0,0.42)"
     },
     "input": {
-      "background": "rgba(255,255,255,0.94)",
-      "text": "#20262d",
+      "background": "#f8f6ef",
+      "text": "#1a1a18",
       "border": "#b99b5b",
       "radius": 12
     },
@@ -1492,20 +1531,20 @@ function posterTheme(theme) {
 
     case "Elegant":
       return {
-        background: "#0b0d10",
+        background: "#0b0d0f",
         accent: "#d4af37",
-        secondary: "#94a3b8",
-        text: "#ffffff",
-        muted: "#c4ceda",
-        surface: "#101722",
-        surface2: "#182232",
-        inputBg: "#fbfcfd",
-        inputText: "#101722",
-        panelBg: "#f6f8fb",
-        panelText: "#101722",
-        panelMuted: "#53606f",
-        ticketBg: "#fbfcfd",
-        ticketText: "#101722"
+        secondary: "#9b8451",
+        text: "#f7f2e8",
+        muted: "#c8bfad",
+        surface: "#111416",
+        surface2: "#171a1c",
+        inputBg: "#f8f6ef",
+        inputText: "#1a1a18",
+        panelBg: "#171a1c",
+        panelText: "#f7f2e8",
+        panelMuted: "#b9af9d",
+        ticketBg: "#f8f6ef",
+        ticketText: "#1a1a18"
       };
 
     default:
@@ -1536,19 +1575,6 @@ function getThemeUI(theme) {
   const backgroundImage = design.backgroundImage
     ? `url("${design.backgroundImage}")`
     : "none";
-
-  // The uploaded PNG is the shared visual skin for every section in this theme.
-  const themeVisualAssets = {
-    Classic: "/assets/classic-casino-visual.png",
-    Royal: "/assets/royal-visual.png",
-    Party: "/assets/party-visual.png",
-    Bollywood: "/assets/bollywood-visual.png",
-    Neon: "/assets/neon-visual.png",
-    Elegant: "/assets/elegant-visual.png"
-  };
-
-  const themeVisual =
-    themeVisualAssets[theme] || themeVisualAssets.Classic;
 
   /*
     Theme design language.
@@ -1734,9 +1760,11 @@ function getThemeUI(theme) {
 
     page: {
       backgroundColor: colors.background,
-      backgroundImage: "none",
-      backgroundSize: "auto",
-      backgroundPosition: "center",
+      backgroundImage: backgroundImage === "none"
+        ? "none"
+        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
+      backgroundSize: "cover",
+      backgroundPosition: "center top",
       backgroundAttachment: "scroll",
       backgroundRepeat: "no-repeat",
       isolation: "isolate",
@@ -1749,7 +1777,6 @@ function getThemeUI(theme) {
       /* Shared theme variables for the entire interface. */
       "--theme-accent": design.hero.accent,
       "--theme-secondary": design.button.primaryAlt,
-      "--theme-visual": `url("${themeVisual}")`,
       "--theme-bg": colors.background,
       "--theme-text": design.hero.text,
       "--theme-muted": design.page.muted,
@@ -1859,7 +1886,7 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         style={{
           position: "absolute",
           inset: 0,
-          background: `linear-gradient(90deg, ${c.background}f7 0%, ${c.background}ee 44%, ${c.background}9a 70%, ${c.background}18 100%)`,
+          background: `linear-gradient(90deg, ${c.background} 0%, ${c.background}e8 42%, ${c.background}66 67%, transparent 100%)`,
           zIndex: 1,
           pointerEvents: "none"
         }}
@@ -1871,15 +1898,15 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         aria-hidden="true"
         style={{
           position: "absolute",
-          inset: 0,
-          width: "100%",
+          right: 0,
+          top: 0,
+          width: "52%",
           height: "100%",
           objectFit: "cover",
-          objectPosition: "center",
-          opacity: .76,
+          objectPosition: "right center",
+          opacity: .92,
           zIndex: 0,
-          display: "block",
-          filter: "saturate(.92) contrast(1.02)"
+          display: "block"
         }}
       />
 
@@ -2829,7 +2856,7 @@ function CreateGamePage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -4090,7 +4117,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -5710,7 +5737,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${String(game?.theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+      <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -6052,7 +6079,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(game?.theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
@@ -8462,6 +8489,7 @@ function HostControlPage({
 
   return (
     <main
+      className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`}
       style={
         themedPageStyle
       }
