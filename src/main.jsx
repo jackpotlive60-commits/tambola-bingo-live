@@ -64,91 +64,20 @@ function getThemeHeroImage(theme) {
  * labels and inputs. No new image files are required.
  */
 function getThemedSectionStyle(themeUI, index, extra = {}) {
-  const theme = themeUI?.themeName || "Classic";
-
   /*
-   * SECTION ARTWORK
-   * These are the six uploaded transparent 3D PNGs in /public/assets.
-   * Each theme uses its own artwork instead of reusing the hero image.
+   * Section surfaces are intentionally kept free of direct image backgrounds.
+   * The theme stylesheet owns the transparent corner/edge artwork through
+   * ::before/::after so the same asset never tiles behind form controls.
    */
-  const SECTION_VISUALS = {
-    Classic: "/assets/classic-casino-visual.png",
-    Royal: "/assets/royal-visual.png",
-    Elegant: "/assets/elegant-visual.png",
-    Bollywood: "/assets/bollywood-visual.png",
-    Neon: "/assets/neon-visual.png",
-    Party: "/assets/party-visual.png"
-  };
-
-  const image =
-    SECTION_VISUALS[theme] || SECTION_VISUALS.Classic;
-
-  /*
-   * Rotate the placement so successive sections do not all look identical.
-   * The same theme artwork can therefore appear in different corners/edges
-   * while the actual section content stays readable.
-   */
-  const variants = {
-    Classic: [
-      ["right -28px bottom -24px", "52% auto", "normal"],
-      ["left -34px bottom -22px", "48% auto", "normal"],
-      ["right -30px top -26px", "50% auto", "normal"]
-    ],
-    Royal: [
-      ["right -42px top -30px", "46% auto", "soft-light"],
-      ["left -46px bottom -34px", "42% auto", "soft-light"],
-      ["right -40px bottom -34px", "48% auto", "soft-light"]
-    ],
-    Party: [
-      ["right -42px bottom -34px", "50% auto", "screen"],
-      ["left -46px top -30px", "45% auto", "screen"],
-      ["right -38px top -38px", "48% auto", "screen"]
-    ],
-    Bollywood: [
-      ["left -46px bottom -34px", "46% auto", "normal"],
-      ["right -42px top -30px", "48% auto", "soft-light"],
-      ["right -44px bottom -36px", "46% auto", "normal"]
-    ],
-    Neon: [
-      ["right -42px center", "50% auto", "screen"],
-      ["left -46px bottom -30px", "46% auto", "screen"],
-      ["right -40px top -36px", "48% auto", "screen"]
-    ],
-    Elegant: [
-      ["right -40px bottom -32px", "46% auto", "normal"],
-      ["left -44px top -30px", "42% auto", "soft-light"],
-      ["right -36px top -34px", "48% auto", "normal"]
-    ]
-  };
-
-  const set = variants[theme] || variants.Classic;
-  const [position, size, blend] =
-    set[Math.max(0, index) % set.length];
-
-  const surface =
-    themeUI?.design?.card?.surface ||
-    themeUI?.colors?.surface ||
-    "#0f172a";
-
   return {
     ...themeUI.card,
     position: "relative",
     overflow: "hidden",
-    backgroundColor: surface,
-
-    /*
-     * Uploaded transparent PNG is the visible artwork layer.
-     * A readable dark gradient remains underneath/around the artwork.
-     */
-    backgroundImage: [
-      `url("${image}")`,
-      "linear-gradient(90deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.10) 52%, rgba(0,0,0,.28) 100%)"
-    ].join(", "),
-
-    backgroundSize: `${size}, 100% 100%`,
-    backgroundPosition: `${position}, center`,
-    backgroundRepeat: "no-repeat, no-repeat",
-    backgroundBlendMode: `${blend}, normal`,
+    background: "var(--theme-section-bg)",
+    border: "var(--theme-section-border)",
+    boxShadow: "var(--theme-section-shadow)",
+    backdropFilter: "var(--theme-section-backdrop)",
+    WebkitBackdropFilter: "var(--theme-section-backdrop)",
     ...extra
   };
 }
@@ -160,6 +89,7 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
 
 const THEME_DESIGNS = {
   "Classic": {
+    "backgroundImage": null,
     "identity": "Traditional tambola and casino game-room",
     "page": {
       "overlay": "rgba(3, 20, 15, 0.42)",
@@ -194,6 +124,7 @@ const THEME_DESIGNS = {
     }
   },
   "Royal": {
+    "backgroundImage": null,
     "identity": "Regal palace, velvet and gold",
     "page": {
       "overlay": "rgba(28, 9, 48, 0.38)",
@@ -228,6 +159,7 @@ const THEME_DESIGNS = {
     }
   },
   "Party": {
+    "backgroundImage": null,
     "identity": "Bright celebration, playful and energetic",
     "page": {
       "overlay": "rgba(52, 11, 55, 0.24)",
@@ -262,6 +194,7 @@ const THEME_DESIGNS = {
     }
   },
   "Bollywood": {
+    "backgroundImage": null,
     "identity": "Indian cinema glamour, lights and celebration",
     "page": {
       "overlay": "rgba(76, 8, 13, 0.36)",
@@ -296,6 +229,7 @@ const THEME_DESIGNS = {
     }
   },
   "Neon": {
+    "backgroundImage": null,
     "identity": "Futuristic arcade, cyan and violet glow",
     "page": {
       "overlay": "rgba(1, 7, 18, 0.38)",
@@ -330,37 +264,38 @@ const THEME_DESIGNS = {
     }
   },
   "Elegant": {
+    "backgroundImage": null,
     "identity": "Refined contemporary luxury",
     "page": {
-      "overlay": "rgba(0, 0, 0, 0.10)",
-      "text": "#f7f2e8",
-      "muted": "#c8bfad"
+      "overlay": "rgba(5, 8, 10, 0.18)",
+      "text": "#f5f1e8",
+      "muted": "#c8c1b3"
     },
     "hero": {
-      "surface": "rgba(13, 15, 17, 0.90)",
-      "border": "rgba(212,175,55,0.72)",
-      "accent": "#d4af37",
-      "text": "#f7f2e8",
+      "surface": "rgba(11, 14, 16, 0.88)",
+      "border": "rgba(169, 139, 67, 0.66)",
+      "accent": "#d1b56a",
+      "text": "#f5f1e8",
       "decoration": "minimal-gold"
     },
     "card": {
-      "surface": "rgba(14, 17, 19, 0.92)",
-      "surfaceAlt": "rgba(24, 27, 29, 0.88)",
-      "border": "rgba(212,175,55,0.46)",
-      "radius": 20,
-      "shadow": "0 20px 50px rgba(0,0,0,0.42)"
+      "surface": "rgba(14, 17, 18, 0.94)",
+      "surfaceAlt": "rgba(24, 27, 28, 0.90)",
+      "border": "rgba(169,139,67,0.42)",
+      "radius": 18,
+      "shadow": "0 18px 45px rgba(0,0,0,0.32)"
     },
     "input": {
-      "background": "#f8f6ef",
-      "text": "#1a1a18",
+      "background": "rgba(255,255,255,0.96)",
+      "text": "#20262d",
       "border": "#b99b5b",
       "radius": 12
     },
     "button": {
       "primary": "#a98532",
       "primaryAlt": "#d1b56a",
-      "text": "#ffffff",
-      "radius": 12
+      "text": "#17130d",
+      "radius": 10
     }
   }
 };
@@ -1531,20 +1466,20 @@ function posterTheme(theme) {
 
     case "Elegant":
       return {
-        background: "#0b0d0f",
+        background: "#172033",
         accent: "#d4af37",
-        secondary: "#9b8451",
-        text: "#f7f2e8",
-        muted: "#c8bfad",
-        surface: "#111416",
-        surface2: "#171a1c",
-        inputBg: "#f8f6ef",
-        inputText: "#1a1a18",
-        panelBg: "#171a1c",
-        panelText: "#f7f2e8",
-        panelMuted: "#b9af9d",
-        ticketBg: "#f8f6ef",
-        ticketText: "#1a1a18"
+        secondary: "#94a3b8",
+        text: "#ffffff",
+        muted: "#c4ceda",
+        surface: "#101722",
+        surface2: "#182232",
+        inputBg: "#fbfcfd",
+        inputText: "#101722",
+        panelBg: "#f6f8fb",
+        panelText: "#101722",
+        panelMuted: "#53606f",
+        ticketBg: "#fbfcfd",
+        ticketText: "#101722"
       };
 
     default:
@@ -4117,7 +4052,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${String(game.theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -4639,6 +4574,7 @@ function PlayerBookingPage({
         </section>
 
         <section
+          data-theme-section="true"
           style={nextSectionStyle({
             marginTop: 20
           })}
@@ -5737,7 +5673,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
+      <main className={`tl-theme-page tl-theme-${String(liveGame.theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -5900,7 +5836,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             </div>
           )}
 
-          <section style={nextSectionStyle()}>
+          <section data-theme-section="true" style={nextSectionStyle()}>
             <h2>Prize Results</h2>
             <div style={{ display: "grid", gap: 12 }}>
               {finalPrizes.map((prize, prizeIndex) => {
@@ -5946,7 +5882,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             </div>
           </section>
 
-          <section style={nextSectionStyle()}>
+          <section data-theme-section="true" style={nextSectionStyle()}>
             <div
               style={{
                 display: "flex",
@@ -6079,7 +6015,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${String(liveGame.theme || "Classic").toLowerCase()}`} style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
@@ -8489,7 +8425,6 @@ function HostControlPage({
 
   return (
     <main
-      className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`}
       style={
         themedPageStyle
       }
@@ -9135,6 +9070,7 @@ function HostControlPage({
         </section>
 
         <section
+          data-theme-section="true"
           style={nextSectionStyle({
             border:
               isLive
@@ -9235,6 +9171,7 @@ function HostControlPage({
 
         {isLive && (
           <section
+            data-theme-section="true"
             style={nextSectionStyle({
               border:
                 "2px solid #22c55e"
