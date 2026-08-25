@@ -98,10 +98,10 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
     position: "relative",
     overflow: "hidden",
     backgroundColor: surface,
-    backgroundImage: `${protection}, url("${image}")`,
-    backgroundSize: "100% 100%, cover",
-    backgroundPosition: "center, center",
-    backgroundRepeat: "no-repeat, no-repeat",
+    backgroundImage: "none",
+    backgroundSize: "auto",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
     border: `1px solid ${border}`,
     boxShadow:
       themeUI?.design?.card?.shadow ||
@@ -1537,6 +1537,19 @@ function getThemeUI(theme) {
     ? `url("${design.backgroundImage}")`
     : "none";
 
+  // The uploaded PNG is the shared visual skin for every section in this theme.
+  const themeVisualAssets = {
+    Classic: "/assets/classic-casino-visual.png",
+    Royal: "/assets/royal-visual.png",
+    Party: "/assets/party-visual.png",
+    Bollywood: "/assets/bollywood-visual.png",
+    Neon: "/assets/neon-visual.png",
+    Elegant: "/assets/elegant-visual.png"
+  };
+
+  const themeVisual =
+    themeVisualAssets[theme] || themeVisualAssets.Classic;
+
   /*
     Theme design language.
     These values deliberately change structure/shape/effects, not only colors.
@@ -1736,6 +1749,7 @@ function getThemeUI(theme) {
       /* Shared theme variables for the entire interface. */
       "--theme-accent": design.hero.accent,
       "--theme-secondary": design.button.primaryAlt,
+      "--theme-visual": `url("${themeVisual}")`,
       "--theme-bg": colors.background,
       "--theme-text": design.hero.text,
       "--theme-muted": design.page.muted,
