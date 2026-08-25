@@ -929,3 +929,250 @@ main [data-host-section="prize-amounts"] + section p {
     transition: none !important;
   }
 }
+
+
+/* =========================================================
+   FINAL VISUAL BLEND PASS
+   Corner artwork only â€” never a full section background.
+   Designed to match the supplied premium 3x2 mockup.
+========================================================= */
+
+/* Keep every app section as a solid visual card. */
+.tl-theme-page main > section,
+.tl-theme-page [data-live-section],
+.tl-theme-page [data-host-section] {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  background: var(--theme-section-bg) !important;
+  background-image: var(--theme-section-bg) !important;
+  border: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Shared corner artwork layer. */
+.tl-theme-page main > section::before,
+.tl-theme-page [data-live-section]::before,
+.tl-theme-page [data-host-section]::before {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  width: clamp(180px, 36vw, 360px) !important;
+  height: clamp(180px, 36vw, 360px) !important;
+  right: -72px !important;
+  bottom: -78px !important;
+  background-image: var(--theme-visual) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  opacity: .14 !important;
+  filter: saturate(.9) contrast(1.02) !important;
+  transform: translateZ(0) !important;
+  -webkit-mask-image: radial-gradient(ellipse at 58% 55%, #000 0%, rgba(0,0,0,.9) 42%, transparent 78%) !important;
+  mask-image: radial-gradient(ellipse at 58% 55%, #000 0%, rgba(0,0,0,.9) 42%, transparent 78%) !important;
+}
+
+/* A quiet highlight makes the artwork feel embedded in the card rather
+   than pasted on top of it. */
+.tl-theme-page main > section::after,
+.tl-theme-page [data-live-section]::after,
+.tl-theme-page [data-host-section]::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 96% 92%, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 24%),
+    linear-gradient(135deg, rgba(255,255,255,.025), transparent 42%, rgba(0,0,0,.08) 100%) !important;
+}
+
+.tl-theme-page main > section > *,
+.tl-theme-page [data-live-section] > *,
+.tl-theme-page [data-host-section] > * {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Theme-specific artwork character and placement. */
+.tl-theme-classic main > section::before,
+.tl-theme-classic [data-live-section]::before,
+.tl-theme-classic [data-host-section]::before {
+  right: -78px !important;
+  bottom: -82px !important;
+  opacity: .15 !important;
+  filter: saturate(.82) contrast(1.04) !important;
+}
+
+.tl-theme-royal main > section::before,
+.tl-theme-royal [data-live-section]::before,
+.tl-theme-royal [data-host-section]::before {
+  right: -68px !important;
+  top: -72px !important;
+  bottom: auto !important;
+  opacity: .17 !important;
+  filter: saturate(.82) contrast(1.03) !important;
+  -webkit-mask-image: radial-gradient(ellipse at 54% 46%, #000 0%, rgba(0,0,0,.88) 42%, transparent 77%) !important;
+  mask-image: radial-gradient(ellipse at 54% 46%, #000 0%, rgba(0,0,0,.88) 42%, transparent 77%) !important;
+}
+
+.tl-theme-party main > section::before,
+.tl-theme-party [data-live-section]::before,
+.tl-theme-party [data-host-section]::before {
+  right: -76px !important;
+  bottom: -80px !important;
+  opacity: .15 !important;
+  filter: saturate(.95) contrast(1.02) !important;
+}
+
+.tl-theme-bollywood main > section::before,
+.tl-theme-bollywood [data-live-section]::before,
+.tl-theme-bollywood [data-host-section]::before {
+  left: -78px !important;
+  right: auto !important;
+  bottom: -76px !important;
+  opacity: .15 !important;
+  filter: saturate(.82) contrast(1.04) !important;
+  -webkit-mask-image: radial-gradient(ellipse at 44% 56%, #000 0%, rgba(0,0,0,.88) 42%, transparent 78%) !important;
+  mask-image: radial-gradient(ellipse at 44% 56%, #000 0%, rgba(0,0,0,.88) 42%, transparent 78%) !important;
+}
+
+.tl-theme-neon main > section::before,
+.tl-theme-neon [data-live-section]::before,
+.tl-theme-neon [data-host-section]::before {
+  right: -74px !important;
+  bottom: -72px !important;
+  opacity: .14 !important;
+  filter: saturate(1.05) contrast(1.05) !important;
+}
+
+.tl-theme-elegant main > section::before,
+.tl-theme-elegant [data-live-section]::before,
+.tl-theme-elegant [data-host-section]::before {
+  right: -82px !important;
+  top: -76px !important;
+  bottom: auto !important;
+  opacity: .11 !important;
+  filter: saturate(.65) contrast(1.02) !important;
+}
+
+/* Alternate the corner slightly across successive sections so a long page
+   feels intentionally art-directed instead of repetitive. */
+.tl-theme-page main > section:nth-of-type(2n)::before,
+.tl-theme-page [data-live-section]:nth-of-type(2n)::before,
+.tl-theme-page [data-host-section]:nth-of-type(2n)::before {
+  left: auto !important;
+  right: -78px !important;
+}
+
+.tl-theme-page main > section:nth-of-type(3n)::before,
+.tl-theme-page [data-live-section]:nth-of-type(3n)::before,
+.tl-theme-page [data-host-section]:nth-of-type(3n)::before {
+  right: auto !important;
+  left: -82px !important;
+  bottom: -82px !important;
+  top: auto !important;
+}
+
+/* Protect input-heavy setup sections: artwork stays low and fades earlier. */
+.tl-theme-page main > section:first-of-type::before,
+.tl-theme-page [data-host-section="prize-amounts"]::before {
+  right: -92px !important;
+  left: auto !important;
+  top: auto !important;
+  bottom: -105px !important;
+  width: 250px !important;
+  height: 250px !important;
+  opacity: .10 !important;
+}
+
+/* Elegant is intentionally dark in the new visual system, matching the
+   supplied mockup rather than the old light-card treatment. */
+.tl-theme-elegant {
+  --theme-bg: #111416;
+  --theme-text: #f7f3e8;
+  --theme-muted: #c7c0b2;
+  --theme-accent: #d4af37;
+  --theme-secondary: #b99b5b;
+  --theme-page-background:
+    radial-gradient(circle at 12% 10%, rgba(212,175,55,.09), transparent 28%),
+    radial-gradient(circle at 88% 82%, rgba(255,255,255,.035), transparent 30%),
+    linear-gradient(145deg,#090b0d,#171a1b 55%,#080a0b);
+  --theme-card-bg: linear-gradient(145deg,rgba(28,31,32,.97),rgba(12,14,15,.99));
+  --theme-panel-bg: linear-gradient(145deg,rgba(34,37,38,.98),rgba(17,19,20,.99));
+  --theme-section-bg: linear-gradient(145deg,rgba(27,30,31,.96),rgba(11,13,14,.98));
+  --theme-card-border: 1px solid rgba(212,175,55,.48);
+  --theme-section-border: 1px solid rgba(212,175,55,.38);
+  --theme-panel-border: 1px solid rgba(212,175,55,.58);
+  --theme-input-bg: #f7f3e8;
+  --theme-input-text: #252525;
+  --theme-input-border: 1px solid #b99b5b;
+  --theme-primary-button: linear-gradient(135deg,#a98532,#d4af37);
+  --theme-button-text: #17130a;
+  --theme-hero-bg: rgba(24,27,28,.92);
+  --theme-hero-border: rgba(212,175,55,.55);
+}
+
+/* Hero remains a focal element: its existing image is allowed, but its
+   content surface gets a soft fade so text stays dominant. */
+.tl-theme-page .tl-theme-hero {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.tl-theme-page .tl-theme-hero > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Mobile: smaller corner art, more breathing room, zero visual collision. */
+@media (max-width: 600px) {
+  .tl-theme-page main > section,
+  .tl-theme-page [data-live-section],
+  .tl-theme-page [data-host-section] {
+    border-radius: 14px !important;
+    background: var(--theme-section-bg) !important;
+    background-image: var(--theme-section-bg) !important;
+  }
+
+  .tl-theme-page main > section::before,
+  .tl-theme-page [data-live-section]::before,
+  .tl-theme-page [data-host-section]::before {
+    width: 190px !important;
+    height: 190px !important;
+    right: -62px !important;
+    bottom: -66px !important;
+    opacity: .10 !important;
+  }
+
+  .tl-theme-royal main > section::before,
+  .tl-theme-royal [data-live-section]::before,
+  .tl-theme-royal [data-host-section]::before,
+  .tl-theme-elegant main > section::before,
+  .tl-theme-elegant [data-live-section]::before,
+  .tl-theme-elegant [data-host-section]::before {
+    top: -58px !important;
+    bottom: auto !important;
+  }
+
+  .tl-theme-page main > section:first-of-type::before,
+  .tl-theme-page [data-host-section="prize-amounts"]::before {
+    width: 150px !important;
+    height: 150px !important;
+    right: -48px !important;
+    bottom: -58px !important;
+    opacity: .075 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-theme-page .tl-theme-hero,
+  .tl-theme-page main > section,
+  .tl-theme-page [data-live-section],
+  .tl-theme-page [data-host-section] {
+    transition: none !important;
+  }
+}
