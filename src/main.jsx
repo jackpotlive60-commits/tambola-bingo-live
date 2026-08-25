@@ -67,9 +67,9 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
   const theme = themeUI?.themeName || "Classic";
 
   /*
-   * SECTION ARTWORK
-   * These are the six uploaded transparent 3D PNGs in /public/assets.
-   * Each theme uses its own artwork instead of reusing the hero image.
+   * These six PNGs are the theme-specific section skins in /public/assets.
+   * They are designed as complete visual frames: the center stays dark and
+   * readable while the themed artwork lives around the edges.
    */
   const SECTION_VISUALS = {
     Classic: "/assets/classic-casino-visual.png",
@@ -80,55 +80,17 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
     Party: "/assets/party-visual.png"
   };
 
-  const image =
-    SECTION_VISUALS[theme] || SECTION_VISUALS.Classic;
-
-  /*
-   * Rotate the placement so successive sections do not all look identical.
-   * The same theme artwork can therefore appear in different corners/edges
-   * while the actual section content stays readable.
-   */
-  const variants = {
-    Classic: [
-      ["right -28px bottom -24px", "52% auto", "normal"],
-      ["left -34px bottom -22px", "48% auto", "normal"],
-      ["right -30px top -26px", "50% auto", "normal"]
-    ],
-    Royal: [
-      ["right -42px top -30px", "46% auto", "soft-light"],
-      ["left -46px bottom -34px", "42% auto", "soft-light"],
-      ["right -40px bottom -34px", "48% auto", "soft-light"]
-    ],
-    Party: [
-      ["right -42px bottom -34px", "50% auto", "screen"],
-      ["left -46px top -30px", "45% auto", "screen"],
-      ["right -38px top -38px", "48% auto", "screen"]
-    ],
-    Bollywood: [
-      ["left -46px bottom -34px", "46% auto", "normal"],
-      ["right -42px top -30px", "48% auto", "soft-light"],
-      ["right -44px bottom -36px", "46% auto", "normal"]
-    ],
-    Neon: [
-      ["right -42px center", "50% auto", "screen"],
-      ["left -46px bottom -30px", "46% auto", "screen"],
-      ["right -40px top -36px", "48% auto", "screen"]
-    ],
-    Elegant: [
-      ["right -40px bottom -32px", "46% auto", "normal"],
-      ["left -44px top -30px", "42% auto", "soft-light"],
-      ["right -36px top -34px", "48% auto", "normal"]
-    ]
-  };
-
-  const set = variants[theme] || variants.Classic;
-  const [position, size, blend] =
-    set[Math.max(0, index) % set.length];
+  const image = SECTION_VISUALS[theme] || SECTION_VISUALS.Classic;
 
   const surface =
     themeUI?.design?.card?.surface ||
     themeUI?.colors?.surface ||
     "#0f172a";
+
+  const border =
+    themeUI?.design?.card?.border ||
+    themeUI?.colors?.accent ||
+    "rgba(212,175,55,.55)";
 
   return {
     ...themeUI.card,
@@ -137,21 +99,28 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
     backgroundColor: surface,
 
     /*
-     * Uploaded transparent PNG is the visible artwork layer.
-     * A readable dark gradient remains underneath/around the artwork.
+     * The new PNG is the actual section skin, not a small decorative
+     * background. It fills the section so the selected theme is immediately
+     * visible. The image itself has a deliberately open center.
      */
-    // Do not paint the artwork directly as the section background.
-    // themes.css places this transparent PNG in a corner pseudo-element so
-    // it cannot sit underneath labels, inputs, or buttons.
-    backgroundImage: "none",
-    backgroundSize: "auto",
+    backgroundImage: `url("${image}")`,
+    backgroundSize: "100% 100%",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
-    backgroundBlendMode: "normal",
-    "--theme-visual": `url("${image}")`,
-    "--theme-visual-position": position,
-    "--theme-visual-size": size,
-    "--theme-visual-blend": blend,
+
+    border: `1px solid ${border}`,
+    boxShadow:
+      themeUI?.design?.card?.shadow ||
+      "0 18px 45px rgba(0,0,0,.35)",
+
+    /*
+     * Keep the visual layer behind the section's text and controls.
+     */
+    color:
+      themeUI?.design?.card?.text ||
+      themeUI?.design?.hero?.text ||
+      "#fff",
+
     ...extra
   };
 }
@@ -163,7 +132,6 @@ function getThemedSectionStyle(themeUI, index, extra = {}) {
 
 const THEME_DESIGNS = {
   "Classic": {
-    "backgroundImage": "/assets/casino-background-mobile.jpg",
     "identity": "Traditional tambola and casino game-room",
     "page": {
       "overlay": "rgba(3, 20, 15, 0.42)",
@@ -198,7 +166,6 @@ const THEME_DESIGNS = {
     }
   },
   "Royal": {
-    "backgroundImage": "/assets/royal-background-mobile.jpg",
     "identity": "Regal palace, velvet and gold",
     "page": {
       "overlay": "rgba(28, 9, 48, 0.38)",
@@ -233,7 +200,6 @@ const THEME_DESIGNS = {
     }
   },
   "Party": {
-    "backgroundImage": "/assets/fun-background-mobile.jpg",
     "identity": "Bright celebration, playful and energetic",
     "page": {
       "overlay": "rgba(52, 11, 55, 0.24)",
@@ -268,7 +234,6 @@ const THEME_DESIGNS = {
     }
   },
   "Bollywood": {
-    "backgroundImage": "/assets/bollywood-background-mobile.jpg",
     "identity": "Indian cinema glamour, lights and celebration",
     "page": {
       "overlay": "rgba(76, 8, 13, 0.36)",
@@ -303,7 +268,6 @@ const THEME_DESIGNS = {
     }
   },
   "Neon": {
-    "backgroundImage": "/assets/neon-background-mobile.jpg",
     "identity": "Futuristic arcade, cyan and violet glow",
     "page": {
       "overlay": "rgba(1, 7, 18, 0.38)",
@@ -338,7 +302,6 @@ const THEME_DESIGNS = {
     }
   },
   "Elegant": {
-    "backgroundImage": "/assets/elegant-background-mobile.jpg",
     "identity": "Refined contemporary luxury",
     "page": {
       "overlay": "rgba(245, 241, 232, 0.16)",
@@ -1581,6 +1544,10 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
   const design = getThemeDesign(theme);
 
+  const backgroundImage = design.backgroundImage
+    ? `url("${design.backgroundImage}")`
+    : "none";
+
   /*
     Theme design language.
     These values deliberately change structure/shape/effects, not only colors.
@@ -1765,14 +1732,13 @@ function getThemeUI(theme) {
 
     page: {
       backgroundColor: colors.background,
-      // Keep the page itself photographic-free. Theme artwork is handled by
-      // themes.css as restrained corner decoration on individual sections.
-      backgroundImage: "none",
-      backgroundSize: "auto",
+      backgroundImage: backgroundImage === "none"
+        ? "none"
+        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
+      backgroundSize: "cover",
       backgroundPosition: "center top",
       backgroundAttachment: "scroll",
       backgroundRepeat: "no-repeat",
-      "--theme-page-photo": "none",
       isolation: "isolate",
       color: design.page.text,
       padding: 20,
@@ -1873,7 +1839,6 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
 
   return (
     <div
-      className="tl-theme-hero"
       style={{
         maxWidth: 1000,
         margin: "0 auto 18px",
@@ -2863,7 +2828,7 @@ function CreateGamePage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(theme).toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -4124,7 +4089,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(game.theme).toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -5744,7 +5709,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${String(liveGame.theme).toLowerCase()}`} style={themedPageStyle}>
+      <main style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -6086,7 +6051,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${String(liveGame.theme).toLowerCase()}`} style={themedPageStyle}>
+    <main style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
