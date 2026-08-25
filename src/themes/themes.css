@@ -56,7 +56,7 @@
    CLASSIC / CASINO
 ========================================================= */
 .tl-theme-classic {
-  --theme-visual: none;
+  --theme-visual: url('/assets/classic-casino-visual.png');
   --theme-bg: #071c14;
   --theme-text: #fff8e7;
   --theme-muted: #d8d0bd;
@@ -97,7 +97,7 @@
    ROYAL
 ========================================================= */
 .tl-theme-royal {
-  --theme-visual: none;
+  --theme-visual: url('/assets/royal-visual.png');
   --theme-bg: #18082a;
   --theme-text: #fff8e8;
   --theme-muted: #dfd1eb;
@@ -146,7 +146,7 @@
    PARTY / FUN
 ========================================================= */
 .tl-theme-party {
-  --theme-visual: none;
+  --theme-visual: url('/assets/party-visual.png');
   --theme-bg: #2b0c35;
   --theme-text: #fff;
   --theme-muted: #f1e5f4;
@@ -194,7 +194,7 @@
    BOLLYWOOD
 ========================================================= */
 .tl-theme-bollywood {
-  --theme-visual: none;
+  --theme-visual: url('/assets/bollywood-visual.png');
   --theme-bg: #3b080f;
   --theme-text: #fffaf0;
   --theme-muted: #f1d8cf;
@@ -241,7 +241,7 @@
    NEON
 ========================================================= */
 .tl-theme-neon {
-  --theme-visual: none;
+  --theme-visual: url('/assets/neon-visual.png');
   --theme-bg: #020914;
   --theme-text: #f5fbff;
   --theme-muted: #b9c9dc;
@@ -292,7 +292,7 @@
    ELEGANT
 ========================================================= */
 .tl-theme-elegant {
-  --theme-visual: none;
+  --theme-visual: url('/assets/elegant-visual.png');
   --theme-bg: #e9e5db;
   --theme-text: #20262d;
   --theme-muted: #66717b;
@@ -497,7 +497,7 @@
   background-repeat: no-repeat;
   background-position: center, center;
   background-size: cover, contain;
-  opacity: .17;
+  opacity: .14;
   filter: saturate(.96) contrast(1.03);
   transform: translateZ(0);
 }
