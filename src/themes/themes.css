@@ -389,13 +389,6 @@
   isolation: isolate;
 }
 
-.tl-theme-page .tl-theme-hero > img {
-  z-index: 0 !important;
-  object-fit: contain !important;
-  object-position: right center !important;
-  pointer-events: none;
-}
-
 .tl-theme-page .tl-theme-hero > div {
   position: relative;
   z-index: 2;
@@ -920,18 +913,38 @@ main [data-host-section="prize-amounts"] + section p {
   color: var(--theme-text) !important;
 }
 
+/* Transparent section artwork: a soft corner decoration, not a wallpaper. */
 .tl-theme-page main > section::before,
 .tl-theme-page main [data-host-section]::before,
 .tl-theme-page main [data-live-section]::before,
 .tl-theme-page .tl-theme-section::before {
-  content: none !important;
+  content: "" !important;
+  position: absolute !important;
+  z-index: 0 !important;
+  right: -5% !important;
+  bottom: -10% !important;
+  width: min(46%, 360px) !important;
+  height: 86% !important;
+  pointer-events: none !important;
+  background-image: var(--theme-section-art, none) !important;
+  background-repeat: no-repeat !important;
+  background-position: right bottom !important;
+  background-size: contain !important;
+  opacity: .30 !important;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 18%, #000 48%, #000 84%, rgba(0,0,0,.62) 100%) !important;
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 18%, #000 48%, #000 84%, rgba(0,0,0,.62) 100%) !important;
 }
 
 .tl-theme-page main > section::after,
 .tl-theme-page main [data-host-section]::after,
 .tl-theme-page main [data-live-section]::after,
 .tl-theme-page .tl-theme-section::after {
-  content: none !important;
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background: linear-gradient(90deg, transparent 0%, transparent 55%, color-mix(in srgb, var(--theme-bg) 22%, transparent) 100%) !important;
 }
 
 .tl-theme-page main > section > *,
@@ -1215,5 +1228,18 @@ main [data-host-section="prize-amounts"] + section p {
     width: 155px !important;
     height: 140px !important;
     opacity: .08 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page main > section::before,
+  .tl-theme-page main [data-host-section]::before,
+  .tl-theme-page main [data-live-section]::before,
+  .tl-theme-page .tl-theme-section::before {
+    right: -9% !important;
+    bottom: -8% !important;
+    width: 42% !important;
+    height: 72% !important;
+    opacity: .22 !important;
   }
 }
