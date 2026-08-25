@@ -931,72 +931,13 @@ main [data-host-section="prize-amounts"] + section p {
 }
 
 
-
 /* =========================================================
-   FINAL THEME-ASSET CONNECTION
+   FINAL SECTION VISUAL PASS â€” USE THE NEW THEME PNGS
    ---------------------------------------------------------
-   CSS is the single owner of theme artwork.
-   - No old JPG/hero assets are used.
-   - New six PNGs are used for both the hero and sections.
-   - Sections keep a clean themed surface; artwork fades in only
-     at the edges so it blends instead of becoming a repeating image.
-   ========================================================= */
-
-/* The page surface comes only from the current theme CSS variables. */
-.tl-theme-page {
-  background: var(--theme-page-background) !important;
-  background-image: var(--theme-page-background) !important;
-}
-
-/* ---------- HERO / HEADER ---------- */
-
-.tl-theme-page .tl-theme-hero {
-  position: relative !important;
-  overflow: hidden !important;
-  isolation: isolate !important;
-  background: var(--theme-hero-bg) !important;
-  border-color: var(--theme-hero-border) !important;
-  box-shadow: var(--theme-hero-shadow) !important;
-}
-
-/* New theme PNG on the right side of the header. */
-.tl-theme-page .tl-theme-hero::after {
-  content: "" !important;
-  position: absolute !important;
-  z-index: 0 !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 58% !important;
-  pointer-events: none !important;
-  background-image: var(--theme-visual) !important;
-  background-repeat: no-repeat !important;
-  background-position: right center !important;
-  background-size: cover !important;
-  opacity: .88 !important;
-  filter: saturate(.96) contrast(1.02) !important;
-}
-
-/* Smoothly merges the artwork into the theme surface. */
-.tl-theme-page .tl-theme-hero::before {
-  content: "" !important;
-  position: absolute !important;
-  z-index: 1 !important;
-  inset: 0 !important;
-  pointer-events: none !important;
-  background:
-    linear-gradient(
-      90deg,
-      var(--theme-bg) 0%,
-      color-mix(in srgb, var(--theme-bg) 94%, transparent) 34%,
-      color-mix(in srgb, var(--theme-bg) 52%, transparent) 60%,
-      transparent 82%
-    ) !important;
-}
-
-/* ---------- ALL APP SECTIONS ---------- */
-
-/* Never allow an old inline/background image to show through. */
+   The hero already uses the correct artwork. This block gives the
+   remaining app sections the same visual identity without restoring
+   any of the old photographic backgrounds.
+========================================================= */
 .tl-theme-page main > section,
 .tl-theme-page main [data-host-section],
 .tl-theme-page main [data-live-section],
@@ -1004,105 +945,87 @@ main [data-host-section="prize-amounts"] + section p {
   position: relative !important;
   overflow: hidden !important;
   isolation: isolate !important;
-  background: var(--theme-section-bg) !important;
-  background-image: none !important;
+  background-color: var(--theme-bg) !important;
+  background-image:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--theme-bg) 90%, transparent) 0%,
+      color-mix(in srgb, var(--theme-bg) 78%, transparent) 36%,
+      color-mix(in srgb, var(--theme-bg) 60%, transparent) 70%,
+      color-mix(in srgb, var(--theme-bg) 70%, transparent) 100%
+    ),
+    var(--theme-visual) !important;
   background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  background-attachment: scroll !important;
   border-color: var(--theme-section-border) !important;
   box-shadow: var(--theme-section-shadow) !important;
   color: var(--theme-text) !important;
 }
 
-/* One controlled copy of the NEW PNG, not a repeated/tiled background. */
+/* Keep the center of input-heavy sections calmer while leaving the
+   theme artwork clearly visible around the edges. */
 .tl-theme-page main > section::before,
 .tl-theme-page main [data-host-section]::before,
 .tl-theme-page main [data-live-section]::before,
 .tl-theme-page .tl-theme-section::before {
   content: "" !important;
   position: absolute !important;
+  inset: 0 !important;
   z-index: 0 !important;
   pointer-events: none !important;
-  width: clamp(170px, 44vw, 330px) !important;
-  height: clamp(170px, 44vw, 330px) !important;
-  right: -58px !important;
-  bottom: -64px !important;
-  background-image: var(--theme-visual) !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: contain !important;
-  opacity: .20 !important;
-  filter: saturate(.92) contrast(1.01) !important;
-  transform: translateZ(0) !important;
-  -webkit-mask-image:
-    radial-gradient(
-      ellipse at 58% 56%,
-      #000 0%,
-      rgba(0,0,0,.92) 42%,
-      rgba(0,0,0,.45) 65%,
-      transparent 82%
-    ) !important;
-  mask-image:
-    radial-gradient(
-      ellipse at 58% 56%,
-      #000 0%,
-      rgba(0,0,0,.92) 42%,
-      rgba(0,0,0,.45) 65%,
-      transparent 82%
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--theme-bg) 12%, transparent) 24%,
+      color-mix(in srgb, var(--theme-bg) 18%, transparent) 50%,
+      color-mix(in srgb, var(--theme-bg) 10%, transparent) 76%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-bg) 8%, transparent),
+      transparent 25%,
+      transparent 75%,
+      color-mix(in srgb, var(--theme-bg) 12%, transparent)
     ) !important;
 }
 
-/* Keep every real control/text node above the artwork. */
 .tl-theme-page main > section > *,
 .tl-theme-page main [data-host-section] > *,
 .tl-theme-page main [data-live-section] > *,
 .tl-theme-page .tl-theme-section > * {
-  position: relative;
-  z-index: 1;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
-/* Theme-specific placement tweaks so all six don't feel cloned. */
-.tl-theme-page.tl-theme-royal main > section::before,
-.tl-theme-page.tl-theme-royal main [data-host-section]::before,
-.tl-theme-page.tl-theme-royal main [data-live-section]::before,
-.tl-theme-page.tl-theme-royal .tl-theme-section::before {
-  right: -72px !important;
-  top: -64px !important;
-  bottom: auto !important;
-  opacity: .22 !important;
+/* Mobile: show a little more artwork so sections do not look plain,
+   while keeping fields and text easy to read. */
+@media (max-width: 600px) {
+  .tl-theme-page main > section,
+  .tl-theme-page main [data-host-section],
+  .tl-theme-page main [data-live-section],
+  .tl-theme-page .tl-theme-section {
+    background-size: 100% 100% !important;
+    background-position: center !important;
+  }
 }
 
-.tl-theme-page.tl-theme-elegant main > section::before,
-.tl-theme-page.tl-theme-elegant main [data-host-section]::before,
-.tl-theme-page.tl-theme-elegant main [data-live-section]::before,
-.tl-theme-page.tl-theme-elegant .tl-theme-section::before {
-  right: -62px !important;
-  top: -55px !important;
-  bottom: auto !important;
-  opacity: .17 !important;
-}
-
-.tl-theme-page.tl-theme-bollywood main > section::before,
-.tl-theme-page.tl-theme-bollywood main [data-host-section]::before,
-.tl-theme-page.tl-theme-bollywood main [data-live-section]::before,
-.tl-theme-page.tl-theme-bollywood .tl-theme-section::before {
-  opacity: .22 !important;
-}
-
-.tl-theme-page.tl-theme-neon main > section::before,
-.tl-theme-page.tl-theme-neon main [data-host-section]::before,
-.tl-theme-page.tl-theme-neon main [data-live-section]::before,
-.tl-theme-page.tl-theme-neon .tl-theme-section::before {
-  opacity: .18 !important;
-}
-
-.tl-theme-page.tl-theme-party main > section::before,
-.tl-theme-page.tl-theme-party main [data-host-section]::before,
-.tl-theme-page.tl-theme-party main [data-live-section]::before,
-.tl-theme-page.tl-theme-party .tl-theme-section::before {
-  opacity: .20 !important;
-}
-
-/* The theme preview itself remains a clean readable surface. */
-.tl-theme-page main > section:first-of-type > div > div[style*="THEME PREVIEW"] {
-  position: relative;
-  z-index: 2;
+/* Elegant needs a slightly stronger dark veil because its artwork is
+   lighter than the other five themes. */
+.tl-theme-page.tl-theme-elegant main > section,
+.tl-theme-page.tl-theme-elegant main [data-host-section],
+.tl-theme-page.tl-theme-elegant main [data-live-section],
+.tl-theme-page.tl-theme-elegant .tl-theme-section {
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(16,23,34,.91) 0%,
+      rgba(16,23,34,.82) 42%,
+      rgba(16,23,34,.64) 72%,
+      rgba(16,23,34,.74) 100%
+    ),
+    var(--theme-visual) !important;
 }
