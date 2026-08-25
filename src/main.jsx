@@ -44,19 +44,6 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
-const THEME_HERO_IMAGES = {
-  Classic: "/assets/classic-casino-visual.png",
-  Royal: "/assets/royal-visual.png",
-  Party: "/assets/party-visual.png",
-  Bollywood: "/assets/bollywood-visual.png",
-  Neon: "/assets/neon-visual.png",
-  Elegant: "/assets/elegant-visual.png"
-};
-
-function getThemeHeroImage(theme) {
-  return THEME_HERO_IMAGES[theme] || THEME_HERO_IMAGES.Classic;
-}
-
 
 /*
  * Section visual treatment: reuse the existing theme assets, but crop and
@@ -1798,46 +1785,24 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
   const logo = getThemeLogo(theme);
 
   return (
-    <div
-      className={`tl-theme-hero ${compact ? "tl-theme-hero--compact" : ""}`}
-      data-theme={theme || "Classic"}
-      style={{
-        "--hero-bg": ui.design.hero.surface,
-        "--hero-border": `${c.accent}66`,
-        "--hero-accent": c.accent,
-        "--hero-text": ui.design.hero.text,
-        "--hero-theme-bg": c.background,
-        "--hero-secondary": c.secondary,
-        "--hero-art": `url("${heroImage}")`
-      }}
-    >
+    <div className={`tl-theme-hero ${compact ? "tl-theme-hero--compact" : ""}`} style={{
+      "--hero-bg": ui.design.hero.surface,
+      "--hero-border": `${c.accent}66`,
+      "--hero-accent": c.accent,
+      "--hero-text": ui.design.hero.text,
+      "--hero-theme-bg": c.background,
+      "--hero-secondary": c.secondary,
+      "--hero-art": `url("${heroImage}")`
+    }}>
       <div className="tl-theme-hero-art" aria-hidden="true" />
       <div className="tl-theme-hero-blend" aria-hidden="true" />
-
       <div className="tl-theme-hero-content">
         <div className="tl-theme-hero-brand">
-          <img
-            src={logo}
-            alt={`${theme || "Classic"} Tambola Live`}
-            className="tl-theme-hero-logo"
-            onError={(event) => {
-              event.currentTarget.style.display = "none";
-            }}
-          />
-          <span className="tl-theme-hero-theme">
-            {theme || "Classic"}
-          </span>
+          <span className="tl-theme-hero-brand-name">Tambola Live</span>
+          <span className="tl-theme-hero-theme">{theme || "Classic"}</span>
         </div>
-
-        <div className="tl-theme-hero-title">
-          {title}
-        </div>
-
-        {subtitle && (
-          <div className="tl-theme-hero-subtitle">
-            {subtitle}
-          </div>
-        )}
+        <div className="tl-theme-hero-title">{title}</div>
+        {subtitle && <div className="tl-theme-hero-subtitle">{subtitle}</div>}
       </div>
     </div>
   );
@@ -2751,39 +2716,6 @@ function CreateGamePage({
             "0 auto"
         }}
       >
-        <div
-          style={{
-            textAlign:
-              "center",
-            marginBottom:
-              25
-          }}
-        >
-          <img
-            src={getThemeLogo(theme)}
-            alt={`${theme || "Classic"} Tambola Live`}
-            onError={(event) => {
-              event.currentTarget.style.display = "none";
-            }}
-            style={{
-              width: "min(190px, 58vw)",
-              maxHeight: 58,
-              objectFit: "contain",
-              display: "block",
-              margin: "0 auto 6px",
-              filter: `drop-shadow(0 4px 10px ${themeUI.colors.secondary}44)`
-            }}
-          />
-
-          <p
-            style={{
-              color:
-                "#64748b"
-            }}
-          >
-            Host Create Game
-          </p>
-        </div>
 
         <form
           onSubmit={
