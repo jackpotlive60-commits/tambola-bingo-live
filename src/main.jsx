@@ -5358,20 +5358,77 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     if (!finalAnnouncementSpokenRef.current) {
       finalAnnouncementSpokenRef.current = true;
 
-      speakMessage(
-        "All prizes have been claimed! No prizes remaining."
-      );
-
       finalSummaryTimerRef.current = window.setTimeout(() => {
-        speakMessage(
-          "And that's the game! All prizes have been claimed! Thank you everyone for joining us and making this game special. We hope you enjoyed the fun - see you in the next game!"
-        );
+        if (!("speechSynthesis" in window)) {
+          speakMessage(
+            "All prizes have been claimed! No prizes remaining."
+          );
 
-        finalSummaryTimerRef.current = window.setTimeout(() => {
-          setViewFinishedLive(false);
-          setShowFinalResults(true);
-          finalSummaryTimerRef.current = null;
-        }, 3000);
+          finalSummaryTimerRef.current = window.setTimeout(() => {
+            speakMessage(
+              "And that's the game! Thank you everyone for joining us, and we hope you enjoyed the game. See you in the next game!"
+            );
+
+            finalSummaryTimerRef.current = window.setTimeout(() => {
+              setViewFinishedLive(false);
+              setShowFinalResults(true);
+              finalSummaryTimerRef.current = null;
+            }, 3000);
+          }, 2000);
+
+          return;
+        }
+
+        try {
+          window.speechSynthesis.cancel();
+
+          const voices = getAvailableSpeechVoices();
+
+          const first = new SpeechSynthesisUtterance(
+            "All prizes have been claimed! No prizes remaining."
+          );
+
+          const presetId = loadVoicePreset(liveGame.id);
+          applySpeechVoice(first, presetId, voices);
+
+          const speakClosing = () => {
+            const closing = new SpeechSynthesisUtterance(
+              "And that's the game! Thank you everyone for joining us, and we hope you enjoyed the game. See you in the next game!"
+            );
+
+            applySpeechVoice(closing, presetId, voices);
+
+            const showSummary = () => {
+              finalSummaryTimerRef.current = window.setTimeout(() => {
+                setViewFinishedLive(false);
+                setShowFinalResults(true);
+                finalSummaryTimerRef.current = null;
+              }, 3000);
+            };
+
+            closing.onend = showSummary;
+            closing.onerror = showSummary;
+            window.speechSynthesis.speak(closing);
+          };
+
+          const pauseThenClose = () => {
+            finalSummaryTimerRef.current = window.setTimeout(
+              speakClosing,
+              2000
+            );
+          };
+
+          first.onend = pauseThenClose;
+          first.onerror = pauseThenClose;
+          window.speechSynthesis.speak(first);
+        } catch (err) {
+          console.error("Could not announce game end:", err);
+          finalSummaryTimerRef.current = window.setTimeout(() => {
+            setViewFinishedLive(false);
+            setShowFinalResults(true);
+            finalSummaryTimerRef.current = null;
+          }, 3000);
+        }
       }, 3000);
     }
 
@@ -10511,7 +10568,7 @@ function App() {
         };
 
         const pauseThenClose = () => {
-          window.setTimeout(speakClosingMessage, 1800);
+          window.setTimeout(speakClosingMessage, 2000);
         };
 
         first.onend = pauseThenClose;
