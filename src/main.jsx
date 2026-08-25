@@ -44,6 +44,20 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
+const THEME_HERO_IMAGES = {
+  Classic: "/assets/classic-casino-visual.png",
+  Royal: "/assets/royal-visual.png",
+  Party: "/assets/party-visual.png",
+  Bollywood: "/assets/bollywood-visual.png",
+  Neon: "/assets/neon-visual.png",
+  Elegant: "/assets/elegant-visual.png"
+};
+
+function getThemeHeroImage(theme) {
+  return THEME_HERO_IMAGES[theme] || THEME_HERO_IMAGES.Classic;
+}
+
+
 /*
  * Section visual treatment: reuse the existing theme assets, but crop and
  * place them differently for successive sections. The content side remains
@@ -63,6 +77,7 @@ function getThemedSectionStyle(themeUI, extra = {}) {
     overflow: "hidden",
     isolation: "isolate",
     background: "var(--theme-section-bg)",
+    backgroundImage: "none",
     border: "var(--theme-section-border)",
     boxShadow: "var(--theme-section-shadow)",
     color: "var(--theme-text)",
@@ -80,7 +95,6 @@ function getThemedSectionStyle(themeUI, extra = {}) {
 
 const THEME_DESIGNS = {
   "Classic": {
-    "backgroundImage": "/assets/casino-background-mobile.jpg",
     "identity": "Traditional tambola and casino game-room",
     "page": {
       "overlay": "rgba(3, 20, 15, 0.42)",
@@ -115,7 +129,6 @@ const THEME_DESIGNS = {
     }
   },
   "Royal": {
-    "backgroundImage": "/assets/royal-background-mobile.jpg",
     "identity": "Regal palace, velvet and gold",
     "page": {
       "overlay": "rgba(28, 9, 48, 0.38)",
@@ -150,7 +163,6 @@ const THEME_DESIGNS = {
     }
   },
   "Party": {
-    "backgroundImage": "/assets/fun-background-mobile.jpg",
     "identity": "Bright celebration, playful and energetic",
     "page": {
       "overlay": "rgba(52, 11, 55, 0.24)",
@@ -185,7 +197,6 @@ const THEME_DESIGNS = {
     }
   },
   "Bollywood": {
-    "backgroundImage": "/assets/bollywood-background-mobile.jpg",
     "identity": "Indian cinema glamour, lights and celebration",
     "page": {
       "overlay": "rgba(76, 8, 13, 0.36)",
@@ -220,7 +231,6 @@ const THEME_DESIGNS = {
     }
   },
   "Neon": {
-    "backgroundImage": "/assets/neon-background-mobile.jpg",
     "identity": "Futuristic arcade, cyan and violet glow",
     "page": {
       "overlay": "rgba(1, 7, 18, 0.38)",
@@ -255,7 +265,6 @@ const THEME_DESIGNS = {
     }
   },
   "Elegant": {
-    "backgroundImage": "/assets/elegant-background-mobile.jpg",
     "identity": "Refined contemporary luxury",
     "page": {
       "overlay": "rgba(245, 241, 232, 0.16)",
@@ -1498,10 +1507,7 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
   const design = getThemeDesign(theme);
 
-  const backgroundImage = design.backgroundImage
-    ? `url("${design.backgroundImage}")`
-    : "none";
-
+  
   /*
     Theme design language.
     These values deliberately change structure/shape/effects, not only colors.
@@ -1686,9 +1692,7 @@ function getThemeUI(theme) {
 
     page: {
       backgroundColor: colors.background,
-      backgroundImage: backgroundImage === "none"
-        ? "none"
-        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
+      backgroundImage: "none",
       backgroundSize: "cover",
       backgroundPosition: "center top",
       backgroundAttachment: "scroll",
@@ -1734,6 +1738,7 @@ function getThemeUI(theme) {
       "--theme-input-padding": v.inputPadding,
       "--theme-button-padding": v.buttonPadding,
       "--theme-control-shadow": v.buttonShadow
+      /* Theme artwork is owned entirely by themes.css. */
     },
 
     card: {
@@ -1789,61 +1794,47 @@ function getThemeUI(theme) {
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
+  const heroImage = getThemeHeroImage(theme);
+  const logo = getThemeLogo(theme);
 
   return (
     <div
-      className="tl-theme-hero"
+      className={`tl-theme-hero ${compact ? "tl-theme-hero--compact" : ""}`}
+      data-theme={theme || "Classic"}
       style={{
-        maxWidth: 1000,
-        margin: "0 auto 18px",
-        minHeight: compact ? 108 : 132,
-        position: "relative",
-        overflow: "hidden",
-        borderRadius: 24,
-        border: `1px solid ${c.accent}66`,
-        color: ui.design.hero.text,
-        padding: compact ? "17px 20px" : "20px 24px",
-        boxSizing: "border-box"
+        "--hero-bg": ui.design.hero.surface,
+        "--hero-border": `${c.accent}66`,
+        "--hero-accent": c.accent,
+        "--hero-text": ui.design.hero.text,
+        "--hero-theme-bg": c.background,
+        "--hero-secondary": c.secondary,
+        "--hero-art": `url("${heroImage}")`
       }}
     >
-      {/* Theme artwork is owned by themes.css. No inline PNG/background here. */}
       <div className="tl-theme-hero-art" aria-hidden="true" />
+      <div className="tl-theme-hero-blend" aria-hidden="true" />
 
-      <div className="tl-theme-hero-copy">
-        <div
-          style={{
-            fontSize: compact ? 10 : 11,
-            letterSpacing: 2.2,
-            textTransform: "uppercase",
-            color: c.accent,
-            fontWeight: 800
-          }}
-        >
-          {theme || "Classic"} - TAMBOLA LIVE
+      <div className="tl-theme-hero-content">
+        <div className="tl-theme-hero-brand">
+          <img
+            src={logo}
+            alt={`${theme || "Classic"} Tambola Live`}
+            className="tl-theme-hero-logo"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
+          <span className="tl-theme-hero-theme">
+            {theme || "Classic"}
+          </span>
         </div>
 
-        <div
-          style={{
-            fontSize: compact ? 24 : 30,
-            lineHeight: 1.06,
-            fontWeight: 900,
-            marginTop: 6,
-            overflowWrap: "anywhere"
-          }}
-        >
+        <div className="tl-theme-hero-title">
           {title}
         </div>
 
         {subtitle && (
-          <div
-            style={{
-              marginTop: 7,
-              color: "var(--theme-muted, #d8d0bd)",
-              fontSize: compact ? 12 : 14,
-              lineHeight: 1.3,
-              maxWidth: 440
-            }}
-          >
+          <div className="tl-theme-hero-subtitle">
             {subtitle}
           </div>
         )}
@@ -5280,6 +5271,12 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
 
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
+
+  // Search uses two values:
+  // - searchInputText: what the player is currently typing
+  // - searchText: the query that has actually been submitted
+  // This makes the SEARCH button perform the search instead of clearing it.
+  const [searchInputText, setSearchInputText] = useState("");
   const [searchText, setSearchText] = useState("");
 
   async function loadMyBookings() {
@@ -6354,18 +6351,46 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             }}
           >
             <input
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              value={searchInputText}
+              onChange={(e) => setSearchInputText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  setSearchText(searchInputText.trim());
+                }
+              }}
               placeholder="Search player name or ticket number"
               style={{ ...themedInputStyle, flex: "1 1 280px" }}
+              aria-label="Search player name or ticket number"
             />
             <button
               type="button"
-              onClick={() => setSearchText("")}
+              onClick={() => {
+                const query = searchInputText.trim();
+
+                if (query) {
+                  setSearchText(query);
+                } else {
+                  setSearchText("");
+                  setSearchInputText("");
+                }
+              }}
               style={themedSecondaryButton}
             >
-              Search / Clear
+              {searchText ? "SEARCH / CLEAR" : "SEARCH"}
             </button>
+            {searchText && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInputText("");
+                  setSearchText("");
+                }}
+                style={themedSecondaryButton}
+              >
+                CLEAR
+              </button>
+            )}
           </div>
           <p style={{ color: "var(--theme-muted, #64748b)", marginBottom: 0 }}>
             Search will filter the All Booked Tickets below.
