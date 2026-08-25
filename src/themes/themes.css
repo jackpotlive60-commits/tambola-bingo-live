@@ -293,51 +293,51 @@
 ========================================================= */
 .tl-theme-elegant {
   --theme-visual: url('/assets/elegant-visual.png');
-  --theme-bg: #e9e5db;
-  --theme-text: #20262d;
-  --theme-muted: #66717b;
-  --theme-accent: #a98532;
-  --theme-secondary: #d1b56a;
-  --theme-glow: #a98532;
+  --theme-bg: #0b0d10;
+  --theme-text: #f8f1df;
+  --theme-muted: #c9c0ae;
+  --theme-accent: #d4af37;
+  --theme-secondary: #b99b5b;
+  --theme-glow: #d4af37;
   --theme-page-background:
-    radial-gradient(circle at 10% 8%, rgba(169,133,50,.09), transparent 30%),
-    radial-gradient(circle at 90% 78%, rgba(255,255,255,.06), transparent 30%),
-    linear-gradient(145deg,#d9d5cb,#ece9e1 55%,#d2cec4);
+    radial-gradient(circle at 12% 10%, rgba(212,175,55,.08), transparent 28%),
+    radial-gradient(circle at 88% 78%, rgba(255,255,255,.035), transparent 30%),
+    linear-gradient(145deg,#080a0c,#111417 55%,#060708);
   --theme-card-bg:
-    linear-gradient(145deg,rgba(250,248,243,.95),rgba(235,231,221,.95));
+    linear-gradient(145deg,rgba(16,18,20,.96),rgba(8,10,12,.99));
   --theme-panel-bg:
-    linear-gradient(145deg,rgba(255,253,248,.97),rgba(238,234,224,.95));
+    linear-gradient(145deg,rgba(24,26,28,.97),rgba(11,13,15,.99));
   --theme-prize-bg:
-    linear-gradient(135deg,rgba(255,253,248,.98),rgba(239,235,226,.97));
+    linear-gradient(135deg,rgba(30,31,31,.98),rgba(10,12,14,.99));
   --theme-secondary-bg:
-    linear-gradient(135deg,rgba(255,253,248,.97),rgba(231,225,211,.97));
+    linear-gradient(135deg,rgba(37,36,33,.98),rgba(13,14,16,.99));
   --theme-section-bg:
-    linear-gradient(145deg,rgba(250,248,243,.84),rgba(235,231,221,.84));
-  --theme-card-border: 1px solid rgba(169,139,67,.38);
-  --theme-section-border: 1px solid rgba(169,139,67,.30);
-  --theme-panel-border: 1px solid rgba(169,139,67,.55);
-  --theme-card-shadow: 0 14px 30px rgba(48,43,34,.15),inset 0 1px 0 rgba(255,255,255,.80);
-  --theme-section-shadow: 0 10px 26px rgba(48,43,34,.12),inset 0 1px 0 rgba(255,255,255,.72);
-  --theme-card-backdrop: blur(13px);
-  --theme-section-backdrop: blur(10px);
-  --theme-card-radius: 11px;
-  --theme-input-radius: 6px;
-  --theme-button-radius: 6px;
-  --theme-card-padding: 25px;
+    linear-gradient(145deg,rgba(15,17,19,.94),rgba(7,9,11,.98));
+  --theme-card-border: 1px solid rgba(212,175,55,.48);
+  --theme-section-border: 1px solid rgba(212,175,55,.48);
+  --theme-panel-border: 1px solid rgba(212,175,55,.62);
+  --theme-card-shadow: 0 18px 42px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.05);
+  --theme-section-shadow: 0 14px 34px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.045);
+  --theme-card-backdrop: blur(10px);
+  --theme-section-backdrop: blur(8px);
+  --theme-card-radius: 18px;
+  --theme-input-radius: 10px;
+  --theme-button-radius: 10px;
+  --theme-card-padding: 22px;
   --theme-input-padding: 11px 13px;
   --theme-button-padding: 11px 19px;
   --theme-letter-spacing: .035em;
-  --theme-button-weight: 700;
-  --theme-input-bg: rgba(255,255,255,.94);
+  --theme-button-weight: 800;
+  --theme-input-bg: #f8f6ef;
   --theme-input-text: #20262d;
   --theme-input-border: 1px solid #b99b5b;
-  --theme-primary-button: linear-gradient(135deg,#a98532,#d1b56a);
+  --theme-primary-button: linear-gradient(135deg,#a98532,#d4af37);
   --theme-button-text: #fff;
   --theme-primary-border: 1px solid #a98532;
-  --theme-secondary-border: 1px solid rgba(169,139,67,.45);
-  --theme-button-shadow: 0 8px 20px rgba(48,43,34,.15),inset 0 1px 0 rgba(255,255,255,.45);
-  --theme-hero-bg: rgba(250,248,243,.90);
-  --theme-hero-border: rgba(173,139,57,.58);
+  --theme-secondary-border: 1px solid rgba(212,175,55,.50);
+  --theme-button-shadow: 0 10px 24px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.10);
+  --theme-hero-bg: rgba(12,14,16,.90);
+  --theme-hero-border: rgba(212,175,55,.70);
 }
 
 /* =========================================================
@@ -443,63 +443,6 @@
 }
 
 /* Add a restrained inner atmospheric glow to sections. */
-/* Theme-specific transparent PNG decoration. */
-.tl-theme-page [data-live-section]::before {
-  content: "";
-  position: absolute;
-  width: min(430px, 72vw);
-  height: min(430px, 72vw);
-  right: -90px;
-  bottom: -85px;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    radial-gradient(circle at center, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 68%),
-    var(--theme-visual);
-  background-repeat: no-repeat;
-  background-position: center, center;
-  background-size: cover, contain;
-  opacity: .17;
-  filter: saturate(.96) contrast(1.03);
-  transform: translateZ(0);
-}
-
-.tl-theme-page [data-live-section]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(circle at 94% 8%, color-mix(in srgb, var(--theme-accent) 8%, transparent), transparent 25%),
-    linear-gradient(135deg, rgba(255,255,255,.025), transparent 48%);
-}
-
-/* Individual visual positioning keeps every theme natural. */
-.tl-theme-royal .tl-theme-page [data-live-section]::before,
-.tl-theme-royal [data-live-section]::before { right: -105px; bottom: -90px; opacity: .18; }
-
-.tl-theme-party .tl-theme-page [data-live-section]::before,
-.tl-theme-party [data-live-section]::before { right: -110px; bottom: -95px; opacity: .16; }
-
-.tl-theme-bollywood .tl-theme-page [data-live-section]::before,
-.tl-theme-bollywood [data-live-section]::before { right: -100px; bottom: -90px; opacity: .17; }
-
-.tl-theme-neon .tl-theme-page [data-live-section]::before,
-.tl-theme-neon [data-live-section]::before { right: -95px; bottom: -85px; opacity: .16; }
-
-.tl-theme-elegant .tl-theme-page [data-live-section]::before,
-.tl-theme-elegant [data-live-section]::before { right: -95px; bottom: -90px; opacity: .14; }
-
-@media (max-width: 520px) {
-  .tl-theme-page [data-live-section]::before {
-    width: min(330px, 78vw);
-    height: min(330px, 78vw);
-    right: -75px;
-    bottom: -65px;
-    opacity: .13;
-  }
-}
 
 /* Existing section contents stay above the decorative layer. */
 .tl-theme-page [data-live-section] > * {
@@ -510,9 +453,12 @@
 /* Stronger section surfaces on mobile so the page atmosphere never
    competes with the form. */
 @media (max-width: 520px) {
-  .tl-theme-page [data-live-section] {
-    background: var(--theme-panel-bg) !important;
-    box-shadow: var(--theme-section-shadow) !important;
+  main > section,
+  main [data-host-section],
+  main [data-live-section] {
+    background-size: 100% 100%, cover !important;
+    background-position: center, center !important;
+    background-repeat: no-repeat, no-repeat !important;
   }
 }
 
@@ -582,7 +528,17 @@ main [data-live-section] {
   isolation: isolate !important;
   box-sizing: border-box !important;
   color: var(--theme-text, #fff8e7) !important;
-  background-color: var(--theme-surface, #0c3123) !important;
+  background-color: var(--theme-section-bg, #0c3123) !important;
+  background-image:
+    radial-gradient(ellipse 72% 60% at 50% 48%,
+      var(--theme-section-bg, #0c3123) 0%,
+      color-mix(in srgb, var(--theme-section-bg, #0c3123) 96%, transparent) 50%,
+      color-mix(in srgb, var(--theme-section-bg, #0c3123) 82%, transparent) 68%,
+      transparent 92%),
+    var(--theme-visual) !important;
+  background-size: 100% 100%, cover !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat !important;
   border: 1px solid color-mix(in srgb, var(--theme-accent, #f5c542) 52%, transparent) !important;
   border-radius: clamp(12px, 1.8vw, 18px) !important;
   box-shadow:
@@ -592,35 +548,12 @@ main [data-live-section] {
   padding: clamp(16px, 2.4vw, 24px) !important;
 }
 
-/* Override the inline photographic background sizing produced by
-   getThemedSectionStyle(). Keep the asset, but make it a small edge accent. */
-main > section,
-main [data-host-section],
-main [data-live-section] {
-  background-size: 235px auto, 100% 100% !important;
-  background-position: right bottom, center !important;
-  background-repeat: no-repeat, no-repeat !important;
-}
-
-/* A protective content veil: the central reading area stays quiet while
-   the original theme artwork remains visible at the edges. */
+/* The PNG itself already contains the edge artwork. Do not add a second
+   competing copy of the artwork on top of it. */
 main > section::before,
 main [data-host-section]::before,
 main [data-live-section]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg,
-      rgba(0,0,0,.20) 0%,
-      rgba(0,0,0,.10) 58%,
-      rgba(0,0,0,.54) 100%),
-    linear-gradient(180deg,
-      rgba(0,0,0,.08) 0%,
-      rgba(0,0,0,.06) 62%,
-      rgba(0,0,0,.48) 100%);
+  display: none !important;
 }
 
 /* Keep every real control/text node above the decorative layer. */
@@ -926,253 +859,6 @@ main [data-host-section="prize-amounts"] + section p {
   main input,
   main select,
   main textarea {
-    transition: none !important;
-  }
-}
-
-
-/* =========================================================
-   FINAL VISUAL BLEND PASS
-   Corner artwork only â€” never a full section background.
-   Designed to match the supplied premium 3x2 mockup.
-========================================================= */
-
-/* Keep every app section as a solid visual card. */
-.tl-theme-page main > section,
-.tl-theme-page [data-live-section],
-.tl-theme-page [data-host-section] {
-  position: relative !important;
-  isolation: isolate !important;
-  overflow: hidden !important;
-  background: var(--theme-section-bg) !important;
-  background-image: var(--theme-section-bg) !important;
-  border: var(--theme-section-border) !important;
-  box-shadow: var(--theme-section-shadow) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Shared corner artwork layer. */
-.tl-theme-page main > section::before,
-.tl-theme-page [data-live-section]::before,
-.tl-theme-page [data-host-section]::before {
-  content: "" !important;
-  position: absolute !important;
-  z-index: 0 !important;
-  pointer-events: none !important;
-  width: clamp(180px, 36vw, 360px) !important;
-  height: clamp(180px, 36vw, 360px) !important;
-  right: -72px !important;
-  bottom: -78px !important;
-  background-image: var(--theme-visual) !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: contain !important;
-  opacity: .14 !important;
-  filter: saturate(.9) contrast(1.02) !important;
-  transform: translateZ(0) !important;
-  -webkit-mask-image: radial-gradient(ellipse at 58% 55%, #000 0%, rgba(0,0,0,.9) 42%, transparent 78%) !important;
-  mask-image: radial-gradient(ellipse at 58% 55%, #000 0%, rgba(0,0,0,.9) 42%, transparent 78%) !important;
-}
-
-/* A quiet highlight makes the artwork feel embedded in the card rather
-   than pasted on top of it. */
-.tl-theme-page main > section::after,
-.tl-theme-page [data-live-section]::after,
-.tl-theme-page [data-host-section]::after {
-  content: "" !important;
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 0 !important;
-  pointer-events: none !important;
-  background:
-    radial-gradient(circle at 96% 92%, color-mix(in srgb, var(--theme-accent) 7%, transparent), transparent 24%),
-    linear-gradient(135deg, rgba(255,255,255,.025), transparent 42%, rgba(0,0,0,.08) 100%) !important;
-}
-
-.tl-theme-page main > section > *,
-.tl-theme-page [data-live-section] > *,
-.tl-theme-page [data-host-section] > * {
-  position: relative !important;
-  z-index: 2 !important;
-}
-
-/* Theme-specific artwork character and placement. */
-.tl-theme-classic main > section::before,
-.tl-theme-classic [data-live-section]::before,
-.tl-theme-classic [data-host-section]::before {
-  right: -78px !important;
-  bottom: -82px !important;
-  opacity: .15 !important;
-  filter: saturate(.82) contrast(1.04) !important;
-}
-
-.tl-theme-royal main > section::before,
-.tl-theme-royal [data-live-section]::before,
-.tl-theme-royal [data-host-section]::before {
-  right: -68px !important;
-  top: -72px !important;
-  bottom: auto !important;
-  opacity: .17 !important;
-  filter: saturate(.82) contrast(1.03) !important;
-  -webkit-mask-image: radial-gradient(ellipse at 54% 46%, #000 0%, rgba(0,0,0,.88) 42%, transparent 77%) !important;
-  mask-image: radial-gradient(ellipse at 54% 46%, #000 0%, rgba(0,0,0,.88) 42%, transparent 77%) !important;
-}
-
-.tl-theme-party main > section::before,
-.tl-theme-party [data-live-section]::before,
-.tl-theme-party [data-host-section]::before {
-  right: -76px !important;
-  bottom: -80px !important;
-  opacity: .15 !important;
-  filter: saturate(.95) contrast(1.02) !important;
-}
-
-.tl-theme-bollywood main > section::before,
-.tl-theme-bollywood [data-live-section]::before,
-.tl-theme-bollywood [data-host-section]::before {
-  left: -78px !important;
-  right: auto !important;
-  bottom: -76px !important;
-  opacity: .15 !important;
-  filter: saturate(.82) contrast(1.04) !important;
-  -webkit-mask-image: radial-gradient(ellipse at 44% 56%, #000 0%, rgba(0,0,0,.88) 42%, transparent 78%) !important;
-  mask-image: radial-gradient(ellipse at 44% 56%, #000 0%, rgba(0,0,0,.88) 42%, transparent 78%) !important;
-}
-
-.tl-theme-neon main > section::before,
-.tl-theme-neon [data-live-section]::before,
-.tl-theme-neon [data-host-section]::before {
-  right: -74px !important;
-  bottom: -72px !important;
-  opacity: .14 !important;
-  filter: saturate(1.05) contrast(1.05) !important;
-}
-
-.tl-theme-elegant main > section::before,
-.tl-theme-elegant [data-live-section]::before,
-.tl-theme-elegant [data-host-section]::before {
-  right: -82px !important;
-  top: -76px !important;
-  bottom: auto !important;
-  opacity: .11 !important;
-  filter: saturate(.65) contrast(1.02) !important;
-}
-
-/* Alternate the corner slightly across successive sections so a long page
-   feels intentionally art-directed instead of repetitive. */
-.tl-theme-page main > section:nth-of-type(2n)::before,
-.tl-theme-page [data-live-section]:nth-of-type(2n)::before,
-.tl-theme-page [data-host-section]:nth-of-type(2n)::before {
-  left: auto !important;
-  right: -78px !important;
-}
-
-.tl-theme-page main > section:nth-of-type(3n)::before,
-.tl-theme-page [data-live-section]:nth-of-type(3n)::before,
-.tl-theme-page [data-host-section]:nth-of-type(3n)::before {
-  right: auto !important;
-  left: -82px !important;
-  bottom: -82px !important;
-  top: auto !important;
-}
-
-/* Protect input-heavy setup sections: artwork stays low and fades earlier. */
-.tl-theme-page main > section:first-of-type::before,
-.tl-theme-page [data-host-section="prize-amounts"]::before {
-  right: -92px !important;
-  left: auto !important;
-  top: auto !important;
-  bottom: -105px !important;
-  width: 250px !important;
-  height: 250px !important;
-  opacity: .10 !important;
-}
-
-/* Elegant is intentionally dark in the new visual system, matching the
-   supplied mockup rather than the old light-card treatment. */
-.tl-theme-elegant {
-  --theme-bg: #111416;
-  --theme-text: #f7f3e8;
-  --theme-muted: #c7c0b2;
-  --theme-accent: #d4af37;
-  --theme-secondary: #b99b5b;
-  --theme-page-background:
-    radial-gradient(circle at 12% 10%, rgba(212,175,55,.09), transparent 28%),
-    radial-gradient(circle at 88% 82%, rgba(255,255,255,.035), transparent 30%),
-    linear-gradient(145deg,#090b0d,#171a1b 55%,#080a0b);
-  --theme-card-bg: linear-gradient(145deg,rgba(28,31,32,.97),rgba(12,14,15,.99));
-  --theme-panel-bg: linear-gradient(145deg,rgba(34,37,38,.98),rgba(17,19,20,.99));
-  --theme-section-bg: linear-gradient(145deg,rgba(27,30,31,.96),rgba(11,13,14,.98));
-  --theme-card-border: 1px solid rgba(212,175,55,.48);
-  --theme-section-border: 1px solid rgba(212,175,55,.38);
-  --theme-panel-border: 1px solid rgba(212,175,55,.58);
-  --theme-input-bg: #f7f3e8;
-  --theme-input-text: #252525;
-  --theme-input-border: 1px solid #b99b5b;
-  --theme-primary-button: linear-gradient(135deg,#a98532,#d4af37);
-  --theme-button-text: #17130a;
-  --theme-hero-bg: rgba(24,27,28,.92);
-  --theme-hero-border: rgba(212,175,55,.55);
-}
-
-/* Hero remains a focal element: its existing image is allowed, but its
-   content surface gets a soft fade so text stays dominant. */
-.tl-theme-page .tl-theme-hero {
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.tl-theme-page .tl-theme-hero > * {
-  position: relative;
-  z-index: 2;
-}
-
-/* Mobile: smaller corner art, more breathing room, zero visual collision. */
-@media (max-width: 600px) {
-  .tl-theme-page main > section,
-  .tl-theme-page [data-live-section],
-  .tl-theme-page [data-host-section] {
-    border-radius: 14px !important;
-    background: var(--theme-section-bg) !important;
-    background-image: var(--theme-section-bg) !important;
-  }
-
-  .tl-theme-page main > section::before,
-  .tl-theme-page [data-live-section]::before,
-  .tl-theme-page [data-host-section]::before {
-    width: 190px !important;
-    height: 190px !important;
-    right: -62px !important;
-    bottom: -66px !important;
-    opacity: .10 !important;
-  }
-
-  .tl-theme-royal main > section::before,
-  .tl-theme-royal [data-live-section]::before,
-  .tl-theme-royal [data-host-section]::before,
-  .tl-theme-elegant main > section::before,
-  .tl-theme-elegant [data-live-section]::before,
-  .tl-theme-elegant [data-host-section]::before {
-    top: -58px !important;
-    bottom: auto !important;
-  }
-
-  .tl-theme-page main > section:first-of-type::before,
-  .tl-theme-page [data-host-section="prize-amounts"]::before {
-    width: 150px !important;
-    height: 150px !important;
-    right: -48px !important;
-    bottom: -58px !important;
-    opacity: .075 !important;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tl-theme-page .tl-theme-hero,
-  .tl-theme-page main > section,
-  .tl-theme-page [data-live-section],
-  .tl-theme-page [data-host-section] {
     transition: none !important;
   }
 }
