@@ -44,6 +44,18 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
+const THEME_HERO_IMAGES = {
+  Classic: "/assets/classic-casino-visual.png",
+  Royal: "/assets/royal-visual.png",
+  Party: "/assets/party-visual.png",
+  Bollywood: "/assets/bollywood-visual.png",
+  Neon: "/assets/neon-visual.png",
+  Elegant: "/assets/elegant-visual.png"
+};
+
+function getThemeHeroImage(theme) {
+  return THEME_HERO_IMAGES[theme] || THEME_HERO_IMAGES.Classic;
+}
 
 /*
  * Section visual treatment: reuse the existing theme assets, but crop and
@@ -64,7 +76,6 @@ function getThemedSectionStyle(themeUI, extra = {}) {
     overflow: "hidden",
     isolation: "isolate",
     background: "var(--theme-section-bg)",
-    backgroundImage: "none",
     border: "var(--theme-section-border)",
     boxShadow: "var(--theme-section-shadow)",
     color: "var(--theme-text)",
@@ -82,6 +93,7 @@ function getThemedSectionStyle(themeUI, extra = {}) {
 
 const THEME_DESIGNS = {
   "Classic": {
+    "backgroundImage": "/assets/casino-background-mobile.jpg",
     "identity": "Traditional tambola and casino game-room",
     "page": {
       "overlay": "rgba(3, 20, 15, 0.42)",
@@ -116,6 +128,7 @@ const THEME_DESIGNS = {
     }
   },
   "Royal": {
+    "backgroundImage": "/assets/royal-background-mobile.jpg",
     "identity": "Regal palace, velvet and gold",
     "page": {
       "overlay": "rgba(28, 9, 48, 0.38)",
@@ -150,6 +163,7 @@ const THEME_DESIGNS = {
     }
   },
   "Party": {
+    "backgroundImage": "/assets/fun-background-mobile.jpg",
     "identity": "Bright celebration, playful and energetic",
     "page": {
       "overlay": "rgba(52, 11, 55, 0.24)",
@@ -184,6 +198,7 @@ const THEME_DESIGNS = {
     }
   },
   "Bollywood": {
+    "backgroundImage": "/assets/bollywood-background-mobile.jpg",
     "identity": "Indian cinema glamour, lights and celebration",
     "page": {
       "overlay": "rgba(76, 8, 13, 0.36)",
@@ -218,6 +233,7 @@ const THEME_DESIGNS = {
     }
   },
   "Neon": {
+    "backgroundImage": "/assets/neon-background-mobile.jpg",
     "identity": "Futuristic arcade, cyan and violet glow",
     "page": {
       "overlay": "rgba(1, 7, 18, 0.38)",
@@ -252,6 +268,7 @@ const THEME_DESIGNS = {
     }
   },
   "Elegant": {
+    "backgroundImage": "/assets/elegant-background-mobile.jpg",
     "identity": "Refined contemporary luxury",
     "page": {
       "overlay": "rgba(245, 241, 232, 0.16)",
@@ -1494,7 +1511,10 @@ function getThemeUI(theme) {
   const colors = posterTheme(theme);
   const design = getThemeDesign(theme);
 
-  
+  const backgroundImage = design.backgroundImage
+    ? `url("${design.backgroundImage}")`
+    : "none";
+
   /*
     Theme design language.
     These values deliberately change structure/shape/effects, not only colors.
@@ -1679,7 +1699,9 @@ function getThemeUI(theme) {
 
     page: {
       backgroundColor: colors.background,
-      backgroundImage: "none",
+      backgroundImage: backgroundImage === "none"
+        ? "none"
+        : `linear-gradient(${design.page.overlay}, ${design.page.overlay}), ${backgroundImage}`,
       backgroundSize: "cover",
       backgroundPosition: "center top",
       backgroundAttachment: "scroll",
@@ -1725,7 +1747,6 @@ function getThemeUI(theme) {
       "--theme-input-padding": v.inputPadding,
       "--theme-button-padding": v.buttonPadding,
       "--theme-control-shadow": v.buttonShadow
-      /* Theme artwork is owned entirely by themes.css. */
     },
 
     card: {
@@ -1781,10 +1802,11 @@ function getThemeUI(theme) {
 function ThemeHero({ theme, title, subtitle, compact = false }) {
   const ui = getThemeUI(theme);
   const c = ui.colors;
+  const heroImage = getThemeHeroImage(theme);
+
   return (
     <div
       className="tl-theme-hero"
-      data-theme={theme || "Classic"}
       style={{
         maxWidth: 1000,
         margin: "0 auto 18px",
@@ -1810,6 +1832,23 @@ function ThemeHero({ theme, title, subtitle, compact = false }) {
         }}
       />
 
+      <img
+        src={heroImage}
+        alt=""
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          width: "54%",
+          height: "100%",
+          objectFit: "contain",
+          objectPosition: "right center",
+          opacity: .96,
+          zIndex: 0,
+          display: "block"
+        }}
+      />
 
       <div
         style={{
