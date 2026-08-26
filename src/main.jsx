@@ -2536,21 +2536,13 @@ function CreateGamePage({
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
 
-  function updatePrize(
-    index,
-    amount
-  ) {
-    setPrizes(
-      (current) =>
-        current.map(
-          (p, i) =>
-            i === index
-              ? {
-                  ...p,
-                  amount
-                }
-              : p
-        )
+  function togglePrize(index) {
+    setPrizes((current) =>
+      current.map((p, i) =>
+        i === index
+          ? { ...p, selected: p.selected !== false ? false : true }
+          : p
+      )
     );
   }
 
@@ -2567,7 +2559,8 @@ function CreateGamePage({
         ...current,
         {
           name,
-          amount: ""
+          amount: "",
+          selected: true
         }
       ]
     );
@@ -2637,20 +2630,17 @@ function CreateGamePage({
 
       const selectedPrizes =
         prizes
-          .filter(
-            (p) =>
-              p.amount !== ""
-          )
-          .map(
-            (p) => ({
-              name:
-                p.name,
-              amount:
-                Number(
-                  p.amount
-                )
-            })
-          );
+          .filter((p) => p.selected !== false)
+          .map((p) => ({
+            name: p.name,
+            amount: ""
+          }));
+
+      if (!selectedPrizes.length) {
+        setError("Please select at least one prize.");
+        setCreating(false);
+        return;
+      }
 
       const newGame = {
         host_name:
@@ -2991,101 +2981,109 @@ function CreateGamePage({
             }
           >
             <h2>
-              Prizes
+              Select Prizes
             </h2>
 
-            {prizes.map(
-              (
-                p,
-                index
-              ) => (
-                <div
-                  key={`${p.name}-${index}`}
-                  style={{
-                    display:
-                      "grid",
-                    gridTemplateColumns:
-                      "1fr 130px auto",
-                    gap: 8,
-                    alignItems:
-                      "center",
-                    marginBottom:
-                      10
-                  }}
-                >
-                  <b>
-                    {
-                      p.name
-                    }
-                  </b>
-
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="Amount"
-                    value={
-                      p.amount
-                    }
-                    onChange={(e) =>
-                      updatePrize(
-                        index,
-                        e.target.value
-                      )
-                    }
-                    style={
-                      themedInputStyle
-                    }
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removePrize(
-                        index
-                      )
-                    }
-                    style={
-                      themedSecondaryButton
-                    }
-                  >
-                    Remove
-                  </button>
-                </div>
-              )
-            )}
+            <p
+              style={{
+                color: "var(--theme-muted, #64748b)",
+                marginTop: 0
+              }}
+            >
+              Choose which prizes you want in this game. Prize amounts will be entered later in the Host Control Centre after ticket sales are known.
+            </p>
 
             <div
               style={{
-                display:
-                  "flex",
+                display: "grid",
+                gap: 9
+              }}
+            >
+              {prizes.map((p, index) => {
+                const selected = p.selected !== false;
+
+                return (
+                  <label
+                    key={`${p.name}-${index}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 14px",
+                      border: `1px solid ${selected ? themeUI.colors.accent : "#cbd5e1"}`,
+                      borderRadius: 10,
+                      background: selected
+                        ? "var(--theme-panel-bg, #f8fafc)"
+                        : "transparent",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => togglePrize(index)}
+                      style={{
+                        width: 20,
+                        height: 20,
+                        accentColor: themeUI.colors.accent
+                      }}
+                    />
+
+                    <span
+                      style={{
+                        flex: 1,
+                        fontWeight: 800,
+                        color: "var(--theme-panel-text, #0f172a)"
+                      }}
+                    >
+                      {p.name}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        removePrize(index);
+                      }}
+                      style={{
+                        ...themedSecondaryButton,
+                        padding: "7px 10px",
+                        fontSize: 12
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </label>
+                );
+              })}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
                 gap: 8,
-                marginTop:
-                  15
+                marginTop: 15
               }}
             >
               <input
-                placeholder="Customize prize"
-                value={
-                  customPrize
-                }
+                placeholder="Add custom prize"
+                value={customPrize}
                 onChange={(e) =>
-                  setCustomPrize(
-                    e.target.value
-                  )
+                  setCustomPrize(e.target.value)
                 }
-                style={
-                  themedInputStyle
-                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addPrize();
+                  }
+                }}
+                style={themedInputStyle}
               />
 
               <button
                 type="button"
-                onClick={
-                  addPrize
-                }
-                style={
-                  themedSecondaryButton
-                }
+                onClick={addPrize}
+                style={themedSecondaryButton}
               >
                 + Add
               </button>
@@ -7814,6 +7812,20 @@ function HostControlPage({
             : Number(prize.amount) || 0
       }));
 
+      const totalPrizePool = updatedPrizes.reduce(
+        (total, prize) =>
+          total + (Number(prize.amount) || 0),
+        0
+      );
+
+      if (totalPrizePool > totalSalesAmount) {
+        setGameError(
+          `Total prize amount (INR ${totalPrizePool.toLocaleString("en-IN")}) cannot be more than total ticket sales (INR ${totalSalesAmount.toLocaleString("en-IN")}).`
+        );
+        setSavingPrizes(false);
+        return false;
+      }
+
       const { data, error } = await supabase
         .from("games")
         .update({
@@ -8889,8 +8901,27 @@ function HostControlPage({
               marginTop: 0
             }}
           >
-            Edit the prize amounts here based on your ticket sales. Save them before sharing the updated poster.
+            Ticket sales are shown below. Enter the prize amounts according to the money generated from approved ticket sales. The total prize pool cannot exceed ticket sales.
           </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+              gap: 10,
+              marginBottom: 14
+            }}
+          >
+            <InfoBox
+              title="Total Ticket Sales"
+              value={`INR ${totalSalesAmount.toLocaleString("en-IN")}`}
+            />
+
+            <InfoBox
+              title="Prize Pool Entered"
+              value={`INR ${editablePrizes.reduce((total, prize) => total + (Number(prize.amount) || 0), 0).toLocaleString("en-IN")}`}
+            />
+          </div>
 
           <div
             style={{
