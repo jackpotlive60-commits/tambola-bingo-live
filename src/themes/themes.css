@@ -2274,6 +2274,176 @@ main [data-host-section="prize-amounts"] + section p {
   opacity: 1 !important;
 }
 
+/* =========================================================
+   FINAL HERO ARTWORK â€” NATURAL SCALE / CROPPED TO HERO
+   ---------------------------------------------------------
+   The uploaded theme artwork is a complete square composition
+   (background + frame + title plate + decorative objects).
+   Do NOT use contain: that exposes the whole square as a box.
+   Instead:
+   - keep the source at natural width
+   - anchor it bottom-right
+   - let the short hero crop the top/bottom
+   - fade the left/right/bottom edges into the hero
+   This removes the artwork's own frame/title plate while keeping
+   the Royal curtain at upper-right and crown at lower-right.
+   ========================================================= */
+
+.tl-theme-page .tl-theme-hero {
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+.tl-theme-page .tl-theme-hero-art {
+  position: absolute !important;
+  z-index: 1 !important;
+
+  /* The artwork occupies the hero itself; it does not create height. */
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+
+  background-image: var(--theme-hero-art) !important;
+  background-repeat: no-repeat !important;
+
+  /*
+     Natural-width crop:
+     the square source becomes hero-width x hero-width.
+     Because the mobile hero is shorter than the source,
+     the top title plate is cropped away and the lower crown
+     remains visible.
+  */
+  background-size: 100% auto !important;
+  background-position: right bottom !important;
+
+  opacity: .62 !important;
+  filter: saturate(.92) contrast(.96) brightness(.94) !important;
+
+  /*
+     Fade away the source's left edge, right frame and bottom frame.
+     The actual decorative objects on the right remain solid.
+  */
+  -webkit-mask-image:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 28%,
+      rgba(0,0,0,.18) 38%,
+      rgba(0,0,0,.62) 50%,
+      #000 64%,
+      #000 94%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      #000 0%,
+      #000 91%,
+      rgba(0,0,0,.72) 96%,
+      transparent 100%
+    ) !important;
+  mask-image:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 28%,
+      rgba(0,0,0,.18) 38%,
+      rgba(0,0,0,.62) 50%,
+      #000 64%,
+      #000 94%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      #000 0%,
+      #000 91%,
+      rgba(0,0,0,.72) 96%,
+      transparent 100%
+    ) !important;
+  -webkit-mask-composite: source-in !important;
+  mask-composite: intersect !important;
+
+  pointer-events: none !important;
+}
+
+/* Keep the text clean over the decorative image. */
+.tl-theme-page .tl-theme-hero-copy {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Blend the image into the Royal purple instead of painting a box. */
+.tl-theme-page .tl-theme-hero::before {
+  z-index: 2 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(
+      90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb, var(--theme-hero-bg) 98%, transparent) 28%,
+      color-mix(in srgb, var(--theme-hero-bg) 78%, transparent) 44%,
+      color-mix(in srgb, var(--theme-hero-bg) 28%, transparent) 62%,
+      transparent 82%
+    ) !important;
+}
+
+.tl-theme-page .tl-theme-hero::after {
+  z-index: 3 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 78%,
+      color-mix(in srgb, var(--theme-hero-bg) 14%, transparent) 100%
+    ) !important;
+}
+
+/* Compact mobile hero â€” artwork never determines its height. */
+@media (max-width: 600px) {
+  .tl-theme-page .tl-theme-hero {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 28px 30px 24px !important;
+    overflow: hidden !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 61% !important;
+    min-height: 0 !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-art {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-size: 100% auto !important;
+    background-position: right bottom !important;
+    opacity: .62 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .tl-theme-page .tl-theme-hero {
+    padding: 25px 26px 23px !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 62% !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-art {
+    background-size: 100% auto !important;
+    background-position: right bottom !important;
+    opacity: .58 !important;
+  }
+}
+
 
 /* =========================================================
    ELEGANT HERO
