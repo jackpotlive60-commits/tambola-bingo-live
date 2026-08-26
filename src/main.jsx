@@ -5460,6 +5460,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [activeSearchText, setActiveSearchText] = useState("");
 
   async function loadMyBookings() {
     const playerKey = getOrCreatePlayerKey(game.id);
@@ -5768,7 +5769,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }, [bookings, liveGame.game_code]);
 
   const filteredBookedTickets = useMemo(() => {
-    const query = searchText.trim().toLowerCase();
+    const query = activeSearchText.trim().toLowerCase();
 
     if (!query) return allBookedTickets;
 
@@ -5783,7 +5784,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
         `#${number}`.includes(query)
       );
     });
-  }, [allBookedTickets, searchText]);
+  }, [allBookedTickets, activeSearchText]);
 
   const lastCalled = calledNumbers.length
     ? calledNumbers[calledNumbers.length - 1]
@@ -6535,15 +6536,31 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             <input
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  setActiveSearchText(searchText);
+                }
+              }}
               placeholder="Search player name or ticket number"
               style={{ ...themedInputStyle, flex: "1 1 280px" }}
             />
             <button
               type="button"
-              onClick={() => setSearchText("")}
+              onClick={() => setActiveSearchText(searchText)}
+              style={themedPrimaryButton}
+            >
+              SEARCH
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchText("");
+                setActiveSearchText("");
+              }}
               style={themedSecondaryButton}
             >
-              Search / Clear
+              CLEAR
             </button>
           </div>
           <p style={{ color: "var(--theme-muted, #64748b)", marginBottom: 0 }}>
