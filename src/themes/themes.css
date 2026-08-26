@@ -1718,3 +1718,33 @@ main [data-host-section="prize-amounts"] + section p {
     background-position: 72% 48% !important;
   }
 }
+
+/* =========================================================
+   HERO ARTWORK â€” LARGER SCALE
+   Keeps the current position and blending, while giving the
+   artwork more visual presence on the right side.
+   ========================================================= */
+
+.tl-theme-page .tl-theme-hero-art {
+  width: 68% !important;
+  height: 124% !important;
+  right: -1% !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background-size: 122% auto !important;
+  background-position: 72% 48% !important;
+  opacity: .47 !important;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page .tl-theme-hero-art {
+    width: 72% !important;
+    height: 122% !important;
+    right: -4% !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background-size: 124% auto !important;
+    background-position: 72% 48% !important;
+    opacity: .46 !important;
+  }
+}
