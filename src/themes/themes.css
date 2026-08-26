@@ -2004,3 +2004,107 @@ main [data-host-section="prize-amounts"] + section p {
     opacity: .68 !important;
   }
 }
+
+/* =========================================================
+   HERO ARTWORK â€” FINAL MOBILE FIX
+   ---------------------------------------------------------
+   The previous composition was still allowing the artwork layer
+   to read as a rectangular block. This pass:
+   - keeps the hero compact
+   - moves the artwork down/right
+   - blends dark image pixels into the purple surface
+   - keeps the crown visible without creating a hard image edge
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .tl-theme-page .tl-theme-hero {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 27px 30px 25px !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 61% !important;
+    min-height: 0 !important;
+    z-index: 5 !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-art {
+    top: -20% !important;
+    right: -13% !important;
+    width: 82% !important;
+    height: 145% !important;
+    background-position: 92% 100% !important;
+    background-size: 124% auto !important;
+    opacity: .88 !important;
+    filter: saturate(.90) contrast(.96) brightness(.98) !important;
+    mix-blend-mode: screen !important;
+
+    /* Fade the left edge and all four outer edges so the artwork
+       disappears into the hero instead of forming a box. */
+    -webkit-mask-image:
+      radial-gradient(
+        ellipse at 82% 70%,
+        #000 0%,
+        rgba(0,0,0,.98) 48%,
+        rgba(0,0,0,.72) 68%,
+        transparent 100%
+      ) !important;
+    mask-image:
+      radial-gradient(
+        ellipse at 82% 70%,
+        #000 0%,
+        rgba(0,0,0,.98) 48%,
+        rgba(0,0,0,.72) 68%,
+        transparent 100%
+      ) !important;
+  }
+
+  /* Do not put a horizontal colour band across the artwork. */
+  .tl-theme-page .tl-theme-hero::before {
+    z-index: 2 !important;
+    background:
+      linear-gradient(
+        90deg,
+        var(--theme-hero-bg) 0%,
+        color-mix(in srgb, var(--theme-hero-bg) 96%, transparent) 27%,
+        color-mix(in srgb, var(--theme-hero-bg) 62%, transparent) 47%,
+        color-mix(in srgb, var(--theme-hero-bg) 14%, transparent) 68%,
+        transparent 88%
+      ) !important;
+  }
+
+  .tl-theme-page .tl-theme-hero::after {
+    z-index: 3 !important;
+    background:
+      radial-gradient(
+        ellipse at 92% 68%,
+        transparent 0%,
+        transparent 48%,
+        color-mix(in srgb, var(--theme-hero-bg) 10%, transparent) 72%,
+        color-mix(in srgb, var(--theme-hero-bg) 28%, transparent) 100%
+      ) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .tl-theme-page .tl-theme-hero {
+    padding: 25px 26px 23px !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 62% !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-art {
+    top: -21% !important;
+    right: -15% !important;
+    width: 85% !important;
+    height: 148% !important;
+    background-position: 92% 100% !important;
+    background-size: 126% auto !important;
+    opacity: .86 !important;
+  }
+}
