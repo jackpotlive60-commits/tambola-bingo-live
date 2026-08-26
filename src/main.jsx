@@ -1905,21 +1905,18 @@ async function createGamePoster(
   const showPrizeAmounts =
     options.showPrizeAmounts === true;
 
+  // Large portrait canvas designed for WhatsApp/social sharing.
   const width = 1080;
-  const height = 1350;
+  const height = 1600;
 
   const canvas =
-    document.createElement(
-      "canvas"
-    );
+    document.createElement("canvas");
 
   canvas.width = width;
   canvas.height = height;
 
   const ctx =
-    canvas.getContext(
-      "2d"
-    );
+    canvas.getContext("2d");
 
   if (!ctx) {
     throw new Error(
@@ -1928,65 +1925,94 @@ async function createGamePoster(
   }
 
   const baseColors =
-    posterTheme(
-      game.theme
-    );
+    posterTheme(game.theme);
 
-  // Randomly choose one of the five built-in poster designs every time
-  // the host generates a poster. The same game can therefore have a
-  // different design each time the poster is generated.
-  const posterVariant = Math.floor(Math.random() * 5);
+  // Every generation gets a genuinely different composition.
+  const posterVariant =
+    Math.floor(Math.random() * 5);
 
-  const variantAccents = [
-    baseColors.accent,
-    baseColors.secondary,
-    "#38bdf8",
-    "#f472b6",
-    "#a78bfa"
+  const palettes = [
+    {
+      bg1: "#08051d",
+      bg2: "#26064f",
+      glow: "#ff2bd6",
+      glow2: "#00e5ff",
+      gold: "#ffd21c",
+      panel: "#11102f"
+    },
+    {
+      bg1: "#03132d",
+      bg2: "#083f57",
+      glow: "#00f5ff",
+      glow2: "#7c3aed",
+      gold: "#ffe45c",
+      panel: "#061b35"
+    },
+    {
+      bg1: "#19000f",
+      bg2: "#5a0734",
+      glow: "#ff3b81",
+      glow2: "#ffb300",
+      gold: "#fff16a",
+      panel: "#26051d"
+    },
+    {
+      bg1: "#061b12",
+      bg2: "#053d3a",
+      glow: "#20ff9a",
+      glow2: "#00c2ff",
+      gold: "#ffe36e",
+      panel: "#06251f"
+    },
+    {
+      bg1: "#13081f",
+      bg2: "#3d125f",
+      glow: "#b45cff",
+      glow2: "#ff5ca8",
+      gold: "#ffe45b",
+      panel: "#1c1031"
+    }
   ];
 
-  const variantSecondary = [
-    baseColors.secondary,
-    "#22c55e",
-    "#f59e0b",
-    "#60a5fa",
-    "#fb7185"
-  ];
+  const palette =
+    palettes[posterVariant];
 
-  const colors = {
-    ...baseColors,
-    accent: variantAccents[posterVariant],
-    secondary: variantSecondary[posterVariant]
-  };
+  const accent =
+    palette.glow ||
+    baseColors.accent;
 
-  const gradient =
+  const secondary =
+    palette.glow2 ||
+    baseColors.secondary;
+
+  const textColor =
+    "#ffffff";
+
+  // ---------- Background ----------
+  const bg =
     ctx.createLinearGradient(
-      posterVariant === 1 ? width : 0,
-      posterVariant === 2 ? height : 0,
-      posterVariant === 3 ? 0 : width,
-      posterVariant === 4 ? 0 : height
+      0,
+      0,
+      width,
+      height
     );
 
-  gradient.addColorStop(
+  bg.addColorStop(
     0,
-    colors.background
+    palette.bg1
   );
 
-  gradient.addColorStop(
-    0.55,
-    "#0f172a"
+  bg.addColorStop(
+    0.52,
+    "#080b20"
   );
 
-  gradient.addColorStop(
+  bg.addColorStop(
     1,
-    posterVariant === 0
-      ? "#020617"
-      : colors.secondary
+    palette.bg2
   );
 
-  ctx.fillStyle =
-    gradient;
-
+  ctx.fillStyle = bg;
   ctx.fillRect(
     0,
     0,
@@ -1994,127 +2020,144 @@ async function createGamePoster(
     height
   );
 
-  // Per-game decorative glow shapes.
-  ctx.globalAlpha = 0.14;
-  ctx.fillStyle = colors.accent;
+  // Soft radial glow helper.
+  const glowCircle = (
+    x,
+    y,
+    radius,
+    color,
+    alpha
+  ) => {
+    const g =
+      ctx.createRadialGradient(
+        x,
+        y,
+        0,
+        x,
+        y,
+        radius
+      );
 
-  ctx.beginPath();
-  ctx.arc(
-    120 + posterVariant * 70,
-    130 + posterVariant * 45,
-    190 + posterVariant * 18,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
+    g.addColorStop(
+      0,
+      color
+    );
 
-  ctx.fillStyle = colors.secondary;
-  ctx.beginPath();
-  ctx.arc(
-    960 - posterVariant * 55,
-    250 + posterVariant * 65,
-    230 - posterVariant * 12,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
-
-  ctx.globalAlpha = 1;
-
-  ctx.globalAlpha =
-    0.15;
-
-  ctx.fillStyle =
-    colors.accent;
-
-  ctx.beginPath();
-
-  ctx.arc(
-    90,
-    110,
-    180,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  ctx.fillStyle =
-    colors.secondary;
-
-  ctx.beginPath();
-
-  ctx.arc(
-    1010,
-    260,
-    240,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  ctx.globalAlpha =
-    1;
-
-  // Fun poster decorations. Their shapes, colors and positions vary with the
-  // randomly selected poster variant.
-  const confettiColors = [
-    colors.accent,
-    colors.secondary,
-    "#fbbf24",
-    "#fb7185",
-    "#38bdf8",
-    "#a78bfa"
-  ];
-
-  for (let i = 0; i < 28; i += 1) {
-    const x =
-      75 +
-      ((i * 137 + posterVariant * 83) % (width - 150));
-    const y =
-      40 +
-      ((i * 211 + posterVariant * 127) % 430);
-    const size =
-      5 +
-      ((i + posterVariant) % 8);
+    g.addColorStop(
+      1,
+      "rgba(0,0,0,0)"
+    );
 
     ctx.save();
-    ctx.translate(x, y);
+    ctx.globalAlpha =
+      alpha;
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(
+      x,
+      y,
+      radius,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+    ctx.restore();
+  };
+
+  glowCircle(
+    100,
+    180,
+    360,
+    accent,
+    0.38
+  );
+
+  glowCircle(
+    980,
+    370,
+    390,
+    secondary,
+    0.30
+  );
+
+  glowCircle(
+    550,
+    1400,
+    420,
+    accent,
+    0.18
+  );
+
+  // ---------- Confetti ----------
+  const confettiColors = [
+    accent,
+    secondary,
+    palette.gold,
+    "#ff4f8b",
+    "#49d9ff",
+    "#a77bff",
+    "#ffffff"
+  ];
+
+  for (
+    let i = 0;
+    i < 85;
+    i += 1
+  ) {
+    const x =
+      22 +
+      ((i * 137 +
+        posterVariant * 97) %
+        (width - 44));
+
+    const y =
+      18 +
+      ((i * 181 +
+        posterVariant * 131) %
+        (height - 36));
+
+    const size =
+      5 +
+      ((i +
+        posterVariant) %
+        10);
+
+    ctx.save();
+    ctx.translate(
+      x,
+      y
+    );
     ctx.rotate(
-      ((i * 19 + posterVariant * 31) % 120) *
+      ((i * 27 +
+        posterVariant * 41) %
+        360) *
         Math.PI /
         180
     );
+
     ctx.fillStyle =
       confettiColors[
-        i % confettiColors.length
+        i %
+          confettiColors.length
       ];
-    ctx.globalAlpha = 0.82;
+
+    ctx.globalAlpha =
+      0.75;
 
     if (
-      posterVariant === 0 ||
-      posterVariant === 3
+      i % 3 ===
+      0
     ) {
       ctx.fillRect(
         -size / 2,
         -size / 2,
         size,
-        size * 1.8
+        size * 2
       );
     } else if (
-      posterVariant === 1
+      i % 3 ===
+      1
     ) {
-      ctx.beginPath();
-      ctx.arc(
-        0,
-        0,
-        size,
-        0,
-        Math.PI * 2
-      );
-      ctx.fill();
-    } else {
       ctx.beginPath();
       ctx.moveTo(
         0,
@@ -2130,212 +2173,557 @@ async function createGamePoster(
       );
       ctx.closePath();
       ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.arc(
+        0,
+        0,
+        size * 0.7,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
     }
 
     ctx.restore();
   }
 
-  ctx.globalAlpha =
-    1;
+  ctx.globalAlpha = 1;
 
-  const cardX = 55;
-  const cardY = 55;
-  const cardW =
-    width - 110;
-  const cardH =
-    height - 110;
+  // ---------- Drawing helpers ----------
+  const panel = (
+    x,
+    y,
+    w,
+    h,
+    radius = 28,
+    fill = "rgba(7,10,31,0.78)",
+    stroke = accent,
+    lineWidth = 3
+  ) => {
+    ctx.save();
 
-  roundedRect(
-    ctx,
-    cardX,
-    cardY,
-    cardW,
-    cardH,
-    35
-  );
+    roundedRect(
+      ctx,
+      x,
+      y,
+      w,
+      h,
+      radius
+    );
 
-  ctx.fillStyle =
-    "rgba(255,255,255,0.08)";
+    ctx.fillStyle =
+      fill;
+    ctx.fill();
 
-  ctx.fill();
+    ctx.strokeStyle =
+      stroke;
+    ctx.lineWidth =
+      lineWidth;
+    ctx.stroke();
 
-  ctx.strokeStyle =
-    "rgba(255,255,255,0.18)";
+    ctx.restore();
+  };
 
-  ctx.lineWidth = 3;
+  const centerText = (
+    value,
+    x,
+    y,
+    font,
+    fill = textColor
+  ) => {
+    ctx.save();
+    ctx.textAlign =
+      "center";
+    ctx.textBaseline =
+      "middle";
+    ctx.font = font;
+    ctx.fillStyle =
+      fill;
+    ctx.fillText(
+      String(value),
+      x,
+      y
+    );
+    ctx.restore();
+  };
 
-  ctx.stroke();
+  const fitCenterText = (
+    value,
+    x,
+    y,
+    maxWidth,
+    startSize,
+    minSize,
+    weight = "900",
+    fill = textColor
+  ) => {
+    let size =
+      startSize;
 
-  ctx.textAlign =
-    "center";
+    while (
+      size > minSize
+    ) {
+      ctx.font =
+        `${weight} ${size}px Arial`;
 
-  ctx.fillStyle =
-    colors.accent;
+      if (
+        ctx.measureText(
+          String(value)
+        ).width <=
+        maxWidth
+      ) {
+        break;
+      }
 
-  ctx.font =
-    "bold 38px Arial";
+      size -= 2;
+    }
 
-  ctx.fillText(
-    "TAMBOLA LIVE",
-    width / 2,
-    135
-  );
+    centerText(
+      value,
+      x,
+      y,
+      `${weight} ${size}px Arial`,
+      fill
+    );
+  };
 
-  ctx.fillStyle =
-    colors.text;
+  const labelValueBox = (
+    x,
+    y,
+    w,
+    h,
+    label,
+    value,
+    stroke
+  ) => {
+    panel(
+      x,
+      y,
+      w,
+      h,
+      24,
+      "rgba(8,11,35,0.82)",
+      stroke,
+      4
+    );
 
-  drawPosterText(
-    ctx,
-    String(
-      game.game_name ||
-      DEFAULT_GAME_NAME
-    ),
-    width / 2,
-    220,
-    900,
-    "bold 64px Arial"
-  );
+    ctx.save();
+    ctx.textAlign =
+      "left";
+    ctx.textBaseline =
+      "alphabetic";
 
-  ctx.fillStyle =
-    colors.secondary;
+    ctx.font =
+      "900 24px Arial";
+    ctx.fillStyle =
+      stroke;
+    ctx.fillText(
+      label,
+      x + 28,
+      y + 39
+    );
 
-  ctx.font =
-    "bold 30px Arial";
+    fitCenterText(
+      value,
+      x + w / 2,
+      y + 83,
+      w - 50,
+      40,
+      24,
+      "900",
+      textColor
+    );
 
-  ctx.fillText(
-    "YOU ARE INVITED TO PLAY!",
-    width / 2,
-    275
-  );
+    ctx.restore();
+  };
 
-  roundedRect(
-    ctx,
-    140,
-    330,
-    800,
-    145,
-    25
-  );
+  const drawStar = (
+    cx,
+    cy,
+    outer,
+    inner,
+    fill
+  ) => {
+    ctx.save();
+    ctx.translate(
+      cx,
+      cy
+    );
+    ctx.beginPath();
 
-  ctx.fillStyle =
-    "rgba(0,0,0,0.3)";
+    for (
+      let i = 0;
+      i < 10;
+      i += 1
+    ) {
+      const angle =
+        -Math.PI / 2 +
+        i *
+          Math.PI /
+          5;
 
-  ctx.fill();
-
-  ctx.fillStyle =
-    colors.text;
-
-  ctx.font =
-    "bold 27px Arial";
-
-  ctx.fillText(
-    "GAME CODE",
-    width / 2,
-    370
-  );
-
-  ctx.fillStyle =
-    colors.accent;
-
-  ctx.font =
-    "bold 72px Arial";
-
-  ctx.fillText(
-    String(
-      game.game_code ||
-      ""
-    ),
-    width / 2,
-    445
-  );
-
-  const detailY =
-    535;
-
-  const details = [
-    [
-      "DATE",
-      game.game_date ||
-        "-"
-    ],
-    [
-      "TIME",
-      game.game_time ||
-        "-"
-    ],
-    [
-      "TICKET PRICE",
-      `INR ${
-        game.ticket_price ||
+      const radius =
+        i % 2 ===
         0
-      }`
-    ],
-    [
-      "TICKETS",
-      `${
-        game.ticket_limit ||
-        0
-      } available`
-    ]
-  ];
+          ? outer
+          : inner;
 
-  details.forEach(
-    (item, index) => {
-      const x =
-        index % 2 === 0
-          ? 130
-          : 560;
-
-      const y =
-        detailY +
-        Math.floor(
-          index / 2
+      const px =
+        Math.cos(
+          angle
         ) *
-          150;
+        radius;
 
-      roundedRect(
-        ctx,
+      const py =
+        Math.sin(
+          angle
+        ) *
+        radius;
+
+      if (i === 0) {
+        ctx.moveTo(
+          px,
+          py
+        );
+      } else {
+        ctx.lineTo(
+          px,
+          py
+        );
+      }
+    }
+
+    ctx.closePath();
+    ctx.fillStyle =
+      fill;
+    ctx.fill();
+
+    ctx.strokeStyle =
+      "#ffffff";
+    ctx.globalAlpha =
+      0.45;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.restore();
+  };
+
+  const drawBall = (
+    x,
+    y,
+    radius,
+    number,
+    color
+  ) => {
+    const g =
+      ctx.createRadialGradient(
+        x - radius * 0.3,
+        y - radius * 0.35,
+        radius * 0.1,
         x,
         y,
-        390,
-        110,
-        18
+        radius
       );
 
-      ctx.fillStyle =
-        "rgba(255,255,255,0.10)";
+    g.addColorStop(
+      0,
+      "#ffffff"
+    );
+    g.addColorStop(
+      0.14,
+      color
+    );
+    g.addColorStop(
+      1,
+      "#05050c"
+    );
 
-      ctx.fill();
+    ctx.save();
+    ctx.fillStyle =
+      g;
+    ctx.shadowColor =
+      color;
+    ctx.shadowBlur =
+      24;
 
-      ctx.textAlign =
-        "left";
+    ctx.beginPath();
+    ctx.arc(
+      x,
+      y,
+      radius,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
 
-      ctx.fillStyle =
-        colors.secondary;
+    ctx.shadowBlur = 0;
+    ctx.fillStyle =
+      "#ffffff";
+    ctx.font =
+      "900 30px Arial";
+    ctx.textAlign =
+      "center";
+    ctx.textBaseline =
+      "middle";
 
-      ctx.font =
-        "bold 21px Arial";
+    ctx.beginPath();
+    ctx.arc(
+      x,
+      y,
+      radius * 0.48,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
 
-      ctx.fillText(
-        item[0],
-        x + 22,
-        y + 35
-      );
+    ctx.fillStyle =
+      "#111111";
+    ctx.font =
+      "900 25px Arial";
+    ctx.fillText(
+      String(number),
+      x,
+      y
+    );
 
-      ctx.fillStyle =
-        colors.text;
+    ctx.restore();
+  };
 
-      drawPosterText(
-        ctx,
-        String(item[1]),
-        x + 22,
-        y + 77,
-        345,
-        "bold 29px Arial"
-      );
+  const drawTicket = (
+    x,
+    y,
+    w,
+    h,
+    color
+  ) => {
+    ctx.save();
+
+    roundedRect(
+      ctx,
+      x,
+      y,
+      w,
+      h,
+      16
+    );
+
+    ctx.fillStyle =
+      "#ffffff";
+    ctx.fill();
+
+    ctx.strokeStyle =
+      color;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    ctx.fillStyle =
+      color;
+
+    for (
+      let r = 0;
+      r < 3;
+      r += 1
+    ) {
+      for (
+        let c = 0;
+        c < 3;
+        c += 1
+      ) {
+        ctx.globalAlpha =
+          0.85;
+
+        ctx.fillRect(
+          x + 18 +
+            c *
+              ((w - 50) /
+                3),
+          y + 15 +
+            r *
+              ((h - 40) /
+                3),
+          25,
+          25
+        );
+      }
     }
+
+    ctx.restore();
+  };
+
+  // ---------- Hero header ----------
+  ctx.save();
+
+  ctx.shadowColor =
+    accent;
+  ctx.shadowBlur =
+    36;
+
+  centerText(
+    "TAMBOLA",
+    width / 2,
+    100,
+    "900 104px Arial",
+    palette.gold
   );
 
+  ctx.shadowBlur =
+    0;
+
+  centerText(
+    "LIVE",
+    width / 2,
+    188,
+    "900 88px Arial",
+    "#ffffff"
+  );
+
+  ctx.restore();
+
+  // Small game-night decorations around title.
+  drawStar(
+    105,
+    105,
+    28,
+    12,
+    accent
+  );
+
+  drawStar(
+    975,
+    105,
+    28,
+    12,
+    secondary
+  );
+
+  drawTicket(
+    48,
+    225,
+    190,
+    110,
+    accent
+  );
+
+  drawTicket(
+    842,
+    225,
+    190,
+    110,
+    secondary
+  );
+
+  drawBall(
+    245,
+    285,
+    48,
+    7,
+    "#ef4444"
+  );
+
+  drawBall(
+    835,
+    285,
+    48,
+    17,
+    "#22c55e"
+  );
+
+  panel(
+    270,
+    250,
+    540,
+    115,
+    26,
+    "rgba(0,0,0,0.48)",
+    palette.gold,
+    4
+  );
+
+  centerText(
+    "YOU ARE INVITED TO PLAY!",
+    width / 2,
+    306,
+    "900 31px Arial",
+    palette.gold
+  );
+
+  // ---------- Game code ----------
+  panel(
+    75,
+    385,
+    930,
+    185,
+    32,
+    "rgba(4,6,22,0.90)",
+    accent,
+    5
+  );
+
+  centerText(
+    "GAME CODE",
+    width / 2,
+    425,
+    "900 28px Arial",
+    "#ffffff"
+  );
+
+  fitCenterText(
+    game.game_code || "-",
+    width / 2,
+    500,
+    790,
+    92,
+    58,
+    "900",
+    accent
+  );
+
+  // ---------- Details ----------
+  const detailY =
+    610;
+
+  labelValueBox(
+    75,
+    detailY,
+    450,
+    125,
+    "DATE",
+    game.game_date || "-",
+    "#ff4f7b"
+  );
+
+  labelValueBox(
+    555,
+    detailY,
+    450,
+    125,
+    "TIME",
+    game.game_time || "-",
+    "#35c8ff"
+  );
+
+  labelValueBox(
+    75,
+    detailY + 145,
+    450,
+    125,
+    "TICKET PRICE",
+    `INR ${game.ticket_price || 0}`,
+    "#2cff8a"
+  );
+
+  labelValueBox(
+    555,
+    detailY + 145,
+    450,
+    125,
+    "TICKETS AVAILABLE",
+    `${game.ticket_limit || 0}`,
+    "#ff4fd8"
+  );
+
+  // ---------- Prize section ----------
   const prizes =
     Array.isArray(
       game.selected_prizes
@@ -2343,111 +2731,235 @@ async function createGamePoster(
       ? game.selected_prizes
       : [];
 
-  const prizeY =
-    830;
+  const prizeTop =
+    930;
 
-  ctx.textAlign =
-    "center";
-
-  ctx.fillStyle =
-    colors.accent;
-
-  ctx.font =
-    "bold 31px Arial";
-
-  ctx.fillText(
-    "PRIZES",
-    width / 2,
-    prizeY
+  panel(
+    55,
+    prizeTop,
+    970,
+    420,
+    34,
+    "rgba(4,6,22,0.90)",
+    palette.gold,
+    5
   );
 
-  if (prizes.length) {
-    const displayPrizes = prizes;
-    const prizeRowGap = displayPrizes.length > 6 ? 34 : 40;
-    const prizeFontSize = displayPrizes.length > 6 ? 20 : 22;
+  // Prize banner.
+  roundedRect(
+    ctx,
+    285,
+    prizeTop - 30,
+    510,
+    90,
+    24
+  );
 
-    displayPrizes.forEach(
+  ctx.fillStyle =
+    "#e51b4b";
+  ctx.fill();
+
+  ctx.strokeStyle =
+    palette.gold;
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  drawStar(
+    315,
+    prizeTop + 15,
+    24,
+    10,
+    palette.gold
+  );
+
+  drawStar(
+    765,
+    prizeTop + 15,
+    24,
+    10,
+    palette.gold
+  );
+
+  centerText(
+    showPrizeAmounts
+      ? "PRIZES & WINNINGS"
+      : "PRIZES",
+    width / 2,
+    prizeTop + 15,
+    "900 42px Arial",
+    "#ffffff"
+  );
+
+  if (
+    prizes.length
+  ) {
+    const columns =
+      prizes.length >= 6
+        ? 2
+        : 1;
+
+    const rows =
+      Math.ceil(
+        prizes.length /
+          columns
+      );
+
+    const rowH =
+      Math.min(
+        82,
+        330 /
+          Math.max(
+            rows,
+            1
+          )
+      );
+
+    prizes.forEach(
       (
         prize,
         index
       ) => {
+        const col =
+          index %
+          columns;
+
+        const row =
+          Math.floor(
+            index /
+              columns
+          );
+
+        const boxW =
+          columns === 1
+            ? 850
+            : 420;
+
+        const x =
+          columns === 1
+            ? 115
+            : col === 0
+            ? 90
+            : 570;
+
         const y =
-          prizeY +
-          55 +
-          index * prizeRowGap;
+          prizeTop +
+          78 +
+          row *
+            rowH;
+
+        roundedRect(
+          ctx,
+          x,
+          y,
+          boxW,
+          rowH - 10,
+          18
+        );
 
         ctx.fillStyle =
-          colors.text;
+          "rgba(255,255,255,0.08)";
+        ctx.fill();
 
-        ctx.font =
-          `bold ${prizeFontSize}px Arial`;
+        ctx.strokeStyle =
+          col === 0
+            ? accent
+            : secondary;
 
-        ctx.fillText(
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.textAlign =
+          "left";
+        ctx.textBaseline =
+          "middle";
+
+        const name =
+          String(
+            prize.name ||
+              "Prize"
+          );
+
+        if (
           showPrizeAmounts
-            ? `${
-                prize.name ||
-                "Prize"
-              } - INR ${
-                prize.amount ||
-                0
-              }`
-            : String(
-                prize.name ||
-                "Prize"
-              ),
-          width / 2,
-          y
-        );
+        ) {
+          fitCenterText(
+            `${name}  â€¢  INR ${prize.amount || 0}`,
+            x +
+              boxW / 2,
+            y +
+              (rowH - 10) /
+                2,
+            boxW - 42,
+            29,
+            18,
+            "900",
+            palette.gold
+          );
+        } else {
+          fitCenterText(
+            name,
+            x +
+              boxW / 2,
+            y +
+              (rowH - 10) /
+                2,
+            boxW - 42,
+            30,
+            19,
+            "900",
+            "#ffffff"
+          );
+        }
       }
     );
   } else {
-    ctx.fillStyle =
-      colors.text;
-
-    ctx.font =
-      "23px Arial";
-
-    ctx.fillText(
-      "Exciting prizes await!",
+    centerText(
+      "EXCITING PRIZES AWAIT!",
       width / 2,
-      prizeY + 55
+      prizeTop + 230,
+      "900 30px Arial",
+      "#ffffff"
     );
   }
 
-  const footerY =
-    Math.min(1225, prizeY + 95 + prizes.length * (prizes.length > 6 ? 34 : 40));
-
-  ctx.textAlign =
-    "center";
-
-  ctx.fillStyle =
-    colors.secondary;
-
-  ctx.font =
-    "bold 22px Arial";
-
-  ctx.fillText(
-    showPrizeAmounts
-      ? "PRIZE AMOUNTS"
-      : "PRIZE LIST",
-    width / 2,
-    footerY
+  // ---------- Bottom call-to-action ----------
+  roundedRect(
+    ctx,
+    55,
+    1395,
+    970,
+    145,
+    28
   );
 
   ctx.fillStyle =
-    "rgba(255,255,255,0.75)";
+    palette.gold;
+  ctx.fill();
 
-  ctx.font =
-    "18px Arial";
+  ctx.strokeStyle =
+    "#ffffff";
+  ctx.lineWidth = 3;
+  ctx.stroke();
 
-  ctx.fillText(
+  centerText(
     showPrizeAmounts
-      ? "Prize amounts set by the host"
-      : "Final prize amounts announced by the host",
+      ? "WINNERS RECEIVE THE PRIZE AMOUNTS SHOWN ABOVE"
+      : "FINAL PRIZE AMOUNTS WILL BE ANNOUNCED BY THE HOST",
     width / 2,
-    footerY + 38
+    1440,
+    "900 24px Arial",
+    "#201000"
   );
 
+  centerText(
+    "TAMBOLA LIVE  â€¢  PLAY â€¢ WIN â€¢ HAVE FUN!",
+    width / 2,
+    1490,
+    "900 27px Arial",
+    "#201000"
+  );
+
+  // ---------- Export ----------
   const blob =
     await new Promise(
       (resolve) =>
@@ -2468,17 +2980,19 @@ async function createGamePoster(
     `${
       String(
         game.game_name ||
-        "TambolaLive"
+          "TambolaLive"
+      ).replace(
+        /[^a-z0-9]/gi,
+        "_"
       )
-        .replace(
-          /[^a-z0-9]/gi,
-          "_"
-        )
     }-${String(
       game.game_code ||
-      game.id ||
-      "poster"
-    ).replace(/[^a-z0-9]/gi, "_")}-poster.png`,
+        game.id ||
+        "poster"
+    ).replace(
+      /[^a-z0-9]/gi,
+      "_"
+    )}-poster.png`,
     {
       type: "image/png"
     }
