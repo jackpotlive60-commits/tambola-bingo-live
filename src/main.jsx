@@ -2474,7 +2474,11 @@ async function createGamePoster(
           /[^a-z0-9]/gi,
           "_"
         )
-    }-${gameIdentity.replace(/[^a-z0-9]/gi, "_")}-poster.png`,
+    }-${String(
+      game.game_code ||
+      game.id ||
+      "poster"
+    ).replace(/[^a-z0-9]/gi, "_")}-poster.png`,
     {
       type: "image/png"
     }
