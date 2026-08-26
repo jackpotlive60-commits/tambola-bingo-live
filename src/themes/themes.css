@@ -3041,3 +3041,53 @@ body:has(.tl-theme-elegant) main textarea {
   -webkit-text-fill-color: #fff8e7 !important;
   border-color: rgba(212,175,55,.72) !important;
 }
+
+
+/* =========================================================
+   ELEGANT â€” HOST PRIZE WINNERS CONTRAST FIX
+   ---------------------------------------------------------
+   The Prize Winners rows contain inline light/green colours.
+   Keep this section on Elegant's dark + gold palette so prize
+   names such as "First Five" remain clearly visible.
+   ========================================================= */
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] {
+  color: #f7f1df !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="gridTemplateColumns"] {
+  background: linear-gradient(135deg,#18251f,#0f1915) !important;
+  color: #f7f1df !important;
+  border: 1px solid rgba(212,175,55,.42) !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="gridTemplateColumns"] > div {
+  color: #f7f1df !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div {
+  background: linear-gradient(145deg,#151d25,#0d141b) !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.42) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.28) !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div > div,
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div > div b,
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div span {
+  color: #f7f1df !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div > div b {
+  color: #f5d77a !important;
+  font-weight: 800 !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div > div:nth-child(2) {
+  color: #f7f1df !important;
+  font-weight: 700 !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div > div:nth-child(3),
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div > div:nth-child(3) div {
+  color: #f5d77a !important;
+}
