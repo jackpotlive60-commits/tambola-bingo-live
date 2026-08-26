@@ -9289,124 +9289,107 @@ function HostControlPage({
                             12
                         }}
                       >
-                        <InfoBox
-                          title="Player Name"
-                          value={
-                            booking.player_name ||
-                            "-"
-                          }
-                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 10,
+                            flexWrap: "wrap"
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <InfoBox
+                              title="Player Name"
+                              value={
+                                booking.player_name ||
+                                "-"
+                              }
+                            />
+                          </div>
 
-                        <InfoBox
-                          title="Ticket Numbers"
-                          value={(() => {
-                            const ticketList = Array.isArray(
-                              booking.ticket_numbers
-                            )
-                              ? booking.ticket_numbers.map(Number).filter(
-                                  (number) => Number.isFinite(number)
-                                )
-                              : [];
+                          <button
+                            type="button"
+                            aria-expanded={expandedBookingIds.has(
+                              String(booking.id)
+                            )}
+                            onClick={() => {
+                              setExpandedBookingIds(
+                                (previous) => {
+                                  const next = new Set(previous);
+                                  const key = String(booking.id);
 
-                            const isExpanded =
-                              expandedBookingIds.has(
-                                String(booking.id)
+                                  if (next.has(key)) {
+                                    next.delete(key);
+                                  } else {
+                                    next.add(key);
+                                  }
+
+                                  return next;
+                                }
                               );
-
-                            const visibleTickets = isExpanded
-                              ? ticketList
-                              : ticketList.slice(0, 6);
-
-                            const hasMore =
-                              ticketList.length > 6;
-
-                            return (
-                              <div>
-                                <div
-                                  style={{
-                                    lineHeight: 1.7,
-                                    wordBreak: "break-word"
-                                  }}
-                                >
-                                  {visibleTickets.length
-                                    ? visibleTickets.join(", ")
-                                    : "-"}
-                                  {hasMore && !isExpanded
-                                    ? " ..."
-                                    : ""}
-                                </div>
-
-                                {ticketList.length > 0 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setExpandedBookingIds(
-                                        (previous) => {
-                                          const next = new Set(
-                                            previous
-                                          );
-
-                                          const key =
-                                            String(booking.id);
-
-                                          if (next.has(key)) {
-                                            next.delete(key);
-                                          } else {
-                                            next.add(key);
-                                          }
-
-                                          return next;
-                                        }
-                                      );
-                                    }}
-                                    style={{
-                                      marginTop: 8,
-                                      padding: "6px 10px",
-                                      borderRadius: 8,
-                                      border:
-                                        "1px solid var(--theme-primary, #c99a1e)",
-                                      background:
-                                        "transparent",
-                                      color:
-                                        "var(--theme-primary, #c99a1e)",
-                                      cursor: "pointer",
-                                      fontWeight: 700,
-                                      fontSize: 12
-                                    }}
-                                  >
-                                    {isExpanded
-                                      ? "SHOW LESS"
-                                      : ticketList.length > 6
-                                      ? `SHOW MORE (${ticketList.length})`
-                                      : "SHOW MORE"}
-                                  </button>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        />
-
-                        <InfoBox
-                          title="Ticket Count"
-                          value={
-                            Array.isArray(
-                              booking.ticket_numbers
+                            }}
+                            style={{
+                              ...themedSecondaryButton,
+                              minHeight: 42,
+                              padding: "8px 14px",
+                              whiteSpace: "nowrap"
+                            }}
+                          >
+                            {expandedBookingIds.has(
+                              String(booking.id)
                             )
-                              ? booking
-                                  .ticket_numbers
-                                  .length
-                              : 0
-                          }
-                        />
+                              ? "SHOW LESS"
+                              : "SHOW MORE"}
+                          </button>
+                        </div>
 
-                        <InfoBox
-                          title="Status"
-                          value={status.toUpperCase()}
-                        />
+                        {expandedBookingIds.has(
+                          String(booking.id)
+                        ) && (
+                          <>
+                            <InfoBox
+                              title="Ticket Numbers"
+                              value={(() => {
+                                const ticketList =
+                                  Array.isArray(
+                                    booking.ticket_numbers
+                                  )
+                                    ? booking.ticket_numbers.map(Number).filter(
+                                        (number) => Number.isFinite(number)
+                                      )
+                                    : [];
+
+                                return ticketList.length
+                                  ? ticketList.join(", ")
+                                  : "-";
+                              })()}
+                            />
+
+                            <InfoBox
+                              title="Ticket Count"
+                              value={
+                                Array.isArray(
+                                  booking.ticket_numbers
+                                )
+                                  ? booking.ticket_numbers.length
+                                  : 0
+                              }
+                            />
+
+                            <InfoBox
+                              title="Status"
+                              value={status.toUpperCase()}
+                            />
+                          </>
+                        )
                       </div>
 
-                      {status ===
-                        "pending" && (
+                      {expandedBookingIds.has(
+                        String(booking.id)
+                      ) &&
+                        status ===
+                          "pending" && (
                         <div
                           style={{
                             display:
@@ -9473,8 +9456,11 @@ function HostControlPage({
                         </div>
                       )}
 
-                      {status ===
-                        "accepted" && (
+                      {expandedBookingIds.has(
+                        String(booking.id)
+                      ) &&
+                        status ===
+                          "accepted" && (
                         <div
                           style={{
                             display:
