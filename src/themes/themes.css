@@ -2878,11 +2878,6 @@ body:has(.tl-theme-elegant) main textarea {
   border: 1px solid rgba(212,175,55,.72) !important;
 }
 
-/* Buttons remain gold and readable. */
-body:has(.tl-theme-elegant) main button {
-  color: #17130b !important;
-  -webkit-text-fill-color: #17130b !important;
-}
 
 /* Remove any old white helper-surface styling anywhere on Elegant. */
 body:has(.tl-theme-elegant) main .tl-light-surface,
@@ -2896,104 +2891,153 @@ body:has(.tl-theme-elegant) main .tl-readable-light {
 
 
 /* =========================================================
-   ELEGANT â€” BUTTON / CONTROL CONTRAST FIX v3
+   ELEGANT â€” BUTTON SYSTEM REBUILT FROM THE THEME DEFINITIONS
    ---------------------------------------------------------
-   Some Host Control buttons use secondary/disabled styles or
-   button-like elements instead of inheriting the normal theme
-   button rule. Force a consistent luxury-gold treatment while
-   keeping disabled controls readable.
+   The app itself has two button styles:
+     PRIMARY   -> themedPrimaryButton
+     SECONDARY -> themedSecondaryButton
+
+   Other themes use the same distinction. Elegant now follows that
+   same system instead of forcing every button to gold.
+
+   PRIMARY  = luxury gold + readable text
+   SECONDARY = dark premium surface + ivory text + gold border
+   DISABLED = muted dark-gold surface + ivory text
    ========================================================= */
 
-/* All real and button-like controls on Elegant. */
+/* Every Elegant button gets the Elegant geometry/effect, but its
+   background is decided by its semantic primary/secondary role. */
 body:has(.tl-theme-elegant) main button,
 body:has(.tl-theme-elegant) main input[type="button"],
-body:has(.tl-theme-elegant) main input[type="submit"],
-body:has(.tl-theme-elegant) main a[role="button"],
-body:has(.tl-theme-elegant) main [role="button"],
-body:has(.tl-theme-elegant) main [class*="btn"],
-body:has(.tl-theme-elegant) main [class*="Btn"],
-body:has(.tl-theme-elegant) main [class*="button"],
-body:has(.tl-theme-elegant) main [class*="Button"] {
-  background: linear-gradient(135deg, #b98216 0%, #d4a72c 52%, #edc54d 100%) !important;
-  background-color: #d4a72c !important;
-  background-image: linear-gradient(135deg, #b98216 0%, #d4a72c 52%, #edc54d 100%) !important;
-  color: #17130b !important;
-  -webkit-text-fill-color: #17130b !important;
-  border: 1px solid #d4af37 !important;
+body:has(.tl-theme-elegant) main input[type="submit"] {
   text-shadow: none !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+/* ---------------------------------------------------------
+   PRIMARY BUTTONS
+   The source theme defines Elegant primary as:
+   #a98532 -> #d1b56a, with a premium shadow.
+   --------------------------------------------------------- */
+
+/* Submit actions are always themedPrimaryButton. */
+body:has(.tl-theme-elegant) main button[type="submit"],
+/* Primary buttons whose inline style starts from the Elegant
+   primary colour. */
+body:has(.tl-theme-elegant) main button[style*="#a98532"],
+/* Host/live primary actions that deliberately override the base
+   primary colour in main.jsx (blue/green/purple/red states) are
+   still primary controls and therefore use Elegant gold. */
+body:has(.tl-theme-elegant) main button[style*="#2563eb"],
+body:has(.tl-theme-elegant) main button[style*="#16a34a"],
+body:has(.tl-theme-elegant) main button[style*="#7c3aed"] {
+  background: linear-gradient(135deg,#a98532 0%,#d1b56a 100%) !important;
+  background-color: #a98532 !important;
+  background-image: linear-gradient(135deg,#a98532 0%,#d1b56a 100%) !important;
+  color: #fff8e7 !important;
+  -webkit-text-fill-color: #fff8e7 !important;
+  border: 1px solid #a98532 !important;
   box-shadow:
-    0 7px 18px rgba(0,0,0,.28),
-    0 0 12px rgba(212,175,55,.10),
+    0 8px 20px rgba(0,0,0,.30),
+    0 0 12px rgba(212,175,55,.08),
     inset 0 1px 0 rgba(255,245,190,.28) !important;
 }
 
-/* Make every nested label/icon inherit the readable button colour. */
-body:has(.tl-theme-elegant) main button *,
-body:has(.tl-theme-elegant) main input[type="button"] *,
-body:has(.tl-theme-elegant) main input[type="submit"] *,
-body:has(.tl-theme-elegant) main a[role="button"] *,
-body:has(.tl-theme-elegant) main [role="button"] *,
-body:has(.tl-theme-elegant) main [class*="btn"] *,
-body:has(.tl-theme-elegant) main [class*="Btn"] *,
-body:has(.tl-theme-elegant) main [class*="button"] *,
-body:has(.tl-theme-elegant) main [class*="Button"] * {
-  color: #17130b !important;
-  -webkit-text-fill-color: #17130b !important;
-  text-shadow: none !important;
+/* ---------------------------------------------------------
+   SECONDARY BUTTONS
+   The source theme defines secondary buttons from
+   visual.secondaryBackground. For Elegant that surface is now
+   intentionally represented by the dark luxury palette.
+   The inline secondary border identifies these controls.
+   --------------------------------------------------------- */
+body:has(.tl-theme-elegant) main button[style*="rgba(169,139,67,.38)"] {
+  background:
+    linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
+  background-color: #111720 !important;
+  background-image:
+    linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
+  color: #f7f1df !important;
+  -webkit-text-fill-color: #f7f1df !important;
+  border: 1px solid rgba(212,175,55,.58) !important;
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.035) !important;
 }
 
-/* Disabled controls: deliberately darker, but NEVER unreadable. */
-body:has(.tl-theme-elegant) main button:disabled,
-body:has(.tl-theme-elegant) main input:disabled,
-body:has(.tl-theme-elegant) main [aria-disabled="true"],
-body:has(.tl-theme-elegant) main [role="button"][aria-disabled="true"] {
-  background: linear-gradient(135deg, #5d4a20 0%, #786128 100%) !important;
+/* Keep intentionally destructive secondary actions visibly red,
+   while preserving the dark Elegant surface. */
+body:has(.tl-theme-elegant) main button[style*="rgba(169,139,67,.38)"][style*="#dc2626"] {
+  color: #fca5a5 !important;
+  -webkit-text-fill-color: #fca5a5 !important;
+  border-color: rgba(252,165,165,.70) !important;
+}
+
+/* ---------------------------------------------------------
+   DISABLED STATES
+   Preserve the semantic role but lower the visual intensity.
+   Never allow disabled text to become black-on-dark.
+   --------------------------------------------------------- */
+body:has(.tl-theme-elegant) main button:disabled {
+  opacity: .62 !important;
+}
+
+body:has(.tl-theme-elegant) main button[type="submit"]:disabled,
+body:has(.tl-theme-elegant) main button[style*="#a98532"]:disabled,
+body:has(.tl-theme-elegant) main button[style*="#2563eb"]:disabled,
+body:has(.tl-theme-elegant) main button[style*="#16a34a"]:disabled,
+body:has(.tl-theme-elegant) main button[style*="#7c3aed"]:disabled {
+  background: linear-gradient(135deg,#5d4a20 0%,#786128 100%) !important;
   background-color: #6b5522 !important;
-  background-image: linear-gradient(135deg, #5d4a20 0%, #786128 100%) !important;
+  background-image: linear-gradient(135deg,#5d4a20 0%,#786128 100%) !important;
   color: #fff8e7 !important;
   -webkit-text-fill-color: #fff8e7 !important;
   border-color: rgba(212,175,55,.65) !important;
-  opacity: 1 !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,245,190,.16),
-    0 5px 14px rgba(0,0,0,.24) !important;
+  opacity: .68 !important;
 }
 
-body:has(.tl-theme-elegant) main button:disabled *,
-body:has(.tl-theme-elegant) main input:disabled *,
-body:has(.tl-theme-elegant) main [aria-disabled="true"] *,
-body:has(.tl-theme-elegant) main [role="button"][aria-disabled="true"] * {
-  color: #fff8e7 !important;
-  -webkit-text-fill-color: #fff8e7 !important;
-}
-
-/* Select/dropdown holder cards must also stay dark instead of
-   reverting to the old Elegant ivory surface. */
-body:has(.tl-theme-elegant) main div:has(> select),
-body:has(.tl-theme-elegant) main div:has(> select) > label {
-  background: #111720 !important;
-  background-image: linear-gradient(145deg,#171d27,#0e141d) !important;
-  color: #f7f1df !important;
+body:has(.tl-theme-elegant) main button[style*="rgba(169,139,67,.38)"]:disabled {
+  background: linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
+  background-color: #111720 !important;
+  background-image: linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
+  color: #c9c0ae !important;
+  -webkit-text-fill-color: #c9c0ae !important;
   border-color: rgba(212,175,55,.38) !important;
+  opacity: .62 !important;
 }
 
-/* Select controls themselves remain dark and readable. */
-body:has(.tl-theme-elegant) main select {
-  background: #111a26 !important;
-  color: #fff8e7 !important;
-  -webkit-text-fill-color: #fff8e7 !important;
-  border-color: rgba(212,175,55,.78) !important;
+/* Nested text/icons follow the button's readable colour. */
+body:has(.tl-theme-elegant) main button *,
+body:has(.tl-theme-elegant) main input[type="button"] *,
+body:has(.tl-theme-elegant) main input[type="submit"] * {
+  text-shadow: none !important;
 }
 
-/* Keep button text readable during interaction. */
-body:has(.tl-theme-elegant) main button:hover:not(:disabled),
-body:has(.tl-theme-elegant) main [role="button"]:hover:not([aria-disabled="true"]),
-body:has(.tl-theme-elegant) main [class*="btn"]:hover:not(:disabled) {
-  filter: brightness(1.08) !important;
+/* Interaction states: keep the same semantic colours. */
+body:has(.tl-theme-elegant) main button:hover:not(:disabled) {
+  filter: brightness(1.07) !important;
 }
 
-body:has(.tl-theme-elegant) main button:focus-visible,
-body:has(.tl-theme-elegant) main [role="button"]:focus-visible {
+body:has(.tl-theme-elegant) main button:focus-visible {
   outline: 2px solid #f0d36a !important;
   outline-offset: 2px !important;
+}
+
+/* Button-like links/ARIA controls use the secondary Elegant surface
+   unless they are explicitly marked as a submit control. */
+body:has(.tl-theme-elegant) main a[role="button"],
+body:has(.tl-theme-elegant) main [role="button"] {
+  background: linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
+  color: #f7f1df !important;
+  -webkit-text-fill-color: #f7f1df !important;
+  border-color: rgba(212,175,55,.58) !important;
+}
+
+/* Keep the Elegant form controls separate from the button system. */
+body:has(.tl-theme-elegant) main input,
+body:has(.tl-theme-elegant) main select,
+body:has(.tl-theme-elegant) main textarea {
+  background: #1b222d !important;
+  color: #fff8e7 !important;
+  -webkit-text-fill-color: #fff8e7 !important;
+  border-color: rgba(212,175,55,.72) !important;
 }
