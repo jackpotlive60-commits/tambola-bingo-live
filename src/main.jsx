@@ -1932,24 +1932,10 @@ async function createGamePoster(
       game.theme
     );
 
-  // Give every newly-created game its own poster variation.
-  // The variation is deterministic from the game's unique code/id, so
-  // refreshing or resharing the same game does not randomly change it.
-  const gameIdentity = String(
-    game.game_code ||
-    game.id ||
-    game.created_at ||
-    game.game_name ||
-    "TambolaLive"
-  );
-
-  let gameHash = 0;
-  for (let i = 0; i < gameIdentity.length; i += 1) {
-    gameHash =
-      (gameHash * 31 + gameIdentity.charCodeAt(i)) >>> 0;
-  }
-
-  const posterVariant = gameHash % 5;
+  // Randomly choose one of the five built-in poster designs every time
+  // the host generates a poster. The same game can therefore have a
+  // different design each time the poster is generated.
+  const posterVariant = Math.floor(Math.random() * 5);
 
   const variantAccents = [
     baseColors.accent,
@@ -2067,6 +2053,87 @@ async function createGamePoster(
   );
 
   ctx.fill();
+
+  ctx.globalAlpha =
+    1;
+
+  // Fun poster decorations. Their shapes, colors and positions vary with the
+  // randomly selected poster variant.
+  const confettiColors = [
+    colors.accent,
+    colors.secondary,
+    "#fbbf24",
+    "#fb7185",
+    "#38bdf8",
+    "#a78bfa"
+  ];
+
+  for (let i = 0; i < 28; i += 1) {
+    const x =
+      75 +
+      ((i * 137 + posterVariant * 83) % (width - 150));
+    const y =
+      40 +
+      ((i * 211 + posterVariant * 127) % 430);
+    const size =
+      5 +
+      ((i + posterVariant) % 8);
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(
+      ((i * 19 + posterVariant * 31) % 120) *
+        Math.PI /
+        180
+    );
+    ctx.fillStyle =
+      confettiColors[
+        i % confettiColors.length
+      ];
+    ctx.globalAlpha = 0.82;
+
+    if (
+      posterVariant === 0 ||
+      posterVariant === 3
+    ) {
+      ctx.fillRect(
+        -size / 2,
+        -size / 2,
+        size,
+        size * 1.8
+      );
+    } else if (
+      posterVariant === 1
+    ) {
+      ctx.beginPath();
+      ctx.arc(
+        0,
+        0,
+        size,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(
+        0,
+        -size
+      );
+      ctx.lineTo(
+        size,
+        size
+      );
+      ctx.lineTo(
+        -size,
+        size
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
 
   ctx.globalAlpha =
     1;
