@@ -2633,3 +2633,135 @@ body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero-art {
       linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
   }
 }
+
+
+/* =========================================================
+   ELEGANT â€” ALL PAGES / ALL SURFACES CONTRAST LOCK
+   ---------------------------------------------------------
+   The dark + gold palette must apply to EVERY Elegant page,
+   not only the Create Game form. Some host/live pages contain
+   nested surfaces with inline light backgrounds; these rules
+   intentionally override those light surfaces while leaving
+   the other five themes untouched.
+   ========================================================= */
+
+body:has(.tl-theme-elegant) .tl-theme-elegant {
+  --theme-bg: #080c12;
+  --theme-text: #f7f1df;
+  --theme-muted: #b9b19f;
+  --theme-accent: #d4af37;
+  --theme-secondary: #b88a2d;
+  --theme-glow: #d4af37;
+  --theme-page-background:
+    radial-gradient(circle at 12% 8%, rgba(212,175,55,.13), transparent 28%),
+    radial-gradient(circle at 88% 78%, rgba(212,175,55,.07), transparent 32%),
+    linear-gradient(145deg,#070a10,#111722 52%,#080c12);
+  --theme-card-bg:
+    linear-gradient(145deg,#151a23,#0d121a);
+  --theme-panel-bg:
+    linear-gradient(145deg,#171d27,#0e141d);
+  --theme-prize-bg:
+    linear-gradient(135deg,#1b222d,#10161f);
+  --theme-secondary-bg:
+    linear-gradient(135deg,#202733,#121821);
+  --theme-section-bg:
+    linear-gradient(145deg,#151a23,#0d121a);
+  --theme-card-border: 1px solid rgba(212,175,55,.34);
+  --theme-section-border: 1px solid rgba(212,175,55,.34);
+  --theme-panel-border: 1px solid rgba(212,175,55,.48);
+  --theme-card-shadow: 0 14px 34px rgba(0,0,0,.42),0 0 18px rgba(212,175,55,.045),inset 0 1px 0 rgba(255,255,255,.045);
+  --theme-section-shadow: 0 12px 30px rgba(0,0,0,.40),0 0 16px rgba(212,175,55,.04),inset 0 1px 0 rgba(255,255,255,.04);
+  --theme-panel-shadow: 0 10px 26px rgba(0,0,0,.40),0 0 14px rgba(212,175,55,.045),inset 0 1px 0 rgba(255,235,160,.06);
+  --theme-input-bg: #1b222d;
+  --theme-input-text: #fff8e7;
+  --theme-input-border: 1px solid rgba(212,175,55,.72);
+  --theme-primary-button: linear-gradient(135deg,#b98216,#e0b83f);
+  --theme-button-text: #17130b;
+  --theme-primary-border: 1px solid #d4af37;
+  --theme-secondary-border: 1px solid rgba(212,175,55,.48);
+  --theme-hero-bg: rgba(11,15,22,.96);
+  --theme-hero-border: rgba(212,175,55,.58);
+  --theme-panel-text: #f7f1df;
+  --theme-ticket-text: #f7f1df;
+}
+
+/* Any nested surface carrying an inline light background must follow
+   Elegant's dark luxury palette. Buttons and form controls are excluded
+   because they have their own dedicated treatment below. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="background"]:not(.tl-theme-hero):not(.tl-theme-hero-art):not([class*="button"]),
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="backgroundColor"]:not(.tl-theme-hero):not(.tl-theme-hero-art):not([class*="button"]) {
+  background-color: #111720 !important;
+  background-image: linear-gradient(145deg,#171d27,#0e141c) !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.34) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+/* Catch light surfaces that are not inline-styled but use common helper
+   classes on host/live/result pages. */
+body:has(.tl-theme-elegant) .tl-theme-page main .card,
+body:has(.tl-theme-elegant) .tl-theme-page main .panel,
+body:has(.tl-theme-elegant) .tl-theme-page main .surface,
+body:has(.tl-theme-elegant) .tl-theme-page main [class*="card"],
+body:has(.tl-theme-elegant) .tl-theme-page main [class*="panel"],
+body:has(.tl-theme-elegant) .tl-theme-page main [class*="surface"] {
+  color: #f7f1df !important;
+}
+
+/* Never allow nested text to become white-on-white on Elegant pages. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="background"]:not(.tl-theme-hero):not(.tl-theme-hero-art) *,
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="backgroundColor"]:not(.tl-theme-hero):not(.tl-theme-hero-art) * {
+  color: #f7f1df !important;
+}
+
+/* Secondary labels inside those dark surfaces remain softer than headings. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="background"]:not(.tl-theme-hero):not(.tl-theme-hero-art) small,
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="backgroundColor"]:not(.tl-theme-hero):not(.tl-theme-hero-art) small {
+  color: #b9b19f !important;
+}
+
+/* Status/result cards: dark surface, ivory text, gold edge. */
+body:has(.tl-theme-elegant) .tl-theme-page main [data-status],
+body:has(.tl-theme-elegant) .tl-theme-page main [class*="status"] {
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.48) !important;
+}
+
+/* Explicitly fix the light rectangular surfaces visible on Host Control. */
+body:has(.tl-theme-elegant) .tl-theme-page main [style*="#fff"],
+body:has(.tl-theme-elegant) .tl-theme-page main [style*="#ffffff"],
+body:has(.tl-theme-elegant) .tl-theme-page main [style*="white"] {
+  background-color: #111720 !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.42) !important;
+}
+
+/* Re-apply the readable input treatment after the nested-surface rules. */
+body:has(.tl-theme-elegant) .tl-theme-page main input,
+body:has(.tl-theme-elegant) .tl-theme-page main select,
+body:has(.tl-theme-elegant) .tl-theme-page main textarea {
+  background: #1b222d !important;
+  background-image: none !important;
+  color: #fff8e7 !important;
+  -webkit-text-fill-color: #fff8e7 !important;
+  border: 1px solid rgba(212,175,55,.72) !important;
+}
+
+/* Keep actual gold status/action buttons gold instead of being caught by
+   the generic dark-surface rules. */
+body:has(.tl-theme-elegant) .tl-theme-page main button {
+  background: var(--theme-primary-button) !important;
+  color: #17130b !important;
+  -webkit-text-fill-color: #17130b !important;
+  border-color: #d4af37 !important;
+}
+
+/* Gold glow around important Elegant sections without washing out content. */
+body:has(.tl-theme-elegant) .tl-theme-page main > section,
+body:has(.tl-theme-elegant) .tl-theme-page main [data-host-section],
+body:has(.tl-theme-elegant) .tl-theme-page main [data-live-section] {
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.42),
+    0 0 18px rgba(212,175,55,.045),
+    inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
