@@ -2006,6 +2006,17 @@ main [data-host-section="prize-amounts"] + section p {
 }
 
 /* =========================================================
+   HERO ARTWORK â€” FINAL MOBILE COMPOSITION
+   ---------------------------------------------------------
+   Target: curtains/decorative details at the upper-right and
+   the crown seated toward the lower-right of the hero.
+   The asset itself contains both elements, so the key is to
+   align the background from its TOP rather than its BOTTOM.
+   The artwork layer remains taller than the hero and clipped,
+   so it never makes the hero header unnecessarily tall.
+   ========================================================= */
+
+/* =========================================================
    HERO ARTWORK â€” FINAL MOBILE FIX
    ---------------------------------------------------------
    The previous composition was still allowing the artwork layer
@@ -2032,11 +2043,11 @@ main [data-host-section="prize-amounts"] + section p {
   }
 
   .tl-theme-page .tl-theme-hero-art {
-    top: -20% !important;
+    top: 0 !important;
     right: -13% !important;
     width: 82% !important;
     height: 145% !important;
-    background-position: 92% 100% !important;
+    background-position: 92% 0% !important;
     background-size: 124% auto !important;
     opacity: .88 !important;
     filter: saturate(.90) contrast(.96) brightness(.98) !important;
@@ -2099,11 +2110,11 @@ main [data-host-section="prize-amounts"] + section p {
   }
 
   .tl-theme-page .tl-theme-hero-art {
-    top: -21% !important;
+    top: 0 !important;
     right: -15% !important;
     width: 85% !important;
     height: 148% !important;
-    background-position: 92% 100% !important;
+    background-position: 92% 0% !important;
     background-size: 126% auto !important;
     opacity: .86 !important;
   }
