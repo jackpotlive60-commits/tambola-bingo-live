@@ -2119,3 +2119,116 @@ main [data-host-section="prize-amounts"] + section p {
     opacity: .86 !important;
   }
 }
+
+/* =========================================================
+   ROYAL HERO â€” ACTUAL TARGET COMPOSITION v2
+   The Royal asset contains the curtains + crown in one image.
+   Do NOT reposition those pieces independently.
+
+   Target on mobile:
+   - curtains/decorative trim: upper-right
+   - crown: lower-right
+   - no visible rectangular artwork panel
+   - hero stays compact
+   ========================================================= */
+@media (max-width: 600px) {
+  .tl-theme-page .tl-theme-hero {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 27px 30px 25px !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+  }
+
+  /* Keep the copy completely above the visual. */
+  .tl-theme-page .tl-theme-hero-copy {
+    position: relative !important;
+    z-index: 6 !important;
+    max-width: 61% !important;
+    min-height: 0 !important;
+  }
+
+  /*
+     IMPORTANT: scale the SOURCE image, not the hero.
+     The larger source crop separates the curtain at the top
+     from the crown below it while the hero itself stays short.
+  */
+  .tl-theme-royal .tl-theme-hero-art,
+  .tl-theme-page .tl-theme-hero-art {
+    z-index: 1 !important;
+    top: -1% !important;
+    right: -30% !important;
+    width: 108% !important;
+    height: 198% !important;
+    background-image: var(--theme-hero-art) !important;
+    background-repeat: no-repeat !important;
+    background-position: 100% 0% !important;
+    background-size: 190% auto !important;
+    opacity: .78 !important;
+    filter: saturate(.90) contrast(.97) brightness(.94) !important;
+    transform: none !important;
+
+    /* Radial fade removes the rectangular source-image boundary. */
+    -webkit-mask-image: radial-gradient(
+      ellipse at 86% 58%,
+      #000 0%,
+      #000 43%,
+      rgba(0,0,0,.90) 56%,
+      rgba(0,0,0,.48) 72%,
+      transparent 91%
+    ) !important;
+    mask-image: radial-gradient(
+      ellipse at 86% 58%,
+      #000 0%,
+      #000 43%,
+      rgba(0,0,0,.90) 56%,
+      rgba(0,0,0,.48) 72%,
+      transparent 91%
+    ) !important;
+  }
+
+  /* No horizontal veil across the artwork. Fade only from the text side. */
+  .tl-theme-page .tl-theme-hero::before {
+    z-index: 2 !important;
+    background: linear-gradient(
+      90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb, var(--theme-hero-bg) 96%, transparent) 28%,
+      color-mix(in srgb, var(--theme-hero-bg) 72%, transparent) 44%,
+      color-mix(in srgb, var(--theme-hero-bg) 24%, transparent) 61%,
+      transparent 79%
+    ) !important;
+  }
+
+  .tl-theme-page .tl-theme-hero::after {
+    z-index: 3 !important;
+    background: radial-gradient(
+      ellipse at 92% 58%,
+      transparent 0%,
+      transparent 54%,
+      color-mix(in srgb, var(--theme-hero-bg) 12%, transparent) 74%,
+      color-mix(in srgb, var(--theme-hero-bg) 26%, transparent) 100%
+    ) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .tl-theme-page .tl-theme-hero {
+    padding: 25px 26px 23px !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 62% !important;
+  }
+
+  .tl-theme-royal .tl-theme-hero-art,
+  .tl-theme-page .tl-theme-hero-art {
+    top: -1% !important;
+    right: -34% !important;
+    width: 116% !important;
+    height: 205% !important;
+    background-position: 100% 0% !important;
+    background-size: 198% auto !important;
+    opacity: .76 !important;
+  }
+}
