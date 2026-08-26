@@ -7192,6 +7192,32 @@ function HostControlPage({
     totalTicketLimit - ticketsSold
   );
 
+  /*
+   * Total amount generated from actual approved ticket sales.
+   *
+   * Each accepted booking is priced using the same package-pricing rules
+   * used when the player selects tickets (single / half-sheet / full-sheet).
+   * Cancelled/rejected and pending bookings generate no sales amount.
+   */
+  const totalSalesAmount = accepted.reduce(
+    (total, booking) => {
+      const ticketCount = Array.isArray(
+        booking.ticket_numbers
+      )
+        ? booking.ticket_numbers.length
+        : Number(booking.ticket_count) || 0;
+
+      return (
+        total +
+        calculateTicketPackagePrice(
+          ticketCount,
+          game.ticket_price
+        ).total
+      );
+    },
+    0
+  );
+
   async function startGame() {
     if (
       gameAction ||
@@ -9096,7 +9122,7 @@ function HostControlPage({
             style={{
               display: "grid",
               gridTemplateColumns:
-                "repeat(3, minmax(0, 1fr))",
+                "repeat(4, minmax(0, 1fr))",
               gap: 10
             }}
           >
@@ -9121,6 +9147,11 @@ function HostControlPage({
                   ? totalTicketLimit
                   : "â€”"
               }
+            />
+
+            <StatusBox
+              title="Amount Generated"
+              value={`INR ${totalSalesAmount.toLocaleString("en-IN")}`}
             />
           </div>
 
