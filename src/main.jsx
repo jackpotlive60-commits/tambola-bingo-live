@@ -1899,8 +1899,12 @@ function drawPosterText(
 }
 
 async function createGamePoster(
-  game
+  game,
+  options = {}
 ) {
+  const showPrizeAmounts =
+    options.showPrizeAmounts === true;
+
   const width = 1080;
   const height = 1350;
 
@@ -2312,13 +2316,18 @@ async function createGamePoster(
           `bold ${prizeFontSize}px Arial`;
 
         ctx.fillText(
-          `${
-            prize.name ||
-            "Prize"
-          } - INR ${
-            prize.amount ||
-            0
-          }`,
+          showPrizeAmounts
+            ? `${
+                prize.name ||
+                "Prize"
+              } - INR ${
+                prize.amount ||
+                0
+              }`
+            : String(
+                prize.name ||
+                "Prize"
+              ),
           width / 2,
           y
         );
@@ -2351,7 +2360,9 @@ async function createGamePoster(
     "bold 22px Arial";
 
   ctx.fillText(
-    "PRIZE LIST UPDATED",
+    showPrizeAmounts
+      ? "PRIZE AMOUNTS"
+      : "PRIZE LIST",
     width / 2,
     footerY
   );
@@ -2363,7 +2374,9 @@ async function createGamePoster(
     "18px Arial";
 
   ctx.fillText(
-    "Final prize amounts announced by the host",
+    showPrizeAmounts
+      ? "Prize amounts set by the host"
+      : "Final prize amounts announced by the host",
     width / 2,
     footerY + 38
   );
@@ -7853,7 +7866,9 @@ function HostControlPage({
       saveHostGame(updatedGame);
       onGameUpdated(updatedGame);
       setSavedPrizeGame(updatedGame);
-      setShareMessage("Prize amounts saved. Now generate the updated poster below to share the new prize list.");
+      setShareMessage(
+        "Prize amounts saved. These amounts are now the winner prizes. The Prize Amount Poster is ready to generate."
+      );
       return updatedGame;
     } catch (err) {
       console.error("Could not save prize amounts:", err);
@@ -7891,45 +7906,31 @@ function HostControlPage({
     }
   }
 
-  async function shareGame() {
-    if (
-      posterCreating ||
-      savingPrizes
-    ) {
+  async function generateAndSharePoster(
+    sourceGame,
+    showPrizeAmounts,
+    successMessage,
+    savedMessage
+  ) {
+    if (posterCreating) {
       return;
     }
 
-    let posterSourceGame = savedPrizeGame || game;
-
-    const prizeEditingAllowed =
-      game.status !== "ended";
-
-    if (prizeEditingAllowed) {
-      const savedGame = await savePrizeAmounts();
-      if (!savedGame) {
-        return;
-      }
-      posterSourceGame = savedGame;
-    }
-
-    setPosterCreating(
-      true
-    );
-
+    setPosterCreating(true);
     setShareMessage("");
 
     try {
       const posterGame = {
-        ...posterSourceGame,
-        selected_prizes: Array.isArray(posterSourceGame.selected_prizes)
-          ? posterSourceGame.selected_prizes.map((prize) => ({ ...prize }))
-          : editablePrizes.map((prize) => ({ ...prize }))
+        ...sourceGame,
+        selected_prizes: Array.isArray(sourceGame.selected_prizes)
+          ? sourceGame.selected_prizes.map((prize) => ({ ...prize }))
+          : []
       };
 
-      const poster =
-        await createGamePoster(
-          posterGame
-        );
+      const poster = await createGamePoster(
+        posterGame,
+        { showPrizeAmounts }
+      );
 
       const canShareFiles =
         navigator.share &&
@@ -7944,55 +7945,88 @@ function HostControlPage({
           files: [poster]
         });
 
-        setShareMessage(
-          "Updated prize poster ready to share. Only the poster was sent."
-        );
-
+        setShareMessage(successMessage);
         return;
       }
 
-      // If the browser cannot share image files directly, save only the poster.
       try {
-        const posterUrl = URL.createObjectURL(poster);
-        const downloadLink = document.createElement("a");
+        const posterUrl =
+          URL.createObjectURL(poster);
+        const downloadLink =
+          document.createElement("a");
+
         downloadLink.href = posterUrl;
         downloadLink.download = poster.name;
         document.body.appendChild(downloadLink);
         downloadLink.click();
         downloadLink.remove();
-        window.setTimeout(() => URL.revokeObjectURL(posterUrl), 1000);
+
+        window.setTimeout(
+          () => URL.revokeObjectURL(posterUrl),
+          1000
+        );
+
+        setShareMessage(savedMessage);
+      } catch (downloadError) {
+        console.error(
+          "Could not prepare poster download:",
+          downloadError
+        );
 
         setShareMessage(
-          "Updated prize poster saved. Share the poster file in WhatsApp."
-        );
-      } catch (downloadError) {
-        console.error("Could not prepare poster download:", downloadError);
-        setShareMessage(
-          "Could not share or save the updated poster."
+          "Could not share or save the poster."
         );
       }
     } catch (error) {
-
-      if (
-        error?.name ===
-        "AbortError"
-      ) {
+      if (error?.name === "AbortError") {
         return;
       }
 
       console.error(
-        "Could not share game:",
+        "Could not create/share poster:",
         error
       );
 
       setShareMessage(
-        "Updated prize poster could not be shared automatically. Please use the saved poster file in WhatsApp."
+        "The poster could not be created or shared. Please try again."
       );
     } finally {
-      setPosterCreating(
-        false
-      );
+      setPosterCreating(false);
     }
+  }
+
+  // First poster: always shows the selected prize names only.
+  // It deliberately does not display any prize amounts.
+  async function shareGame() {
+    if (posterCreating || savingPrizes) {
+      return;
+    }
+
+    await generateAndSharePoster(
+      savedPrizeGame || game,
+      false,
+      "Prize-list poster ready to share. Prize amounts are not shown.",
+      "Prize-list poster saved. Share the poster file in WhatsApp."
+    );
+  }
+
+  // Second poster: available only after the host successfully saves the
+  // prize amounts. The saved amounts are the actual winner prize values.
+  async function sharePrizeAmountPoster() {
+    if (
+      posterCreating ||
+      savingPrizes ||
+      !savedPrizeGame
+    ) {
+      return;
+    }
+
+    await generateAndSharePoster(
+      savedPrizeGame,
+      true,
+      "Prize-amount poster ready to share. These amounts are the winner prizes.",
+      "Prize-amount poster saved. Share the poster file in WhatsApp."
+    );
   }
 
   const CALLER_PHRASES = {
@@ -9043,11 +9077,9 @@ function HostControlPage({
                 "#64748b"
             }}
           >
-            Share Game automatically
-            creates a real PNG poster
-            containing the game details
-            and updated prize amounts.
-            The poster contains no game link.
+            The first poster shows the game details and the selected
+            prize list only. Prize amounts are intentionally hidden.
+            The game link is shown here separately for sharing.
           </p>
 
           <p
@@ -9057,7 +9089,9 @@ function HostControlPage({
               marginTop: 0
             }}
           >
-            Save your new prize amounts first, then use the button below to generate a fresh poster with the updated prizes.
+            After ticket sales are approved, enter the winner prize
+            amounts above and save them. A second poster will then
+            become available with the actual prize amounts.
           </p>
 
           <input
@@ -9095,24 +9129,48 @@ function HostControlPage({
             </button>
 
             <button
-              onClick={
-                shareGame
-              }
+              type="button"
+              onClick={shareGame}
               disabled={
-                posterCreating
+                posterCreating ||
+                savingPrizes
               }
               style={{
                 ...themedPrimaryButton,
                 opacity:
-                  posterCreating
+                  posterCreating ||
+                  savingPrizes
                     ? 0.6
                     : 1
               }}
             >
               {posterCreating
-                ? "Creating Poster..."
-                : "GENERATE UPDATED PRIZE POSTER + SHARE"}
+                ? "CREATING POSTER..."
+                : "GENERATE PRIZE LIST POSTER"}
             </button>
+
+            {savedPrizeGame && (
+              <button
+                type="button"
+                onClick={sharePrizeAmountPoster}
+                disabled={
+                  posterCreating ||
+                  savingPrizes
+                }
+                style={{
+                  ...themedPrimaryButton,
+                  opacity:
+                    posterCreating ||
+                    savingPrizes
+                      ? 0.6
+                      : 1
+                }}
+              >
+                {posterCreating
+                  ? "CREATING POSTER..."
+                  : "GENERATE PRIZE AMOUNT POSTER"}
+              </button>
+            )}
           </div>
 
           {shareMessage && (
