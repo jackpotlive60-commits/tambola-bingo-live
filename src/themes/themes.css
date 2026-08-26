@@ -1567,3 +1567,103 @@ main [data-host-section="prize-amounts"] + section p {
     text-shadow: 0 1px 2px rgba(0,0,0,.3);
   }
 }
+
+/* =========================================================
+   FINAL ARTWORK BLENDING PASS
+   ---------------------------------------------------------
+   Makes theme artwork feel embedded in the theme instead of
+   looking like a separate image placed inside the hero.
+   ========================================================= */
+
+.tl-theme-page .tl-theme-hero-art {
+  opacity: .48 !important;
+  background-size: 108% auto !important;
+  background-position: right center !important;
+  filter:
+    saturate(.82)
+    contrast(.94)
+    brightness(.94) !important;
+  -webkit-mask-image:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.08) 18%,
+      rgba(0,0,0,.42) 34%,
+      rgba(0,0,0,.82) 54%,
+      #000 72%,
+      rgba(0,0,0,.72) 92%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0,0,0,.72) 9%,
+      #000 24%,
+      #000 76%,
+      rgba(0,0,0,.70) 91%,
+      transparent 100%
+    ) !important;
+  mask-image:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.08) 18%,
+      rgba(0,0,0,.42) 34%,
+      rgba(0,0,0,.82) 54%,
+      #000 72%,
+      rgba(0,0,0,.72) 92%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0,0,0,.72) 9%,
+      #000 24%,
+      #000 76%,
+      rgba(0,0,0,.70) 91%,
+      transparent 100%
+    ) !important;
+  -webkit-mask-composite: source-in !important;
+  mask-composite: intersect !important;
+}
+
+/* The hero itself supplies the colour wash that the artwork fades into. */
+.tl-theme-page .tl-theme-hero::before {
+  background:
+    linear-gradient(
+      90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb, var(--theme-hero-bg) 94%, transparent) 30%,
+      color-mix(in srgb, var(--theme-hero-bg) 62%, transparent) 52%,
+      color-mix(in srgb, var(--theme-hero-bg) 22%, transparent) 73%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-hero-bg) 18%, transparent) 0%,
+      transparent 30%,
+      color-mix(in srgb, var(--theme-bg) 20%, transparent) 100%
+    ) !important;
+}
+
+/* A soft colour veil at the artwork edge removes the "sticker" effect. */
+.tl-theme-page .tl-theme-hero::after {
+  background:
+    radial-gradient(
+      ellipse at 92% 50%,
+      transparent 0%,
+      transparent 42%,
+      color-mix(in srgb, var(--theme-hero-bg) 12%, transparent) 72%,
+      color-mix(in srgb, var(--theme-hero-bg) 30%, transparent) 100%
+    ) !important;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page .tl-theme-hero-art {
+    opacity: .43 !important;
+    right: -8% !important;
+    width: 66% !important;
+    height: 100% !important;
+    background-size: 112% auto !important;
+  }
+}
