@@ -1721,98 +1721,207 @@ main [data-host-section="prize-amounts"] + section p {
 
 
 /* =========================================================
-   ROYAL HERO â€” CORRECT MOBILE REFERENCE FIX
-   Keep the hero compact. The reference screenshot is roughly
-   250â€“270 CSS px tall on a phone, not 380â€“450 CSS px.
+   ROYAL HERO â€” NATURAL ARTWORK BLEND / MOBILE REFERENCE
+   The artwork must feel printed into the purple hero surface,
+   not like a rectangular image placed on top of it.
    ========================================================= */
 
+.tl-theme-page .tl-theme-hero {
+  box-sizing: border-box !important;
+  background:
+    radial-gradient(
+      ellipse at 88% 72%,
+      rgba(92, 38, 118, .28) 0%,
+      rgba(92, 38, 118, .08) 42%,
+      transparent 70%
+    ),
+    linear-gradient(
+      145deg,
+      #2a0f3c 0%,
+      #241032 52%,
+      #1d0b2b 100%
+    ) !important;
+}
+
+/* Remove the hard rectangular appearance of the artwork layer. */
+.tl-theme-page .tl-theme-hero-art {
+  top: -20% !important;
+  right: -12% !important;
+  width: 78% !important;
+  height: 145% !important;
+
+  background-image: var(--theme-hero-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: right bottom !important;
+  background-size: 128% auto !important;
+
+  opacity: .58 !important;
+  filter:
+    saturate(.72)
+    contrast(.90)
+    brightness(.82) !important;
+
+  /* Fade every edge into the same purple surface. */
+  -webkit-mask-image:
+    radial-gradient(
+      ellipse at 92% 72%,
+      #000 0%,
+      rgba(0,0,0,.96) 38%,
+      rgba(0,0,0,.72) 58%,
+      rgba(0,0,0,.28) 76%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0,0,0,.18) 13%,
+      #000 27%,
+      #000 78%,
+      rgba(0,0,0,.50) 91%,
+      transparent 100%
+    ) !important;
+  mask-image:
+    radial-gradient(
+      ellipse at 92% 72%,
+      #000 0%,
+      rgba(0,0,0,.96) 38%,
+      rgba(0,0,0,.72) 58%,
+      rgba(0,0,0,.28) 76%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0,0,0,.18) 13%,
+      #000 27%,
+      #000 78%,
+      rgba(0,0,0,.50) 91%,
+      transparent 100%
+    ) !important;
+  -webkit-mask-composite: source-in !important;
+  mask-composite: intersect !important;
+}
+
+/* One broad colour wash over the artwork.
+   This is deliberately purple, not black, so the image disappears
+   into the hero instead of developing a visible rectangle. */
+.tl-theme-page .tl-theme-hero::before {
+  background:
+    linear-gradient(
+      90deg,
+      #2a0f3c 0%,
+      rgba(42,15,60,.98) 30%,
+      rgba(42,15,60,.82) 46%,
+      rgba(42,15,60,.40) 66%,
+      rgba(42,15,60,.08) 84%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(42,15,60,.30) 0%,
+      transparent 24%,
+      transparent 72%,
+      rgba(29,11,43,.34) 100%
+    ) !important;
+}
+
+/* Feather the right and bottom edges without creating a visible panel. */
+.tl-theme-page .tl-theme-hero::after {
+  background:
+    radial-gradient(
+      ellipse at 92% 78%,
+      transparent 0%,
+      transparent 43%,
+      rgba(29,11,43,.16) 65%,
+      rgba(29,11,43,.42) 100%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 76%,
+      rgba(29,11,43,.30) 100%
+    ) !important;
+}
+
+.tl-theme-page .tl-theme-hero-copy {
+  max-width: 62% !important;
+  min-height: 0 !important;
+}
+
+/* Mobile composition matching the supplied reference:
+   compact hero, three-line title, artwork living in the lower-right. */
 @media (max-width: 600px) {
-  .tl-theme-page.tl-theme-royal .tl-theme-hero {
+  .tl-theme-page .tl-theme-hero {
     min-height: 0 !important;
-    height: auto !important;
-    padding: 22px 24px 24px !important;
-    border-radius: 24px !important;
+    height: 446px !important;
+    padding: 34px 42px !important;
+    border-radius: 18px !important;
   }
 
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy {
-    max-width: 56% !important;
-    min-height: 0 !important;
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 62% !important;
   }
 
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h1,
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h2,
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h3 {
-    max-width: 100% !important;
-    font-size: 30px !important;
-    line-height: 1.04 !important;
-    margin-top: 10px !important;
-    margin-bottom: 10px !important;
-  }
-
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy p {
-    max-width: 100% !important;
-    font-size: 17px !important;
-    line-height: 1.36 !important;
-    margin-bottom: 0 !important;
-  }
-
-  /* Use the original artwork scale/position rather than the oversized
-     chair/crown composition introduced by the previous override. */
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-art {
-    top: 0 !important;
-    right: -8% !important;
-    width: 58% !important;
-    height: 100% !important;
-    transform: none !important;
-    opacity: .46 !important;
-    background-size: contain !important;
+  .tl-theme-page .tl-theme-hero-art {
+    top: -18% !important;
+    right: -16% !important;
+    width: 84% !important;
+    height: 138% !important;
+    background-size: 132% auto !important;
     background-position: right bottom !important;
-    filter: saturate(.82) contrast(.94) brightness(.94) !important;
+    opacity: .56 !important;
+    filter:
+      saturate(.70)
+      contrast(.88)
+      brightness(.80) !important;
   }
 
-  .tl-theme-page.tl-theme-royal .tl-theme-hero::before {
+  .tl-theme-page .tl-theme-hero::before {
     background:
       linear-gradient(
         90deg,
-        var(--theme-hero-bg) 0%,
-        color-mix(in srgb, var(--theme-hero-bg) 94%, transparent) 42%,
-        color-mix(in srgb, var(--theme-hero-bg) 54%, transparent) 67%,
+        #2a0f3c 0%,
+        rgba(42,15,60,.99) 28%,
+        rgba(42,15,60,.84) 45%,
+        rgba(42,15,60,.46) 65%,
+        rgba(42,15,60,.10) 86%,
         transparent 100%
       ),
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--theme-hero-bg) 14%, transparent) 0%,
-        transparent 55%,
-        color-mix(in srgb, var(--theme-bg) 18%, transparent) 100%
+        rgba(42,15,60,.28) 0%,
+        transparent 24%,
+        transparent 70%,
+        rgba(29,11,43,.34) 100%
+      ) !important;
+  }
+
+  .tl-theme-page .tl-theme-hero::after {
+    background:
+      radial-gradient(
+        ellipse at 91% 80%,
+        transparent 0%,
+        transparent 42%,
+        rgba(29,11,43,.15) 65%,
+        rgba(29,11,43,.40) 100%
+      ),
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        transparent 77%,
+        rgba(29,11,43,.26) 100%
       ) !important;
   }
 }
 
-@media (max-width: 430px) {
-  .tl-theme-page.tl-theme-royal .tl-theme-hero {
-    padding: 21px 24px 23px !important;
-    border-radius: 22px !important;
+/* Slightly smaller phones: preserve the composition without clipping text. */
+@media (max-width: 380px) {
+  .tl-theme-page .tl-theme-hero {
+    height: 430px !important;
+    padding: 30px 28px !important;
   }
 
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy {
-    max-width: 58% !important;
-  }
-
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h1,
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h2,
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h3 {
-    font-size: 29px !important;
-    line-height: 1.05 !important;
-  }
-
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-copy p {
-    font-size: 16px !important;
-    line-height: 1.38 !important;
-  }
-
-  .tl-theme-page.tl-theme-royal .tl-theme-hero-art {
-    right: -9% !important;
-    width: 60% !important;
-    opacity: .44 !important;
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 64% !important;
   }
 }
