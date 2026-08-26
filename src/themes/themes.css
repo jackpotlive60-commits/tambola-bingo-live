@@ -1667,3 +1667,54 @@ main [data-host-section="prize-amounts"] + section p {
     background-size: 112% auto !important;
   }
 }
+
+/* =========================================================
+   ROYAL HERO ARTWORK â€” FINAL POSITION ADJUSTMENT
+   Keeps the successful blending, but moves the artwork
+   higher, slightly left, and more centrally into the
+   right side of the hero.
+   ========================================================= */
+
+.tl-theme-page .tl-theme-hero-art {
+  opacity: .46 !important;
+  right: 2% !important;
+  top: 50% !important;
+  width: 58% !important;
+  height: 118% !important;
+  transform: translateY(-50%) !important;
+  background-size: 116% auto !important;
+  background-position: 72% 48% !important;
+}
+
+/* Preserve the clean reading area while allowing the artwork
+   to occupy more of the right half. */
+.tl-theme-page .tl-theme-hero::before {
+  background:
+    linear-gradient(
+      90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb, var(--theme-hero-bg) 96%, transparent) 24%,
+      color-mix(in srgb, var(--theme-hero-bg) 72%, transparent) 42%,
+      color-mix(in srgb, var(--theme-hero-bg) 32%, transparent) 64%,
+      transparent 88%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-hero-bg) 20%, transparent) 0%,
+      transparent 28%,
+      color-mix(in srgb, var(--theme-bg) 16%, transparent) 100%
+    ) !important;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page .tl-theme-hero-art {
+    opacity: .45 !important;
+    right: -1% !important;
+    top: 50% !important;
+    width: 64% !important;
+    height: 116% !important;
+    transform: translateY(-50%) !important;
+    background-size: 118% auto !important;
+    background-position: 72% 48% !important;
+  }
+}
