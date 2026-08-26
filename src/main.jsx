@@ -1907,34 +1907,297 @@ async function createGamePoster(
 
   const width = 1080;
   const height = 1350;
-
-  const canvas =
-    document.createElement(
-      "canvas"
-    );
-
+  const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
 
-  const ctx =
-    canvas.getContext(
-      "2d"
-    );
+  const ctx = canvas.getContext("2d");
 
   if (!ctx) {
-    throw new Error(
-      "Could not create poster canvas."
-    );
+    throw new Error("Could not create poster canvas.");
   }
 
-  const baseColors =
-    posterTheme(
-      game.theme
-    );
+  const baseColors = posterTheme(game.theme);
+  const colors = {
+    background: "#09051f",
+    panel: "#10082f",
+    panel2: "#17103f",
+    text: "#ffffff",
+    accent: baseColors.accent || "#22d3ee",
+    secondary: baseColors.secondary || "#f59e0b",
+    yellow: "#ffe600",
+    pink: "#ff2f92",
+    cyan: "#22d3ee",
+    green: "#39e75f",
+    orange: "#ff9f1c",
+    red: "#ff3b30"
+  };
 
-  // Give every newly-created game its own poster variation.
-  // The variation is deterministic from the game's unique code/id, so
-  // refreshing or resharing the same game does not randomly change it.
+  // --- Background: bright, playful, poster/flyer style ---
+  const bg = ctx.createLinearGradient(0, 0, width, height);
+  bg.addColorStop(0, "#071329");
+  bg.addColorStop(0.42, "#14083b");
+  bg.addColorStop(0.72, "#1d0b48");
+  bg.addColorStop(1, "#09051f");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+
+  // Soft neon glows.
+  const glow = (x, y, radius, color, alpha = 0.25) => {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    g.addColorStop(0, color.replace(")", `, ${alpha})`).replace("rgb", "rgba"));
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  // Use fixed rgba glows so older browsers do not need color parsing.
+  const radialGlow = (x, y, radius, color) => {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    g.addColorStop(0, color);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  radialGlow(120, 160, 360, "rgba(34,211,238,0.25)");
+  radialGlow(970, 240, 390, "rgba(255,159,28,0.25)");
+  radialGlow(530, 880, 430, "rgba(255,47,146,0.16)");
+
+  // Confetti.
+  const confettiColors = [
+    colors.yellow,
+    colors.pink,
+    colors.cyan,
+    colors.green,
+    colors.orange,
+    "#ffffff"
+  ];
+
+  for (let i = 0; i < 75; i += 1) {
+    const x = (i * 137) % width;
+    const y = 18 + ((i * 83) % 1290);
+    const size = 5 + (i % 7);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(((i * 29) % 360) * Math.PI / 180);
+    ctx.fillStyle = confettiColors[i % confettiColors.length];
+    ctx.globalAlpha = 0.85;
+    ctx.fillRect(-size / 2, -size / 2, size, size * 1.8);
+    ctx.restore();
+  }
+
+  // Small marquee dots around the outer frame.
+  roundedRect(ctx, 28, 28, width - 56, height - 56, 42);
+  ctx.strokeStyle = "rgba(255,255,255,0.28)";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // --- Header ---
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+
+  ctx.save();
+  ctx.shadowColor = colors.pink;
+  ctx.shadowBlur = 26;
+  ctx.fillStyle = colors.yellow;
+  ctx.font = "900 112px Arial Black, Arial, sans-serif";
+  ctx.fillText("TAMBOLA", width / 2, 132);
+  ctx.restore();
+
+  roundedRect(ctx, 355, 135, 370, 100, 30);
+  ctx.fillStyle = colors.red;
+  ctx.fill();
+  ctx.strokeStyle = colors.yellow;
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  for (let x = 375; x <= 705; x += 42) {
+    ctx.fillStyle = x % 84 === 39 ? colors.yellow : "#ffffff";
+    ctx.beginPath();
+    ctx.arc(x, 148, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, 222, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "900 76px Arial Black, Arial, sans-serif";
+  ctx.fillText("LIVE", width / 2, 210);
+
+  ctx.fillStyle = colors.yellow;
+  ctx.font = "900 30px Arial Black, Arial, sans-serif";
+  ctx.fillText("YOU ARE INVITED TO PLAY!", width / 2, 268);
+
+  // --- Game code hero panel ---
+  roundedRect(ctx, 58, 300, 964, 310, 36);
+  ctx.fillStyle = "rgba(6,3,28,0.94)";
+  ctx.fill();
+  ctx.strokeStyle = colors.pink;
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(34,211,238,0.75)";
+  ctx.lineWidth = 2;
+  roundedRect(ctx, 70, 312, 940, 286, 30);
+  ctx.stroke();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "900 31px Arial Black, Arial, sans-serif";
+  ctx.fillText("â˜…  GAME CODE  â˜…", width / 2, 356);
+
+  ctx.save();
+  ctx.shadowColor = colors.cyan;
+  ctx.shadowBlur = 24;
+  ctx.fillStyle = colors.yellow;
+  ctx.font = "900 88px Arial Black, Arial, sans-serif";
+  ctx.fillText(String(game.game_code || ""), width / 2, 450);
+  ctx.restore();
+
+  // Detail cards.
+  const details = [
+    ["DATE", game.game_date || "-", colors.pink],
+    ["TIME", game.game_time || "-", colors.cyan],
+    ["TICKET PRICE", `â‚¹${game.ticket_price || 0}`, colors.green],
+    ["TICKETS AVAILABLE", `${game.ticket_limit || 0}`, "#b84cff"]
+  ];
+
+  details.forEach((item, index) => {
+    const col = index % 2;
+    const row = Math.floor(index / 2);
+    const x = col === 0 ? 82 : 548;
+    const y = 478 + row * 116;
+    const w = 450;
+    const h = 96;
+
+    roundedRect(ctx, x, y, w, h, 22);
+    ctx.fillStyle = "rgba(11,7,38,0.95)";
+    ctx.fill();
+    ctx.strokeStyle = item[2];
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 19px Arial Black, Arial, sans-serif";
+    ctx.fillText(item[0], x + 24, y + 30);
+
+    ctx.fillStyle = colors.yellow;
+    ctx.font = "900 34px Arial Black, Arial, sans-serif";
+    const value = String(item[1]);
+    drawPosterText(ctx, value, x + 24, y + 72, w - 48, "900 34px Arial Black, Arial, sans-serif");
+  });
+
+  // --- Prize section ---
+  const prizes = Array.isArray(game.selected_prizes)
+    ? game.selected_prizes
+    : [];
+
+  const prizeTop = 735;
+  roundedRect(ctx, 38, prizeTop, width - 76, 500, 38);
+  ctx.fillStyle = "rgba(14,5,43,0.96)";
+  ctx.fill();
+  ctx.strokeStyle = colors.yellow;
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  roundedRect(ctx, 330, prizeTop - 38, 420, 88, 26);
+  ctx.fillStyle = colors.red;
+  ctx.fill();
+  ctx.strokeStyle = colors.yellow;
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "900 55px Arial Black, Arial, sans-serif";
+  ctx.fillText("PRIZES", width / 2, prizeTop + 28);
+
+  if (prizes.length) {
+    const columns = prizes.length <= 6 ? 3 : 2;
+    const rows = Math.ceil(prizes.length / columns);
+    const colW = (width - 100) / columns;
+    const rowH = Math.min(150, 415 / rows);
+
+    prizes.forEach((prize, index) => {
+      const col = index % columns;
+      const row = Math.floor(index / columns);
+      const x = 50 + col * colW;
+      const y = prizeTop + 76 + row * rowH;
+      const name = String(prize?.name || "Prize");
+      const amount = Number(prize?.amount) || 0;
+
+      // Divider lines.
+      if (col > 0) {
+        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 7]);
+        ctx.beginPath();
+        ctx.moveTo(x, y - 14);
+        ctx.lineTo(x, y + rowH - 20);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffffff";
+      const nameSize = prizes.length > 8 ? 19 : 23;
+      ctx.font = `900 ${nameSize}px Arial Black, Arial, sans-serif`;
+      drawPosterText(ctx, name.toUpperCase(), x + colW / 2, y + 30, colW - 28, `900 ${nameSize}px Arial Black, Arial, sans-serif`);
+
+      ctx.fillStyle = colors.yellow;
+      ctx.font = `900 ${prizes.length > 8 ? 31 : 38}px Arial Black, Arial, sans-serif`;
+      const amountText = showPrizeAmounts ? `â‚¹${amount.toLocaleString("en-IN")}` : "PRIZE";
+      ctx.fillText(amountText, x + colW / 2, y + 76);
+    });
+  } else {
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 28px Arial Black, Arial, sans-serif";
+    ctx.fillText("EXCITING PRIZES AWAIT!", width / 2, prizeTop + 180);
+  }
+
+  // --- Footer callout ---
+  const footerY = 1270;
+  roundedRect(ctx, 55, footerY - 38, width - 110, 72, 24);
+  ctx.fillStyle = colors.yellow;
+  ctx.fill();
+  ctx.strokeStyle = colors.orange;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = colors.red;
+  ctx.font = "900 25px Arial Black, Arial, sans-serif";
+  ctx.fillText(
+    showPrizeAmounts
+      ? "PRIZE AMOUNTS CONFIRMED!"
+      : "PRIZE LIST UPDATED!",
+    width / 2,
+    footerY + 2
+  );
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 16px Arial, sans-serif";
+  ctx.fillText(
+    showPrizeAmounts
+      ? "THESE ARE THE PRIZES FOR WINNERS"
+      : "FINAL PRIZE AMOUNTS WILL BE ANNOUNCED BY THE HOST",
+    width / 2,
+    footerY + 26
+  );
+
+  const blob = await new Promise((resolve) =>
+    canvas.toBlob(resolve, "image/png")
+  );
+
+  if (!blob) {
+    throw new Error("Could not create PNG poster.");
+  }
+
   const gameIdentity = String(
     game.game_code ||
     game.id ||
@@ -1943,544 +2206,13 @@ async function createGamePoster(
     "TambolaLive"
   );
 
-  let gameHash = 0;
-  for (let i = 0; i < gameIdentity.length; i += 1) {
-    gameHash =
-      (gameHash * 31 + gameIdentity.charCodeAt(i)) >>> 0;
-  }
-
-  const posterVariant = gameHash % 5;
-
-  const variantAccents = [
-    baseColors.accent,
-    baseColors.secondary,
-    "#38bdf8",
-    "#f472b6",
-    "#a78bfa"
-  ];
-
-  const variantSecondary = [
-    baseColors.secondary,
-    "#22c55e",
-    "#f59e0b",
-    "#60a5fa",
-    "#fb7185"
-  ];
-
-  const colors = {
-    ...baseColors,
-    accent: variantAccents[posterVariant],
-    secondary: variantSecondary[posterVariant]
-  };
-
-  const gradient =
-    ctx.createLinearGradient(
-      posterVariant === 1 ? width : 0,
-      posterVariant === 2 ? height : 0,
-      posterVariant === 3 ? 0 : width,
-      posterVariant === 4 ? 0 : height
-    );
-
-  gradient.addColorStop(
-    0,
-    colors.background
-  );
-
-  gradient.addColorStop(
-    0.55,
-    "#0f172a"
-  );
-
-  gradient.addColorStop(
-    1,
-    posterVariant === 0
-      ? "#020617"
-      : colors.secondary
-  );
-
-  ctx.fillStyle =
-    gradient;
-
-  ctx.fillRect(
-    0,
-    0,
-    width,
-    height
-  );
-
-  // Per-game decorative glow shapes.
-  ctx.globalAlpha = 0.14;
-  ctx.fillStyle = colors.accent;
-
-  ctx.beginPath();
-  ctx.arc(
-    120 + posterVariant * 70,
-    130 + posterVariant * 45,
-    190 + posterVariant * 18,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
-
-  ctx.fillStyle = colors.secondary;
-  ctx.beginPath();
-  ctx.arc(
-    960 - posterVariant * 55,
-    250 + posterVariant * 65,
-    230 - posterVariant * 12,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
-
-  ctx.globalAlpha = 1;
-
-  ctx.globalAlpha =
-    0.15;
-
-  ctx.fillStyle =
-    colors.accent;
-
-  ctx.beginPath();
-
-  ctx.arc(
-    90,
-    110,
-    180,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  ctx.fillStyle =
-    colors.secondary;
-
-  ctx.beginPath();
-
-  ctx.arc(
-    1010,
-    260,
-    240,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  ctx.globalAlpha =
-    1;
-
-  const cardX = 55;
-  const cardY = 55;
-  const cardW =
-    width - 110;
-  const cardH =
-    height - 110;
-
-  roundedRect(
-    ctx,
-    cardX,
-    cardY,
-    cardW,
-    cardH,
-    35
-  );
-
-  ctx.fillStyle =
-    "rgba(255,255,255,0.08)";
-
-  ctx.fill();
-
-  ctx.strokeStyle =
-    "rgba(255,255,255,0.18)";
-
-  ctx.lineWidth = 3;
-
-  ctx.stroke();
-
-  ctx.textAlign =
-    "center";
-
-  ctx.fillStyle =
-    colors.accent;
-
-  ctx.font =
-    "bold 38px Arial";
-
-  ctx.fillText(
-    "TAMBOLA LIVE",
-    width / 2,
-    135
-  );
-
-  ctx.fillStyle =
-    colors.text;
-
-  drawPosterText(
-    ctx,
-    String(
-      game.game_name ||
-      DEFAULT_GAME_NAME
-    ),
-    width / 2,
-    220,
-    900,
-    "bold 64px Arial"
-  );
-
-  ctx.fillStyle =
-    colors.secondary;
-
-  ctx.font =
-    "bold 30px Arial";
-
-  ctx.fillText(
-    "YOU ARE INVITED TO PLAY!",
-    width / 2,
-    275
-  );
-
-  roundedRect(
-    ctx,
-    140,
-    330,
-    800,
-    145,
-    25
-  );
-
-  ctx.fillStyle =
-    "rgba(0,0,0,0.3)";
-
-  ctx.fill();
-
-  ctx.fillStyle =
-    colors.text;
-
-  ctx.font =
-    "bold 27px Arial";
-
-  ctx.fillText(
-    "GAME CODE",
-    width / 2,
-    370
-  );
-
-  ctx.fillStyle =
-    colors.accent;
-
-  ctx.font =
-    "bold 72px Arial";
-
-  ctx.fillText(
-    String(
-      game.game_code ||
-      ""
-    ),
-    width / 2,
-    445
-  );
-
-  const detailY =
-    535;
-
-  const details = [
-    [
-      "DATE",
-      game.game_date ||
-        "-"
-    ],
-    [
-      "TIME",
-      game.game_time ||
-        "-"
-    ],
-    [
-      "TICKET PRICE",
-      `INR ${
-        game.ticket_price ||
-        0
-      }`
-    ],
-    [
-      "TICKETS",
-      `${
-        game.ticket_limit ||
-        0
-      } available`
-    ]
-  ];
-
-  details.forEach(
-    (item, index) => {
-      const x =
-        index % 2 === 0
-          ? 130
-          : 560;
-
-      const y =
-        detailY +
-        Math.floor(
-          index / 2
-        ) *
-          150;
-
-      roundedRect(
-        ctx,
-        x,
-        y,
-        390,
-        110,
-        18
-      );
-
-      ctx.fillStyle =
-        "rgba(255,255,255,0.10)";
-
-      ctx.fill();
-
-      ctx.textAlign =
-        "left";
-
-      ctx.fillStyle =
-        colors.secondary;
-
-      ctx.font =
-        "bold 21px Arial";
-
-      ctx.fillText(
-        item[0],
-        x + 22,
-        y + 35
-      );
-
-      ctx.fillStyle =
-        colors.text;
-
-      drawPosterText(
-        ctx,
-        String(item[1]),
-        x + 22,
-        y + 77,
-        345,
-        "bold 29px Arial"
-      );
-    }
-  );
-
-  const prizes =
-    Array.isArray(
-      game.selected_prizes
-    )
-      ? game.selected_prizes
-      : [];
-
-  const prizeY =
-    830;
-
-  ctx.textAlign =
-    "center";
-
-  ctx.fillStyle =
-    colors.accent;
-
-  ctx.font =
-    "bold 31px Arial";
-
-  ctx.fillText(
-    "PRIZES",
-    width / 2,
-    prizeY
-  );
-
-  if (prizes.length) {
-    const displayPrizes = prizes;
-    const prizeRowGap = displayPrizes.length > 6 ? 34 : 40;
-    const prizeFontSize = displayPrizes.length > 6 ? 20 : 22;
-
-    displayPrizes.forEach(
-      (
-        prize,
-        index
-      ) => {
-        const y =
-          prizeY +
-          55 +
-          index * prizeRowGap;
-
-        ctx.fillStyle =
-          colors.text;
-
-        ctx.font =
-          `bold ${prizeFontSize}px Arial`;
-
-        ctx.fillText(
-          showPrizeAmounts
-            ? `${
-                prize.name ||
-                "Prize"
-              } - INR ${
-                prize.amount ||
-                0
-              }`
-            : String(
-                prize.name ||
-                "Prize"
-              ),
-          width / 2,
-          y
-        );
-      }
-    );
-  } else {
-    ctx.fillStyle =
-      colors.text;
-
-    ctx.font =
-      "23px Arial";
-
-    ctx.fillText(
-      "Exciting prizes await!",
-      width / 2,
-      prizeY + 55
-    );
-  }
-
-  const footerY =
-    Math.min(1225, prizeY + 95 + prizes.length * (prizes.length > 6 ? 34 : 40));
-
-  ctx.textAlign =
-    "center";
-
-  ctx.fillStyle =
-    colors.secondary;
-
-  ctx.font =
-    "bold 22px Arial";
-
-  ctx.fillText(
-    showPrizeAmounts
-      ? "PRIZE AMOUNTS"
-      : "PRIZE LIST",
-    width / 2,
-    footerY
-  );
-
-  ctx.fillStyle =
-    "rgba(255,255,255,0.75)";
-
-  ctx.font =
-    "18px Arial";
-
-  ctx.fillText(
-    showPrizeAmounts
-      ? "Prize amounts set by the host"
-      : "Final prize amounts announced by the host",
-    width / 2,
-    footerY + 38
-  );
-
-  const blob =
-    await new Promise(
-      (resolve) =>
-        canvas.toBlob(
-          resolve,
-          "image/png"
-        )
-    );
-
-  if (!blob) {
-    throw new Error(
-      "Could not create PNG poster."
-    );
-  }
-
   return new File(
     [blob],
-    `${
-      String(
-        game.game_name ||
-        "TambolaLive"
-      )
-        .replace(
-          /[^a-z0-9]/gi,
-          "_"
-        )
-    }-${gameIdentity.replace(/[^a-z0-9]/gi, "_")}-poster.png`,
-    {
-      type: "image/png"
-    }
+    `${String(game.game_name || "TambolaLive").replace(/[^a-z0-9]/gi, "_")}-${gameIdentity.replace(/[^a-z0-9]/gi, "_")}-poster.png`,
+    { type: "image/png" }
   );
 }
 
-/* =========================================================
-   STYLES
-========================================================= */
-
-const pageStyle = {
-  minHeight: "100vh",
-  minHeight: "100dvh",
-  width: "100%",
-  maxWidth: "100%",
-  margin: 0,
-  background: "#f5f7fb",
-  /* Full-bleed app background; content keeps a small safe gutter. */
-  padding: "12px max(14px, env(safe-area-inset-right)) 16px max(14px, env(safe-area-inset-left))",
-  boxSizing: "border-box",
-  fontFamily:
-    "Arial, Helvetica, sans-serif"
-};
-
-const cardStyle = {
-  background: "#fff",
-                      color: "var(--theme-text, #0f172a)",
-  border: "1px solid #e5e7eb",
-  borderRadius: 16,
-  padding: 20,
-  marginBottom: 18,
-  boxShadow: "0 3px 10px rgba(0,0,0,.05)",
-  boxSizing: "border-box"
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: 13,
-  border:
-    "1px solid #cbd5e1",
-  borderRadius: 9,
-  boxSizing: "border-box",
-  fontSize: 16
-};
-
-const primaryButton = {
-  padding:
-    "13px 18px",
-  border: "none",
-  borderRadius: 9,
-  background: "#2563eb",
-  color: "#fff",
-  fontWeight: "bold",
-  fontSize: 16,
-  cursor: "pointer"
-};
-
-const secondaryButton = {
-  padding:
-    "11px 16px",
-  border:
-    "1px solid #cbd5e1",
-  borderRadius: 9,
-  background: "#fff",
-                      color: "var(--theme-text, #0f172a)",
-  color: "#111827",
-  fontWeight: "bold",
-  cursor: "pointer"
-};
-
-/* =========================================================
-   CREATE GAME PAGE
-========================================================= */
 
 function CreateGamePage({
   onCreated
