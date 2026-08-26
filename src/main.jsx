@@ -2883,7 +2883,7 @@ async function createGamePoster(
           showPrizeAmounts
         ) {
           fitCenterText(
-            `${name}  â€¢  INR ${prize.amount || 0}`,
+            `${name}   -   INR ${prize.amount || 0}`,
             x +
               boxW / 2,
             y +
@@ -9831,7 +9831,7 @@ function HostControlPage({
               value={
                 totalTicketLimit > 0
                   ? ticketsRemaining
-                  : "â€”"
+                  : "-"
               }
             />
 
@@ -9840,7 +9840,7 @@ function HostControlPage({
               value={
                 totalTicketLimit > 0
                   ? totalTicketLimit
-                  : "â€”"
+                  : "-"
               }
             />
 
