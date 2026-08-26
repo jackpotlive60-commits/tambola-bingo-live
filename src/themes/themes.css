@@ -1721,167 +1721,98 @@ main [data-host-section="prize-amounts"] + section p {
 
 
 /* =========================================================
-   ROYAL HERO HEADER â€” TARGET MOBILE COMPOSITION
-   ---------------------------------------------------------
-   Final override for the Royal hero shown in the reference:
-   - taller hero card
-   - wider left padding
-   - narrower copy so the title wraps to 3 lines
-   - larger, more visible royal artwork on the right
-   - preserves the existing theme artwork/blending system
+   ROYAL HERO â€” CORRECT MOBILE REFERENCE FIX
+   Keep the hero compact. The reference screenshot is roughly
+   250â€“270 CSS px tall on a phone, not 380â€“450 CSS px.
    ========================================================= */
 
-.tl-theme-page.tl-theme-royal .tl-theme-hero {
-  box-sizing: border-box !important;
-  min-height: 0 !important;
-  padding: 34px 42px 36px !important;
-  border-radius: 34px !important;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(42,16,65,.98) 0%,
-      rgba(42,16,65,.92) 54%,
-      rgba(42,16,65,.72) 100%
-    ) !important;
-  border: 1px solid rgba(231,196,91,.68) !important;
-}
-
-.tl-theme-page.tl-theme-royal .tl-theme-hero-copy {
-  box-sizing: border-box !important;
-  max-width: 62% !important;
-  min-height: 0 !important;
-}
-
-/* The hero copy uses the existing React markup but deliberately
-   constrains the heading width to match the reference wrap. */
-.tl-theme-page.tl-theme-royal .tl-theme-hero-copy h1,
-.tl-theme-page.tl-theme-royal .tl-theme-hero-copy h2,
-.tl-theme-page.tl-theme-royal .tl-theme-hero-copy h3 {
-  max-width: 420px !important;
-  margin-top: 0 !important;
-  margin-bottom: 12px !important;
-  line-height: 1.08 !important;
-}
-
-/* The supporting paragraph stays comfortably inside the artwork area. */
-.tl-theme-page.tl-theme-royal .tl-theme-hero-copy p {
-  max-width: 405px !important;
-  margin-bottom: 0 !important;
-  line-height: 1.42 !important;
-}
-
-/* Royal eyebrow / small heading. */
-.tl-theme-page.tl-theme-royal .tl-theme-hero-copy > :first-child {
-  letter-spacing: .16em !important;
-}
-
-/* Make the royal artwork occupy the right side like the reference,
-   while keeping its left edge softly blended behind the copy. */
-.tl-theme-page.tl-theme-royal .tl-theme-hero-art {
-  top: 50% !important;
-  right: -2% !important;
-  width: 62% !important;
-  height: 122% !important;
-  transform: translateY(-50%) !important;
-  opacity: .66 !important;
-  background-size: 128% auto !important;
-  background-position: 78% 50% !important;
-  filter: saturate(.96) contrast(1.02) brightness(.98) !important;
-}
-
-/* Stronger fade on the copy side; the artwork remains clear at the
-   upper-right and lower-right edges. */
-.tl-theme-page.tl-theme-royal .tl-theme-hero::before {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(42,16,65,.98) 0%,
-      rgba(42,16,65,.96) 28%,
-      rgba(42,16,65,.82) 48%,
-      rgba(42,16,65,.42) 68%,
-      transparent 100%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.025) 0%,
-      transparent 34%,
-      rgba(20,5,32,.16) 100%
-    ) !important;
-}
-
-.tl-theme-page.tl-theme-royal .tl-theme-hero::after {
-  background:
-    linear-gradient(
-      180deg,
-      transparent 55%,
-      rgba(24,8,42,.14) 100%
-    ) !important;
-}
-
-/* Reference-size mobile layout. */
 @media (max-width: 600px) {
   .tl-theme-page.tl-theme-royal .tl-theme-hero {
-    min-height: clamp(380px, 65vw, 447px) !important;
-    padding: 34px 42px 36px !important;
-    border-radius: 34px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 22px 24px 24px !important;
+    border-radius: 24px !important;
   }
 
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy {
-    max-width: 62% !important;
+    max-width: 56% !important;
+    min-height: 0 !important;
   }
 
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h1,
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h2,
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h3 {
     max-width: 100% !important;
-    font-size: clamp(38px, 7.5vw, 52px) !important;
-    line-height: 1.08 !important;
-    margin-bottom: 12px !important;
+    font-size: 30px !important;
+    line-height: 1.04 !important;
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
   }
 
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy p {
     max-width: 100% !important;
-    font-size: clamp(18px, 3.7vw, 25px) !important;
-    line-height: 1.34 !important;
+    font-size: 17px !important;
+    line-height: 1.36 !important;
+    margin-bottom: 0 !important;
   }
 
+  /* Use the original artwork scale/position rather than the oversized
+     chair/crown composition introduced by the previous override. */
   .tl-theme-page.tl-theme-royal .tl-theme-hero-art {
-    right: -3% !important;
-    width: 63% !important;
-    height: 122% !important;
-    opacity: .66 !important;
-    background-size: 130% auto !important;
-    background-position: 80% 50% !important;
+    top: 0 !important;
+    right: -8% !important;
+    width: 58% !important;
+    height: 100% !important;
+    transform: none !important;
+    opacity: .46 !important;
+    background-size: contain !important;
+    background-position: right bottom !important;
+    filter: saturate(.82) contrast(.94) brightness(.94) !important;
+  }
+
+  .tl-theme-page.tl-theme-royal .tl-theme-hero::before {
+    background:
+      linear-gradient(
+        90deg,
+        var(--theme-hero-bg) 0%,
+        color-mix(in srgb, var(--theme-hero-bg) 94%, transparent) 42%,
+        color-mix(in srgb, var(--theme-hero-bg) 54%, transparent) 67%,
+        transparent 100%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--theme-hero-bg) 14%, transparent) 0%,
+        transparent 55%,
+        color-mix(in srgb, var(--theme-bg) 18%, transparent) 100%
+      ) !important;
   }
 }
 
-/* Smaller phones: retain the target composition without allowing the
-   hero copy to collide with the artwork. */
 @media (max-width: 430px) {
   .tl-theme-page.tl-theme-royal .tl-theme-hero {
-    min-height: 350px !important;
-    padding: 27px 28px 30px !important;
-    border-radius: 28px !important;
+    padding: 21px 24px 23px !important;
+    border-radius: 22px !important;
   }
 
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy {
-    max-width: 70% !important;
+    max-width: 58% !important;
   }
 
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h1,
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h2,
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy h3 {
-    font-size: clamp(34px, 8.8vw, 42px) !important;
+    font-size: 29px !important;
+    line-height: 1.05 !important;
   }
 
   .tl-theme-page.tl-theme-royal .tl-theme-hero-copy p {
-    font-size: 17px !important;
+    font-size: 16px !important;
     line-height: 1.38 !important;
   }
 
   .tl-theme-page.tl-theme-royal .tl-theme-hero-art {
-    width: 61% !important;
-    opacity: .58 !important;
-    background-size: 128% auto !important;
+    right: -9% !important;
+    width: 60% !important;
+    opacity: .44 !important;
   }
 }
