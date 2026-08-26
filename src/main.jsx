@@ -7063,13 +7063,17 @@ function HostControlPage({
 
   useEffect(
     () => {
+      // Initialise the prize draft when opening a different game.
+      // Do NOT reset it whenever the parent recreates game.selected_prizes;
+      // doing that makes an amount disappear as soon as the host moves
+      // to another prize input.
       setEditablePrizes(
         Array.isArray(game.selected_prizes)
           ? game.selected_prizes.map((prize) => ({ ...prize }))
           : []
       );
     },
-    [game.selected_prizes]
+    [game.id]
   );
 
   async function loadBookings() {
