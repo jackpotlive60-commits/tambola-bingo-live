@@ -1875,3 +1875,132 @@ main [data-host-section="prize-amounts"] + section p {
     max-width: 62% !important;
   }
 }
+
+/* =========================================================
+   FINAL HERO COMPOSITION â€” COMPACT + BLENDED MOBILE
+   ---------------------------------------------------------
+   Target:
+   - Keep the hero compact; artwork must never make it taller.
+   - Keep the title on three lines on normal mobile widths.
+   - Push the Royal artwork toward the lower-right.
+   - Keep the curtain/detail visible at the upper-right.
+   - Blend the artwork into the purple hero with no sticker edge.
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .tl-theme-page .tl-theme-hero {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 28px 30px 24px !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+  }
+
+  /* Text stays compact and owns the hero height. */
+  .tl-theme-page .tl-theme-hero-copy {
+    position: relative !important;
+    z-index: 4 !important;
+    max-width: 61% !important;
+    min-height: 0 !important;
+  }
+
+  /*
+     Artwork is intentionally larger than the hero and clipped by the
+     hero itself. This lets the crown sit low while the upper decoration
+     enters naturally from the top-right.
+  */
+  .tl-theme-page .tl-theme-hero-art {
+    position: absolute !important;
+    z-index: 0 !important;
+    top: -9% !important;
+    right: -8% !important;
+    width: 76% !important;
+    height: 126% !important;
+    pointer-events: none !important;
+    background-image: var(--theme-hero-art) !important;
+    background-repeat: no-repeat !important;
+    background-position: 90% 76% !important;
+    background-size: 122% auto !important;
+    opacity: .70 !important;
+    filter:
+      saturate(.88)
+      contrast(.96)
+      brightness(.91) !important;
+
+    /* Soft horizontal merge â€” no rectangular image boundary. */
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.04) 12%,
+      rgba(0,0,0,.20) 27%,
+      rgba(0,0,0,.56) 43%,
+      #000 58%,
+      #000 84%,
+      rgba(0,0,0,.72) 94%,
+      transparent 100%
+    ) !important;
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0,0,0,.04) 12%,
+      rgba(0,0,0,.20) 27%,
+      rgba(0,0,0,.56) 43%,
+      #000 58%,
+      #000 84%,
+      rgba(0,0,0,.72) 94%,
+      transparent 100%
+    ) !important;
+    -webkit-mask-composite: source-in !important;
+    mask-composite: intersect !important;
+  }
+
+  /* Keep the reading area quiet while colour-matching the artwork. */
+  .tl-theme-page .tl-theme-hero::before {
+    z-index: 2 !important;
+    background:
+      linear-gradient(90deg,
+        var(--theme-hero-bg) 0%,
+        color-mix(in srgb, var(--theme-hero-bg) 98%, transparent) 25%,
+        color-mix(in srgb, var(--theme-hero-bg) 82%, transparent) 40%,
+        color-mix(in srgb, var(--theme-hero-bg) 34%, transparent) 59%,
+        transparent 83%),
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--theme-hero-bg) 10%, transparent) 0%,
+        transparent 30%,
+        color-mix(in srgb, var(--theme-bg) 12%, transparent) 100%) !important;
+  }
+
+  /* Very subtle edge merge so the artwork disappears into the hero. */
+  .tl-theme-page .tl-theme-hero::after {
+    z-index: 3 !important;
+    background:
+      radial-gradient(
+        ellipse at 94% 72%,
+        transparent 0%,
+        transparent 48%,
+        color-mix(in srgb, var(--theme-hero-bg) 14%, transparent) 76%,
+        color-mix(in srgb, var(--theme-hero-bg) 34%, transparent) 100%
+      ) !important;
+  }
+}
+
+/* Small phones: preserve the compact composition without crushing text. */
+@media (max-width: 380px) {
+  .tl-theme-page .tl-theme-hero {
+    padding: 25px 26px 22px !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-copy {
+    max-width: 62% !important;
+  }
+
+  .tl-theme-page .tl-theme-hero-art {
+    right: -10% !important;
+    width: 79% !important;
+    height: 128% !important;
+    background-position: 90% 77% !important;
+    background-size: 124% auto !important;
+    opacity: .68 !important;
+  }
+}
