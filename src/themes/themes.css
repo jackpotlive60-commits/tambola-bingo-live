@@ -2765,3 +2765,131 @@ body:has(.tl-theme-elegant) .tl-theme-page main [data-live-section] {
     0 0 18px rgba(212,175,55,.045),
     inset 0 1px 0 rgba(255,255,255,.045) !important;
 }
+
+
+/* =========================================================
+   ELEGANT â€” GLOBAL HOST/LIVE PAGE SURFACE FIX v2
+   ---------------------------------------------------------
+   IMPORTANT:
+   Some Host Control / Live Game surfaces are NOT descendants
+   of .tl-theme-page. The previous Elegant overrides therefore
+   never reached them. These selectors intentionally start from
+   body:has(.tl-theme-elegant) and cover the actual main content
+   regardless of the page wrapper.
+   ========================================================= */
+
+/* Every main content section on Elegant is dark + gold. */
+body:has(.tl-theme-elegant) main > section,
+body:has(.tl-theme-elegant) main > article,
+body:has(.tl-theme-elegant) main [data-host-section],
+body:has(.tl-theme-elegant) main [data-live-section],
+body:has(.tl-theme-elegant) main .tl-theme-section {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(212,175,55,.045), transparent 34%),
+    linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
+  background-color: #10151d !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.38) !important;
+}
+
+/* Catch the actual light cards/boxes regardless of their wrapper.
+   This is the key fix for Game Status and Game Details. */
+body:has(.tl-theme-elegant) main div[style*="background"],
+body:has(.tl-theme-elegant) main div[style*="backgroundColor"],
+body:has(.tl-theme-elegant) main article[style*="background"],
+body:has(.tl-theme-elegant) main section[style*="background"],
+body:has(.tl-theme-elegant) main [class*="card"],
+body:has(.tl-theme-elegant) main [class*="Card"],
+body:has(.tl-theme-elegant) main [class*="panel"],
+body:has(.tl-theme-elegant) main [class*="Panel"],
+body:has(.tl-theme-elegant) main [class*="surface"],
+body:has(.tl-theme-elegant) main [class*="Surface"] {
+  background:
+    linear-gradient(145deg, #171d27 0%, #0e141d 100%) !important;
+  background-color: #111720 !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.38) !important;
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.36),
+    0 0 14px rgba(212,175,55,.035),
+    inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+/* Explicitly defeat common white/ivory inline backgrounds. */
+body:has(.tl-theme-elegant) main [style*="#fff"],
+body:has(.tl-theme-elegant) main [style*="#FFF"],
+body:has(.tl-theme-elegant) main [style*="#ffffff"],
+body:has(.tl-theme-elegant) main [style*="#FFFFFF"],
+body:has(.tl-theme-elegant) main [style*="white"],
+body:has(.tl-theme-elegant) main [style*="rgb(255"],
+body:has(.tl-theme-elegant) main [style*="rgba(255"] {
+  background:
+    linear-gradient(145deg, #171d27 0%, #0e141d 100%) !important;
+  background-color: #111720 !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.38) !important;
+}
+
+/* Text inside Elegant cards is always readable ivory.
+   Labels can use the softer champagne colour below. */
+body:has(.tl-theme-elegant) main div[style*="background"] *,
+body:has(.tl-theme-elegant) main div[style*="backgroundColor"] *,
+body:has(.tl-theme-elegant) main [class*="card"] *,
+body:has(.tl-theme-elegant) main [class*="Card"] *,
+body:has(.tl-theme-elegant) main [class*="panel"] *,
+body:has(.tl-theme-elegant) main [class*="Panel"] *,
+body:has(.tl-theme-elegant) main [class*="surface"] *,
+body:has(.tl-theme-elegant) main [class*="Surface"] * {
+  color: #f7f1df !important;
+}
+
+/* Secondary labels in those cards. */
+body:has(.tl-theme-elegant) main div[style*="background"] small,
+body:has(.tl-theme-elegant) main div[style*="backgroundColor"] small,
+body:has(.tl-theme-elegant) main [class*="card"] small,
+body:has(.tl-theme-elegant) main [class*="Card"] small {
+  color: #b9b19f !important;
+}
+
+/* Status badge: gold luxury, dark lettering. */
+body:has(.tl-theme-elegant) main [data-status],
+body:has(.tl-theme-elegant) main [class*="status"],
+body:has(.tl-theme-elegant) main [class*="Status"] {
+  background: linear-gradient(135deg, #a96e08, #c88a17) !important;
+  background-color: #b9780c !important;
+  color: #fff8e7 !important;
+  border-color: #d4af37 !important;
+}
+
+body:has(.tl-theme-elegant) main [data-status] *,
+body:has(.tl-theme-elegant) main [class*="status"] *,
+body:has(.tl-theme-elegant) main [class*="Status"] * {
+  color: #fff8e7 !important;
+}
+
+/* Form controls remain a separate dark surface and stay readable. */
+body:has(.tl-theme-elegant) main input,
+body:has(.tl-theme-elegant) main select,
+body:has(.tl-theme-elegant) main textarea {
+  background: #1b222d !important;
+  background-image: none !important;
+  color: #fff8e7 !important;
+  -webkit-text-fill-color: #fff8e7 !important;
+  border: 1px solid rgba(212,175,55,.72) !important;
+}
+
+/* Buttons remain gold and readable. */
+body:has(.tl-theme-elegant) main button {
+  color: #17130b !important;
+  -webkit-text-fill-color: #17130b !important;
+}
+
+/* Remove any old white helper-surface styling anywhere on Elegant. */
+body:has(.tl-theme-elegant) main .tl-light-surface,
+body:has(.tl-theme-elegant) main .tl-theme-input,
+body:has(.tl-theme-elegant) main .tl-readable-light {
+  background: #111720 !important;
+  background-image: linear-gradient(145deg,#171d27,#0e141d) !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.38) !important;
+}
