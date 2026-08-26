@@ -2405,170 +2405,217 @@ main [data-host-section="prize-amounts"] + section p {
 }
 
 /* =========================================================
-   ELEGANT â€” FINAL CONTRAST FIX
+   ELEGANT â€” FINAL DARK + GOLD PALETTE OVERRIDE
    ---------------------------------------------------------
-   Elegant is a light/premium theme. The shared dark-content
-   treatment below this theme was making the page background,
-   section veil and inherited text colours fight the Elegant
-   palette. These overrides are intentionally scoped to Elegant
-   only; all other themes remain unchanged.
+   Elegant is a dark luxury theme with warm gold accents.
+   This block is scoped ONLY to Elegant and intentionally
+   leaves every other theme and artwork-position rule alone.
    ========================================================= */
 
-.tl-theme-elegant {
-  --theme-bg: #eeeae1;
-  --theme-page-background:
-    radial-gradient(circle at 10% 8%, rgba(169,133,50,.10), transparent 30%),
-    radial-gradient(circle at 90% 78%, rgba(255,255,255,.38), transparent 32%),
-    linear-gradient(145deg, #e4e0d7, #f3f0e8 55%, #ddd8ce);
-  --theme-text: #20262d;
-  --theme-muted: #4f5962;
-  --theme-accent: #a98532;
-  --theme-secondary: #c5a65b;
-  --theme-glow: #a98532;
-  --theme-surface: #f4f1e9;
-  --theme-panel-text: #20262d;
-  --theme-ticket-text: #20262d;
-  --theme-input-bg: #ffffff;
-  --theme-input-text: #20262d;
-  --theme-section-bg:
-    linear-gradient(145deg, rgba(250,248,243,.98), rgba(235,231,221,.98));
-  --theme-hero-bg: rgba(250,248,243,.94);
-  --theme-button-text: #2b2417;
+body:has(.tl-theme-elegant) .tl-theme-page,
+body:has(.tl-theme-elegant) main,
+body:has(.tl-theme-elegant) .tl-theme-page main {
+  background-color: #080c12 !important;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(212,175,55,.13), transparent 28%),
+    radial-gradient(circle at 88% 78%, rgba(212,175,55,.07), transparent 32%),
+    linear-gradient(145deg, #070a10 0%, #111722 52%, #080c12 100%) !important;
+  color: #f7f1df !important;
 }
 
-/* Light page canvas â€” prevents the dark fallback canvas from showing. */
-.tl-theme-elegant main,
-.tl-theme-elegant .tl-theme-page {
-  background-color: var(--theme-bg) !important;
-  background-image: var(--theme-page-background) !important;
-  color: var(--theme-text) !important;
-}
-
-/* Light Elegant cards/sections with no dark protective veil. */
-.tl-theme-elegant main > section,
-.tl-theme-elegant main [data-host-section],
-.tl-theme-elegant main [data-live-section],
-.tl-theme-elegant .tl-theme-section {
-  background: var(--theme-section-bg) !important;
-  background-color: #f4f1e9 !important;
-  color: var(--theme-text) !important;
-  border-color: rgba(169,139,67,.42) !important;
+/* Elegant theme surfaces: deep charcoal/black with restrained gold effects. */
+body:has(.tl-theme-elegant) .tl-theme-page main > section,
+body:has(.tl-theme-elegant) .tl-theme-page main [data-host-section],
+body:has(.tl-theme-elegant) .tl-theme-page main [data-live-section],
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-section {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(212,175,55,.055), transparent 34%),
+    linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
+  background-image:
+    radial-gradient(circle at 92% 8%, rgba(212,175,55,.055), transparent 34%),
+    linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
+  border: 1px solid rgba(212,175,55,.34) !important;
   box-shadow:
-    0 14px 34px rgba(48,43,34,.12),
-    inset 0 1px 0 rgba(255,255,255,.82) !important;
+    0 14px 34px rgba(0,0,0,.42),
+    0 0 18px rgba(212,175,55,.045),
+    inset 0 1px 0 rgba(255,255,255,.045) !important;
+  color: #f7f1df !important;
 }
 
-/* Remove the shared black readability veil that was turning Elegant cards gray. */
-.tl-theme-elegant main > section::before,
-.tl-theme-elegant main [data-host-section]::before,
-.tl-theme-elegant main [data-live-section]::before,
-.tl-theme-elegant .tl-theme-section::before {
-  background: transparent !important;
-  opacity: 0 !important;
+/* Keep the section artwork as a subtle gold-toned decoration. */
+body:has(.tl-theme-elegant) .tl-theme-page main > section::before,
+body:has(.tl-theme-elegant) .tl-theme-page main [data-host-section]::before,
+body:has(.tl-theme-elegant) .tl-theme-page main [data-live-section]::before,
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-section::before {
+  opacity: .16 !important;
+  background-image: var(--theme-section-art, none) !important;
+  background-color: transparent !important;
+  filter: sepia(.35) saturate(.72) brightness(.78) !important;
 }
 
-.tl-theme-elegant main > section::after,
-.tl-theme-elegant main [data-host-section]::after,
-.tl-theme-elegant main [data-live-section]::after,
-.tl-theme-elegant .tl-theme-section::after {
+/* Gold ambient edge effect; no flat dark overlay. */
+body:has(.tl-theme-elegant) .tl-theme-page main > section::after,
+body:has(.tl-theme-elegant) .tl-theme-page main [data-host-section]::after,
+body:has(.tl-theme-elegant) .tl-theme-page main [data-live-section]::after,
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-section::after {
   background: linear-gradient(
     135deg,
     transparent 0%,
-    transparent 62%,
-    rgba(169,133,50,.035) 100%
+    transparent 68%,
+    rgba(212,175,55,.07) 100%
   ) !important;
 }
 
-/* Elegant typography: dark ink on light surfaces. */
-.tl-theme-elegant main,
-.tl-theme-elegant main h1,
-.tl-theme-elegant main h2,
-.tl-theme-elegant main h3,
-.tl-theme-elegant main p,
-.tl-theme-elegant main label,
-.tl-theme-elegant main b,
-.tl-theme-elegant main strong,
-.tl-theme-elegant main small {
-  color: var(--theme-text) !important;
+/* Typography: warm ivory for primary text, muted champagne for secondary text. */
+body:has(.tl-theme-elegant) .tl-theme-page,
+body:has(.tl-theme-elegant) .tl-theme-page main,
+body:has(.tl-theme-elegant) .tl-theme-page h1,
+body:has(.tl-theme-elegant) .tl-theme-page h2,
+body:has(.tl-theme-elegant) .tl-theme-page h3,
+body:has(.tl-theme-elegant) .tl-theme-page h4,
+body:has(.tl-theme-elegant) .tl-theme-page h5,
+body:has(.tl-theme-elegant) .tl-theme-page h6,
+body:has(.tl-theme-elegant) .tl-theme-page label,
+body:has(.tl-theme-elegant) .tl-theme-page b,
+body:has(.tl-theme-elegant) .tl-theme-page strong,
+body:has(.tl-theme-elegant) .tl-theme-page span,
+body:has(.tl-theme-elegant) .tl-theme-page li,
+body:has(.tl-theme-elegant) .tl-theme-page td,
+body:has(.tl-theme-elegant) .tl-theme-page th {
+  color: #f7f1df !important;
 }
 
-.tl-theme-elegant main p,
-.tl-theme-elegant main small {
-  color: var(--theme-muted) !important;
+body:has(.tl-theme-elegant) .tl-theme-page p,
+body:has(.tl-theme-elegant) .tl-theme-page .tl-muted,
+body:has(.tl-theme-elegant) .tl-theme-page [class*="muted"] {
+  color: #b9b19f !important;
 }
 
-/* The Host/Create-Games text must not inherit the dark-theme muted colour. */
-.tl-theme-elegant main a,
-.tl-theme-elegant main span {
-  color: inherit;
+/* Hero: dark luxury panel with a soft gold atmosphere. */
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero {
+  background:
+    radial-gradient(circle at 88% 48%, rgba(212,175,55,.13), transparent 40%),
+    radial-gradient(circle at 12% 90%, rgba(212,175,55,.055), transparent 34%),
+    linear-gradient(145deg, rgba(24,29,38,.98), rgba(10,14,21,.98)) !important;
+  border-color: rgba(212,175,55,.58) !important;
+  box-shadow:
+    0 16px 38px rgba(0,0,0,.46),
+    0 0 24px rgba(212,175,55,.07),
+    inset 0 1px 0 rgba(255,235,160,.07) !important;
 }
 
-/* Inputs remain crisp white with dark readable text. */
-.tl-theme-elegant main input,
-.tl-theme-elegant main select,
-.tl-theme-elegant main textarea {
-  background: #ffffff !important;
-  color: #20262d !important;
-  border-color: #b99b5b !important;
-  box-shadow: 0 5px 14px rgba(48,43,34,.10) !important;
-}
-
-.tl-theme-elegant main input::placeholder,
-.tl-theme-elegant main textarea::placeholder {
-  color: #69727a !important;
-  opacity: 1 !important;
-}
-
-/* Gold buttons use dark ink, not white ink. */
-.tl-theme-elegant main button {
-  color: #2b2417 !important;
-}
-
-.tl-theme-elegant main button[style*="background"] {
-  color: #2b2417 !important;
-}
-
-/* Theme preview and prize surfaces stay light and readable. */
-.tl-theme-elegant main > section:first-of-type > div > div[style*="THEME PREVIEW"],
-.tl-theme-elegant main [data-host-section="prize-amounts"] div[style*="gridTemplateColumns: 1fr 160px"],
-.tl-theme-elegant main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div > div {
-  color: #20262d !important;
-}
-
-.tl-theme-elegant main [data-host-section="prize-amounts"] > p {
-  color: #4f5962 !important;
-}
-
-/* Keep Elegant hero copy strong over its light artwork. */
-.tl-theme-elegant .tl-theme-hero,
-.tl-theme-elegant .tl-theme-hero-copy {
-  color: #20262d !important;
-}
-
-.tl-theme-elegant .tl-theme-hero::before {
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero::before {
   background: linear-gradient(
     90deg,
-    rgba(250,248,243,.97) 0%,
-    rgba(250,248,243,.88) 34%,
-    rgba(250,248,243,.48) 58%,
-    transparent 82%
+    rgba(11,15,22,.98) 0%,
+    rgba(11,15,22,.88) 34%,
+    rgba(11,15,22,.46) 58%,
+    transparent 86%
   ) !important;
 }
 
-.tl-theme-elegant .tl-theme-hero::after {
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero::after {
   background: linear-gradient(
     180deg,
     transparent 0%,
     transparent 76%,
-    rgba(169,133,50,.045) 100%
+    rgba(212,175,55,.07) 100%
   ) !important;
 }
 
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero-copy,
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero-copy * {
+  color: #f7f1df !important;
+}
+
+/* Gold eyebrow/accent text. */
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero-copy .eyebrow,
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero-copy [class*="eyebrow"],
+body:has(.tl-theme-elegant) .tl-theme-page [class*="accent"] {
+  color: #d4af37 !important;
+}
+
+/* Inputs stay dark, not white, with clear gold borders. */
+body:has(.tl-theme-elegant) .tl-theme-page input,
+body:has(.tl-theme-elegant) .tl-theme-page select,
+body:has(.tl-theme-elegant) .tl-theme-page textarea {
+  background: #0a0f16 !important;
+  color: #f7f1df !important;
+  border: 1px solid rgba(212,175,55,.55) !important;
+  caret-color: #f7f1df !important;
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page input::placeholder,
+body:has(.tl-theme-elegant) .tl-theme-page textarea::placeholder {
+  color: #8f897d !important;
+  opacity: 1 !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page input:focus,
+body:has(.tl-theme-elegant) .tl-theme-page select:focus,
+body:has(.tl-theme-elegant) .tl-theme-page textarea:focus {
+  border-color: #d4af37 !important;
+  box-shadow:
+    0 0 0 2px rgba(212,175,55,.18),
+    0 7px 18px rgba(0,0,0,.34),
+    0 0 18px rgba(212,175,55,.08) !important;
+}
+
+/* Buttons: rich gold with dark lettering for maximum contrast. */
+body:has(.tl-theme-elegant) .tl-theme-page button {
+  color: #17130b !important;
+  text-shadow: none !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page button:not(:disabled) {
+  border-color: #d4af37 !important;
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.30),
+    0 0 12px rgba(212,175,55,.08),
+    inset 0 1px 0 rgba(255,245,190,.30) !important;
+}
+
+/* Light helper surfaces must not turn Elegant back into a light theme. */
+body:has(.tl-theme-elegant) .tl-theme-page .tl-light-surface,
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-input,
+body:has(.tl-theme-elegant) .tl-theme-page .tl-readable-light {
+  background: #10151d !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.38) !important;
+}
+
+/* Prize/table surfaces. */
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-amounts"] div,
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-amounts"] div b {
+  color: #f7f1df !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-amounts"] div[style*="gridTemplateColumns"] {
+  background: rgba(16,21,29,.88) !important;
+  border-color: rgba(212,175,55,.30) !important;
+}
+
+/* Links and interactive gold accents. */
+body:has(.tl-theme-elegant) .tl-theme-page a {
+  color: #d4af37 !important;
+}
+
+/* Elegant artwork: preserve the existing position/blending, only
+   give it a slightly warmer luxury treatment. */
+body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-hero-art {
+  filter: sepia(.18) saturate(.90) contrast(.96) brightness(.88) !important;
+}
+
 @media (max-width: 600px) {
-  .tl-theme-elegant main > section::before,
-  .tl-theme-elegant main [data-host-section]::before,
-  .tl-theme-elegant main [data-live-section]::before,
-  .tl-theme-elegant .tl-theme-section::before {
-    opacity: 0 !important;
+  body:has(.tl-theme-elegant) .tl-theme-page main > section,
+  body:has(.tl-theme-elegant) .tl-theme-page main [data-host-section],
+  body:has(.tl-theme-elegant) .tl-theme-page main [data-live-section],
+  body:has(.tl-theme-elegant) .tl-theme-page .tl-theme-section {
+    background:
+      radial-gradient(circle at 92% 8%, rgba(212,175,55,.05), transparent 34%),
+      linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
   }
 }
