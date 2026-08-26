@@ -2893,3 +2893,56 @@ body:has(.tl-theme-elegant) main .tl-readable-light {
   color: #f7f1df !important;
   border-color: rgba(212,175,55,.38) !important;
 }
+
+/* =========================================================
+   ELEGANT â€” BUTTON CONTRAST FIX
+   ---------------------------------------------------------
+   Some Elegant buttons inherit a dark/transparent background from
+   the shared theme variables, while their text is also dark. Force
+   every Elegant action button to use a rich gold surface with dark,
+   high-contrast lettering.
+   ========================================================= */
+body:has(.tl-theme-elegant) main button,
+body:has(.tl-theme-elegant) main button[type="button"],
+body:has(.tl-theme-elegant) main button[type="submit"] {
+  background: linear-gradient(135deg, #b9780c 0%, #d4af37 52%, #b9780c 100%) !important;
+  background-color: #d4af37 !important;
+  color: #15120b !important;
+  -webkit-text-fill-color: #15120b !important;
+  text-shadow: none !important;
+  border: 1px solid #e1c45a !important;
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.32),
+    0 0 14px rgba(212,175,55,.14),
+    inset 0 1px 0 rgba(255,248,210,.38) !important;
+  opacity: 1 !important;
+}
+
+body:has(.tl-theme-elegant) main button:hover:not(:disabled),
+body:has(.tl-theme-elegant) main button:focus-visible:not(:disabled),
+body:has(.tl-theme-elegant) main button:active:not(:disabled) {
+  background: linear-gradient(135deg, #c58a18 0%, #e0bd48 52%, #c58a18 100%) !important;
+  background-color: #d4af37 !important;
+  color: #15120b !important;
+  -webkit-text-fill-color: #15120b !important;
+  border-color: #f0d76a !important;
+}
+
+/* Keep disabled buttons readable without turning them black. */
+body:has(.tl-theme-elegant) main button:disabled {
+  background: #6f5a25 !important;
+  background-color: #6f5a25 !important;
+  color: #f7f1df !important;
+  -webkit-text-fill-color: #f7f1df !important;
+  border-color: rgba(212,175,55,.55) !important;
+  opacity: .75 !important;
+}
+
+/* Ensure nested button text/icons inherit the same readable colour. */
+body:has(.tl-theme-elegant) main button *,
+body:has(.tl-theme-elegant) main button span,
+body:has(.tl-theme-elegant) main button strong,
+body:has(.tl-theme-elegant) main button svg {
+  color: inherit !important;
+  -webkit-text-fill-color: inherit !important;
+}
