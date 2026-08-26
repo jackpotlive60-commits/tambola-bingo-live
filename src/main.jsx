@@ -9382,7 +9382,7 @@ function HostControlPage({
                               value={status.toUpperCase()}
                             />
                           </>
-                        )
+                        )}
                       </div>
 
                       {expandedBookingIds.has(
