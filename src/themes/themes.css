@@ -2403,3 +2403,166 @@ main [data-host-section="prize-amounts"] + section p {
     opacity: .58 !important;
   }
 }
+
+/* =========================================================
+   ELEGANT â€” CONTRAST / COLOUR CORRECTION ONLY
+   ---------------------------------------------------------
+   Keeps every other theme unchanged.
+   ========================================================= */
+
+.tl-theme-elegant {
+  /* Light premium surfaces â€” prevents the shared dark fallback. */
+  --theme-surface: #f7f4ec;
+  --theme-panel-text: #20262d;
+  --theme-ticket-text: #20262d;
+
+  /* Dark gold text gives the primary button proper contrast. */
+  --theme-button-text: #2a2112;
+
+  /* Slightly deeper golds keep borders and controls visible on ivory. */
+  --theme-accent: #9a7625;
+  --theme-secondary: #b58d35;
+  --theme-glow: #9a7625;
+
+  --theme-card-border: 1px solid rgba(145,112,38,.42);
+  --theme-section-border: 1px solid rgba(145,112,38,.36);
+  --theme-panel-border: 1px solid rgba(145,112,38,.58);
+  --theme-secondary-border: 1px solid rgba(145,112,38,.48);
+
+  --theme-input-border: 1px solid #a9894b;
+  --theme-primary-border: 1px solid #987526;
+
+  --theme-primary-button: linear-gradient(135deg,#a98532,#d1b56a);
+}
+
+
+/* Elegant section surfaces: no dark shared fallback. */
+.tl-theme-elegant main > section,
+.tl-theme-elegant main [data-host-section],
+.tl-theme-elegant main [data-live-section],
+.tl-theme-elegant .tl-theme-section {
+  color: #20262d !important;
+  background: var(--theme-section-bg) !important;
+  border-color: var(--theme-section-border) !important;
+}
+
+
+/* The shared artwork veil is too dark for Elegant's light palette. */
+.tl-theme-elegant main > section::before,
+.tl-theme-elegant main [data-host-section]::before,
+.tl-theme-elegant main [data-live-section]::before {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,.03) 0%,
+      rgba(255,255,255,.02) 58%,
+      rgba(238,232,218,.18) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.03) 0%,
+      rgba(255,255,255,.01) 62%,
+      rgba(210,202,185,.14) 100%
+    ) !important;
+}
+
+
+/* Keep Elegant section artwork subtle instead of muddying the text. */
+.tl-theme-elegant main > section::after,
+.tl-theme-elegant main [data-host-section]::after,
+.tl-theme-elegant main [data-live-section]::after,
+.tl-theme-elegant .tl-theme-section::after {
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0%,
+      transparent 60%,
+      rgba(185,169,132,.10) 100%
+    ) !important;
+}
+
+
+/* Elegant typography stays dark on the light surfaces. */
+.tl-theme-elegant main h1,
+.tl-theme-elegant main h2,
+.tl-theme-elegant main h3,
+.tl-theme-elegant main label,
+.tl-theme-elegant main b,
+.tl-theme-elegant main p {
+  color: #20262d !important;
+  text-shadow: none !important;
+}
+
+
+/* Secondary copy remains readable without becoming too heavy. */
+.tl-theme-elegant main [data-host-section="prize-amounts"] > p {
+  color: #5b6570 !important;
+}
+
+
+/* Elegant primary buttons: dark text on gold instead of white text. */
+.tl-theme-elegant main button {
+  color: var(--theme-button-text) !important;
+}
+
+.tl-theme-elegant main button[style*="background"] {
+  color: var(--theme-button-text) !important;
+}
+
+
+/* Prize rows and panels use dark text against their light surfaces. */
+.tl-theme-elegant main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div > div,
+.tl-theme-elegant main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div > div b {
+  color: #20262d !important;
+}
+
+
+/* Elegant theme preview remains light and readable. */
+.tl-theme-elegant main > section:first-of-type > div > div[style*="THEME PREVIEW"] {
+  color: #20262d !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(169,133,50,.12),
+      rgba(255,255,255,.82)
+    ) !important;
+  border-color: rgba(145,112,38,.42) !important;
+}
+
+
+/* Elegant hero: keep the artwork blended while preserving text contrast. */
+.tl-theme-elegant .tl-theme-hero::before {
+  background:
+    linear-gradient(
+      90deg,
+      #f7f4ec 0%,
+      rgba(247,244,236,.94) 34%,
+      rgba(247,244,236,.62) 56%,
+      transparent 82%
+    ) !important;
+}
+
+.tl-theme-elegant .tl-theme-hero::after {
+  background:
+    linear-gradient(
+      180deg,
+      transparent 55%,
+      rgba(190,177,151,.12) 100%
+    ) !important;
+}
+
+.tl-theme-elegant .tl-theme-hero-art {
+  opacity: .72 !important;
+  filter: saturate(.82) contrast(.98) !important;
+}
+
+
+/* Elegant hero copy must remain clearly visible. */
+.tl-theme-elegant .tl-theme-hero-copy,
+.tl-theme-elegant .tl-theme-hero-copy h1,
+.tl-theme-elegant .tl-theme-hero-copy h2,
+.tl-theme-elegant .tl-theme-hero-copy h3,
+.tl-theme-elegant .tl-theme-hero-copy p {
+  color: #20262d !important;
+  text-shadow: none !important;
+}
