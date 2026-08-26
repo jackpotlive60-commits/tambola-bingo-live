@@ -7665,6 +7665,96 @@ function HostControlPage({
   }
 
 
+  async function cancelAcceptedBooking(bookingId) {
+    const confirmed = window.confirm(
+      "Cancel this approved ticket? The ticket will become available for players to book again."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setActionId(bookingId);
+
+    try {
+      const {
+        data: currentBooking,
+        error: currentBookingError
+      } = await supabase
+        .from("ticket_bookings")
+        .select(
+          "id, game_id, player_name, ticket_numbers, status"
+        )
+        .eq(
+          "id",
+          bookingId
+        )
+        .maybeSingle();
+
+      if (currentBookingError) {
+        throw currentBookingError;
+      }
+
+      if (!currentBooking) {
+        await loadBookings();
+        return;
+      }
+
+      /*
+       * Only cancel a booking that is currently accepted.
+       * The conditional status check prevents a stale host screen from
+       * cancelling a booking that has already been processed elsewhere.
+       *
+       * The existing "rejected" status is used as the released/cancelled
+       * state. Player availability only blocks pending and accepted rows,
+       * so these ticket numbers immediately become bookable again.
+       */
+      const {
+        data: updatedRows,
+        error: updateError
+      } = await supabase
+        .from("ticket_bookings")
+        .update({
+          status: "rejected"
+        })
+        .eq(
+          "id",
+          bookingId
+        )
+        .eq(
+          "status",
+          "accepted"
+        )
+        .select(
+          "id, game_id, player_name, ticket_numbers, status"
+        );
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      if (!updatedRows || !updatedRows.length) {
+        await loadBookings();
+        return;
+      }
+
+      await loadBookings();
+    } catch (err) {
+      console.error(
+        "Could not cancel approved booking:",
+        err
+      );
+
+      alert(
+        err?.message ||
+        "Could not cancel the approved ticket."
+      );
+    } finally {
+      setActionId(null);
+    }
+  }
+
+
   function updateEditablePrizeAmount(index, amount) {
     setEditablePrizes((current) =>
       current.map((prize, prizeIndex) =>
@@ -9348,6 +9438,52 @@ function HostControlPage({
                             }}
                           >
                             REJECT
+                          </button>
+                        </div>
+                      )}
+
+                      {status ===
+                        "accepted" && (
+                        <div
+                          style={{
+                            display:
+                              "flex",
+                            gap:
+                              10,
+                            marginTop:
+                              14,
+                            flexWrap:
+                              "wrap"
+                          }}
+                        >
+                          <button
+                            type="button"
+                            disabled={
+                              actionId ===
+                              booking.id
+                            }
+                            onClick={() =>
+                              cancelAcceptedBooking(
+                                booking.id
+                              )
+                            }
+                            style={{
+                              ...themedSecondaryButton,
+                              color:
+                                "#dc2626",
+                              border:
+                                "1px solid #fca5a5",
+                              opacity:
+                                actionId ===
+                                booking.id
+                                  ? 0.5
+                                  : 1
+                            }}
+                          >
+                            {actionId ===
+                            booking.id
+                              ? "CANCELLING..."
+                              : "CANCEL TICKET"}
                           </button>
                         </div>
                       )}
