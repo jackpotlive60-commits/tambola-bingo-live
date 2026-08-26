@@ -2952,7 +2952,7 @@ async function createGamePoster(
   );
 
   centerText(
-    "TAMBOLA LIVE  â€¢  PLAY â€¢ WIN â€¢ HAVE FUN!",
+    "TAMBOLA LIVE  |  PLAY  |  WIN  |  HAVE FUN!",
     width / 2,
     1490,
     "900 27px Arial",
