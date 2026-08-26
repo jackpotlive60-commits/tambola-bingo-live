@@ -2894,55 +2894,106 @@ body:has(.tl-theme-elegant) main .tl-readable-light {
   border-color: rgba(212,175,55,.38) !important;
 }
 
+
 /* =========================================================
-   ELEGANT â€” BUTTON CONTRAST FIX
+   ELEGANT â€” BUTTON / CONTROL CONTRAST FIX v3
    ---------------------------------------------------------
-   Some Elegant buttons inherit a dark/transparent background from
-   the shared theme variables, while their text is also dark. Force
-   every Elegant action button to use a rich gold surface with dark,
-   high-contrast lettering.
+   Some Host Control buttons use secondary/disabled styles or
+   button-like elements instead of inheriting the normal theme
+   button rule. Force a consistent luxury-gold treatment while
+   keeping disabled controls readable.
    ========================================================= */
+
+/* All real and button-like controls on Elegant. */
 body:has(.tl-theme-elegant) main button,
-body:has(.tl-theme-elegant) main button[type="button"],
-body:has(.tl-theme-elegant) main button[type="submit"] {
-  background: linear-gradient(135deg, #b9780c 0%, #d4af37 52%, #b9780c 100%) !important;
-  background-color: #d4af37 !important;
-  color: #15120b !important;
-  -webkit-text-fill-color: #15120b !important;
+body:has(.tl-theme-elegant) main input[type="button"],
+body:has(.tl-theme-elegant) main input[type="submit"],
+body:has(.tl-theme-elegant) main a[role="button"],
+body:has(.tl-theme-elegant) main [role="button"],
+body:has(.tl-theme-elegant) main [class*="btn"],
+body:has(.tl-theme-elegant) main [class*="Btn"],
+body:has(.tl-theme-elegant) main [class*="button"],
+body:has(.tl-theme-elegant) main [class*="Button"] {
+  background: linear-gradient(135deg, #b98216 0%, #d4a72c 52%, #edc54d 100%) !important;
+  background-color: #d4a72c !important;
+  background-image: linear-gradient(135deg, #b98216 0%, #d4a72c 52%, #edc54d 100%) !important;
+  color: #17130b !important;
+  -webkit-text-fill-color: #17130b !important;
+  border: 1px solid #d4af37 !important;
   text-shadow: none !important;
-  border: 1px solid #e1c45a !important;
   box-shadow:
-    0 8px 20px rgba(0,0,0,.32),
-    0 0 14px rgba(212,175,55,.14),
-    inset 0 1px 0 rgba(255,248,210,.38) !important;
-  opacity: 1 !important;
+    0 7px 18px rgba(0,0,0,.28),
+    0 0 12px rgba(212,175,55,.10),
+    inset 0 1px 0 rgba(255,245,190,.28) !important;
 }
 
-body:has(.tl-theme-elegant) main button:hover:not(:disabled),
-body:has(.tl-theme-elegant) main button:focus-visible:not(:disabled),
-body:has(.tl-theme-elegant) main button:active:not(:disabled) {
-  background: linear-gradient(135deg, #c58a18 0%, #e0bd48 52%, #c58a18 100%) !important;
-  background-color: #d4af37 !important;
-  color: #15120b !important;
-  -webkit-text-fill-color: #15120b !important;
-  border-color: #f0d76a !important;
-}
-
-/* Keep disabled buttons readable without turning them black. */
-body:has(.tl-theme-elegant) main button:disabled {
-  background: #6f5a25 !important;
-  background-color: #6f5a25 !important;
-  color: #f7f1df !important;
-  -webkit-text-fill-color: #f7f1df !important;
-  border-color: rgba(212,175,55,.55) !important;
-  opacity: .75 !important;
-}
-
-/* Ensure nested button text/icons inherit the same readable colour. */
+/* Make every nested label/icon inherit the readable button colour. */
 body:has(.tl-theme-elegant) main button *,
-body:has(.tl-theme-elegant) main button span,
-body:has(.tl-theme-elegant) main button strong,
-body:has(.tl-theme-elegant) main button svg {
-  color: inherit !important;
-  -webkit-text-fill-color: inherit !important;
+body:has(.tl-theme-elegant) main input[type="button"] *,
+body:has(.tl-theme-elegant) main input[type="submit"] *,
+body:has(.tl-theme-elegant) main a[role="button"] *,
+body:has(.tl-theme-elegant) main [role="button"] *,
+body:has(.tl-theme-elegant) main [class*="btn"] *,
+body:has(.tl-theme-elegant) main [class*="Btn"] *,
+body:has(.tl-theme-elegant) main [class*="button"] *,
+body:has(.tl-theme-elegant) main [class*="Button"] * {
+  color: #17130b !important;
+  -webkit-text-fill-color: #17130b !important;
+  text-shadow: none !important;
+}
+
+/* Disabled controls: deliberately darker, but NEVER unreadable. */
+body:has(.tl-theme-elegant) main button:disabled,
+body:has(.tl-theme-elegant) main input:disabled,
+body:has(.tl-theme-elegant) main [aria-disabled="true"],
+body:has(.tl-theme-elegant) main [role="button"][aria-disabled="true"] {
+  background: linear-gradient(135deg, #5d4a20 0%, #786128 100%) !important;
+  background-color: #6b5522 !important;
+  background-image: linear-gradient(135deg, #5d4a20 0%, #786128 100%) !important;
+  color: #fff8e7 !important;
+  -webkit-text-fill-color: #fff8e7 !important;
+  border-color: rgba(212,175,55,.65) !important;
+  opacity: 1 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,245,190,.16),
+    0 5px 14px rgba(0,0,0,.24) !important;
+}
+
+body:has(.tl-theme-elegant) main button:disabled *,
+body:has(.tl-theme-elegant) main input:disabled *,
+body:has(.tl-theme-elegant) main [aria-disabled="true"] *,
+body:has(.tl-theme-elegant) main [role="button"][aria-disabled="true"] * {
+  color: #fff8e7 !important;
+  -webkit-text-fill-color: #fff8e7 !important;
+}
+
+/* Select/dropdown holder cards must also stay dark instead of
+   reverting to the old Elegant ivory surface. */
+body:has(.tl-theme-elegant) main div:has(> select),
+body:has(.tl-theme-elegant) main div:has(> select) > label {
+  background: #111720 !important;
+  background-image: linear-gradient(145deg,#171d27,#0e141d) !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.38) !important;
+}
+
+/* Select controls themselves remain dark and readable. */
+body:has(.tl-theme-elegant) main select {
+  background: #111a26 !important;
+  color: #fff8e7 !important;
+  -webkit-text-fill-color: #fff8e7 !important;
+  border-color: rgba(212,175,55,.78) !important;
+}
+
+/* Keep button text readable during interaction. */
+body:has(.tl-theme-elegant) main button:hover:not(:disabled),
+body:has(.tl-theme-elegant) main [role="button"]:hover:not([aria-disabled="true"]),
+body:has(.tl-theme-elegant) main [class*="btn"]:hover:not(:disabled) {
+  filter: brightness(1.08) !important;
+}
+
+body:has(.tl-theme-elegant) main button:focus-visible,
+body:has(.tl-theme-elegant) main [role="button"]:focus-visible {
+  outline: 2px solid #f0d36a !important;
+  outline-offset: 2px !important;
 }
