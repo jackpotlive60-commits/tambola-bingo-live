@@ -4508,7 +4508,7 @@ function PlayerBookingPage({
                 whiteSpace: "nowrap"
               }}
             >
-              {showBookingTicketList ? "COLLAPSE TICKETS" : "EXPAND TICKETS"}
+              {showBookingTicketList ? "SHOW LESS" : "SHOW MORE"}
             </button>
           </div>
 
