@@ -2405,164 +2405,170 @@ main [data-host-section="prize-amounts"] + section p {
 }
 
 /* =========================================================
-   ELEGANT â€” CONTRAST / COLOUR CORRECTION ONLY
+   ELEGANT â€” FINAL CONTRAST FIX
    ---------------------------------------------------------
-   Keeps every other theme unchanged.
+   Elegant is a light/premium theme. The shared dark-content
+   treatment below this theme was making the page background,
+   section veil and inherited text colours fight the Elegant
+   palette. These overrides are intentionally scoped to Elegant
+   only; all other themes remain unchanged.
    ========================================================= */
 
 .tl-theme-elegant {
-  /* Light premium surfaces â€” prevents the shared dark fallback. */
-  --theme-surface: #f7f4ec;
+  --theme-bg: #eeeae1;
+  --theme-page-background:
+    radial-gradient(circle at 10% 8%, rgba(169,133,50,.10), transparent 30%),
+    radial-gradient(circle at 90% 78%, rgba(255,255,255,.38), transparent 32%),
+    linear-gradient(145deg, #e4e0d7, #f3f0e8 55%, #ddd8ce);
+  --theme-text: #20262d;
+  --theme-muted: #4f5962;
+  --theme-accent: #a98532;
+  --theme-secondary: #c5a65b;
+  --theme-glow: #a98532;
+  --theme-surface: #f4f1e9;
   --theme-panel-text: #20262d;
   --theme-ticket-text: #20262d;
-
-  /* Dark gold text gives the primary button proper contrast. */
-  --theme-button-text: #2a2112;
-
-  /* Slightly deeper golds keep borders and controls visible on ivory. */
-  --theme-accent: #9a7625;
-  --theme-secondary: #b58d35;
-  --theme-glow: #9a7625;
-
-  --theme-card-border: 1px solid rgba(145,112,38,.42);
-  --theme-section-border: 1px solid rgba(145,112,38,.36);
-  --theme-panel-border: 1px solid rgba(145,112,38,.58);
-  --theme-secondary-border: 1px solid rgba(145,112,38,.48);
-
-  --theme-input-border: 1px solid #a9894b;
-  --theme-primary-border: 1px solid #987526;
-
-  --theme-primary-button: linear-gradient(135deg,#a98532,#d1b56a);
+  --theme-input-bg: #ffffff;
+  --theme-input-text: #20262d;
+  --theme-section-bg:
+    linear-gradient(145deg, rgba(250,248,243,.98), rgba(235,231,221,.98));
+  --theme-hero-bg: rgba(250,248,243,.94);
+  --theme-button-text: #2b2417;
 }
 
+/* Light page canvas â€” prevents the dark fallback canvas from showing. */
+.tl-theme-elegant main,
+.tl-theme-elegant .tl-theme-page {
+  background-color: var(--theme-bg) !important;
+  background-image: var(--theme-page-background) !important;
+  color: var(--theme-text) !important;
+}
 
-/* Elegant section surfaces: no dark shared fallback. */
+/* Light Elegant cards/sections with no dark protective veil. */
 .tl-theme-elegant main > section,
 .tl-theme-elegant main [data-host-section],
 .tl-theme-elegant main [data-live-section],
 .tl-theme-elegant .tl-theme-section {
-  color: #20262d !important;
   background: var(--theme-section-bg) !important;
-  border-color: var(--theme-section-border) !important;
+  background-color: #f4f1e9 !important;
+  color: var(--theme-text) !important;
+  border-color: rgba(169,139,67,.42) !important;
+  box-shadow:
+    0 14px 34px rgba(48,43,34,.12),
+    inset 0 1px 0 rgba(255,255,255,.82) !important;
 }
 
-
-/* The shared artwork veil is too dark for Elegant's light palette. */
+/* Remove the shared black readability veil that was turning Elegant cards gray. */
 .tl-theme-elegant main > section::before,
 .tl-theme-elegant main [data-host-section]::before,
-.tl-theme-elegant main [data-live-section]::before {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(255,255,255,.03) 0%,
-      rgba(255,255,255,.02) 58%,
-      rgba(238,232,218,.18) 100%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.03) 0%,
-      rgba(255,255,255,.01) 62%,
-      rgba(210,202,185,.14) 100%
-    ) !important;
+.tl-theme-elegant main [data-live-section]::before,
+.tl-theme-elegant .tl-theme-section::before {
+  background: transparent !important;
+  opacity: 0 !important;
 }
 
-
-/* Keep Elegant section artwork subtle instead of muddying the text. */
 .tl-theme-elegant main > section::after,
 .tl-theme-elegant main [data-host-section]::after,
 .tl-theme-elegant main [data-live-section]::after,
 .tl-theme-elegant .tl-theme-section::after {
-  background:
-    linear-gradient(
-      135deg,
-      transparent 0%,
-      transparent 60%,
-      rgba(185,169,132,.10) 100%
-    ) !important;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 62%,
+    rgba(169,133,50,.035) 100%
+  ) !important;
 }
 
-
-/* Elegant typography stays dark on the light surfaces. */
+/* Elegant typography: dark ink on light surfaces. */
+.tl-theme-elegant main,
 .tl-theme-elegant main h1,
 .tl-theme-elegant main h2,
 .tl-theme-elegant main h3,
+.tl-theme-elegant main p,
 .tl-theme-elegant main label,
 .tl-theme-elegant main b,
-.tl-theme-elegant main p {
+.tl-theme-elegant main strong,
+.tl-theme-elegant main small {
+  color: var(--theme-text) !important;
+}
+
+.tl-theme-elegant main p,
+.tl-theme-elegant main small {
+  color: var(--theme-muted) !important;
+}
+
+/* The Host/Create-Games text must not inherit the dark-theme muted colour. */
+.tl-theme-elegant main a,
+.tl-theme-elegant main span {
+  color: inherit;
+}
+
+/* Inputs remain crisp white with dark readable text. */
+.tl-theme-elegant main input,
+.tl-theme-elegant main select,
+.tl-theme-elegant main textarea {
+  background: #ffffff !important;
   color: #20262d !important;
-  text-shadow: none !important;
+  border-color: #b99b5b !important;
+  box-shadow: 0 5px 14px rgba(48,43,34,.10) !important;
 }
 
-
-/* Secondary copy remains readable without becoming too heavy. */
-.tl-theme-elegant main [data-host-section="prize-amounts"] > p {
-  color: #5b6570 !important;
+.tl-theme-elegant main input::placeholder,
+.tl-theme-elegant main textarea::placeholder {
+  color: #69727a !important;
+  opacity: 1 !important;
 }
 
-
-/* Elegant primary buttons: dark text on gold instead of white text. */
+/* Gold buttons use dark ink, not white ink. */
 .tl-theme-elegant main button {
-  color: var(--theme-button-text) !important;
+  color: #2b2417 !important;
 }
 
 .tl-theme-elegant main button[style*="background"] {
-  color: var(--theme-button-text) !important;
+  color: #2b2417 !important;
 }
 
-
-/* Prize rows and panels use dark text against their light surfaces. */
-.tl-theme-elegant main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div > div,
-.tl-theme-elegant main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div > div b {
+/* Theme preview and prize surfaces stay light and readable. */
+.tl-theme-elegant main > section:first-of-type > div > div[style*="THEME PREVIEW"],
+.tl-theme-elegant main [data-host-section="prize-amounts"] div[style*="gridTemplateColumns: 1fr 160px"],
+.tl-theme-elegant main [data-host-section="prize-amounts"] > div[style*="display: grid"] > div > div {
   color: #20262d !important;
 }
 
-
-/* Elegant theme preview remains light and readable. */
-.tl-theme-elegant main > section:first-of-type > div > div[style*="THEME PREVIEW"] {
-  color: #20262d !important;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(169,133,50,.12),
-      rgba(255,255,255,.82)
-    ) !important;
-  border-color: rgba(145,112,38,.42) !important;
+.tl-theme-elegant main [data-host-section="prize-amounts"] > p {
+  color: #4f5962 !important;
 }
 
+/* Keep Elegant hero copy strong over its light artwork. */
+.tl-theme-elegant .tl-theme-hero,
+.tl-theme-elegant .tl-theme-hero-copy {
+  color: #20262d !important;
+}
 
-/* Elegant hero: keep the artwork blended while preserving text contrast. */
 .tl-theme-elegant .tl-theme-hero::before {
-  background:
-    linear-gradient(
-      90deg,
-      #f7f4ec 0%,
-      rgba(247,244,236,.94) 34%,
-      rgba(247,244,236,.62) 56%,
-      transparent 82%
-    ) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(250,248,243,.97) 0%,
+    rgba(250,248,243,.88) 34%,
+    rgba(250,248,243,.48) 58%,
+    transparent 82%
+  ) !important;
 }
 
 .tl-theme-elegant .tl-theme-hero::after {
-  background:
-    linear-gradient(
-      180deg,
-      transparent 55%,
-      rgba(190,177,151,.12) 100%
-    ) !important;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 76%,
+    rgba(169,133,50,.045) 100%
+  ) !important;
 }
 
-.tl-theme-elegant .tl-theme-hero-art {
-  opacity: .72 !important;
-  filter: saturate(.82) contrast(.98) !important;
-}
-
-
-/* Elegant hero copy must remain clearly visible. */
-.tl-theme-elegant .tl-theme-hero-copy,
-.tl-theme-elegant .tl-theme-hero-copy h1,
-.tl-theme-elegant .tl-theme-hero-copy h2,
-.tl-theme-elegant .tl-theme-hero-copy h3,
-.tl-theme-elegant .tl-theme-hero-copy p {
-  color: #20262d !important;
-  text-shadow: none !important;
+@media (max-width: 600px) {
+  .tl-theme-elegant main > section::before,
+  .tl-theme-elegant main [data-host-section]::before,
+  .tl-theme-elegant main [data-live-section]::before,
+  .tl-theme-elegant .tl-theme-section::before {
+    opacity: 0 !important;
+  }
 }
