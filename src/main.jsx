@@ -7166,6 +7166,32 @@ function HostControlPage({
         "rejected"
     );
 
+  const totalTicketLimit = Math.max(
+    0,
+    Number(
+      game.ticket_limit ??
+      game.total_tickets ??
+      game.ticket_count ??
+      0
+    ) || 0
+  );
+
+  const ticketsSold = accepted.reduce(
+    (total, booking) =>
+      total +
+      (
+        Array.isArray(booking.ticket_numbers)
+          ? booking.ticket_numbers.length
+          : Number(booking.ticket_count) || 0
+      ),
+    0
+  );
+
+  const ticketsRemaining = Math.max(
+    0,
+    totalTicketLimit - ticketsSold
+  );
+
   async function startGame() {
     if (
       gameAction ||
@@ -8966,6 +8992,62 @@ function HostControlPage({
           )}
         </section>
 
+        <section
+          className="tl-theme-section"
+          style={
+            nextSectionStyle()
+          }
+        >
+          <h2>
+            Ticket Sales
+          </h2>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(3, minmax(0, 1fr))",
+              gap: 10
+            }}
+          >
+            <StatusBox
+              title="Tickets Sold"
+              value={ticketsSold}
+            />
+
+            <StatusBox
+              title="Tickets Remaining"
+              value={
+                totalTicketLimit > 0
+                  ? ticketsRemaining
+                  : "â€”"
+              }
+            />
+
+            <StatusBox
+              title="Total Tickets"
+              value={
+                totalTicketLimit > 0
+                  ? totalTicketLimit
+                  : "â€”"
+              }
+            />
+          </div>
+
+          {totalTicketLimit > 0 && (
+            <div
+              style={{
+                marginTop: 12,
+                fontSize: 13,
+                color:
+                  "var(--theme-panel-muted, #64748b)"
+              }}
+            >
+              {ticketsSold} of {totalTicketLimit} tickets sold
+            </div>
+          )}
+        </section>
+
         <section className="tl-theme-section"
           style={
             nextSectionStyle()
@@ -9133,7 +9215,7 @@ function HostControlPage({
                                     : ""}
                                 </div>
 
-                                {hasMore && (
+                                {ticketList.length > 0 && (
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -9173,7 +9255,9 @@ function HostControlPage({
                                   >
                                     {isExpanded
                                       ? "SHOW LESS"
-                                      : `SHOW MORE (${ticketList.length})`}
+                                      : ticketList.length > 6
+                                      ? `SHOW MORE (${ticketList.length})`
+                                      : "SHOW MORE"}
                                   </button>
                                 )}
                               </div>
