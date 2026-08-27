@@ -3091,3 +3091,104 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-ove
 body:has(.tl-theme-elegant) .tl-theme-page [data-host-section="prize-winners-overview"] > div[style*="display: grid"] > div > div:nth-child(3) div {
   color: #f5d77a !important;
 }
+
+/* =========================================================
+   FULL-WIDTH MOBILE LAYOUT
+   ========================================================= */
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+.tl-theme-page {
+  width: 100%;
+  max-width: none !important;
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 !important;
+  box-sizing: border-box;
+  overflow-x: clip;
+}
+
+.tl-theme-page > *,
+.tl-theme-page main,
+.tl-theme-page section {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page {
+    width: 100%;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .tl-theme-page > *,
+  .tl-theme-page main,
+  .tl-theme-page section {
+    width: 100%;
+    max-width: none !important;
+  }
+
+  .tl-theme-page .tl-theme-hero {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .tl-theme-page input,
+  .tl-theme-page select,
+  .tl-theme-page textarea,
+  .tl-theme-page button {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .tl-theme-page * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 380px) {
+  .tl-theme-page {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+@supports (padding: env(safe-area-inset-left)) {
+  @media (max-width: 600px) {
+    .tl-theme-page {
+      padding-left: max(8px, env(safe-area-inset-left)) !important;
+      padding-right: max(8px, env(safe-area-inset-right)) !important;
+    }
+  }
+}
