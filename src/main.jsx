@@ -5913,10 +5913,80 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   );
   const [showCalledNumberBoard, setShowCalledNumberBoard] = useState(true);
   const [liveGame, setLiveGame] = useState(game);
+  const [liveViewerCount, setLiveViewerCount] = useState(0);
   const finalAnnouncementSpokenRef = useRef(false);
   const finalSummaryTimerRef = useRef(null);
   const [showFinalResults, setShowFinalResults] = useState(false);
   const [viewFinishedLive, setViewFinishedLive] = useState(false);
+
+  /* -------------------------------------------------------
+     LIVE VIEWER PRESENCE
+     Each open live-game page joins a game-specific Supabase
+     Presence channel. This counts active browser tabs/devices
+     without creating viewer rows in the database.
+  ------------------------------------------------------- */
+  useEffect(() => {
+    if (!game?.id || liveGame?.status !== "live") {
+      setLiveViewerCount(0);
+      return undefined;
+    }
+
+    let viewerId = null;
+
+    try {
+      const storageKey = `tambolalive_viewer_presence_${game.id}`;
+      viewerId = window.sessionStorage.getItem(storageKey);
+
+      if (!viewerId) {
+        viewerId =
+          window.crypto?.randomUUID?.() ||
+          `viewer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        window.sessionStorage.setItem(storageKey, viewerId);
+      }
+    } catch (err) {
+      viewerId =
+        window.crypto?.randomUUID?.() ||
+        `viewer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    const channel = supabase.channel(`live-viewers-${game.id}`, {
+      config: {
+        presence: { key: viewerId }
+      }
+    });
+
+    const updateViewerCount = () => {
+      try {
+        const presenceState = channel.presenceState();
+        setLiveViewerCount(Object.keys(presenceState || {}).length);
+      } catch (err) {
+        console.error("Could not read live viewer presence:", err);
+      }
+    };
+
+    channel.on("presence", { event: "sync" }, updateViewerCount);
+    channel.on("presence", { event: "join" }, updateViewerCount);
+    channel.on("presence", { event: "leave" }, updateViewerCount);
+
+    channel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        try {
+          await channel.track({
+            viewerId,
+            joinedAt: new Date().toISOString()
+          });
+          updateViewerCount();
+        } catch (err) {
+          console.error("Could not join live viewer presence:", err);
+        }
+      }
+    });
+
+    return () => {
+      setLiveViewerCount(0);
+      supabase.removeChannel(channel);
+    };
+  }, [game.id, liveGame.status]);
 
   useEffect(() => {
     if (finalSummaryTimerRef.current) {
@@ -6775,15 +6845,47 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
           <h1>{liveGame.game_name}</h1>
           <div
             style={{
-              display: "inline-block",
-              padding: "8px 18px",
-              borderRadius: 30,
-              background: "var(--theme-status-live)",
-              color: "#ffffff",
-              fontWeight: "bold"
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap"
             }}
           >
-            LIVE GAME
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "8px 18px",
+                borderRadius: 30,
+                background: "var(--theme-status-live)",
+                color: "#ffffff",
+                fontWeight: "bold"
+              }}
+            >
+              <span aria-hidden="true">&#9679;</span>
+              LIVE GAME
+            </div>
+
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "8px 18px",
+                borderRadius: 30,
+                background: themeUI.colors.surface2,
+                color: themeUI.colors.text,
+                border: `1px solid ${themeUI.colors.accent}66`,
+                fontWeight: "bold",
+                boxShadow: `0 4px 14px ${themeUI.colors.secondary}18`
+              }}
+              aria-label={`${liveViewerCount} people watching live`}
+            >
+              <span aria-hidden="true">&#128065;</span>
+              WATCHING LIVE: {liveViewerCount}
+            </div>
           </div>
         </div>
 
