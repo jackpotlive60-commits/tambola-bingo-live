@@ -3757,10 +3757,10 @@ function TicketGridComponent({
     switch (theme) {
       case "Royal":
         return {
-          shell: "linear-gradient(145deg, #2b1242 0%, #12081e 100%)",
-          grid: "linear-gradient(145deg, #24113b 0%, #35175a 100%)",
-          empty: "#1a0d2b",
-          line: "#8e6bb0",
+          shell: "linear-gradient(145deg, #542b72 0%, #2b1640 100%)",
+          grid: "linear-gradient(145deg, #a46bc4 0%, #653b8a 100%)",
+          empty: "#45265e",
+          line: "#d6a9ed",
           text: "#fff8df",
           muted: "#f5c542",
           player: "rgba(245,197,66,.14)",
@@ -3769,10 +3769,10 @@ function TicketGridComponent({
         };
       case "Party":
         return {
-          shell: "linear-gradient(145deg, #68154f 0%, #260a23 100%)",
-          grid: "linear-gradient(145deg, #4d123d 0%, #741957 100%)",
-          empty: "#32102d",
-          line: "#d66aa7",
+          shell: "linear-gradient(145deg, #8e2b70 0%, #451735 100%)",
+          grid: "linear-gradient(145deg, #e06aaa 0%, #9a3d79 100%)",
+          empty: "#5b2149",
+          line: "#ffc0e2",
           text: "#fff7fb",
           muted: "#fde047",
           player: "rgba(34,211,238,.14)",
@@ -3781,10 +3781,10 @@ function TicketGridComponent({
         };
       case "Bollywood":
         return {
-          shell: "linear-gradient(145deg, #71161a 0%, #28080a 100%)",
-          grid: "linear-gradient(145deg, #551013 0%, #861c20 100%)",
-          empty: "#3a0b0e",
-          line: "#d78b5b",
+          shell: "linear-gradient(145deg, #9f3439 0%, #4c1518 100%)",
+          grid: "linear-gradient(145deg, #d85b60 0%, #a52d35 100%)",
+          empty: "#681a20",
+          line: "#ffd0ad",
           text: "#fff8e9",
           muted: "#ffd166",
           player: "rgba(251,191,36,.16)",
@@ -3793,10 +3793,10 @@ function TicketGridComponent({
         };
       case "Neon":
         return {
-          shell: "linear-gradient(145deg, #0b1528 0%, #030712 100%)",
-          grid: "linear-gradient(145deg, #0c1d35 0%, #081426 100%)",
-          empty: "#050c18",
-          line: "#24506c",
+          shell: "linear-gradient(145deg, #18395a 0%, #0b1a30 100%)",
+          grid: "linear-gradient(145deg, #2c668b 0%, #17405e 100%)",
+          empty: "#10283e",
+          line: "#75cbed",
           text: "#f8fafc",
           muted: "#22d3ee",
           player: "rgba(34,211,238,.12)",
@@ -3805,10 +3805,10 @@ function TicketGridComponent({
         };
       case "Elegant":
         return {
-          shell: "linear-gradient(145deg, #173330 0%, #091716 100%)",
-          grid: "linear-gradient(145deg, #183c38 0%, #102c29 100%)",
-          empty: "#0d211f",
-          line: "#5e8c82",
+          shell: "linear-gradient(145deg, #32685f 0%, #183a35 100%)",
+          grid: "linear-gradient(145deg, #67a99d 0%, #39736a 100%)",
+          empty: "#1d403b",
+          line: "#a9ddd3",
           text: "#f8f4e8",
           muted: "#e4c76a",
           player: "rgba(212,175,55,.14)",
@@ -3817,10 +3817,10 @@ function TicketGridComponent({
         };
       default:
         return {
-          shell: "linear-gradient(145deg, #102d55 0%, #07111f 100%)",
-          grid: "linear-gradient(145deg, #153b68 0%, #0d294a 100%)",
-          empty: "#081a2e",
-          line: "#4b79a8",
+          shell: "linear-gradient(145deg, #285a8d 0%, #122b49 100%)",
+          grid: "linear-gradient(145deg, #4d83b3 0%, #28577f 100%)",
+          empty: "#173957",
+          line: "#9bc8ec",
           text: "#f8fbff",
           muted: "#60a5fa",
           player: "rgba(96,165,250,.14)",
@@ -3836,8 +3836,8 @@ function TicketGridComponent({
         position: "relative",
         border: selected
           ? `2px solid ${c.accent}`
-          : `1px solid ${c.secondary}88`,
-        borderLeft: `6px solid ${c.accent}`,
+          : `2px solid ${c.secondary}aa`,
+        borderLeft: `7px solid ${c.accent}`,
         borderRadius: 18,
         padding: 10,
         width: "100%",
@@ -3847,8 +3847,8 @@ function TicketGridComponent({
           : ticketTheme.shell,
         cursor: onSelect ? "pointer" : "default",
         boxShadow: selected
-          ? `0 16px 34px ${ticketTheme.glow}, 0 0 0 1px ${c.accent}66 inset`
-          : `0 12px 28px rgba(0,0,0,.25), 0 0 0 1px ${c.secondary}22 inset`,
+          ? `0 16px 34px ${ticketTheme.glow}, 0 0 0 2px ${c.accent}66 inset`
+          : `0 12px 28px rgba(0,0,0,.32), 0 0 0 1px rgba(255,255,255,.12) inset`,
         transition: "transform .18s ease, box-shadow .18s ease, border-color .18s ease",
         // Progressive performance enhancement for long ticket lists.
         // Older browsers ignore these properties safely.
