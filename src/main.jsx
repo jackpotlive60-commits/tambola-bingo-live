@@ -4647,14 +4647,17 @@ function PlayerBookingPage({
         `Total Amount: \u20B9${bookingPricing.total}\n\n` +
         `Please approve my booking.`;
 
+      // Open WhatsApp in a way that works reliably on both iOS and Android.
+      // iOS Safari can block window.open() after async work, so use a direct
+      // navigation to the WhatsApp universal link from the user-triggered flow.
+      const encodedWhatsAppMessage = encodeURIComponent(whatsappMessage);
       const whatsappUrl =
-        `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
+        `https://wa.me/?text=${encodedWhatsAppMessage}`;
 
-      window.open(
-        whatsappUrl,
-        "_blank",
-        "noopener,noreferrer"
-      );
+      // Direct navigation lets iOS hand the link to the installed WhatsApp app.
+      // If WhatsApp is not installed, the same universal link can fall back to
+      // WhatsApp's web experience. Android continues to hand off to WhatsApp.
+      window.location.href = whatsappUrl;
     } catch (err) {
       console.error(
         err
