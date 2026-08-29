@@ -3252,14 +3252,11 @@ function CreateGamePage({
           "upcoming",
 
         ticket_limit:
-          Math.min(
-            100,
-            Math.max(
-              1,
-              Number(
-                ticketLimit
-              ) || 100
-            )
+          Math.max(
+            1,
+            Number(
+              ticketLimit
+            ) || 100
           ),
 
         ticket_price:
@@ -3480,7 +3477,6 @@ function CreateGamePage({
                 <input
                   type="number"
                   min="1"
-                  max="100"
                   value={
                     ticketLimit
                   }
@@ -4051,14 +4047,11 @@ function PlayerBookingPage({
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
   const limit =
-    Math.min(
-      100,
-      Math.max(
-        1,
-        Number(
-          game.ticket_limit
-        ) || 100
-      )
+    Math.max(
+      1,
+      Number(
+        game.ticket_limit
+      ) || 100
     );
 
   const [
@@ -6170,8 +6163,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
           const number = Number(n);
           if (
             Number.isInteger(number) &&
-            number >= 1 &&
-            number <= 100
+            number >= 1
           ) {
             allTickets.push(number);
           }
@@ -6366,8 +6358,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
         const number = Number(n);
         if (
           Number.isInteger(number) &&
-          number >= 1 &&
-          number <= 100
+          number >= 1
         ) {
           numbers.push(number);
         }
@@ -6382,8 +6373,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
       .filter(
         (n) =>
           Number.isInteger(n) &&
-          n >= 1 &&
-          n <= 100
+          n >= 1
       )
       .sort((a, b) => a - b);
   }, [playerBookings, playerBooking?.ticketNumbers]);
@@ -6410,8 +6400,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
 
         if (
           Number.isInteger(ticketNumber) &&
-          ticketNumber >= 1 &&
-          ticketNumber <= 100
+          ticketNumber >= 1
         ) {
           result.push({
             bookingId: booking.id,
