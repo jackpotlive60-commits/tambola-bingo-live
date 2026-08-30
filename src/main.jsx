@@ -1160,69 +1160,169 @@ function shuffle(array, random) {
    TAMBOLA TICKET GENERATOR
 ========================================================= */
 
-function makeTicket(gameCode, ticketNumber) {
-  return generateUniqueTicket(gameCode, ticketNumber);
-}
+function makeTicket(
+  gameCode,
+  ticketNumber
+) {
+  const random =
+    seededRandom(
+      seedFromText(
+        `${gameCode}-${ticketNumber}`
+      )
+    );
 
-makeTicket.__raw = function(gameCode, ticketNumber) {
-  const random = seededRandom(
-    seedFromText(`${gameCode}-${ticketNumber}-candidate-0`)
-  );
+  const ranges = [
+    [1, 9],
+    [10, 19],
+    [20, 29],
+    [30, 39],
+    [40, 49],
+    [50, 59],
+    [60, 69],
+    [70, 79],
+    [80, 90]
+  ];
 
-  const columns = Array.from({ length: 9 }, (_, column) => {
-    const start = column === 0 ? 1 : column * 10;
-    const end = column === 8 ? 90 : column * 10 + 9;
-    const values = [];
-    for (let n = start; n <= end; n++) values.push(n);
-    return shuffle(values, random);
-  });
+  let pattern = null;
 
-  const rowCounts = [0, 0, 0];
-  const occupied = Array.from({ length: 3 }, () => Array(9).fill(false));
+  for (
+    let attempt = 0;
+    attempt < 500;
+    attempt++
+  ) {
+    const row1 =
+      shuffle(
+        [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        random
+      ).slice(0, 5);
 
-  const columnOrder = shuffle(
-    Array.from({ length: 9 }, (_, i) => i),
-    random
-  );
+    const row2 =
+      shuffle(
+        [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        random
+      ).slice(0, 5);
 
-  columnOrder.forEach((column) => {
-    const possibleRows = [0, 1, 2]
-      .filter((row) => rowCounts[row] < 5)
-      .sort((a, b) => rowCounts[a] - rowCounts[b]);
+    const row3 =
+      shuffle(
+        [0, 1, 2, 3, 4, 5, 6, 7, 8],
+        random
+      ).slice(0, 5);
 
-    const row = possibleRows[Math.floor(random() * possibleRows.length)];
-    occupied[row][column] = true;
-    rowCounts[row]++;
-  });
+    const cells = [
+      ...row1.map((c) => [0, c]),
+      ...row2.map((c) => [1, c]),
+      ...row3.map((c) => [2, c])
+    ];
 
-  let guard = 0;
-  while (rowCounts.some((count) => count < 5) && guard++ < 1000) {
-    const rowCandidates = [0, 1, 2].filter((row) => rowCounts[row] < 5);
-    const row = rowCandidates[Math.floor(random() * rowCandidates.length)];
-    const emptyColumns = Array.from({ length: 9 }, (_, column) => column)
-      .filter((column) => !occupied[row][column]);
+    const counts =
+      Array(9).fill(0);
 
-    if (!emptyColumns.length) continue;
+    cells.forEach(
+      ([, c]) => {
+        counts[c]++;
+      }
+    );
 
-    const column = emptyColumns[Math.floor(random() * emptyColumns.length)];
-    occupied[row][column] = true;
-    rowCounts[row]++;
+    if (
+      counts.every(
+        (count) => count >= 1
+      )
+    ) {
+      pattern = cells;
+      break;
+    }
   }
 
-  const grid = Array.from({ length: 3 }, () => Array(9).fill(""));
+  if (!pattern) {
+    pattern = [
+      [0, 0],
+      [0, 1],
+      [0, 3],
+      [0, 5],
+      [0, 7],
 
-  for (let column = 0; column < 9; column++) {
-    const rows = [0, 1, 2].filter((row) => occupied[row][column]).sort((a, b) => a - b);
-    const values = columns[column].slice(0, rows.length).sort((a, b) => a - b);
+      [1, 1],
+      [1, 2],
+      [1, 4],
+      [1, 6],
+      [1, 8],
 
-    rows.forEach((row, index) => {
-      grid[row][column] = values[index];
-    });
+      [2, 0],
+      [2, 2],
+      [2, 4],
+      [2, 6],
+      [2, 8]
+    ];
+  }
+
+  const grid =
+    Array.from(
+      { length: 3 },
+      () => Array(9).fill(null)
+    );
+
+  for (
+    let column = 0;
+    column < 9;
+    column++
+  ) {
+    const rows =
+      pattern
+        .filter(
+          ([, c]) =>
+            c === column
+        )
+        .map(
+          ([r]) => r
+        )
+        .sort(
+          (a, b) => a - b
+        );
+
+    if (!rows.length) {
+      continue;
+    }
+
+    const [min, max] =
+      ranges[column];
+
+    const numbers = [];
+
+    for (
+      let n = min;
+      n <= max;
+      n++
+    ) {
+      numbers.push(n);
+    }
+
+    const selectedNumbers =
+      shuffle(
+        numbers,
+        random
+      )
+        .slice(
+          0,
+          rows.length
+        )
+        .sort(
+          (a, b) => a - b
+        );
+
+    rows.forEach(
+      (row, index) => {
+        grid[row][column] =
+          selectedNumbers[index];
+      }
+    );
   }
 
   return grid;
-};
+}
 
+/* =========================================================
+   REAL GAME POSTER GENERATOR
+========================================================= */
 
 function roundedRect(
   ctx,
@@ -3152,11 +3252,11 @@ function CreateGamePage({
           "upcoming",
 
         ticket_limit:
-          (Math.max(
-              1,
-              Number(
-                ticketLimit) || 100
-            )
+          Math.max(
+            1,
+            Number(
+              ticketLimit
+            ) || 100
           ),
 
         ticket_price:
@@ -3947,11 +4047,11 @@ function PlayerBookingPage({
   const themedPrimaryButton = { ...primaryButton, ...themeUI.primary };
   const themedSecondaryButton = { ...secondaryButton, ...themeUI.secondary };
   const limit =
-    (Math.max(
-        1,
-        Number(
-          game.ticket_limit) || 100
-      )
+    Math.max(
+      1,
+      Number(
+        game.ticket_limit
+      ) || 100
     );
 
   const [
@@ -11954,50 +12054,3 @@ root.render(
     <App />
   </React.StrictMode>
 );
-const TICKET_GRID_CACHE = new Map();
-const TICKET_SIGNATURE_CACHE = new Map();
-
-function getTicketSignature(grid) {
-  return grid.map((row) => row.join(",")).join("|");
-}
-
-function generateUniqueTicket(gameCode, ticketNumber) {
-  const key = `${gameCode}:${ticketNumber}`;
-  if (TICKET_GRID_CACHE.has(key)) {
-    return TICKET_GRID_CACHE.get(key);
-  }
-
-  const target = Math.max(1, Number(ticketNumber) || 1);
-
-  for (let salt = 0; salt < 10000; salt++) {
-    const candidate = makeTicket.__rawSalted(gameCode, target, salt);
-    if (!candidate) continue;
-
-    const signature = getTicketSignature(candidate);
-
-    let duplicate = false;
-    for (let previous = 1; previous < target; previous++) {
-      const previousKey = `${gameCode}:${previous}`;
-      let previousSignature = TICKET_SIGNATURE_CACHE.get(previousKey);
-
-      if (!previousSignature) {
-        const previousGrid = generateUniqueTicket(gameCode, previous);
-        previousSignature = getTicketSignature(previousGrid);
-      }
-
-      if (previousSignature === signature) {
-        duplicate = true;
-        break;
-      }
-    }
-
-    if (!duplicate) {
-      TICKET_GRID_CACHE.set(key, candidate);
-      TICKET_SIGNATURE_CACHE.set(key, signature);
-      return candidate;
-    }
-  }
-
-  throw new Error(`Could not generate a unique ticket for ${gameCode} #${target}`);
-}
-
