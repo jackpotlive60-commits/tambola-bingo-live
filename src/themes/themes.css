@@ -3217,3 +3217,37 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell][style*="background
 body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell][style*="backgroundColor"] {
   background-color: revert !important;
 }
+
+
+/* =========================================================
+   ELEGANT â€” PLAYER TICKET CELL BACKGROUND RESTORE (FINAL)
+   ---------------------------------------------------------
+   TicketGrid uses inline backgrounds for three Elegant cell states:
+   called, numbered-but-not-called, and empty. The broad Elegant
+   surface rules above use !important, so restore those exact ticket
+   backgrounds here without touching main.jsx or other themes.
+   ========================================================= */
+
+/* Called number â€” preserve the gold highlight from TicketGrid. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#fde68a"] {
+  background: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-color: #fbbf24 !important;
+  color: #78350f !important;
+}
+
+/* Elegant numbered cell that has not been called. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#67a99d"] {
+  background: linear-gradient(145deg, #67a99d 0%, #39736a 100%) !important;
+  background-image: linear-gradient(145deg, #67a99d 0%, #39736a 100%) !important;
+  background-color: #39736a !important;
+  color: #f8f4e8 !important;
+}
+
+/* Elegant empty ticket cell. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#1d403b"] {
+  background: #1d403b !important;
+  background-image: none !important;
+  background-color: #1d403b !important;
+  color: #f8f4e8 !important;
+}
