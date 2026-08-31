@@ -3749,6 +3749,14 @@ function TicketGridComponent({
   const ui = getThemeUI(theme);
   const c = ui.colors;
 
+  // Normalize called numbers once so the ticket marking works whether
+  // Supabase returns JSON numbers as numbers or numeric strings.
+  const calledNumberSet = new Set(
+    (Array.isArray(calledNumbers) ? calledNumbers : [])
+      .map((number) => Number(number))
+      .filter((number) => Number.isInteger(number))
+  );
+
   const ticketTheme = (() => {
     switch (theme) {
       case "Royal":
@@ -3933,11 +3941,16 @@ function TicketGridComponent({
       >
         {ticket.grid.flatMap((row, r) =>
           row.map((value, col) => {
-            const called = value && calledNumbers.includes(value);
+            const ticketValue = value ? Number(value) : null;
+            const called = Boolean(
+              ticketValue && calledNumberSet.has(ticketValue)
+            );
 
             return (
               <div
                 key={`${r}-${col}`}
+                data-ticket-cell="true"
+                data-called={called ? "true" : "false"}
                 style={{
                   minHeight: 38,
                   height: 38,
