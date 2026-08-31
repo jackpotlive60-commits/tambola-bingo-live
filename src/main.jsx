@@ -6032,7 +6032,7 @@ function PlayerLiveChat({ game, playerName, themeUI, live }) {
                 fontSize: 18
               }}
             >
-              Ã—
+              X
             </button>
           </div>
 
