@@ -3220,62 +3220,59 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell][style*="background
 
 
 /* =========================================================
-   ELEGANT â€” SELECT PRIZES BLENDED SURFACE
+   ELEGANT â€” PLAYER TICKET CELL BACKGROUND RESTORE (FINAL)
    ---------------------------------------------------------
-   The prize-selection rows are part of the dark Elegant card,
-   so they must visually blend into the section instead of
-   rendering as pale/light cards. Scoped only to the Create Game
-   Select Prizes block.
+   TicketGrid uses inline backgrounds for three Elegant cell states:
+   called, numbered-but-not-called, and empty. The broad Elegant
+   surface rules above use !important, so restore those exact ticket
+   backgrounds here without touching main.jsx or other themes.
    ========================================================= */
-body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) label {
-  background: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
-  background-color: #111720 !important;
-  color: #f7f1df !important;
-  border-color: rgba(212,175,55,.48) !important;
-  box-shadow:
-    0 8px 20px rgba(0,0,0,.24),
-    inset 0 1px 0 rgba(255,235,160,.035) !important;
+
+/* Called number â€” preserve the gold highlight from TicketGrid. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#fde68a"] {
+  background: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-color: #fbbf24 !important;
+  color: #78350f !important;
 }
 
-body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) label > span {
-  color: #f7f1df !important;
+/* Elegant numbered cell that has not been called. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#67a99d"] {
+  background: linear-gradient(145deg, #67a99d 0%, #39736a 100%) !important;
+  background-image: linear-gradient(145deg, #67a99d 0%, #39736a 100%) !important;
+  background-color: #39736a !important;
+  color: #f8f4e8 !important;
 }
 
-body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) label > input[type="checkbox"] {
-  accent-color: #d4af37 !important;
+/* Elegant empty ticket cell. */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#1d403b"] {
+  background: #1d403b !important;
+  background-image: none !important;
+  background-color: #1d403b !important;
+  color: #f8f4e8 !important;
 }
 
-body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) label button {
-  background: linear-gradient(145deg, #171d27, #0e141c) !important;
-  color: #f7f1df !important;
-  border-color: #d4af37 !important;
-}
-
-body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) {
-  background:
-    radial-gradient(circle at 92% 8%, rgba(212,175,55,.055), transparent 34%),
-    linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
-}
 
 /* =========================================================
-   ELEGANT â€” DEFINITIVE SELECT PRIZES CARD FIX
+   ELEGANT â€” CLEAN LABEL / CONTROL SURFACES
    ---------------------------------------------------------
-   The prize rows are <label> elements with an inline
-   background: var(--theme-panel-bg). Keep the Elegant dark
-   surface here, regardless of where the theme wrapper sits.
-   This selector is intentionally limited to labels containing
-   a checkbox, so normal form labels are unaffected.
+   The React UI uses <label> wrappers for several controls.
+   These wrappers intentionally use --theme-panel-bg, but some
+   legacy theme rules resolve that surface to a light background.
+
+   Scope ONLY to labels that actually contain a checkbox or select.
+   This keeps Player TicketGrid cells completely untouched, including
+   the called-number gold highlight.
    ========================================================= */
-body:has(.tl-theme-elegant) main label:has(> input[type="checkbox"]),
+
+/* Prize selection rows â€” dark Elegant surface. */
 body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) {
-  background: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+  background: linear-gradient(145deg, #171d27 0%, #0e141d 100%) !important;
   background-color: #111720 !important;
-  background-image: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+  background-image: linear-gradient(145deg, #171d27 0%, #0e141d 100%) !important;
   color: #f7f1df !important;
   border-color: rgba(212,175,55,.52) !important;
-  box-shadow:
-    0 8px 20px rgba(0,0,0,.28),
-    inset 0 1px 0 rgba(255,235,160,.035) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.035) !important;
 }
 
 body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) > span {
@@ -3283,27 +3280,35 @@ body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) > span {
   -webkit-text-fill-color: #f7f1df !important;
 }
 
-body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) > input[type="checkbox"] {
+body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) input[type="checkbox"] {
   accent-color: #d4af37 !important;
 }
 
-body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) button {
-  background: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+/* Caller Style / Voice Over wrappers â€” dark Elegant surface. */
+body:has(.tl-theme-elegant) main label:has(select) {
+  background: linear-gradient(145deg, #171d27 0%, #0e141d 100%) !important;
   background-color: #111720 !important;
-  background-image: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+  background-image: linear-gradient(145deg, #171d27 0%, #0e141d 100%) !important;
   color: #f7f1df !important;
-  -webkit-text-fill-color: #f7f1df !important;
-  border-color: #d4af37 !important;
+  border-color: rgba(212,175,55,.52) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.035) !important;
 }
 
-/* The Select Prizes section itself remains one continuous Elegant
-   surface, so the rows read as cards inside the same panel rather
-   than bright standalone blocks. */
-body:has(.tl-theme-elegant) main section:has(label > input[type="checkbox"]) {
-  background:
-    radial-gradient(circle at 92% 8%, rgba(212,175,55,.055), transparent 34%),
-    linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
-  background-color: #10151d !important;
+body:has(.tl-theme-elegant) main label:has(select) > span {
   color: #f7f1df !important;
-  border-color: rgba(212,175,55,.38) !important;
+  -webkit-text-fill-color: #f7f1df !important;
+}
+
+/* The select itself remains a compact dark control. */
+body:has(.tl-theme-elegant) main label:has(select) select {
+  background: #1b222d !important;
+  background-image: none !important;
+  color: #fff8e7 !important;
+  -webkit-text-fill-color: #fff8e7 !important;
+  border-color: rgba(212,175,55,.72) !important;
+}
+
+body:has(.tl-theme-elegant) main label:has(select) select option {
+  background: #1b222d !important;
+  color: #fff8e7 !important;
 }
