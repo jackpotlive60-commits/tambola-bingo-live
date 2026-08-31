@@ -3338,3 +3338,17 @@ body:has(.tl-theme-elegant) .tl-theme-page main
   div[style*="grid-template-columns"] {
   color: #f7f1df;
 }
+
+
+/* =========================================================
+   ELEGANT â€” AUTHORITATIVE PLAYER TICKET CALLED-NUMBER STATE
+   Uses explicit React data attributes so no colour/inline-style
+   serialization is involved. Only called ticket cells are affected.
+   ========================================================= */
+body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"][data-called="true"] {
+  background: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-color: #fbbf24 !important;
+  color: #78350f !important;
+  -webkit-text-fill-color: #78350f !important;
+}
