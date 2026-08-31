@@ -6012,7 +6012,7 @@ function PlayerLiveChat({ game, playerName, themeUI, live }) {
             }}
           >
             <div>
-              <div style={{ fontWeight: 900, fontSize: 16 }}>ðŸ’¬ Player Chat</div>
+              <div style={{ fontWeight: 900, fontSize: 16 }}>Player Chat</div>
               <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>
                 Live chat for this game
               </div>
@@ -6058,7 +6058,7 @@ function PlayerLiveChat({ game, playerName, themeUI, live }) {
               >
                 No messages yet.
                 <br />
-                Say hello to the other players! ðŸ‘‹
+                Say hello to the other players!
               </div>
             ) : (
               messages.map((message) => (
@@ -6174,7 +6174,6 @@ function PlayerLiveChat({ game, playerName, themeUI, live }) {
           fontWeight: 900
         }}
       >
-        <span aria-hidden="true">ðŸ’¬</span>
         {open ? "CLOSE CHAT" : "CHAT"}
       </button>
     </div>
