@@ -3312,3 +3312,29 @@ body:has(.tl-theme-elegant) main label:has(select) select option {
   background: #1b222d !important;
   color: #fff8e7 !important;
 }
+
+/* =========================================================
+   ELEGANT â€” FINAL PLAYER TICKET CALLED-NUMBER VISIBILITY FIX
+   ---------------------------------------------------------
+   TicketGrid creates the called cells with an inline
+   linear-gradient background. React/browser serialization can
+   convert the hex colours to rgb(), so matching #fde68a in the
+   style attribute is not reliable. Target only the 9-column
+   ticket grid's direct cells that actually have a linear-gradient.
+   This does not touch the surrounding cards or other themes.
+   ========================================================= */
+body:has(.tl-theme-elegant) .tl-theme-page main
+  div[style*="grid-template-columns"] > div[style*="linear-gradient"] {
+  background: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-color: #fbbf24 !important;
+  color: #78350f !important;
+  -webkit-text-fill-color: #78350f !important;
+}
+
+/* The ticket grid itself must remain a neutral dark surface; only
+   its called-number cells receive the gold highlight above. */
+body:has(.tl-theme-elegant) .tl-theme-page main
+  div[style*="grid-template-columns"] {
+  color: #f7f1df;
+}
