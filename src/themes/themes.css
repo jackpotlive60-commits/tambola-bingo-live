@@ -3219,29 +3219,40 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell][style*="background
 }
 
 
-
 /* =========================================================
-   ELEGANT â€” TICKET CALLED-NUMBER PROTECTION
-   The ticket cells are inline-styled by main.jsx.  Elegant's broad
-   surface rules above must not replace the gold called state.
-   We identify called cells by the unique called-state text colour
-   emitted by TicketGrid, so no main.jsx change is required.
+   ELEGANT â€” SELECT PRIZES BLENDED SURFACE
+   ---------------------------------------------------------
+   The prize-selection rows are part of the dark Elegant card,
+   so they must visually blend into the section instead of
+   rendering as pale/light cards. Scoped only to the Create Game
+   Select Prizes block.
    ========================================================= */
-body:has(.tl-theme-elegant) main div[style*="#78350f"],
-body:has(.tl-theme-elegant) main div[style*="#78350F"],
-body:has(.tl-theme-elegant) main div[style*="rgb(120, 53, 15)"],
-body:has(.tl-theme-elegant) main div[style*="rgb(120,53,15)"] {
-  background: linear-gradient(145deg, #fde68a, #fbbf24) !important;
-  background-color: #fbbf24 !important;
-  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
-  color: #78350f !important;
-  -webkit-text-fill-color: #78350f !important;
+body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) label {
+  background: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+  background-color: #111720 !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.48) !important;
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,235,160,.035) !important;
 }
 
-body:has(.tl-theme-elegant) main div[style*="#78350f"] *,
-body:has(.tl-theme-elegant) main div[style*="#78350F"] *,
-body:has(.tl-theme-elegant) main div[style*="rgb(120, 53, 15)"] *,
-body:has(.tl-theme-elegant) main div[style*="rgb(120,53,15)"] * {
-  color: #78350f !important;
-  -webkit-text-fill-color: #78350f !important;
+body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) label > span {
+  color: #f7f1df !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) label > input[type="checkbox"] {
+  accent-color: #d4af37 !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) label button {
+  background: linear-gradient(145deg, #171d27, #0e141c) !important;
+  color: #f7f1df !important;
+  border-color: #d4af37 !important;
+}
+
+body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-of-type(2) {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(212,175,55,.055), transparent 34%),
+    linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
 }
