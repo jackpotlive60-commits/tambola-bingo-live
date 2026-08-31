@@ -3256,3 +3256,54 @@ body:has(.tl-theme-elegant) .tl-theme-page main > section.tl-theme-section:nth-o
     radial-gradient(circle at 92% 8%, rgba(212,175,55,.055), transparent 34%),
     linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
 }
+
+/* =========================================================
+   ELEGANT â€” DEFINITIVE SELECT PRIZES CARD FIX
+   ---------------------------------------------------------
+   The prize rows are <label> elements with an inline
+   background: var(--theme-panel-bg). Keep the Elegant dark
+   surface here, regardless of where the theme wrapper sits.
+   This selector is intentionally limited to labels containing
+   a checkbox, so normal form labels are unaffected.
+   ========================================================= */
+body:has(.tl-theme-elegant) main label:has(> input[type="checkbox"]),
+body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) {
+  background: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+  background-color: #111720 !important;
+  background-image: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.52) !important;
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,235,160,.035) !important;
+}
+
+body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) > span {
+  color: #f7f1df !important;
+  -webkit-text-fill-color: #f7f1df !important;
+}
+
+body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) > input[type="checkbox"] {
+  accent-color: #d4af37 !important;
+}
+
+body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) button {
+  background: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+  background-color: #111720 !important;
+  background-image: linear-gradient(145deg, #171d27 0%, #0e141c 100%) !important;
+  color: #f7f1df !important;
+  -webkit-text-fill-color: #f7f1df !important;
+  border-color: #d4af37 !important;
+}
+
+/* The Select Prizes section itself remains one continuous Elegant
+   surface, so the rows read as cards inside the same panel rather
+   than bright standalone blocks. */
+body:has(.tl-theme-elegant) main section:has(label > input[type="checkbox"]) {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(212,175,55,.055), transparent 34%),
+    linear-gradient(145deg, #151a23 0%, #0d121a 100%) !important;
+  background-color: #10151d !important;
+  color: #f7f1df !important;
+  border-color: rgba(212,175,55,.38) !important;
+}
