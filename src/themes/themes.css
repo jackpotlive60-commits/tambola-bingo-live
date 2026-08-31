@@ -3219,52 +3219,29 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell][style*="background
 }
 
 
-/* =========================================================
-   ELEGANT â€” PLAYER TICKET CELL BACKGROUND RESTORE (FINAL)
-   ---------------------------------------------------------
-   TicketGrid uses inline backgrounds for three Elegant cell states:
-   called, numbered-but-not-called, and empty. The broad Elegant
-   surface rules above use !important, so restore those exact ticket
-   backgrounds here without touching main.jsx or other themes.
-   ========================================================= */
 
-/* Called number â€” preserve the gold highlight from TicketGrid. */
-body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#fde68a"] {
+/* =========================================================
+   ELEGANT â€” TICKET CALLED-NUMBER PROTECTION
+   The ticket cells are inline-styled by main.jsx.  Elegant's broad
+   surface rules above must not replace the gold called state.
+   We identify called cells by the unique called-state text colour
+   emitted by TicketGrid, so no main.jsx change is required.
+   ========================================================= */
+body:has(.tl-theme-elegant) main div[style*="#78350f"],
+body:has(.tl-theme-elegant) main div[style*="#78350F"],
+body:has(.tl-theme-elegant) main div[style*="rgb(120, 53, 15)"],
+body:has(.tl-theme-elegant) main div[style*="rgb(120,53,15)"] {
   background: linear-gradient(145deg, #fde68a, #fbbf24) !important;
-  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
   background-color: #fbbf24 !important;
+  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
   color: #78350f !important;
+  -webkit-text-fill-color: #78350f !important;
 }
 
-/* Elegant numbered cell that has not been called. */
-body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#67a99d"] {
-  background: linear-gradient(145deg, #67a99d 0%, #39736a 100%) !important;
-  background-image: linear-gradient(145deg, #67a99d 0%, #39736a 100%) !important;
-  background-color: #39736a !important;
-  color: #f8f4e8 !important;
-}
-
-/* Elegant empty ticket cell. */
-body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#1d403b"] {
-  background: #1d403b !important;
-  background-image: none !important;
-  background-color: #1d403b !important;
-  color: #f8f4e8 !important;
-}
-
-/* =========================================================
-   ELEGANT â€” FINAL CALLED-NUMBER VISUAL RESTORE
-   ---------------------------------------------------------
-   TicketGrid marks called cells inline with the dark-gold text
-   colour #78350f and a gold gradient. React/browser serialization
-   can represent the gradient colours as rgb(), so match the
-   called-cell foreground as well as the gradient text.
-   ========================================================= */
-body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#78350f"],
-body:has(.tl-theme-elegant) .tl-theme-page main div[style*="rgb(120, 53, 15)"] {
-  background: linear-gradient(145deg, #fde68a, #fbbf24) !important;
-  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
-  background-color: #fbbf24 !important;
+body:has(.tl-theme-elegant) main div[style*="#78350f"] *,
+body:has(.tl-theme-elegant) main div[style*="#78350F"] *,
+body:has(.tl-theme-elegant) main div[style*="rgb(120, 53, 15)"] *,
+body:has(.tl-theme-elegant) main div[style*="rgb(120,53,15)"] * {
   color: #78350f !important;
   -webkit-text-fill-color: #78350f !important;
 }
