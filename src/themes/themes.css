@@ -3194,53 +3194,26 @@ body {
 }
 
 /* =========================================================
-   ELEGANT â€” CREATE GAME / SELECT PRIZES FINAL OVERRIDE
+   ELEGANT â€” PRESERVE PLAYER TICKET CALLED-NUMBER HIGHLIGHTS
    ---------------------------------------------------------
-   This targets the actual prize rows (the labels containing
-   checkbox inputs) and deliberately does NOT depend on
-   --theme-panel-bg. It therefore overrides the light inline
-   prize-row surface reliably while leaving every other theme
-   untouched.
+   Elegant uses broad dark-surface rules with !important. Those
+   rules must not override the ticket cells' own called-number
+   background/foreground styling.
    ========================================================= */
-
-body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) {
-  background: linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
-  background-color: #111720 !important;
-  background-image: linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
-  color: #f7f1df !important;
-  border: 1px solid rgba(212,175,55,.62) !important;
-  box-shadow:
-    0 8px 22px rgba(0,0,0,.28),
-    inset 0 1px 0 rgba(255,255,255,.035) !important;
+body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell] {
+  color: var(--theme-ticket-text, var(--theme-input-text)) !important;
+  background: inherit;
+  background-color: inherit;
 }
 
-body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) > span {
-  color: #f7f1df !important;
-  -webkit-text-fill-color: #f7f1df !important;
+/* A called ticket cell already receives its highlight from main.jsx.
+   Keep that background visible on Elegant instead of replacing it
+   with the generic dark Elegant card surface. */
+body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell][style*="background"] {
+  background: revert !important;
+  background-image: revert !important;
 }
 
-body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) input[type="checkbox"] {
-  accent-color: #d4af37 !important;
-}
-
-body:has(.tl-theme-elegant) main label:has(input[type="checkbox"]) button {
-  background: linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
-  background-color: #111720 !important;
-  background-image: linear-gradient(145deg,#171d27 0%,#0e141d 100%) !important;
-  color: #f7f1df !important;
-  -webkit-text-fill-color: #f7f1df !important;
-  border: 1px solid rgba(212,175,55,.58) !important;
-}
-
-body:has(.tl-theme-elegant) main input[placeholder="Add custom prize"] {
-  background: #1b222d !important;
-  background-image: none !important;
-  color: #fff8e7 !important;
-  -webkit-text-fill-color: #fff8e7 !important;
-  border: 1px solid rgba(212,175,55,.72) !important;
-}
-
-body:has(.tl-theme-elegant) main input[placeholder="Add custom prize"]::placeholder {
-  color: #b9b19f !important;
-  opacity: 1 !important;
+body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell][style*="backgroundColor"] {
+  background-color: revert !important;
 }
