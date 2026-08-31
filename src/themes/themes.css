@@ -3251,3 +3251,20 @@ body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#1d403b"] {
   background-color: #1d403b !important;
   color: #f8f4e8 !important;
 }
+
+/* =========================================================
+   ELEGANT â€” FINAL CALLED-NUMBER VISUAL RESTORE
+   ---------------------------------------------------------
+   TicketGrid marks called cells inline with the dark-gold text
+   colour #78350f and a gold gradient. React/browser serialization
+   can represent the gradient colours as rgb(), so match the
+   called-cell foreground as well as the gradient text.
+   ========================================================= */
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="#78350f"],
+body:has(.tl-theme-elegant) .tl-theme-page main div[style*="rgb(120, 53, 15)"] {
+  background: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-image: linear-gradient(145deg, #fde68a, #fbbf24) !important;
+  background-color: #fbbf24 !important;
+  color: #78350f !important;
+  -webkit-text-fill-color: #78350f !important;
+}
