@@ -5895,6 +5895,292 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
   );
 }
 
+
+function PlayerLiveChat({ game, playerName, themeUI, live }) {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const endRef = useRef(null);
+  const chatChannelRef = useRef(null);
+
+  useEffect(() => {
+    if (!game?.id) return undefined;
+
+    const channel = supabase.channel(`game-chat-${game.id}`);
+    chatChannelRef.current = channel;
+
+    channel.on("broadcast", { event: "chat_message" }, ({ payload }) => {
+      if (!payload?.id || !payload?.text) return;
+      setMessages((current) => {
+        if (current.some((message) => message.id === payload.id)) return current;
+        return [...current, payload].slice(-100);
+      });
+    });
+
+    channel.subscribe((status) => {
+      if (status !== "SUBSCRIBED") return;
+    });
+
+    return () => {
+      chatChannelRef.current = null;
+      supabase.removeChannel(channel);
+    };
+  }, [game?.id]);
+
+  useEffect(() => {
+    if (!open) return;
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, open]);
+
+  async function sendMessage() {
+    const text = draft.trim();
+    if (!text || sending || !game?.id || !live) return;
+
+    const message = {
+      id:
+        window.crypto?.randomUUID?.() ||
+        `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      playerName: String(playerName || "Player").trim().slice(0, 40) || "Player",
+      text: text.slice(0, 300),
+      sentAt: new Date().toISOString()
+    };
+
+    setSending(true);
+    setDraft("");
+    setMessages((current) => [...current, message].slice(-100));
+
+    try {
+      if (!chatChannelRef.current) {
+        throw new Error("Chat is not connected yet.");
+      }
+
+      await chatChannelRef.current.send({
+        type: "broadcast",
+        event: "chat_message",
+        payload: message
+      });
+    } catch (err) {
+      console.error("Could not send chat message:", err);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const accent = themeUI.colors.accent;
+  const surface = themeUI.colors.surface;
+  const surface2 = themeUI.colors.surface2;
+  const textColor = themeUI.colors.text;
+  const muted = themeUI.colors.muted;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        right: 16,
+        bottom: 16,
+        zIndex: 1000,
+        fontFamily: "inherit"
+      }}
+    >
+      {open && (
+        <div
+          style={{
+            width: "min(360px, calc(100vw - 32px))",
+            height: "min(520px, calc(100vh - 110px))",
+            marginBottom: 10,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            borderRadius: 18,
+            border: `1px solid ${accent}88`,
+            background: surface,
+            color: textColor,
+            boxShadow: "0 20px 60px rgba(0,0,0,.45)",
+            backdropFilter: "blur(14px)"
+          }}
+        >
+          <div
+            style={{
+              padding: "13px 15px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+              borderBottom: `1px solid ${accent}55`,
+              background: surface2
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 900, fontSize: 16 }}>ðŸ’¬ Player Chat</div>
+              <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>
+                Live chat for this game
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close player chat"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                border: `1px solid ${accent}66`,
+                background: "transparent",
+                color: textColor,
+                cursor: "pointer",
+                fontSize: 18
+              }}
+            >
+              Ã—
+            </button>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 9
+            }}
+          >
+            {messages.length === 0 ? (
+              <div
+                style={{
+                  margin: "auto",
+                  textAlign: "center",
+                  color: muted,
+                  padding: 20,
+                  fontSize: 14
+                }}
+              >
+                No messages yet.
+                <br />
+                Say hello to the other players! ðŸ‘‹
+              </div>
+            ) : (
+              messages.map((message) => (
+                <div
+                  key={message.id}
+                  style={{
+                    alignSelf:
+                      message.playerName === playerName ? "flex-end" : "flex-start",
+                    maxWidth: "86%",
+                    padding: "8px 11px",
+                    borderRadius: 13,
+                    background:
+                      message.playerName === playerName
+                        ? `${accent}30`
+                        : surface2,
+                    border: `1px solid ${accent}35`
+                  }}
+                >
+                  <div
+                    style={{
+                      color: message.playerName === playerName ? accent : textColor,
+                      fontSize: 11,
+                      fontWeight: 900,
+                      marginBottom: 3
+                    }}
+                  >
+                    {message.playerName}
+                  </div>
+                  <div style={{ fontSize: 14, lineHeight: 1.35, overflowWrap: "anywhere" }}>
+                    {message.text}
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={endRef} />
+          </div>
+
+          <div
+            style={{
+              padding: 10,
+              borderTop: `1px solid ${accent}55`,
+              background: surface2
+            }}
+          >
+            {live ? (
+              <div style={{ display: "flex", gap: 7 }}>
+                <input
+                  value={draft}
+                  maxLength={300}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder="Type a message..."
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    borderRadius: 11,
+                    border: `1px solid ${accent}66`,
+                    padding: "10px 11px",
+                    background: "rgba(255,255,255,.94)",
+                    color: "#111827",
+                    outline: "none"
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={sendMessage}
+                  disabled={!draft.trim() || sending}
+                  style={{
+                    border: 0,
+                    borderRadius: 11,
+                    padding: "0 14px",
+                    background: accent,
+                    color: "#111827",
+                    fontWeight: 900,
+                    cursor: draft.trim() && !sending ? "pointer" : "not-allowed",
+                    opacity: draft.trim() && !sending ? 1 : 0.55
+                  }}
+                >
+                  SEND
+                </button>
+              </div>
+            ) : (
+              <div style={{ color: muted, textAlign: "center", fontSize: 13 }}>
+                Chat is closed because the game is not live.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-label={open ? "Close player chat" : "Open player chat"}
+        style={{
+          marginLeft: "auto",
+          display: "flex",
+          alignItems: "center",
+          gap: 7,
+          minHeight: 48,
+          padding: "0 16px",
+          borderRadius: 999,
+          border: `1px solid ${accent}aa`,
+          background: surface2,
+          color: textColor,
+          boxShadow: `0 10px 28px rgba(0,0,0,.35), 0 0 18px ${accent}22`,
+          cursor: "pointer",
+          fontWeight: 900
+        }}
+      >
+        <span aria-hidden="true">ðŸ’¬</span>
+        {open ? "CLOSE CHAT" : "CHAT"}
+      </button>
+    </div>
+  );
+}
+
 function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   const themeUI = getThemeUI(game.theme);
   const themedPageStyle = { ...pageStyle, ...themeUI.page };
@@ -7338,6 +7624,13 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
           Stay on this page. The game board will update automatically when
           the host calls a number.
         </div>
+
+        <PlayerLiveChat
+          game={liveGame}
+          playerName={playerBooking?.playerName || getSavedPlayerName(game.id) || "Player"}
+          themeUI={themeUI}
+          live={liveGame.status === "live"}
+        />
       </div>
     </main>
   );
