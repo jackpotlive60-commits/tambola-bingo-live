@@ -3104,6 +3104,13 @@ function CreateGamePage({
     "Classic"
   );
 
+const [
+  gameMode,
+  setGameMode
+] = useState(
+  "random"
+);
+
   const [
     prizes,
     setPrizes
@@ -3250,6 +3257,9 @@ function CreateGamePage({
 
         status:
           "upcoming",
+
+  game_mode:
+    gameMode,
 
         ticket_limit:
           Math.max(
@@ -3564,7 +3574,69 @@ function CreateGamePage({
               >
                 <div style={{ fontSize: 12, letterSpacing: 1.5, color: getThemeUI(theme).colors.accent, fontWeight: 800 }}>THEME PREVIEW</div>
                 <div style={{ fontSize: 20, fontWeight: 900, marginTop: 4 }}>{theme}</div>
-                <div style={{ color: "var(--theme-muted, #cbd5e1)", fontSize: 13, marginTop: 4 }}>This visual identity will follow the game across every page.</div>
+                <div style={{ marginBottom: "20px" }}>
+              <h3>ðŸŽ® Game Mode</h3>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit, minmax(180px, 1fr))",
+                  gap: "12px",
+                  marginTop: "10px"
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setGameMode("random")}
+                  style={{
+                    padding: "14px",
+                    borderRadius: "12px",
+                    border:
+                      gameMode === "random"
+                        ? "2px solid currentColor"
+                        : "1px solid rgba(127,127,127,0.35)",
+                    background:
+                      gameMode === "random"
+                        ? "rgba(127,127,127,0.15)"
+                        : "transparent",
+                    cursor: "pointer",
+                    textAlign: "left"
+                  }}
+                >
+                  <strong>ðŸŽ² Random Game</strong>
+                  <div style={{ marginTop: "4px", opacity: 0.8 }}>
+                    Numbers are called randomly from 1â€“90.
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setGameMode("fixed")}
+                  style={{
+                    padding: "14px",
+                    borderRadius: "12px",
+                    border:
+                      gameMode === "fixed"
+                        ? "2px solid currentColor"
+                        : "1px solid rgba(127,127,127,0.35)",
+                    background:
+                      gameMode === "fixed"
+                        ? "rgba(127,127,127,0.15)"
+                        : "transparent",
+                    cursor: "pointer",
+                    textAlign: "left"
+                  }}
+                >
+                  <strong>ðŸ§ª Fixed/Test Game</strong>
+                  <div style={{ marginTop: "4px", opacity: 0.8 }}>
+                    Use this mode for controlled testing.
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div style={{ color: "var(--theme-muted, #cbd5e1)", fontSize: 13, marginTop: 4 }}>This visual identity will follow the game across every page.</div>
               </div>
             </div>
           </section>
