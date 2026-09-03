@@ -311,336 +311,325 @@ const DEFAULT_PRIZES = [
 // set of winning ticket numbers. The game code is used as the seed, so the
 // same game keeps the same assignments after refresh, while different games
 // get different assignments.
-// Fixed/Test mode: only Full House gets a predetermined ticket.
-// The ticket is deterministic per game, so the host can see it before booking.
 function generateFixedWinningAssignments(gameCode, prizes, ticketLimit) {
   const limit = Math.max(1, Math.min(100, Number(ticketLimit) || 100));
   const prizeList = Array.isArray(prizes) ? prizes : [];
-  const fullHousePrize = prizeList.find(
-    (prize) => getPrizePattern(prize?.name) === "full_house"
-  );
+  const availableTickets = Array.from({ length: limit }, (_, index) => index + 1);
+  const random = seededRandom(seedFromText(`fixed-test-${gameCode}`));
+  const shuffledTickets = shuffle(availableTickets, random);
 
-  if (!fullHousePrize) return [];
-
-  const random = seededRandom(seedFromText(`fixed-test-full-house-${gameCode}`));
-  const ticket = 1 + Math.floor(random() * limit);
-
-  return [{
-    prizeName: fullHousePrize.name || "Full House",
-    ticketNumber: ticket
-  }];
+  return prizeList.map((prize, index) => ({
+    prizeName: prize?.name || `Prize ${index + 1}`,
+    ticketNumber: shuffledTickets[index % shuffledTickets.length]
+  }));
 }
 
 function getFixedWinningAssignments(game) {
-  // Fixed/Test must never be allowed to crash the Host Control Centre.
-  // Treat incomplete/legacy game data as having no fixed assignment.
-  try {
-    if (!game || game?.game_mode !== "fixed") return [];
+  if (game?.game_mode !== "fixed") return [];
 
-    const stored = game?.fixed_winning_tickets;
+  const stored = game?.fixed_winning_tickets;
   if (Array.isArray(stored) && stored.length) {
-    const parsed = stored
-      .map((item, index) => {
-        if (item && typeof item === "object") {
-          return {
-            prizeName: item?.prizeName || item?.prize || `Prize ${index + 1}`,
-            ticketNumber: Number(item?.ticketNumber)
-          };
-        }
-        return {
-          prizeName: game?.selected_prizes?.[index]?.name || `Prize ${index + 1}`,
-          ticketNumber: Number(item)
-        };
-      })
+    // New format: [{ prizeName, ticketNumber }]
+    if (stored.some((item) => item && typeof item === "object")) {
+      return stored
+        .map((item, index) => ({
+          prizeName: item?.prizeName || item?.prize || `Prize ${index + 1}`,
+          ticketNumber: Number(item?.ticketNumber)
+        }))
+        .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
+    }
+
+    // Backwards compatibility with the previous [9, 27, 30] format.
+    return stored
+      .map((number, index) => ({
+        prizeName: game?.selected_prizes?.[index]?.name || `Prize ${index + 1}`,
+        ticketNumber: Number(number)
+      }))
       .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
-
-    // Older games may contain assignments for every prize.  Fixed/Test now
-    // reserves only Full House, so ignore all legacy non-Full-House entries.
-    const fullHouse = parsed.find(
-      (item) => getPrizePattern(item.prizeName) === "full_house"
-    );
-    if (fullHouse) return [fullHouse];
   }
 
-    return generateFixedWinningAssignments(
-      game?.game_code || "test-game",
-      game?.selected_prizes || [],
-      game?.ticket_limit || 100
-    );
-  } catch (error) {
-    console.error("Fixed/Test assignment error:", error);
-    return [];
-  }
-}
-
-function getFixedPatternNumbers(grid, pattern) {
-  const occupied = getOccupiedCells(grid);
-  if (!occupied.length) return [];
-  if (pattern === "full_house") return occupied.map((cell) => cell.number);
-  return [];
-}
-
-function getBookedTicketNumbers(acceptedBookings) {
-  const set = new Set();
-  (acceptedBookings || []).forEach((booking) => {
-    (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : []).forEach((value) => {
-      const n = Number(value);
-      if (Number.isInteger(n) && n >= 1 && n <= 100) set.add(n);
-    });
-  });
-  return set;
-}
-
-function ticketWouldCompleteFullHouse(gameCode, ticketNumber, nextCalledNumbers) {
-  const grid = makeTicket(gameCode, Number(ticketNumber));
-  const required = getFixedPatternNumbers(grid, "full_house");
-  if (required.length !== 15) return false;
-  const called = new Set((nextCalledNumbers || []).map(Number));
-  return required.every((n) => called.has(Number(n)));
-}
-
-function getFixedFullHouseTarget(game) {
-  const assignment = getFixedWinningAssignments(game).find(
-    (item) => getPrizePattern(item?.prizeName) === "full_house"
+  return generateFixedWinningAssignments(
+    game?.game_code || "test-game",
+    game?.selected_prizes || [],
+    game?.ticket_limit || 100
   );
-  return assignment?.ticketNumber ? Number(assignment.ticketNumber) : null;
 }
 
 /*
-  Fixed/Test calling engine.
+  FIXED/TEST CALL SEQUENCE
 
-  Only the assigned Full House ticket is controlled. Its numbers are
-  introduced adaptively according to the actual accepted/booked tickets.
-  There is no fixed 8-6-1 schedule and no predetermined final call number.
+  In Fixed/Test mode the ticket numbers shown in Host Control Centre are
+  genuine predetermined winners.  The caller therefore uses a deterministic
+  sequence that contains every required number on each assigned ticket.
 
-  Crucially, when the target ticket is booked, the engine is booking-aware:
-  it refuses a candidate number if that number would make another booked
-  ticket complete Full House before the assigned ticket. This makes the
-  assigned ticket the actual first Full House finisher rather than merely
-  hiding other winners after they have already completed.
+  The winning-ticket restriction remains active in findPrizeWinners(), so an
+  assigned ticket is the only ticket that can win its assigned prize.  This
+  makes the result deterministic for testing while Random Game continues to
+  use a normal random call order.
 */
+function getFixedPatternNumbers(grid, pattern) {
+  const occupied = getOccupiedCells(grid);
+
+  if (!occupied.length) return [];
+
+  if (pattern === "first_five") {
+    return occupied.slice(0, 5).map((cell) => cell.number);
+  }
+
+  if (
+    pattern === "top_line" ||
+    pattern === "middle_line" ||
+    pattern === "bottom_line"
+  ) {
+    const rowIndex =
+      pattern === "top_line"
+        ? 0
+        : pattern === "middle_line"
+        ? 1
+        : 2;
+
+    return occupied
+      .filter((cell) => cell.row === rowIndex)
+      .map((cell) => cell.number);
+  }
+
+  if (pattern === "four_corners") {
+    const top = occupied
+      .filter((cell) => cell.row === 0)
+      .sort((a, b) => a.column - b.column);
+    const bottom = occupied
+      .filter((cell) => cell.row === 2)
+      .sort((a, b) => a.column - b.column);
+
+    if (top.length < 2 || bottom.length < 2) return [];
+
+    return [
+      top[0].number,
+      top[top.length - 1].number,
+      bottom[0].number,
+      bottom[bottom.length - 1].number
+    ];
+  }
+
+  if (pattern === "full_house") {
+    return occupied.map((cell) => cell.number);
+  }
+
+  return [];
+}
+
 function generateFixedCallSequence(game) {
   if (game?.game_mode !== "fixed") return [];
 
-  // Fixed/Test starts from a seeded shuffle so every game has a stable,
-  // random-looking 1-90 pool.  The adaptive picker below decides which
-  // number is safest to call next based on the tickets that are actually
-  // booked.
+  const limit = Math.max(
+    1,
+    Math.min(100, Number(game?.ticket_limit) || 100)
+  );
+
+  const assignments = getFixedWinningAssignments(game);
   const random = seededRandom(
     seedFromText(`fixed-call-sequence-${game?.game_code || "test-game"}`)
   );
 
-  return shuffle(
-    Array.from({ length: 90 }, (_, i) => i + 1),
-    random
+  const sequence = [];
+  const used = new Set();
+
+  // Put the required numbers for every predetermined winning ticket into
+  // the call sequence first.  They are shuffled deterministically so the
+  // sequence is different between games but repeatable for the same game.
+  assignments.forEach((assignment) => {
+    const pattern = getPrizePattern(assignment?.prizeName);
+    if (!pattern) return;
+
+    const grid = makeTicket(
+      game?.game_code || "test-game",
+      Number(assignment.ticketNumber)
+    );
+
+    const required = getFixedPatternNumbers(grid, pattern);
+    const ordered = shuffle(required, random);
+
+    ordered.forEach((number) => {
+      const n = Number(number);
+      if (
+        Number.isInteger(n) &&
+        n >= 1 &&
+        n <= 90 &&
+        !used.has(n)
+      ) {
+        used.add(n);
+        sequence.push(n);
+      }
+    });
+  });
+
+  // Finish the 1-90 calling sequence with all remaining numbers.
+  // This keeps the normal 90-number game behavior intact.
+  const remaining = Array.from(
+    { length: 90 },
+    (_, index) => index + 1
+  ).filter((number) => !used.has(number));
+
+  sequence.push(...shuffle(remaining, random));
+
+  return sequence;
+}
+
+function getNextFixedCallNumber(game, calledNumbers) {
+  const sequence = generateFixedCallSequence(game);
+  const calledSet = new Set(
+    Array.isArray(calledNumbers)
+      ? calledNumbers.map(Number)
+      : []
+  );
+
+  return (
+    sequence.find((number) => !calledSet.has(Number(number))) ??
+    null
   );
 }
 
-function getNextFixedCallNumber(game, calledNumbers, acceptedBookings = []) {
-  const called = Array.isArray(calledNumbers)
-    ? calledNumbers.map(Number)
-    : [];
-  const calledSet = new Set(called);
-  const callNumber = called.length + 1;
-  const target = getFixedFullHouseTarget(game);
+const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_v2_";
+const DEFAULT_VOICE_PRESET_ID = "english";
 
-  const accepted = Array.isArray(acceptedBookings)
-    ? acceptedBookings.filter((b) => b?.status === "accepted")
-    : [];
-
-  const base = generateFixedCallSequence(game).filter(
-    (n) => !calledSet.has(Number(n))
-  );
-
-  if (!base.length) return null;
-
-  // No booked target = normal random Fixed/Test draw.  The assigned ticket
-  // is only guaranteed when that actual ticket has been booked.
-  const targetBooked = target && accepted.some((booking) =>
-    (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : [])
-      .some((n) => Number(n) === Number(target))
-  );
-
-  if (!target || !targetBooked) {
-    return base[0];
+const VOICE_PRESETS = [
+  {
+    id: "english",
+    label: "English (Default)",
+    rate: 0.88,
+    pitch: 1.0,
+    preferredLanguages: ["en-US", "en-GB", "en-IN"]
+  },
+  {
+    id: "auto",
+    label: "Auto / Best Available",
+    rate: 0.88,
+    pitch: 1.0,
+    preferredLanguages: ["en-US", "en-GB", "en-IN", "hi-IN"]
+  },
+  {
+    id: "indian",
+    label: "Indian English",
+    rate: 0.86,
+    pitch: 0.98,
+    preferredLanguages: ["en-IN", "hi-IN"]
+  },
+  {
+    id: "hinglish",
+    label: "Hindi / Hinglish",
+    rate: 0.84,
+    pitch: 0.98,
+    preferredLanguages: ["hi-IN", "en-IN"]
+  },
+  {
+    id: "cinema",
+    label: "Deep Cinema Announcer",
+    rate: 0.80,
+    pitch: 0.78,
+    preferredLanguages: ["en-IN", "hi-IN", "en-GB", "en-US"]
+  },
+  {
+    id: "bright",
+    label: "Bright Female Announcer",
+    rate: 0.90,
+    pitch: 1.18,
+    preferredLanguages: ["en-IN", "hi-IN", "en-US", "en-GB"]
   }
+];
 
-  const gameCode = game?.game_code || "test-game";
-  const targetGrid = makeTicket(gameCode, Number(target));
-  const targetNumbers = getFixedPatternNumbers(
-    targetGrid,
-    "full_house"
-  );
+function getVoiceSettingsKey(gameId) {
+  return `${VOICE_SETTINGS_PREFIX}${gameId || "default"}`;
+}
 
-  if (targetNumbers.length !== 15) {
-    return base[0];
+function loadVoicePreset(gameId) {
+  try {
+    const saved = localStorage.getItem(getVoiceSettingsKey(gameId));
+    return VOICE_PRESETS.some((preset) => preset.id === saved) ? saved : DEFAULT_VOICE_PRESET_ID;
+  } catch {
+    return DEFAULT_VOICE_PRESET_ID;
   }
+}
 
-  const targetRemaining = targetNumbers.filter(
-    (n) => !calledSet.has(Number(n))
-  );
-
-  if (!targetRemaining.length) {
-    return base[0];
+function saveVoicePreset(gameId, presetId) {
+  try {
+    localStorage.setItem(getVoiceSettingsKey(gameId), presetId);
+  } catch (error) {
+    console.error("Could not save voice preference:", error);
   }
+}
 
-  const ticketNumbers = [];
-  accepted.forEach((booking) => {
-    (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : []).forEach(
-      (value) => {
-        const ticketNumber = Number(value);
-        if (
-          Number.isInteger(ticketNumber) &&
-          ticketNumber >= 1 &&
-          ticketNumber <= 100 &&
-          ticketNumber !== Number(target) &&
-          !ticketNumbers.includes(ticketNumber)
-        ) {
-          ticketNumbers.push(ticketNumber);
-        }
-      }
-    );
-  });
+function chooseSpeechVoice(voices, preset) {
+  if (!Array.isArray(voices) || !voices.length) return null;
 
-  const competitorState = ticketNumbers.map((ticketNumber) => {
-    const grid = makeTicket(gameCode, ticketNumber);
-    const required = getFixedPatternNumbers(grid, "full_house");
-    const remaining = required.filter((n) => !calledSet.has(Number(n)));
-    return {
-      ticketNumber,
-      required,
-      remaining
-    };
-  });
-
-  const targetRemainingSet = new Set(targetRemaining.map(Number));
-
-  const completesCompetitor = (candidate) => {
-    const n = Number(candidate);
-    return competitorState.some((state) =>
-      state.required.length === 15 &&
-      state.remaining.length === 1 &&
-      state.remaining[0] === n
-    );
-  };
-
-  const targetCompletes = (candidate) => {
-    return targetRemaining.length === 1 &&
-      Number(targetRemaining[0]) === Number(candidate);
-  };
-
-  // Never intentionally call a number that would make another booked ticket
-  // complete Full House before the designated target.  This is the important
-  // difference from the old implementation: we prevent the competing ticket
-  // from actually winning rather than hiding its winner afterwards.
-  const safeCandidates = base.filter(
-    (candidate) => !completesCompetitor(candidate)
+  const preferred = preset?.preferredLanguages || [];
+  const englishVoices = voices.filter((voice) =>
+    /^en(-|$)/i.test(String(voice.lang || ""))
   );
 
-  const pool = safeCandidates.length ? safeCandidates : base;
+  const pool = preset?.id === "english" ? englishVoices : voices;
+  if (!pool.length) return null;
 
-  // If the target has two numbers left, prefer a target number that does NOT
-  // also finish another ticket.  Example:
-  //   target:      3, 35
-  //   competitor:  3, 36
-  // Calling 35 first leaves the shared 3 to finish only the target.
-  if (targetRemaining.length === 2) {
-    const safeTarget = pool.filter((n) => targetRemainingSet.has(Number(n)));
-    if (safeTarget.length) {
-      const nonFinishingTarget = safeTarget.filter(
-        (n) => !targetCompletes(n) && !completesCompetitor(n)
-      );
-      if (nonFinishingTarget.length) {
-        return nonFinishingTarget[
-          Math.floor(
-            randomForFixedChoice(game, callNumber + 1701) *
-              nonFinishingTarget.length
-          )
-        ];
-      }
+  const byLanguage = pool.find((voice) =>
+    preferred.some((language) =>
+      String(voice.lang || "").toLowerCase() === language.toLowerCase()
+    )
+  );
+
+  if (byLanguage) return byLanguage;
+
+  return pool.find((voice) => /^en-US$/i.test(String(voice.lang || "")))
+    || pool.find((voice) => /^en-GB$/i.test(String(voice.lang || "")))
+    || pool.find((voice) => /^en-IN$/i.test(String(voice.lang || "")))
+    || pool[0]
+    || null;
+}
+
+function applySpeechVoice(utterance, presetId, voices) {
+  const preset =
+    VOICE_PRESETS.find((item) => item.id === presetId) ||
+    VOICE_PRESETS[0];
+
+  utterance.rate = preset.rate;
+  utterance.pitch = preset.pitch;
+  utterance.volume = 1;
+
+  // English is a hard default: never let the browser silently fall back
+  // to a Hindi/system voice when the voice list is still loading.
+  utterance.lang = preset.id === "english" ? "en-US" : (preset.preferredLanguages?.[0] || "en-US");
+
+  const selectedVoice = chooseSpeechVoice(voices, preset);
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+    if (preset.id === "english" && !/^en(-|$)/i.test(String(selectedVoice.lang || ""))) {
+      utterance.lang = "en-US";
+    } else {
+      utterance.lang = selectedVoice.lang;
     }
   }
 
-  // If the target has one number left, finish it as soon as its final number
-  // is safe. There is no artificial 69-75 or 8-6-1 schedule anymore.
-  if (targetRemaining.length === 1) {
-    const finalNumber = Number(targetRemaining[0]);
-    if (pool.includes(finalNumber) && !completesCompetitor(finalNumber)) {
-      return finalNumber;
-    }
-  }
-
-  const targetCandidates = pool.filter((n) =>
-    targetRemainingSet.has(Number(n))
-  );
-  const otherCandidates = pool.filter((n) =>
-    !targetRemainingSet.has(Number(n))
-  );
-
-  // Adaptive target pressure:
-  // - Early in the game, target numbers appear naturally but aren't forced.
-  // - As competing tickets get close, target numbers become more useful.
-  // - When the target is itself close, its safe remaining numbers are favored.
-  const targetCalled = 15 - targetRemaining.length;
-  const closestCompetitor = competitorState.reduce(
-    (best, state) =>
-      state.remaining.length && state.remaining.length < best
-        ? state.remaining.length
-        : best,
-    16
-  );
-
-  let targetChance = 0.10;
-  if (callNumber >= 25) targetChance = 0.15;
-  if (callNumber >= 40) targetChance = 0.20;
-  if (callNumber >= 55) targetChance = 0.28;
-  if (callNumber >= 65) targetChance = 0.40;
-  if (targetRemaining.length <= 4) targetChance += 0.18;
-  if (closestCompetitor <= 3) targetChance += 0.15;
-  if (targetCalled < 4 && callNumber >= 35) targetChance += 0.12;
-  if (targetRemaining.length <= 2) targetChance = 0.75;
-
-  targetChance = Math.min(0.90, targetChance);
-
-  const roll = randomForFixedChoice(game, callNumber + 3201);
-
-  if (targetCandidates.length && roll < targetChance) {
-    return targetCandidates[
-      Math.floor(
-        randomForFixedChoice(game, callNumber + 4101) *
-          targetCandidates.length
-      )
-    ];
-  }
-
-  if (otherCandidates.length) {
-    return otherCandidates[
-      Math.floor(
-        randomForFixedChoice(game, callNumber + 5201) *
-          otherCandidates.length
-      )
-    ];
-  }
-
-  if (targetCandidates.length) return targetCandidates[0];
-
-  // This is only a last-resort fallback when every remaining number would
-  // complete a competing ticket. Normal games should never reach this state.
-  return pool[0] ?? base[0];
+  return utterance;
 }
 
-function randomForFixedChoice(game, salt) {
-  const seed = seedFromText(`fixed-choice-${game?.game_code || "test-game"}-${salt}`);
-  return seededRandom(seed)();
+function getAvailableSpeechVoices() {
+  try {
+    return "speechSynthesis" in window
+      ? window.speechSynthesis.getVoices() || []
+      : [];
+  } catch {
+    return [];
+  }
 }
+
+/* =========================================================
+   BASIC HELPERS
+========================================================= */
 
 function normalizePrizeKey(name) {
   return String(name || "")
     .trim()
     .toLowerCase()
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201C\u201D]/g, '"')
-    .replace(/\s+/g, " ");
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function getPrizePattern(name) {
@@ -3500,10 +3489,13 @@ const [
         selected_prizes:
           selectedPrizes,
 
-        // IMPORTANT: do not send fixed_winning_tickets to Supabase.
-        // The Fixed/Test assignment is derived deterministically from the
-        // game code on the client, so this feature does not require a
-        // database column.
+        // Store the Fixed/Test prize-to-ticket assignments with the game
+        // so the host can see them immediately, before any booking arrives.
+        fixed_winning_tickets:
+          gameMode === "fixed"
+            ? generateFixedWinningAssignments(code, selectedPrizes, ticketLimit)
+            : [],
+
         called_numbers:
           []
       };
@@ -9824,11 +9816,7 @@ function HostControlPage({
 
       const nextNumber =
         game.game_mode === "fixed"
-          ? getNextFixedCallNumber(
-              game,
-              currentCalled,
-              bookings.filter((booking) => booking.status === "accepted")
-            )
+          ? getNextFixedCallNumber(game, currentCalled)
           : remaining[Math.floor(Math.random() * remaining.length)];
 
       if (!Number.isInteger(Number(nextNumber))) {
@@ -12446,25 +12434,13 @@ function App() {
   function handleCreated(
     newGame
   ) {
-    // Keep the Fixed/Test assignment in the local game object so the
-    // Host Control Centre can display it immediately, while the database
-    // remains independent of the optional fixed_winning_tickets column.
-    // Do not run Fixed/Test calculations during the Create Game click.
-    // The Host Control Centre derives the assignment safely after mounting.
-    // This guarantees that a test-game calculation can never interrupt the
-    // Create Game -> Host Control Centre transition.
-    const hydratedGame =
-      newGame && typeof newGame === "object"
-        ? { ...newGame }
-        : null;
+    setGame(
+      newGame
+    );
 
-    if (!hydratedGame) {
-      console.error("Create Game returned invalid game data:", newGame);
-      return;
-    }
-
-    setGame(hydratedGame);
-    saveHostGame(hydratedGame);
+    saveHostGame(
+      newGame
+    );
 
     window.history.replaceState(
       {},
