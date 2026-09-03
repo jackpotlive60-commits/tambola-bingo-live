@@ -307,9 +307,53 @@ const DEFAULT_PRIZES = [
   amount: ""
 }));
 
-// Fixed/Test Game uses these predetermined ticket numbers.
-// They are shown to the host before any player booking is received.
-const FIXED_TEST_WINNING_TICKETS = [9, 27, 30];
+// Fixed/Test Game: each newly-created game gets a different, deterministic
+// set of winning ticket numbers. The game code is used as the seed, so the
+// same game keeps the same assignments after refresh, while different games
+// get different assignments.
+function generateFixedWinningAssignments(gameCode, prizes, ticketLimit) {
+  const limit = Math.max(1, Math.min(100, Number(ticketLimit) || 100));
+  const prizeList = Array.isArray(prizes) ? prizes : [];
+  const availableTickets = Array.from({ length: limit }, (_, index) => index + 1);
+  const random = seededRandom(seedFromText(`fixed-test-${gameCode}`));
+  const shuffledTickets = shuffle(availableTickets, random);
+
+  return prizeList.map((prize, index) => ({
+    prizeName: prize?.name || `Prize ${index + 1}`,
+    ticketNumber: shuffledTickets[index % shuffledTickets.length]
+  }));
+}
+
+function getFixedWinningAssignments(game) {
+  if (game?.game_mode !== "fixed") return [];
+
+  const stored = game?.fixed_winning_tickets;
+  if (Array.isArray(stored) && stored.length) {
+    // New format: [{ prizeName, ticketNumber }]
+    if (stored.some((item) => item && typeof item === "object")) {
+      return stored
+        .map((item, index) => ({
+          prizeName: item?.prizeName || item?.prize || `Prize ${index + 1}`,
+          ticketNumber: Number(item?.ticketNumber)
+        }))
+        .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
+    }
+
+    // Backwards compatibility with the previous [9, 27, 30] format.
+    return stored
+      .map((number, index) => ({
+        prizeName: game?.selected_prizes?.[index]?.name || `Prize ${index + 1}`,
+        ticketNumber: Number(number)
+      }))
+      .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
+  }
+
+  return generateFixedWinningAssignments(
+    game?.game_code || "test-game",
+    game?.selected_prizes || [],
+    game?.ticket_limit || 100
+  );
+}
 
 const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_v2_";
 const DEFAULT_VOICE_PRESET_ID = "english";
@@ -586,7 +630,7 @@ function getWinningNumbersForPattern(grid, pattern, calledSet) {
   return [];
 }
 
-function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber, gameCode) {
+function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber, gameCode, fixedWinningTicketNumber = null) {
   const pattern = getPrizePattern(prize?.name);
   if (!pattern || prize?.locked) {
     return [];
@@ -608,6 +652,13 @@ function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber,
     ticketNumbers.forEach((ticketValue) => {
       const ticketNumber = Number(ticketValue);
       if (!Number.isInteger(ticketNumber) || ticketNumber < 1 || ticketNumber > 100) {
+        return;
+      }
+
+      // In Fixed/Test mode, only the ticket assigned to this prize may win it.
+      // Other tickets can still be displayed/played normally, but they cannot
+      // claim the predetermined prize.
+      if (fixedWinningTicketNumber !== null && ticketNumber !== Number(fixedWinningTicketNumber)) {
         return;
       }
 
@@ -3300,11 +3351,11 @@ const [
         selected_prizes:
           selectedPrizes,
 
-        // Keep the predetermined test tickets with the game so the
-        // Host Control Centre can display them immediately.
+        // Store the Fixed/Test prize-to-ticket assignments with the game
+        // so the host can see them immediately, before any booking arrives.
         fixed_winning_tickets:
           gameMode === "fixed"
-            ? FIXED_TEST_WINNING_TICKETS
+            ? generateFixedWinningAssignments(code, selectedPrizes, ticketLimit)
             : [],
 
         called_numbers:
@@ -7975,21 +8026,7 @@ function HostControlPage({
       ? game.selected_prizes
       : [];
 
-  const fixedWinningTickets =
-    game.game_mode === "fixed"
-      ? (
-          Array.isArray(game.fixed_winning_tickets)
-            ? game.fixed_winning_tickets
-            : FIXED_TEST_WINNING_TICKETS
-        )
-          .map((number) => Number(number))
-          .filter(
-            (number) =>
-              Number.isInteger(number) &&
-              number >= 1 &&
-              number <= Math.max(90, Number(game.ticket_limit) || 100)
-          )
-      : [];
+  const fixedWinningAssignments = getFixedWinningAssignments(game);
 
   const [
     bookings,
@@ -9355,17 +9392,24 @@ function HostControlPage({
       ? game.selected_prizes
       : [];
 
+    const fixedAssignments = getFixedWinningAssignments(game);
     const events = [];
 
     currentPrizes.forEach((prize, prizeIndex) => {
       if (prize?.locked) return;
+
+      const fixedAssignment =
+        game.game_mode === "fixed"
+          ? fixedAssignments.find((assignment) => assignment.prizeName === (prize.name || `Prize ${prizeIndex + 1}`))
+          : null;
 
       const winners = findPrizeWinners(
         prize,
         acceptedBookings,
         nextCalledNumbers,
         nextNumber,
-        game.game_code
+        game.game_code,
+        fixedAssignment?.ticketNumber ?? null
       );
 
       if (winners.length) {
@@ -9389,6 +9433,7 @@ function HostControlPage({
           prizeName: prize.name || `Prize ${prizeIndex + 1}`,
           prizeAmount,
           winningNumber: nextNumber,
+          fixedWinningTicket: fixedAssignment?.ticketNumber ?? null,
           winnerCount: winnersWithShares.length,
           winners: winnersWithShares
         });
@@ -11498,8 +11543,8 @@ function HostControlPage({
                 marginTop: 0
               }}
             >
-              These are the predetermined winning ticket numbers for this test game.
-              They are available to the host before any player sends a booking request.
+              These are the predetermined winning tickets for this test game.
+              Each ticket is assigned to a specific prize and is available before any player sends a booking request.
             </p>
 
             <div
@@ -11510,23 +11555,26 @@ function HostControlPage({
                 marginTop: 12
               }}
             >
-              {fixedWinningTickets.map((ticketNumber) => (
+              {fixedWinningAssignments.map((assignment, index) => (
                 <div
-                  key={`fixed-winning-ticket-${ticketNumber}`}
+                  key={`fixed-winning-ticket-${assignment.ticketNumber}-${index}`}
                   style={{
-                    minWidth: 72,
+                    minWidth: 150,
                     padding: "12px 16px",
                     borderRadius: 12,
                     textAlign: "center",
-                    fontSize: 20,
-                    fontWeight: 900,
                     background: "var(--theme-panel-bg, #fff)",
                     color: "var(--theme-accent, #2563eb)",
                     border: "2px solid var(--theme-accent, #2563eb)",
                     boxSizing: "border-box"
                   }}
                 >
-                  #{ticketNumber}
+                  <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 4 }}>
+                    {assignment.prizeName}
+                  </div>
+                  <div style={{ fontSize: 22, fontWeight: 900 }}>
+                    Ticket #{assignment.ticketNumber}
+                  </div>
                 </div>
               ))}
             </div>
