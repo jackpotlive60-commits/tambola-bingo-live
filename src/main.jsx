@@ -314,14 +314,27 @@ const DEFAULT_PRIZES = [
 function generateFixedWinningAssignments(gameCode, prizes, ticketLimit) {
   const limit = Math.max(1, Math.min(100, Number(ticketLimit) || 100));
   const prizeList = Array.isArray(prizes) ? prizes : [];
-  const availableTickets = Array.from({ length: limit }, (_, index) => index + 1);
-  const random = seededRandom(seedFromText(`fixed-test-${gameCode}`));
+  const fullHouseIndex = prizeList.findIndex(
+    (prize) => getPrizePattern(prize?.name) === "full_house"
+  );
+
+  if (fullHouseIndex < 0) return [];
+
+  const availableTickets = Array.from(
+    { length: limit },
+    (_, index) => index + 1
+  );
+  const random = seededRandom(
+    seedFromText(`fixed-test-full-house-${gameCode}`)
+  );
   const shuffledTickets = shuffle(availableTickets, random);
 
-  return prizeList.map((prize, index) => ({
-    prizeName: prize?.name || `Prize ${index + 1}`,
-    ticketNumber: shuffledTickets[index % shuffledTickets.length]
-  }));
+  return [
+    {
+      prizeName: prizeList[fullHouseIndex]?.name || "Full House",
+      ticketNumber: shuffledTickets[0]
+    }
+  ];
 }
 
 function getFixedWinningAssignments(game) {
@@ -329,23 +342,29 @@ function getFixedWinningAssignments(game) {
 
   const stored = game?.fixed_winning_tickets;
   if (Array.isArray(stored) && stored.length) {
-    // New format: [{ prizeName, ticketNumber }]
-    if (stored.some((item) => item && typeof item === "object")) {
-      return stored
-        .map((item, index) => ({
-          prizeName: item?.prizeName || item?.prize || `Prize ${index + 1}`,
-          ticketNumber: Number(item?.ticketNumber)
-        }))
-        .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
-    }
+    const assignments = stored
+      .map((item, index) => {
+        if (item && typeof item === "object") {
+          return {
+            prizeName: item?.prizeName || item?.prize || `Prize ${index + 1}`,
+            ticketNumber: Number(item?.ticketNumber)
+          };
+        }
 
-    // Backwards compatibility with the previous [9, 27, 30] format.
-    return stored
-      .map((number, index) => ({
-        prizeName: game?.selected_prizes?.[index]?.name || `Prize ${index + 1}`,
-        ticketNumber: Number(number)
-      }))
-      .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
+        return {
+          prizeName: game?.selected_prizes?.[index]?.name || `Prize ${index + 1}`,
+          ticketNumber: Number(item)
+        };
+      })
+      .filter(
+        (item) =>
+          getPrizePattern(item.prizeName) === "full_house" &&
+          Number.isInteger(item.ticketNumber) &&
+          item.ticketNumber >= 1 &&
+          item.ticketNumber <= 100
+      );
+
+    if (assignments.length) return assignments;
   }
 
   return generateFixedWinningAssignments(
@@ -358,58 +377,16 @@ function getFixedWinningAssignments(game) {
 /*
   FIXED/TEST CALL SEQUENCE
 
-  In Fixed/Test mode the ticket numbers shown in Host Control Centre are
-  genuine predetermined winners.  The caller therefore uses a deterministic
-  sequence that contains every required number on each assigned ticket.
-
-  The winning-ticket restriction remains active in findPrizeWinners(), so an
-  assigned ticket is the only ticket that can win its assigned prize.  This
-  makes the result deterministic for testing while Random Game continues to
-  use a normal random call order.
+  Only Full House is predetermined in Fixed/Test mode.
+  The selected Full House ticket's numbers are guaranteed to appear in the
+  call sequence, but they are deliberately distributed throughout the draw
+  with unrelated numbers between them. This keeps the test call pattern
+  natural instead of calling one ticket's numbers consecutively.
 */
 function getFixedPatternNumbers(grid, pattern) {
   const occupied = getOccupiedCells(grid);
 
   if (!occupied.length) return [];
-
-  if (pattern === "first_five") {
-    return occupied.slice(0, 5).map((cell) => cell.number);
-  }
-
-  if (
-    pattern === "top_line" ||
-    pattern === "middle_line" ||
-    pattern === "bottom_line"
-  ) {
-    const rowIndex =
-      pattern === "top_line"
-        ? 0
-        : pattern === "middle_line"
-        ? 1
-        : 2;
-
-    return occupied
-      .filter((cell) => cell.row === rowIndex)
-      .map((cell) => cell.number);
-  }
-
-  if (pattern === "four_corners") {
-    const top = occupied
-      .filter((cell) => cell.row === 0)
-      .sort((a, b) => a.column - b.column);
-    const bottom = occupied
-      .filter((cell) => cell.row === 2)
-      .sort((a, b) => a.column - b.column);
-
-    if (top.length < 2 || bottom.length < 2) return [];
-
-    return [
-      top[0].number,
-      top[top.length - 1].number,
-      bottom[0].number,
-      bottom[bottom.length - 1].number
-    ];
-  }
 
   if (pattern === "full_house") {
     return occupied.map((cell) => cell.number);
@@ -421,56 +398,77 @@ function getFixedPatternNumbers(grid, pattern) {
 function generateFixedCallSequence(game) {
   if (game?.game_mode !== "fixed") return [];
 
-  const limit = Math.max(
-    1,
-    Math.min(100, Number(game?.ticket_limit) || 100)
+  const assignments = getFixedWinningAssignments(game).filter(
+    (assignment) => getPrizePattern(assignment?.prizeName) === "full_house"
   );
 
-  const assignments = getFixedWinningAssignments(game);
   const random = seededRandom(
     seedFromText(`fixed-call-sequence-${game?.game_code || "test-game"}`)
   );
 
-  const sequence = [];
-  const used = new Set();
-
-  // Put the required numbers for every predetermined winning ticket into
-  // the call sequence first.  They are shuffled deterministically so the
-  // sequence is different between games but repeatable for the same game.
+  const targetNumbers = new Set();
   assignments.forEach((assignment) => {
-    const pattern = getPrizePattern(assignment?.prizeName);
-    if (!pattern) return;
-
     const grid = makeTicket(
       game?.game_code || "test-game",
       Number(assignment.ticketNumber)
     );
 
-    const required = getFixedPatternNumbers(grid, pattern);
-    const ordered = shuffle(required, random);
-
-    ordered.forEach((number) => {
+    getFixedPatternNumbers(grid, "full_house").forEach((number) => {
       const n = Number(number);
-      if (
-        Number.isInteger(n) &&
-        n >= 1 &&
-        n <= 90 &&
-        !used.has(n)
-      ) {
-        used.add(n);
-        sequence.push(n);
+      if (Number.isInteger(n) && n >= 1 && n <= 90) {
+        targetNumbers.add(n);
       }
     });
   });
 
-  // Finish the 1-90 calling sequence with all remaining numbers.
-  // This keeps the normal 90-number game behavior intact.
-  const remaining = Array.from(
-    { length: 90 },
-    (_, index) => index + 1
-  ).filter((number) => !used.has(number));
+  const targetList = shuffle([...targetNumbers], random);
+  const fillerList = shuffle(
+    Array.from({ length: 90 }, (_, index) => index + 1).filter(
+      (number) => !targetNumbers.has(number)
+    ),
+    random
+  );
 
-  sequence.push(...shuffle(remaining, random));
+  if (!targetList.length) {
+    return fillerList;
+  }
+
+  /*
+    Spread target numbers across the 90 calls. The gap changes as the draw
+    progresses, so there is no simple repeating pattern such as
+    target/random/target/random. Every target number still appears exactly
+    once, guaranteeing the designated ticket can eventually complete Full
+    House.
+  */
+  const sequence = [];
+  let targetIndex = 0;
+  let fillerIndex = 0;
+
+  while (targetIndex < targetList.length || fillerIndex < fillerList.length) {
+    if (targetIndex < targetList.length) {
+      sequence.push(targetList[targetIndex++]);
+    }
+
+    const remainingTargets = targetList.length - targetIndex;
+    const remainingFillers = fillerList.length - fillerIndex;
+
+    if (remainingFillers <= 0) continue;
+
+    const desiredGap = Math.max(
+      2,
+      Math.min(
+        8,
+        Math.floor(remainingFillers / Math.max(1, remainingTargets + 1))
+      )
+    );
+
+    const jitter = Math.floor(random() * 3);
+    const gap = Math.min(remainingFillers, desiredGap + jitter);
+
+    for (let i = 0; i < gap; i++) {
+      sequence.push(fillerList[fillerIndex++]);
+    }
+  }
 
   return sequence;
 }
@@ -478,14 +476,11 @@ function generateFixedCallSequence(game) {
 function getNextFixedCallNumber(game, calledNumbers) {
   const sequence = generateFixedCallSequence(game);
   const calledSet = new Set(
-    Array.isArray(calledNumbers)
-      ? calledNumbers.map(Number)
-      : []
+    Array.isArray(calledNumbers) ? calledNumbers.map(Number) : []
   );
 
   return (
-    sequence.find((number) => !calledSet.has(Number(number))) ??
-    null
+    sequence.find((number) => !calledSet.has(Number(number))) ?? null
   );
 }
 
@@ -789,12 +784,11 @@ function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber,
         return;
       }
 
-      // Fixed/Test mode is deterministic: this prize is reserved for its
-      // predetermined ticket.  Random Game has no fixed ticket restriction.
-      // The fixed caller sequence guarantees that the assigned ticket gets
-      // all numbers required for this prize.
+      // In Fixed/Test mode, only the predetermined Full House ticket is
+      // reserved. All other prizes continue to use normal winner detection.
       if (
         fixedWinningTicketNumber !== null &&
+        pattern === "full_house" &&
         ticketNumber !== Number(fixedWinningTicketNumber)
       ) {
         return;
@@ -3489,8 +3483,8 @@ const [
         selected_prizes:
           selectedPrizes,
 
-        // Store the Fixed/Test prize-to-ticket assignments with the game
-        // so the host can see them immediately, before any booking arrives.
+        // Store only the Fixed/Test Full House assignment with the game
+        // so the host can see it immediately, before any booking arrives.
         fixed_winning_tickets:
           gameMode === "fixed"
             ? generateFixedWinningAssignments(code, selectedPrizes, ticketLimit)
@@ -9537,8 +9531,12 @@ function HostControlPage({
       if (prize?.locked) return;
 
       const fixedAssignment =
-        game.game_mode === "fixed"
-          ? fixedAssignments.find((assignment) => assignment.prizeName === (prize.name || `Prize ${prizeIndex + 1}`))
+        game.game_mode === "fixed" &&
+        getPrizePattern(prize?.name) === "full_house"
+          ? fixedAssignments.find(
+              (assignment) =>
+                getPrizePattern(assignment?.prizeName) === "full_house"
+            )
           : null;
 
       const winners = findPrizeWinners(
@@ -11687,8 +11685,7 @@ function HostControlPage({
                 marginTop: 0
               }}
             >
-              These are the predetermined winning tickets for this test game.
-              Each ticket is assigned to a specific prize and is available before any player sends a booking request.
+              Only the Full House ticket is predetermined for this test game. It is available before any player sends a booking request.
             </p>
 
             <div
