@@ -355,6 +355,140 @@ function getFixedWinningAssignments(game) {
   );
 }
 
+/*
+  FIXED/TEST CALL SEQUENCE
+
+  In Fixed/Test mode the ticket numbers shown in Host Control Centre are
+  genuine predetermined winners.  The caller therefore uses a deterministic
+  sequence that contains every required number on each assigned ticket.
+
+  The winning-ticket restriction remains active in findPrizeWinners(), so an
+  assigned ticket is the only ticket that can win its assigned prize.  This
+  makes the result deterministic for testing while Random Game continues to
+  use a normal random call order.
+*/
+function getFixedPatternNumbers(grid, pattern) {
+  const occupied = getOccupiedCells(grid);
+
+  if (!occupied.length) return [];
+
+  if (pattern === "first_five") {
+    return occupied.slice(0, 5).map((cell) => cell.number);
+  }
+
+  if (
+    pattern === "top_line" ||
+    pattern === "middle_line" ||
+    pattern === "bottom_line"
+  ) {
+    const rowIndex =
+      pattern === "top_line"
+        ? 0
+        : pattern === "middle_line"
+        ? 1
+        : 2;
+
+    return occupied
+      .filter((cell) => cell.row === rowIndex)
+      .map((cell) => cell.number);
+  }
+
+  if (pattern === "four_corners") {
+    const top = occupied
+      .filter((cell) => cell.row === 0)
+      .sort((a, b) => a.column - b.column);
+    const bottom = occupied
+      .filter((cell) => cell.row === 2)
+      .sort((a, b) => a.column - b.column);
+
+    if (top.length < 2 || bottom.length < 2) return [];
+
+    return [
+      top[0].number,
+      top[top.length - 1].number,
+      bottom[0].number,
+      bottom[bottom.length - 1].number
+    ];
+  }
+
+  if (pattern === "full_house") {
+    return occupied.map((cell) => cell.number);
+  }
+
+  return [];
+}
+
+function generateFixedCallSequence(game) {
+  if (game?.game_mode !== "fixed") return [];
+
+  const limit = Math.max(
+    1,
+    Math.min(100, Number(game?.ticket_limit) || 100)
+  );
+
+  const assignments = getFixedWinningAssignments(game);
+  const random = seededRandom(
+    seedFromText(`fixed-call-sequence-${game?.game_code || "test-game"}`)
+  );
+
+  const sequence = [];
+  const used = new Set();
+
+  // Put the required numbers for every predetermined winning ticket into
+  // the call sequence first.  They are shuffled deterministically so the
+  // sequence is different between games but repeatable for the same game.
+  assignments.forEach((assignment) => {
+    const pattern = getPrizePattern(assignment?.prizeName);
+    if (!pattern) return;
+
+    const grid = makeTicket(
+      game?.game_code || "test-game",
+      Number(assignment.ticketNumber)
+    );
+
+    const required = getFixedPatternNumbers(grid, pattern);
+    const ordered = shuffle(required, random);
+
+    ordered.forEach((number) => {
+      const n = Number(number);
+      if (
+        Number.isInteger(n) &&
+        n >= 1 &&
+        n <= 90 &&
+        !used.has(n)
+      ) {
+        used.add(n);
+        sequence.push(n);
+      }
+    });
+  });
+
+  // Finish the 1-90 calling sequence with all remaining numbers.
+  // This keeps the normal 90-number game behavior intact.
+  const remaining = Array.from(
+    { length: 90 },
+    (_, index) => index + 1
+  ).filter((number) => !used.has(number));
+
+  sequence.push(...shuffle(remaining, random));
+
+  return sequence;
+}
+
+function getNextFixedCallNumber(game, calledNumbers) {
+  const sequence = generateFixedCallSequence(game);
+  const calledSet = new Set(
+    Array.isArray(calledNumbers)
+      ? calledNumbers.map(Number)
+      : []
+  );
+
+  return (
+    sequence.find((number) => !calledSet.has(Number(number))) ??
+    null
+  );
+}
+
 const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_v2_";
 const DEFAULT_VOICE_PRESET_ID = "english";
 
@@ -655,10 +789,14 @@ function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber,
         return;
       }
 
-      // In Fixed/Test mode, only the ticket assigned to this prize may win it.
-      // Other tickets can still be displayed/played normally, but they cannot
-      // claim the predetermined prize.
-      if (fixedWinningTicketNumber !== null && ticketNumber !== Number(fixedWinningTicketNumber)) {
+      // Fixed/Test mode is deterministic: this prize is reserved for its
+      // predetermined ticket.  Random Game has no fixed ticket restriction.
+      // The fixed caller sequence guarantees that the assigned ticket gets
+      // all numbers required for this prize.
+      if (
+        fixedWinningTicketNumber !== null &&
+        ticketNumber !== Number(fixedWinningTicketNumber)
+      ) {
         return;
       }
 
@@ -9677,7 +9815,13 @@ function HostControlPage({
       }
 
       const nextNumber =
-        remaining[Math.floor(Math.random() * remaining.length)];
+        game.game_mode === "fixed"
+          ? getNextFixedCallNumber(game, currentCalled)
+          : remaining[Math.floor(Math.random() * remaining.length)];
+
+      if (!Number.isInteger(Number(nextNumber))) {
+        return false;
+      }
 
       const next = [
         ...currentCalled,
