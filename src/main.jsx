@@ -3265,6 +3265,8 @@ const secondaryButton = {
 ========================================================= */
 
 function CreateGamePage({
+  const [gameMode, setGameMode] = useState("random");
+
   onCreated
 }) {
   const [
@@ -11704,9 +11706,7 @@ function HostControlPage({
                 marginTop: 12
               }}
             >
-              {fixedWinningAssignments
-                .filter((assignment) => getPrizePattern(assignment?.prizeName) === "full_house")
-                .map((assignment, index) => (
+              {fixedWinningAssignments.map((assignment, index) => (
                 <div
                   key={`fixed-winning-ticket-${assignment.ticketNumber}-${index}`}
                   style={{
