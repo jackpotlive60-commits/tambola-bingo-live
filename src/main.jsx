@@ -402,10 +402,9 @@ function getFixedFullHouseTarget(game) {
 /*
   Fixed/Test calling engine.
 
-  Only the assigned Full House ticket is controlled. Its 15 numbers are
-  distributed through the draw: 8 by call 35, 14 by call 68, and the final
-  number in calls 69-75.  The exact positions are seeded per game and are
-  separated so the target never appears as a visible consecutive run.
+  Only the assigned Full House ticket is controlled. Its numbers are
+  introduced adaptively according to the actual accepted/booked tickets.
+  There is no fixed 8-6-1 schedule and no predetermined final call number.
 
   Crucially, when the target ticket is booked, the engine is booking-aware:
   it refuses a candidate number if that number would make another booked
@@ -3494,6 +3493,10 @@ const [
         selected_prizes:
           selectedPrizes,
 
+        // IMPORTANT: do not send fixed_winning_tickets to Supabase.
+        // The Fixed/Test assignment is derived deterministically from the
+        // game code on the client, so this feature does not require a
+        // database column.
         called_numbers:
           []
       };
@@ -12436,12 +12439,28 @@ function App() {
   function handleCreated(
     newGame
   ) {
+    // Keep the Fixed/Test assignment in the local game object so the
+    // Host Control Centre can display it immediately, while the database
+    // remains independent of the optional fixed_winning_tickets column.
+    const hydratedGame =
+      newGame?.game_mode === "fixed"
+        ? {
+            ...newGame,
+            fixed_winning_tickets:
+              generateFixedWinningAssignments(
+                newGame.game_code,
+                newGame.selected_prizes,
+                newGame.ticket_limit
+              )
+          }
+        : newGame;
+
     setGame(
-      newGame
+      hydratedGame
     );
 
     saveHostGame(
-      newGame
+      hydratedGame
     );
 
     window.history.replaceState(
