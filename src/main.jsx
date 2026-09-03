@@ -415,98 +415,226 @@ function getFixedFullHouseTarget(game) {
 */
 function generateFixedCallSequence(game) {
   if (game?.game_mode !== "fixed") return [];
-  const random = seededRandom(seedFromText(`fixed-call-sequence-${game?.game_code || "test-game"}`));
-  return shuffle(Array.from({ length: 90 }, (_, i) => i + 1), random);
+
+  // Fixed/Test starts from a seeded shuffle so every game has a stable,
+  // random-looking 1-90 pool.  The adaptive picker below decides which
+  // number is safest to call next based on the tickets that are actually
+  // booked.
+  const random = seededRandom(
+    seedFromText(`fixed-call-sequence-${game?.game_code || "test-game"}`)
+  );
+
+  return shuffle(
+    Array.from({ length: 90 }, (_, i) => i + 1),
+    random
+  );
 }
 
 function getNextFixedCallNumber(game, calledNumbers, acceptedBookings = []) {
-  const called = Array.isArray(calledNumbers) ? calledNumbers.map(Number) : [];
+  const called = Array.isArray(calledNumbers)
+    ? calledNumbers.map(Number)
+    : [];
   const calledSet = new Set(called);
   const callNumber = called.length + 1;
   const target = getFixedFullHouseTarget(game);
+
   const accepted = Array.isArray(acceptedBookings)
     ? acceptedBookings.filter((b) => b?.status === "accepted")
     : [];
 
-  const targetBooked = accepted.some((booking) =>
+  const base = generateFixedCallSequence(game).filter(
+    (n) => !calledSet.has(Number(n))
+  );
+
+  if (!base.length) return null;
+
+  // No booked target = normal random Fixed/Test draw.  The assigned ticket
+  // is only guaranteed when that actual ticket has been booked.
+  const targetBooked = target && accepted.some((booking) =>
     (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : [])
       .some((n) => Number(n) === Number(target))
   );
-
-  const base = generateFixedCallSequence(game).filter((n) => !calledSet.has(Number(n)));
-  if (!base.length) return null;
 
   if (!target || !targetBooked) {
     return base[0];
   }
 
-  const targetGrid = makeTicket(game?.game_code || "test-game", target);
-  const targetNumbers = getFixedPatternNumbers(targetGrid, "full_house");
-  const targetRemaining = targetNumbers.filter((n) => !calledSet.has(Number(n)));
-  const targetCalledCount = targetNumbers.length - targetRemaining.length;
+  const gameCode = game?.game_code || "test-game";
+  const targetGrid = makeTicket(gameCode, Number(target));
+  const targetNumbers = getFixedPatternNumbers(
+    targetGrid,
+    "full_house"
+  );
 
-  // A target number is needed by the end of each stage.
-  const requiredBy35 = 8;
-  const requiredBy68 = 14;
-  const requiredBy75 = 15;
-  const mustAddTarget =
-    (callNumber <= 35 && targetCalledCount < requiredBy35 &&
-      targetCalledCount + (35 - callNumber + 1) >= requiredBy35) ||
-    (callNumber > 35 && callNumber <= 68 && targetCalledCount < requiredBy68 &&
-      targetCalledCount + (68 - callNumber + 1) >= requiredBy68) ||
-    (callNumber >= 69 && callNumber <= 75 && targetCalledCount < requiredBy75);
+  if (targetNumbers.length !== 15) {
+    return base[0];
+  }
 
-  const previousWasTarget = called.length > 0 && targetNumbers.includes(called[called.length - 1]);
+  const targetRemaining = targetNumbers.filter(
+    (n) => !calledSet.has(Number(n))
+  );
 
-  const targetCandidates = targetRemaining.filter((n) => base.includes(Number(n)));
-  const otherCandidates = base.filter((n) => !targetNumbers.includes(Number(n)));
+  if (!targetRemaining.length) {
+    return base[0];
+  }
 
-  const isUnsafeForOtherTicket = (candidate) => {
-    const next = [...called, Number(candidate)];
-    return accepted.some((booking) => {
-      const tickets = Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : [];
-      return tickets.some((ticket) => {
-        const ticketNumber = Number(ticket);
-        if (!Number.isInteger(ticketNumber) || ticketNumber === Number(target)) return false;
-        return ticketWouldCompleteFullHouse(game?.game_code || "test-game", ticketNumber, next);
-      });
-    });
+  const ticketNumbers = [];
+  accepted.forEach((booking) => {
+    (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : []).forEach(
+      (value) => {
+        const ticketNumber = Number(value);
+        if (
+          Number.isInteger(ticketNumber) &&
+          ticketNumber >= 1 &&
+          ticketNumber <= 100 &&
+          ticketNumber !== Number(target) &&
+          !ticketNumbers.includes(ticketNumber)
+        ) {
+          ticketNumbers.push(ticketNumber);
+        }
+      }
+    );
+  });
+
+  const competitorState = ticketNumbers.map((ticketNumber) => {
+    const grid = makeTicket(gameCode, ticketNumber);
+    const required = getFixedPatternNumbers(grid, "full_house");
+    const remaining = required.filter((n) => !calledSet.has(Number(n)));
+    return {
+      ticketNumber,
+      required,
+      remaining
+    };
+  });
+
+  const targetRemainingSet = new Set(targetRemaining.map(Number));
+
+  const completesCompetitor = (candidate) => {
+    const n = Number(candidate);
+    return competitorState.some((state) =>
+      state.required.length === 15 &&
+      state.remaining.length === 1 &&
+      state.remaining[0] === n
+    );
   };
 
-  const safeTarget = targetCandidates.filter((n) => !isUnsafeForOtherTicket(n));
-  const safeOther = otherCandidates.filter((n) => !isUnsafeForOtherTicket(n));
+  const targetCompletes = (candidate) => {
+    return targetRemaining.length === 1 &&
+      Number(targetRemaining[0]) === Number(candidate);
+  };
 
-  // At calls 69-75, finish the assigned ticket with a safe remaining number.
-  if (callNumber >= 69 && callNumber <= 75 && targetRemaining.length === 1) {
-    const finalTarget = safeTarget[0];
-    if (finalTarget !== undefined) return finalTarget;
+  // Never intentionally call a number that would make another booked ticket
+  // complete Full House before the designated target.  This is the important
+  // difference from the old implementation: we prevent the competing ticket
+  // from actually winning rather than hiding its winner afterwards.
+  const safeCandidates = base.filter(
+    (candidate) => !completesCompetitor(candidate)
+  );
+
+  const pool = safeCandidates.length ? safeCandidates : base;
+
+  // If the target has two numbers left, prefer a target number that does NOT
+  // also finish another ticket.  Example:
+  //   target:      3, 35
+  //   competitor:  3, 36
+  // Calling 35 first leaves the shared 3 to finish only the target.
+  if (targetRemaining.length === 2) {
+    const safeTarget = pool.filter((n) => targetRemainingSet.has(Number(n)));
+    if (safeTarget.length) {
+      const nonFinishingTarget = safeTarget.filter(
+        (n) => !targetCompletes(n) && !completesCompetitor(n)
+      );
+      if (nonFinishingTarget.length) {
+        return nonFinishingTarget[
+          Math.floor(
+            randomForFixedChoice(game, callNumber + 1701) *
+              nonFinishingTarget.length
+          )
+        ];
+      }
+    }
   }
 
-  // Meet the 8/14 milestones while avoiding an obvious back-to-back target run.
-  if (mustAddTarget && safeTarget.length && !(previousWasTarget && safeOther.length)) {
-    return safeTarget[Math.floor(randomForFixedChoice(game, callNumber) * safeTarget.length)];
+  // If the target has one number left, finish it as soon as its final number
+  // is safe. There is no artificial 69-75 or 8-6-1 schedule anymore.
+  if (targetRemaining.length === 1) {
+    const finalNumber = Number(targetRemaining[0]);
+    if (pool.includes(finalNumber) && !completesCompetitor(finalNumber)) {
+      return finalNumber;
+    }
   }
 
-  // During the final window, prefer the target if it is the only safe way to
-  // reach the guarantee. Otherwise keep the draw random-looking.
-  if (callNumber >= 69 && callNumber <= 75 && targetRemaining.length && safeTarget.length) {
-    return safeTarget[Math.floor(randomForFixedChoice(game, callNumber + 91) * safeTarget.length)];
+  const targetCandidates = pool.filter((n) =>
+    targetRemainingSet.has(Number(n))
+  );
+  const otherCandidates = pool.filter((n) =>
+    !targetRemainingSet.has(Number(n))
+  );
+
+  // Adaptive target pressure:
+  // - Early in the game, target numbers appear naturally but aren't forced.
+  // - As competing tickets get close, target numbers become more useful.
+  // - When the target is itself close, its safe remaining numbers are favored.
+  const targetCalled = 15 - targetRemaining.length;
+  const closestCompetitor = competitorState.reduce(
+    (best, state) =>
+      state.remaining.length && state.remaining.length < best
+        ? state.remaining.length
+        : best,
+    16
+  );
+
+  let targetChance = 0.10;
+  if (callNumber >= 25) targetChance = 0.15;
+  if (callNumber >= 40) targetChance = 0.20;
+  if (callNumber >= 55) targetChance = 0.28;
+  if (callNumber >= 65) targetChance = 0.40;
+  if (targetRemaining.length <= 4) targetChance += 0.18;
+  if (closestCompetitor <= 3) targetChance += 0.15;
+  if (targetCalled < 4 && callNumber >= 35) targetChance += 0.12;
+  if (targetRemaining.length <= 2) targetChance = 0.75;
+
+  targetChance = Math.min(0.90, targetChance);
+
+  const roll = randomForFixedChoice(game, callNumber + 3201);
+
+  if (targetCandidates.length && roll < targetChance) {
+    return targetCandidates[
+      Math.floor(
+        randomForFixedChoice(game, callNumber + 4101) *
+          targetCandidates.length
+      )
+    ];
   }
 
-  if (safeOther.length) {
-    return safeOther[Math.floor(randomForFixedChoice(game, callNumber) * safeOther.length)];
+  if (otherCandidates.length) {
+    return otherCandidates[
+      Math.floor(
+        randomForFixedChoice(game, callNumber + 5201) *
+          otherCandidates.length
+      )
+    ];
   }
 
-  if (safeTarget.length) return safeTarget[0];
+  if (targetCandidates.length) return targetCandidates[0];
 
-  // Extremely rare fallback: every remaining candidate would complete a
-  // competing ticket. Prefer a non-target number and let the next call resolve it.
-  return base[0];
+  // This is only a last-resort fallback when every remaining number would
+  // complete a competing ticket. Normal games should never reach this state.
+  return pool[0] ?? base[0];
 }
 
 function randomForFixedChoice(game, salt) {
   const seed = seedFromText(`fixed-choice-${game?.game_code || "test-game"}-${salt}`);
   return seededRandom(seed)();
+}
+
+function normalizePrizeKey(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\s+/g, " ");
 }
 
 function getPrizePattern(name) {
