@@ -3494,13 +3494,6 @@ const [
         selected_prizes:
           selectedPrizes,
 
-        // Store the Fixed/Test prize-to-ticket assignments with the game
-        // so the host can see them immediately, before any booking arrives.
-        fixed_winning_tickets:
-          gameMode === "fixed"
-            ? generateFixedWinningAssignments(code, selectedPrizes, ticketLimit)
-            : [],
-
         called_numbers:
           []
       };
