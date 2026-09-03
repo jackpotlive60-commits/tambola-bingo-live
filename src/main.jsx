@@ -433,17 +433,17 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
   /*
    * FIXED/TEST MODE
    *
-   * The Full House ticket shown in Host Control Centre is the target ticket.
-   * We do NOT simply declare that ticket the winner. Instead, we build the
-   * actual 1-90 call order so that:
+   * The Full House ticket shown in Host Control Centre is the REAL target.
+   * The draw order is constructed so that this ticket is the first accepted
+   * ticket that can actually reach 15/15.
    *
-   *   1. the target ticket's 15 numbers are scattered through the draw;
-   *   2. its numbers are never deliberately called as a consecutive block;
-   *   3. every other accepted ticket has at least one "blocker" number that
-   *      is held until AFTER the target ticket completes Full House.
+   * IMPORTANT:
+   * Other tickets may share many numbers with the target ticket. They are
+   * still protected: for every other accepted ticket we find at least one
+   * number that is NOT on the target ticket and hold that number until AFTER
+   * the target's final number is called.
    *
-   * Therefore the target ticket is the first ticket that can genuinely reach
-   * 15/15. Random mode is completely unaffected.
+   * Random mode never enters this function.
    */
   const assignments = getFixedWinningAssignments(game);
   const fullHouseAssignment =
@@ -477,9 +477,10 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
   const targetSet = new Set(targetNumbers);
 
   /*
-   * Build the set of accepted tickets that must be prevented from reaching
-   * Full House before the target. A blocker is simply one number from that
-   * ticket that will be placed after the target's final number.
+   * Collect EVERY accepted ticket, not only tickets with zero overlap with
+   * the target. A ticket such as #15 can share 10, 12, 14, etc. numbers with
+   * #13 and still be dangerous. It only needs ONE non-target number to be
+   * held back to stop it reaching 15/15 before the target.
    */
   const otherTickets = [];
   const seenTickets = new Set();
@@ -493,6 +494,7 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
 
     ticketNumbers.forEach((value) => {
       const ticketNumber = Number(value);
+
       if (
         !Number.isInteger(ticketNumber) ||
         ticketNumber < 1 ||
@@ -513,30 +515,43 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
           (number) =>
             Number.isInteger(number) &&
             number >= 1 &&
-            number <= 90 &&
-            !targetSet.has(number)
+            number <= 90
         );
 
       if (numbers.length === 15) {
-        otherTickets.push({ key, numbers: new Set(numbers) });
+        const blockerCandidates = numbers.filter(
+          (number) => !targetSet.has(number)
+        );
+
+        /*
+         * If a different accepted ticket has at least one number outside the
+         * target ticket, it can be protected. The old code accidentally
+         * discarded tickets that shared even ONE target number, which is why
+         * tickets such as #15/#16 could complete Full House first.
+         */
+        otherTickets.push({
+          key,
+          numbers: new Set(numbers),
+          blockerCandidates: new Set(blockerCandidates)
+        });
       }
     });
   });
 
   /*
-   * Find a small blocker set with randomized tie-breaking. This is a greedy
-   * set-cover calculation: each selected blocker protects every ticket that
-   * contains it. Multiple attempts make the result vary deterministically by
-   * game code while still remaining reproducible after refresh.
+   * Choose a small deterministic blocker set. A selected blocker protects
+   * every other ticket containing that number. Because blockers are restricted
+   * to numbers outside the target ticket, none of them can delay the target.
    */
   function chooseBlockers(tickets) {
     if (!tickets.length) return [];
 
     let best = null;
 
-    for (let attempt = 0; attempt < 80; attempt += 1) {
+    for (let attempt = 0; attempt < 100; attempt += 1) {
       const uncovered = new Set(tickets.map((ticket) => ticket.key));
       const selected = [];
+
       const available = Array.from(
         { length: 90 },
         (_, index) => index + 1
@@ -549,7 +564,8 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
         available.forEach((number) => {
           const coverage = tickets.reduce(
             (count, ticket) =>
-              uncovered.has(ticket.key) && ticket.numbers.has(number)
+              uncovered.has(ticket.key) &&
+              ticket.blockerCandidates.has(number)
                 ? count + 1
                 : count,
             0
@@ -567,16 +583,19 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
 
         const chosenNumber =
           bestNumbers[Math.floor(random() * bestNumbers.length)];
+
         selected.push(chosenNumber);
 
         tickets.forEach((ticket) => {
-          if (ticket.numbers.has(chosenNumber)) {
+          if (ticket.blockerCandidates.has(chosenNumber)) {
             uncovered.delete(ticket.key);
           }
         });
 
         const index = available.indexOf(chosenNumber);
-        if (index >= 0) available.splice(index, 1);
+        if (index >= 0) {
+          available.splice(index, 1);
+        }
       }
 
       if (!uncovered.size && (!best || selected.length < best.length)) {
@@ -590,15 +609,26 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
   const blockerNumbers = chooseBlockers(otherTickets);
 
   /*
-   * If there are no accepted tickets yet, there is nothing to block. If the
-   * accepted-ticket set is unusually complex and needs more than 62 blockers,
-   * we still keep the original safe random sequence rather than creating a
-   * cramped/non-random-looking draw.
+   * If an accepted ticket contains all 15 of the target's numbers, there is
+   * no number outside the target that can be held back to separate the two
+   * tickets. That is an exceptionally unlikely duplicate-ticket case.
+   *
+   * Otherwise the blocker set guarantees that every other accepted ticket is
+   * missing at least one number when the target completes.
    */
-  const canGuaranteeTarget =
-    !otherTickets.length || blockerNumbers.length <= 62;
+  const unprotectedTickets = otherTickets.filter(
+    (ticket) =>
+      !blockerNumbers.some((number) =>
+        ticket.blockerCandidates.has(number)
+      )
+  );
 
-  if (!canGuaranteeTarget) {
+  if (unprotectedTickets.length) {
+    /*
+     * Do not silently create a false "fixed" result. Return a normal shuffled
+     * sequence only when the requested fixed target cannot mathematically be
+     * separated from an identical accepted ticket.
+     */
     return shuffle(
       Array.from({ length: 90 }, (_, index) => index + 1),
       random
@@ -606,19 +636,28 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
   }
 
   /*
-   * The target's final number occurs immediately before the blocker tail.
-   * Every blocker therefore remains uncalled when the target reaches 15/15.
-   * Keep at least 28 calls available for the 14 earlier target numbers so
-   * those target calls can be spaced with at least one non-target call between
-   * them.
+   * The target's final number is placed immediately before the protected
+   * blocker tail. Thus every blocker is guaranteed to remain uncalled when
+   * the target reaches 15/15.
+   *
+   * We keep the target numbers spread out whenever there is enough room, but
+   * correctness takes priority over spacing.
    */
-  const finalSlot = Math.max(28, 90 - blockerNumbers.length);
+  const maxFinalSlot = 90 - blockerNumbers.length;
+  const finalSlot = Math.max(15, maxFinalSlot);
 
   const targetShuffled = shuffle([...targetNumbers], random);
   const earlierTargetNumbers = targetShuffled.slice(0, 14);
   const finalTarget = targetShuffled[14];
 
   function chooseSpacedSlots(start, end, count) {
+    if (end - start + 1 < count) {
+      return Array.from(
+        { length: count },
+        (_, index) => start + index
+      );
+    }
+
     const candidates = Array.from(
       { length: end - start + 1 },
       (_, index) => start + index
@@ -653,22 +692,32 @@ function generateFixedCallSequence(game, acceptedBookings = []) {
   }
 
   const targetAtPosition = new Map();
-  const targetSlots = chooseSpacedSlots(1, finalSlot - 1, 14);
+
+  const targetSlots = chooseSpacedSlots(
+    1,
+    finalSlot - 1,
+    14
+  );
 
   targetSlots.forEach((position, index) => {
     targetAtPosition.set(position, earlierTargetNumbers[index]);
   });
+
   targetAtPosition.set(finalSlot, finalTarget);
 
   /*
-   * Put every blocker after the target's final call. Shuffle the blocker tail
-   * so even the protected numbers do not appear in a predictable order.
+   * All blockers are called only AFTER the target completes. Shuffle the
+   * blocker tail so the protected numbers do not appear in an obvious order.
    */
   const tailNumbers = shuffle([...blockerNumbers], random);
   const tailStart = finalSlot + 1;
 
   tailNumbers.forEach((number, index) => {
-    targetAtPosition.set(tailStart + index, number);
+    const position = tailStart + index;
+
+    if (position <= 90) {
+      targetAtPosition.set(position, number);
+    }
   });
 
   const reservedNumbers = new Set([
