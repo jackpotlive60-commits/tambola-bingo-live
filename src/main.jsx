@@ -44,36 +44,6 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
-/* ---------------------------------------------------------
-   SAFE HOST GAME HYDRATION
-   Create Game can return a valid database row with optional/null fields.
-   Normalize those fields before HostControlPage renders so a malformed or
-   incomplete row cannot take the app to a blank screen.
---------------------------------------------------------- */
-function normalizeHostGame(game) {
-  if (!game || typeof game !== "object") return null;
-
-  const safeTheme = THEMES.includes(game.theme)
-    ? game.theme
-    : "Classic";
-
-  return {
-    ...game,
-    theme: safeTheme,
-    game_name: game.game_name || DEFAULT_GAME_NAME,
-    game_code: String(game.game_code || "").trim().toUpperCase(),
-    status: game.status || "upcoming",
-    selected_prizes: Array.isArray(game.selected_prizes)
-      ? game.selected_prizes
-      : [],
-    called_numbers: Array.isArray(game.called_numbers)
-      ? game.called_numbers
-      : [],
-    ticket_limit: Math.max(1, Number(game.ticket_limit) || 100),
-    ticket_price: Number(game.ticket_price) || 0
-  };
-}
-
 /*
  * Section visual treatment: reuse the existing theme assets, but crop and
  * place them differently for successive sections. The content side remains
@@ -362,9 +332,12 @@ function generateFixedWinningAssignments(gameCode, prizes, ticketLimit) {
 }
 
 function getFixedWinningAssignments(game) {
-  if (game?.game_mode !== "fixed") return [];
+  // Fixed/Test must never be allowed to crash the Host Control Centre.
+  // Treat incomplete/legacy game data as having no fixed assignment.
+  try {
+    if (!game || game?.game_mode !== "fixed") return [];
 
-  const stored = game?.fixed_winning_tickets;
+    const stored = game?.fixed_winning_tickets;
   if (Array.isArray(stored) && stored.length) {
     const parsed = stored
       .map((item, index) => {
@@ -389,11 +362,15 @@ function getFixedWinningAssignments(game) {
     if (fullHouse) return [fullHouse];
   }
 
-  return generateFixedWinningAssignments(
-    game?.game_code || "test-game",
-    game?.selected_prizes || [],
-    game?.ticket_limit || 100
-  );
+    return generateFixedWinningAssignments(
+      game?.game_code || "test-game",
+      game?.selected_prizes || [],
+      game?.ticket_limit || 100
+    );
+  } catch (error) {
+    console.error("Fixed/Test assignment error:", error);
+    return [];
+  }
 }
 
 function getFixedPatternNumbers(grid, pattern) {
@@ -12472,33 +12449,22 @@ function App() {
     // Keep the Fixed/Test assignment in the local game object so the
     // Host Control Centre can display it immediately, while the database
     // remains independent of the optional fixed_winning_tickets column.
+    // Do not run Fixed/Test calculations during the Create Game click.
+    // The Host Control Centre derives the assignment safely after mounting.
+    // This guarantees that a test-game calculation can never interrupt the
+    // Create Game -> Host Control Centre transition.
     const hydratedGame =
-      newGame?.game_mode === "fixed"
-        ? {
-            ...newGame,
-            fixed_winning_tickets:
-              generateFixedWinningAssignments(
-                newGame.game_code,
-                newGame.selected_prizes,
-                newGame.ticket_limit
-              )
-          }
-        : newGame;
+      newGame && typeof newGame === "object"
+        ? { ...newGame }
+        : null;
 
-    const safeGame = normalizeHostGame(hydratedGame);
-
-    if (!safeGame) {
-      console.error("Create Game returned an invalid game row:", newGame);
+    if (!hydratedGame) {
+      console.error("Create Game returned invalid game data:", newGame);
       return;
     }
 
-    setGame(
-      safeGame
-    );
-
-    saveHostGame(
-      safeGame
-    );
+    setGame(hydratedGame);
+    saveHostGame(hydratedGame);
 
     window.history.replaceState(
       {},
@@ -12673,17 +12639,10 @@ function App() {
   ------------------------------------------------------- */
 
   if (game) {
-    const safeHostGame = normalizeHostGame(game);
-
-    if (!safeHostGame) {
-      setGame(null);
-      return null;
-    }
-
     return (
       <HostControlPage
         game={
-          safeHostGame
+          game
         }
         onNewGame={
           handleNewGame
