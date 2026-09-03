@@ -3265,10 +3265,10 @@ const secondaryButton = {
 ========================================================= */
 
 function CreateGamePage({
-  const [gameMode, setGameMode] = useState("random");
-
   onCreated
 }) {
+  const [gameMode, setGameMode] = useState("random");
+
   const [
     gameName,
     setGameName
@@ -3447,6 +3447,7 @@ const [
       }
 
       const newGame = {
+        game_mode: gameMode,
         host_name:
           "Host",
 
@@ -3984,7 +3985,26 @@ const [
             </section>
           )}
 
-          <button
+          
+          <section style={{ marginBottom: 16 }}>
+            <label
+              htmlFor="game-mode"
+              style={{ display: "block", fontWeight: 800, marginBottom: 8 }}
+            >
+              GAME MODE
+            </label>
+            <select
+              id="game-mode"
+              value={gameMode}
+              onChange={(e) => setGameMode(e.target.value)}
+              style={{ width: "100%", padding: 12, borderRadius: 10 }}
+            >
+              <option value="random">Random Game</option>
+              <option value="fixed">Fixed/Test Game</option>
+            </select>
+          </section>
+
+<button
             type="submit"
             disabled={
               creating
