@@ -307,6 +307,10 @@ const DEFAULT_PRIZES = [
   amount: ""
 }));
 
+// Fixed/Test Game uses these predetermined ticket numbers.
+// They are shown to the host before any player booking is received.
+const FIXED_TEST_WINNING_TICKETS = [9, 27, 30];
+
 const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_v2_";
 const DEFAULT_VOICE_PRESET_ID = "english";
 
@@ -3295,6 +3299,13 @@ const [
 
         selected_prizes:
           selectedPrizes,
+
+        // Keep the predetermined test tickets with the game so the
+        // Host Control Centre can display them immediately.
+        fixed_winning_tickets:
+          gameMode === "fixed"
+            ? FIXED_TEST_WINNING_TICKETS
+            : [],
 
         called_numbers:
           []
@@ -7964,6 +7975,22 @@ function HostControlPage({
       ? game.selected_prizes
       : [];
 
+  const fixedWinningTickets =
+    game.game_mode === "fixed"
+      ? (
+          Array.isArray(game.fixed_winning_tickets)
+            ? game.fixed_winning_tickets
+            : FIXED_TEST_WINNING_TICKETS
+        )
+          .map((number) => Number(number))
+          .filter(
+            (number) =>
+              Number.isInteger(number) &&
+              number >= 1 &&
+              number <= Math.max(90, Number(game.ticket_limit) || 100)
+          )
+      : [];
+
   const [
     bookings,
     setBookings
@@ -11452,6 +11479,58 @@ function HostControlPage({
               </div>
             </section>
           </div>
+        )}
+
+        {game.game_mode === "fixed" && (
+          <section
+            data-host-section="fixed-test-winning-tickets"
+            style={nextSectionStyle({
+              marginTop: 16
+            })}
+          >
+            <h2 style={{ marginTop: 0 }}>
+              Fixed/Test Winning Tickets
+            </h2>
+
+            <p
+              style={{
+                color: "var(--theme-muted, #64748b)",
+                marginTop: 0
+              }}
+            >
+              These are the predetermined winning ticket numbers for this test game.
+              They are available to the host before any player sends a booking request.
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 10,
+                marginTop: 12
+              }}
+            >
+              {fixedWinningTickets.map((ticketNumber) => (
+                <div
+                  key={`fixed-winning-ticket-${ticketNumber}`}
+                  style={{
+                    minWidth: 72,
+                    padding: "12px 16px",
+                    borderRadius: 12,
+                    textAlign: "center",
+                    fontSize: 20,
+                    fontWeight: 900,
+                    background: "var(--theme-panel-bg, #fff)",
+                    color: "var(--theme-accent, #2563eb)",
+                    border: "2px solid var(--theme-accent, #2563eb)",
+                    boxSizing: "border-box"
+                  }}
+                >
+                  #{ticketNumber}
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         <section
