@@ -44,6 +44,36 @@ function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
 }
 
+/* ---------------------------------------------------------
+   SAFE HOST GAME HYDRATION
+   Create Game can return a valid database row with optional/null fields.
+   Normalize those fields before HostControlPage renders so a malformed or
+   incomplete row cannot take the app to a blank screen.
+--------------------------------------------------------- */
+function normalizeHostGame(game) {
+  if (!game || typeof game !== "object") return null;
+
+  const safeTheme = THEMES.includes(game.theme)
+    ? game.theme
+    : "Classic";
+
+  return {
+    ...game,
+    theme: safeTheme,
+    game_name: game.game_name || DEFAULT_GAME_NAME,
+    game_code: String(game.game_code || "").trim().toUpperCase(),
+    status: game.status || "upcoming",
+    selected_prizes: Array.isArray(game.selected_prizes)
+      ? game.selected_prizes
+      : [],
+    called_numbers: Array.isArray(game.called_numbers)
+      ? game.called_numbers
+      : [],
+    ticket_limit: Math.max(1, Number(game.ticket_limit) || 100),
+    ticket_price: Number(game.ticket_price) || 0
+  };
+}
+
 /*
  * Section visual treatment: reuse the existing theme assets, but crop and
  * place them differently for successive sections. The content side remains
@@ -12455,12 +12485,19 @@ function App() {
           }
         : newGame;
 
+    const safeGame = normalizeHostGame(hydratedGame);
+
+    if (!safeGame) {
+      console.error("Create Game returned an invalid game row:", newGame);
+      return;
+    }
+
     setGame(
-      hydratedGame
+      safeGame
     );
 
     saveHostGame(
-      hydratedGame
+      safeGame
     );
 
     window.history.replaceState(
@@ -12636,10 +12673,17 @@ function App() {
   ------------------------------------------------------- */
 
   if (game) {
+    const safeHostGame = normalizeHostGame(game);
+
+    if (!safeHostGame) {
+      setGame(null);
+      return null;
+    }
+
     return (
       <HostControlPage
         game={
-          game
+          safeHostGame
         }
         onNewGame={
           handleNewGame
