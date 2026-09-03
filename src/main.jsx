@@ -3575,7 +3575,7 @@ const [
                 <div style={{ fontSize: 12, letterSpacing: 1.5, color: getThemeUI(theme).colors.accent, fontWeight: 800 }}>THEME PREVIEW</div>
                 <div style={{ fontSize: 20, fontWeight: 900, marginTop: 4 }}>{theme}</div>
                 <div style={{ marginBottom: "20px" }}>
-              <h3>ðŸŽ® Game Mode</h3>
+              <h3>Game Mode</h3>
 
               <div
                 style={{
@@ -3604,9 +3604,9 @@ const [
                     textAlign: "left"
                   }}
                 >
-                  <strong>ðŸŽ² Random Game</strong>
+                  <strong>Random Game</strong>
                   <div style={{ marginTop: "4px", opacity: 0.8 }}>
-                    Numbers are called randomly from 1â€“90.
+                    Numbers are called randomly from 1-90.
                   </div>
                 </button>
 
@@ -3628,7 +3628,7 @@ const [
                     textAlign: "left"
                   }}
                 >
-                  <strong>ðŸ§ª Fixed/Test Game</strong>
+                  <strong>Fixed/Test Game</strong>
                   <div style={{ marginTop: "4px", opacity: 0.8 }}>
                     Use this mode for controlled testing.
                   </div>
