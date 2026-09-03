@@ -509,6 +509,15 @@ function randomForFixedChoice(game, salt) {
   return seededRandom(seed)();
 }
 
+function normalizePrizeKey(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\s+/g, " ");
+}
+
 function getPrizePattern(name) {
   const key = normalizePrizeKey(name);
 
