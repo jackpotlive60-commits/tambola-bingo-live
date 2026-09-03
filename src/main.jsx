@@ -311,8 +311,6 @@ const DEFAULT_PRIZES = [
 // set of winning ticket numbers. The game code is used as the seed, so the
 // same game keeps the same assignments after refresh, while different games
 // get different assignments.
-// Fixed/Test mode: only Full House gets a predetermined ticket.
-// The ticket is deterministic per game, so the host can see it before booking.
 function generateFixedWinningAssignments(gameCode, prizes, ticketLimit) {
   const limit = Math.max(1, Math.min(100, Number(ticketLimit) || 100));
   const prizeList = Array.isArray(prizes) ? prizes : [];
@@ -322,12 +320,13 @@ function generateFixedWinningAssignments(gameCode, prizes, ticketLimit) {
 
   if (!fullHousePrize) return [];
 
+  const availableTickets = Array.from({ length: limit }, (_, index) => index + 1);
   const random = seededRandom(seedFromText(`fixed-test-full-house-${gameCode}`));
-  const ticket = 1 + Math.floor(random() * limit);
+  const shuffledTickets = shuffle(availableTickets, random);
 
   return [{
-    prizeName: fullHousePrize.name || "Full House",
-    ticketNumber: ticket
+    prizeName: fullHousePrize?.name || "Full House",
+    ticketNumber: shuffledTickets[0]
   }];
 }
 
@@ -336,27 +335,23 @@ function getFixedWinningAssignments(game) {
 
   const stored = game?.fixed_winning_tickets;
   if (Array.isArray(stored) && stored.length) {
-    const parsed = stored
-      .map((item, index) => {
-        if (item && typeof item === "object") {
-          return {
-            prizeName: item?.prizeName || item?.prize || `Prize ${index + 1}`,
-            ticketNumber: Number(item?.ticketNumber)
-          };
-        }
-        return {
-          prizeName: game?.selected_prizes?.[index]?.name || `Prize ${index + 1}`,
-          ticketNumber: Number(item)
-        };
-      })
-      .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
+    // New format: [{ prizeName, ticketNumber }]
+    if (stored.some((item) => item && typeof item === "object")) {
+      return stored
+        .map((item, index) => ({
+          prizeName: item?.prizeName || item?.prize || `Prize ${index + 1}`,
+          ticketNumber: Number(item?.ticketNumber)
+        }))
+        .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
+    }
 
-    // Older games may contain assignments for every prize.  Fixed/Test now
-    // reserves only Full House, so ignore all legacy non-Full-House entries.
-    const fullHouse = parsed.find(
-      (item) => getPrizePattern(item.prizeName) === "full_house"
-    );
-    if (fullHouse) return [fullHouse];
+    // Backwards compatibility with the previous [9, 27, 30] format.
+    return stored
+      .map((number, index) => ({
+        prizeName: game?.selected_prizes?.[index]?.name || `Prize ${index + 1}`,
+        ticketNumber: Number(number)
+      }))
+      .filter((item) => Number.isInteger(item.ticketNumber) && item.ticketNumber >= 1 && item.ticketNumber <= 100);
   }
 
   return generateFixedWinningAssignments(
@@ -366,156 +361,395 @@ function getFixedWinningAssignments(game) {
   );
 }
 
+/*
+  FIXED/TEST CALL SEQUENCE
+
+  In Fixed/Test mode only the Full House ticket shown in Host Control Centre
+  is predetermined. The caller uses a deterministic, randomized-looking
+  sequence that guarantees that ticket reaches Full House late in the game.
+
+  Only Full House is reserved for the assigned ticket. Other prizes use the
+  normal winner detection, so the assigned Full House ticket can also win an
+  earlier prize naturally.
+*/
 function getFixedPatternNumbers(grid, pattern) {
   const occupied = getOccupiedCells(grid);
+
   if (!occupied.length) return [];
-  if (pattern === "full_house") return occupied.map((cell) => cell.number);
+
+  if (pattern === "first_five") {
+    return occupied.slice(0, 5).map((cell) => cell.number);
+  }
+
+  if (
+    pattern === "top_line" ||
+    pattern === "middle_line" ||
+    pattern === "bottom_line"
+  ) {
+    const rowIndex =
+      pattern === "top_line"
+        ? 0
+        : pattern === "middle_line"
+        ? 1
+        : 2;
+
+    return occupied
+      .filter((cell) => cell.row === rowIndex)
+      .map((cell) => cell.number);
+  }
+
+  if (pattern === "four_corners") {
+    const top = occupied
+      .filter((cell) => cell.row === 0)
+      .sort((a, b) => a.column - b.column);
+    const bottom = occupied
+      .filter((cell) => cell.row === 2)
+      .sort((a, b) => a.column - b.column);
+
+    if (top.length < 2 || bottom.length < 2) return [];
+
+    return [
+      top[0].number,
+      top[top.length - 1].number,
+      bottom[0].number,
+      bottom[bottom.length - 1].number
+    ];
+  }
+
+  if (pattern === "full_house") {
+    return occupied.map((cell) => cell.number);
+  }
+
   return [];
 }
 
-function getBookedTicketNumbers(acceptedBookings) {
-  const set = new Set();
-  (acceptedBookings || []).forEach((booking) => {
-    (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : []).forEach((value) => {
-      const n = Number(value);
-      if (Number.isInteger(n) && n >= 1 && n <= 100) set.add(n);
-    });
-  });
-  return set;
-}
-
-function ticketWouldCompleteFullHouse(gameCode, ticketNumber, nextCalledNumbers) {
-  const grid = makeTicket(gameCode, Number(ticketNumber));
-  const required = getFixedPatternNumbers(grid, "full_house");
-  if (required.length !== 15) return false;
-  const called = new Set((nextCalledNumbers || []).map(Number));
-  return required.every((n) => called.has(Number(n)));
-}
-
-function getFixedFullHouseTarget(game) {
-  const assignment = getFixedWinningAssignments(game).find(
-    (item) => getPrizePattern(item?.prizeName) === "full_house"
-  );
-  return assignment?.ticketNumber ? Number(assignment.ticketNumber) : null;
-}
-
-/*
-  Fixed/Test calling engine.
-
-  Only the assigned Full House ticket is controlled. Its 15 numbers are
-  distributed through the draw: 8 by call 35, 14 by call 68, and the final
-  number in calls 69-75.  The exact positions are seeded per game and are
-  separated so the target never appears as a visible consecutive run.
-
-  Crucially, when the target ticket is booked, the engine is booking-aware:
-  it refuses a candidate number if that number would make another booked
-  ticket complete Full House before the assigned ticket. This makes the
-  assigned ticket the actual first Full House finisher rather than merely
-  hiding other winners after they have already completed.
-*/
 function generateFixedCallSequence(game) {
   if (game?.game_mode !== "fixed") return [];
-  const random = seededRandom(seedFromText(`fixed-call-sequence-${game?.game_code || "test-game"}`));
-  return shuffle(Array.from({ length: 90 }, (_, i) => i + 1), random);
-}
 
-function getNextFixedCallNumber(game, calledNumbers, acceptedBookings = []) {
-  const called = Array.isArray(calledNumbers) ? calledNumbers.map(Number) : [];
-  const calledSet = new Set(called);
-  const callNumber = called.length + 1;
-  const target = getFixedFullHouseTarget(game);
-  const accepted = Array.isArray(acceptedBookings)
-    ? acceptedBookings.filter((b) => b?.status === "accepted")
-    : [];
-
-  const targetBooked = accepted.some((booking) =>
-    (Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : [])
-      .some((n) => Number(n) === Number(target))
+  const random = seededRandom(
+    seedFromText(`fixed-call-sequence-${game?.game_code || "test-game"}`)
   );
 
-  const base = generateFixedCallSequence(game).filter((n) => !calledSet.has(Number(n)));
-  if (!base.length) return null;
+  /*
+   * Fixed/Test is a controlled simulation:
+   * - Only the Full House assignment is targeted.
+   * - The target ticket contributes 8 numbers in calls 1-35,
+   *   6 numbers in calls 36-68, and its final number in calls 69-75.
+   * - The target numbers are deliberately spaced out so they do not
+   *   appear as a consecutive block.
+   * - Every other number still appears exactly once in the 1-90 draw.
+   *
+   * This preserves a natural-looking draw while making the assigned
+   * Full House ticket reach its final number in the late-game window.
+   */
+  const assignments = getFixedWinningAssignments(game);
+  const fullHouseAssignment =
+    assignments.find(
+      (assignment) => getPrizePattern(assignment?.prizeName) === "full_house"
+    ) || null;
 
-  if (!target || !targetBooked) {
-    return base[0];
+  const targetTicketNumber = Number(fullHouseAssignment?.ticketNumber);
+  const hasTarget =
+    Number.isInteger(targetTicketNumber) &&
+    targetTicketNumber >= 1 &&
+    targetTicketNumber <= 100;
+
+  const targetGrid = hasTarget
+    ? makeTicket(
+        game?.game_code || "test-game",
+        targetTicketNumber
+      )
+    : null;
+
+  const targetNumbers = hasTarget
+    ? getFixedPatternNumbers(targetGrid, "full_house")
+        .map(Number)
+        .filter((n) => Number.isInteger(n) && n >= 1 && n <= 90)
+    : [];
+
+  if (targetNumbers.length !== 15) {
+    // Safe fallback if the fixed assignment is missing/corrupt.
+    return shuffle(
+      Array.from({ length: 90 }, (_, index) => index + 1),
+      random
+    );
   }
 
-  const targetGrid = makeTicket(game?.game_code || "test-game", target);
-  const targetNumbers = getFixedPatternNumbers(targetGrid, "full_house");
-  const targetRemaining = targetNumbers.filter((n) => !calledSet.has(Number(n)));
-  const targetCalledCount = targetNumbers.length - targetRemaining.length;
+  // We need 8 target numbers in calls 1-35, 6 in calls 36-68,
+  // and the final target number in calls 69-75.
+  const targetShuffled = shuffle([...targetNumbers], random);
+  const earlyTargets = targetShuffled.slice(0, 8);
+  const middleTargets = targetShuffled.slice(8, 14);
+  const finalTarget = targetShuffled[14];
 
-  // A target number is needed by the end of each stage.
-  const requiredBy35 = 8;
-  const requiredBy68 = 14;
-  const requiredBy75 = 15;
-  const mustAddTarget =
-    (callNumber <= 35 && targetCalledCount < requiredBy35 &&
-      targetCalledCount + (35 - callNumber + 1) >= requiredBy35) ||
-    (callNumber > 35 && callNumber <= 68 && targetCalledCount < requiredBy68 &&
-      targetCalledCount + (68 - callNumber + 1) >= requiredBy68) ||
-    (callNumber >= 69 && callNumber <= 75 && targetCalledCount < requiredBy75);
+  // Choose well-spaced slots inside each window.
+  // This prevents obvious consecutive target calls.
+  function chooseSpacedSlots(start, end, count) {
+    const candidates = Array.from(
+      { length: end - start + 1 },
+      (_, index) => start + index
+    );
 
-  const previousWasTarget = called.length > 0 && targetNumbers.includes(called[called.length - 1]);
+    let best = null;
+    let bestScore = -Infinity;
 
-  const targetCandidates = targetRemaining.filter((n) => base.includes(Number(n)));
-  const otherCandidates = base.filter((n) => !targetNumbers.includes(Number(n)));
+    // Deterministically try many randomized candidate sets and keep the
+    // one with the best minimum spacing.
+    for (let attempt = 0; attempt < 250; attempt += 1) {
+      const picked = shuffle([...candidates], random)
+        .slice(0, count)
+        .sort((a, b) => a - b);
 
-  const isUnsafeForOtherTicket = (candidate) => {
-    const next = [...called, Number(candidate)];
-    return accepted.some((booking) => {
-      const tickets = Array.isArray(booking.ticket_numbers) ? booking.ticket_numbers : [];
-      return tickets.some((ticket) => {
-        const ticketNumber = Number(ticket);
-        if (!Number.isInteger(ticketNumber) || ticketNumber === Number(target)) return false;
-        return ticketWouldCompleteFullHouse(game?.game_code || "test-game", ticketNumber, next);
-      });
-    });
-  };
+      let minGap = Infinity;
+      for (let i = 1; i < picked.length; i += 1) {
+        minGap = Math.min(minGap, picked[i] - picked[i - 1]);
+      }
 
-  const safeTarget = targetCandidates.filter((n) => !isUnsafeForOtherTicket(n));
-  const safeOther = otherCandidates.filter((n) => !isUnsafeForOtherTicket(n));
+      const edgePenalty =
+        (picked[0] === start ? 0.25 : 0) +
+        (picked[picked.length - 1] === end ? 0.25 : 0);
 
-  // At calls 69-75, finish the assigned ticket with a safe remaining number.
-  if (callNumber >= 69 && callNumber <= 75 && targetRemaining.length === 1) {
-    const finalTarget = safeTarget[0];
-    if (finalTarget !== undefined) return finalTarget;
+      const score = minGap - edgePenalty + random();
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = picked;
+      }
+    }
+
+    return best || [];
   }
 
-  // Meet the 8/14 milestones while avoiding an obvious back-to-back target run.
-  if (mustAddTarget && safeTarget.length && !(previousWasTarget && safeOther.length)) {
-    return safeTarget[Math.floor(randomForFixedChoice(game, callNumber) * safeTarget.length)];
+  const earlySlots = chooseSpacedSlots(1, 35, 8);
+  const middleSlots = chooseSpacedSlots(36, 68, 6);
+
+  // Final target call is deliberately somewhere in 69-75.
+  const finalSlot =
+    69 + Math.floor(random() * 7);
+
+  const targetAtPosition = new Map();
+
+  earlySlots.forEach((position, index) => {
+    targetAtPosition.set(position, earlyTargets[index]);
+  });
+
+  middleSlots.forEach((position, index) => {
+    targetAtPosition.set(position, middleTargets[index]);
+  });
+
+  targetAtPosition.set(finalSlot, finalTarget);
+
+  // Prevent target calls from being adjacent across the window boundary
+  // and around the final target when possible.
+  const targetPositions = [...targetAtPosition.keys()].sort((a, b) => a - b);
+  for (let i = 1; i < targetPositions.length; i += 1) {
+    const previous = targetPositions[i - 1];
+    const current = targetPositions[i];
+
+    if (current - previous <= 1) {
+      // Move the current target to a nearby unused slot in its same window.
+      const isFinal = current >= 69;
+      const rangeStart = isFinal ? 69 : current >= 36 ? 36 : 1;
+      const rangeEnd = isFinal ? 75 : current >= 36 ? 68 : 35;
+
+      const alternatives = Array.from(
+        { length: rangeEnd - rangeStart + 1 },
+        (_, index) => rangeStart + index
+      )
+        .filter(
+          (position) =>
+            !targetAtPosition.has(position) &&
+            Math.abs(position - previous) > 1
+        );
+
+      if (alternatives.length) {
+        const replacement =
+          alternatives[Math.floor(random() * alternatives.length)];
+        const value = targetAtPosition.get(current);
+        targetAtPosition.delete(current);
+        targetAtPosition.set(replacement, value);
+      }
+    }
   }
 
-  // During the final window, prefer the target if it is the only safe way to
-  // reach the guarantee. Otherwise keep the draw random-looking.
-  if (callNumber >= 69 && callNumber <= 75 && targetRemaining.length && safeTarget.length) {
-    return safeTarget[Math.floor(randomForFixedChoice(game, callNumber + 91) * safeTarget.length)];
+  const targetValues = new Set(targetNumbers);
+  const fillerNumbers = Array.from(
+    { length: 90 },
+    (_, index) => index + 1
+  ).filter((number) => !targetValues.has(number));
+
+  const shuffledFillers = shuffle(fillerNumbers, random);
+  const sequence = new Array(90);
+  let fillerIndex = 0;
+
+  for (let position = 1; position <= 90; position += 1) {
+    if (targetAtPosition.has(position)) {
+      sequence[position - 1] = targetAtPosition.get(position);
+    } else {
+      sequence[position - 1] = shuffledFillers[fillerIndex];
+      fillerIndex += 1;
+    }
   }
 
-  if (safeOther.length) {
-    return safeOther[Math.floor(randomForFixedChoice(game, callNumber) * safeOther.length)];
-  }
-
-  if (safeTarget.length) return safeTarget[0];
-
-  // Extremely rare fallback: every remaining candidate would complete a
-  // competing ticket. Prefer a non-target number and let the next call resolve it.
-  return base[0];
+  return sequence;
 }
 
-function randomForFixedChoice(game, salt) {
-  const seed = seedFromText(`fixed-choice-${game?.game_code || "test-game"}-${salt}`);
-  return seededRandom(seed)();
+
+function getNextFixedCallNumber(game, calledNumbers) {
+  const sequence = generateFixedCallSequence(game);
+  const calledSet = new Set(
+    Array.isArray(calledNumbers)
+      ? calledNumbers.map(Number)
+      : []
+  );
+
+  return (
+    sequence.find((number) => !calledSet.has(Number(number))) ??
+    null
+  );
 }
+
+const VOICE_SETTINGS_PREFIX = "tambolalive_voice_settings_v2_";
+const DEFAULT_VOICE_PRESET_ID = "english";
+
+const VOICE_PRESETS = [
+  {
+    id: "english",
+    label: "English (Default)",
+    rate: 0.88,
+    pitch: 1.0,
+    preferredLanguages: ["en-US", "en-GB", "en-IN"]
+  },
+  {
+    id: "auto",
+    label: "Auto / Best Available",
+    rate: 0.88,
+    pitch: 1.0,
+    preferredLanguages: ["en-US", "en-GB", "en-IN", "hi-IN"]
+  },
+  {
+    id: "indian",
+    label: "Indian English",
+    rate: 0.86,
+    pitch: 0.98,
+    preferredLanguages: ["en-IN", "hi-IN"]
+  },
+  {
+    id: "hinglish",
+    label: "Hindi / Hinglish",
+    rate: 0.84,
+    pitch: 0.98,
+    preferredLanguages: ["hi-IN", "en-IN"]
+  },
+  {
+    id: "cinema",
+    label: "Deep Cinema Announcer",
+    rate: 0.80,
+    pitch: 0.78,
+    preferredLanguages: ["en-IN", "hi-IN", "en-GB", "en-US"]
+  },
+  {
+    id: "bright",
+    label: "Bright Female Announcer",
+    rate: 0.90,
+    pitch: 1.18,
+    preferredLanguages: ["en-IN", "hi-IN", "en-US", "en-GB"]
+  }
+];
+
+function getVoiceSettingsKey(gameId) {
+  return `${VOICE_SETTINGS_PREFIX}${gameId || "default"}`;
+}
+
+function loadVoicePreset(gameId) {
+  try {
+    const saved = localStorage.getItem(getVoiceSettingsKey(gameId));
+    return VOICE_PRESETS.some((preset) => preset.id === saved) ? saved : DEFAULT_VOICE_PRESET_ID;
+  } catch {
+    return DEFAULT_VOICE_PRESET_ID;
+  }
+}
+
+function saveVoicePreset(gameId, presetId) {
+  try {
+    localStorage.setItem(getVoiceSettingsKey(gameId), presetId);
+  } catch (error) {
+    console.error("Could not save voice preference:", error);
+  }
+}
+
+function chooseSpeechVoice(voices, preset) {
+  if (!Array.isArray(voices) || !voices.length) return null;
+
+  const preferred = preset?.preferredLanguages || [];
+  const englishVoices = voices.filter((voice) =>
+    /^en(-|$)/i.test(String(voice.lang || ""))
+  );
+
+  const pool = preset?.id === "english" ? englishVoices : voices;
+  if (!pool.length) return null;
+
+  const byLanguage = pool.find((voice) =>
+    preferred.some((language) =>
+      String(voice.lang || "").toLowerCase() === language.toLowerCase()
+    )
+  );
+
+  if (byLanguage) return byLanguage;
+
+  return pool.find((voice) => /^en-US$/i.test(String(voice.lang || "")))
+    || pool.find((voice) => /^en-GB$/i.test(String(voice.lang || "")))
+    || pool.find((voice) => /^en-IN$/i.test(String(voice.lang || "")))
+    || pool[0]
+    || null;
+}
+
+function applySpeechVoice(utterance, presetId, voices) {
+  const preset =
+    VOICE_PRESETS.find((item) => item.id === presetId) ||
+    VOICE_PRESETS[0];
+
+  utterance.rate = preset.rate;
+  utterance.pitch = preset.pitch;
+  utterance.volume = 1;
+
+  // English is a hard default: never let the browser silently fall back
+  // to a Hindi/system voice when the voice list is still loading.
+  utterance.lang = preset.id === "english" ? "en-US" : (preset.preferredLanguages?.[0] || "en-US");
+
+  const selectedVoice = chooseSpeechVoice(voices, preset);
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+    if (preset.id === "english" && !/^en(-|$)/i.test(String(selectedVoice.lang || ""))) {
+      utterance.lang = "en-US";
+    } else {
+      utterance.lang = selectedVoice.lang;
+    }
+  }
+
+  return utterance;
+}
+
+function getAvailableSpeechVoices() {
+  try {
+    return "speechSynthesis" in window
+      ? window.speechSynthesis.getVoices() || []
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+/* =========================================================
+   BASIC HELPERS
+========================================================= */
 
 function normalizePrizeKey(name) {
   return String(name || "")
     .trim()
     .toLowerCase()
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201C\u201D]/g, '"')
-    .replace(/\s+/g, " ");
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function getPrizePattern(name) {
@@ -675,11 +909,13 @@ function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber,
         return;
       }
 
-      // Fixed/Test mode is deterministic: this prize is reserved for its
-      // predetermined ticket.  Random Game has no fixed ticket restriction.
-      // The fixed caller sequence guarantees that the assigned ticket gets
-      // all numbers required for this prize.
+      // Fixed/Test only reserves the predetermined ticket for Full House.
+      // All other prizes remain completely natural: the designated Full House
+      // ticket can also win First Five / Lines / Four Corners if its called
+      // numbers complete those patterns first.
+      const isFullHouse = pattern === "full_house";
       if (
+        isFullHouse &&
         fixedWinningTicketNumber !== null &&
         ticketNumber !== Number(fixedWinningTicketNumber)
       ) {
@@ -9427,13 +9663,19 @@ function HostControlPage({
           ? fixedAssignments.find((assignment) => assignment.prizeName === (prize.name || `Prize ${prizeIndex + 1}`))
           : null;
 
+      const prizePattern = getPrizePattern(prize?.name);
+      const fixedTicketForThisPrize =
+        prizePattern === "full_house"
+          ? fixedAssignment?.ticketNumber ?? null
+          : null;
+
       const winners = findPrizeWinners(
         prize,
         acceptedBookings,
         nextCalledNumbers,
         nextNumber,
         game.game_code,
-        fixedAssignment?.ticketNumber ?? null
+        fixedTicketForThisPrize
       );
 
       if (winners.length) {
@@ -9702,11 +9944,7 @@ function HostControlPage({
 
       const nextNumber =
         game.game_mode === "fixed"
-          ? getNextFixedCallNumber(
-              game,
-              currentCalled,
-              bookings.filter((booking) => booking.status === "accepted")
-            )
+          ? getNextFixedCallNumber(game, currentCalled)
           : remaining[Math.floor(Math.random() * remaining.length)];
 
       if (!Number.isInteger(Number(nextNumber))) {
