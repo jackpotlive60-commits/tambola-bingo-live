@@ -3386,227 +3386,151 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"] {
   text-rendering: optimizeLegibility;
 }
 
+
 /* =========================================================
-   NEW THEMES â€” DIAMOND / WINTER SNOW / SUMMER / SPRING / RESORT
-   ---------------------------------------------------------
-   These themes are CSS-native, so no new image assets are required.
-   They change the complete visual language: page atmosphere, cards,
-   sections, hero decoration, controls, buttons and status surfaces.
+   ADDITIONAL THEMES â€” DIAMOND / WINTER SNOW / SUMMER / SPRING / RESORT
+   CSS-only visual treatment. No new asset files required.
 ========================================================= */
 
 .tl-theme-diamond {
-  --theme-bg: #071c2b;
-  --theme-text: #f5fcff;
-  --theme-muted: #b9d7e8;
-  --theme-accent: #bdf5ff;
-  --theme-secondary: #68cbe5;
-  --theme-glow: #8fe8ff;
+  --theme-bg:#071c2b; --theme-text:#f5fcff; --theme-muted:#b9d7e8;
+  --theme-accent:#bdf5ff; --theme-secondary:#68cbe5; --theme-glow:#8fe8ff;
   --theme-page-background:
-    radial-gradient(circle at 12% 8%, rgba(189,245,255,.18), transparent 27%),
-    radial-gradient(circle at 88% 78%, rgba(104,203,229,.13), transparent 31%),
-    linear-gradient(145deg,#03121e 0%,#0b2a40 52%,#061521 100%);
-  --theme-card-bg: linear-gradient(145deg,rgba(18,55,76,.98),rgba(5,25,40,.99));
-  --theme-panel-bg: linear-gradient(145deg,rgba(24,67,88,.98),rgba(8,34,52,.99));
-  --theme-prize-bg: linear-gradient(135deg,rgba(34,83,104,.98),rgba(8,37,54,.99));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(41,96,117,.98),rgba(12,47,65,.99));
-  --theme-section-bg: linear-gradient(145deg,rgba(18,55,76,.88),rgba(5,25,40,.94));
-  --theme-card-border: 1px solid rgba(143,232,255,.52);
-  --theme-section-border: 1px solid rgba(143,232,255,.48);
-  --theme-panel-border: 1px solid rgba(143,232,255,.68);
-  --theme-card-shadow: 0 18px 44px rgba(0,18,32,.34),0 0 24px rgba(143,232,255,.07);
-  --theme-section-shadow: 0 14px 34px rgba(0,18,32,.30),0 0 20px rgba(143,232,255,.06);
-  --theme-hero-bg: rgba(10,35,52,.88);
-  --theme-hero-border: rgba(143,232,255,.68);
-  --theme-input-bg: #f5fcff;
-  --theme-input-text: #10212b;
-  --theme-input-radius: 10px;
-  --theme-button-radius: 10px;
-  --theme-primary-button: linear-gradient(135deg,#4aaed0,#b7f3ff);
-  --theme-button-text: #09202b;
-  --theme-primary-border: 1px solid #8fe8ff;
-  --theme-secondary-border: 1px solid rgba(143,232,255,.52);
-  --theme-button-shadow: 0 10px 24px rgba(0,80,110,.22);
-  --theme-status-live: linear-gradient(135deg,#0e7490,#155e75);
-  --theme-status-ended: linear-gradient(135deg,#475569,#334155);
-  --theme-status-upcoming: linear-gradient(135deg,#64748b,#475569);
-  --theme-hero-art: radial-gradient(circle at 72% 28%,rgba(255,255,255,.92) 0 1.5%,transparent 1.9%),radial-gradient(circle at 82% 52%,rgba(189,245,255,.72) 0 2%,transparent 2.5%),linear-gradient(135deg,transparent 35%,rgba(255,255,255,.12) 36% 38%,transparent 39% 58%,rgba(189,245,255,.16) 59% 61%,transparent 62%);
-  --theme-section-art: radial-gradient(circle at 88% 16%,rgba(189,245,255,.14) 0 3%,transparent 3.5%),linear-gradient(135deg,transparent 72%,rgba(189,245,255,.10) 73% 74%,transparent 75%);
+    radial-gradient(circle at 12% 8%,rgba(189,245,255,.18),transparent 27%),
+    radial-gradient(circle at 88% 78%,rgba(104,203,229,.13),transparent 31%),
+    linear-gradient(145deg,#03121e,#0b2a40 52%,#061521);
+  --theme-card-bg:linear-gradient(145deg,rgba(18,55,76,.98),rgba(5,25,40,.99));
+  --theme-panel-bg:linear-gradient(145deg,rgba(24,67,88,.98),rgba(8,34,52,.99));
+  --theme-prize-bg:linear-gradient(135deg,rgba(34,83,104,.98),rgba(8,37,54,.99));
+  --theme-secondary-bg:linear-gradient(135deg,rgba(41,96,117,.98),rgba(12,47,65,.99));
+  --theme-section-bg:linear-gradient(145deg,rgba(18,55,76,.88),rgba(5,25,40,.94));
+  --theme-card-border:1px solid rgba(143,232,255,.52);
+  --theme-section-border:1px solid rgba(143,232,255,.48);
+  --theme-panel-border:1px solid rgba(143,232,255,.68);
+  --theme-card-shadow:0 18px 44px rgba(0,18,32,.34),0 0 24px rgba(143,232,255,.08);
+  --theme-section-shadow:0 14px 34px rgba(0,18,32,.28),0 0 18px rgba(143,232,255,.06);
+  --theme-card-radius:18px; --theme-input-radius:10px; --theme-button-radius:10px;
+  --theme-primary-button:linear-gradient(135deg,#4aaed0,#b7f3ff);
+  --theme-button-text:#09202b; --theme-primary-border:1px solid #4aaed0;
+  --theme-secondary-border:1px solid rgba(143,232,255,.50);
+  --theme-button-shadow:0 10px 24px rgba(0,80,110,.22);
+  --theme-hero-bg:rgba(10,35,52,.86); --theme-hero-border:rgba(143,232,255,.70);
 }
 
 .tl-theme-winter-snow {
-  --theme-bg: #102b3d;
-  --theme-text: #f7fcff;
-  --theme-muted: #c6dbe8;
-  --theme-accent: #dff8ff;
-  --theme-secondary: #9fd2e6;
-  --theme-glow: #d8f3ff;
+  --theme-bg:#102b3d; --theme-text:#f7fcff; --theme-muted:#c6dbe8;
+  --theme-accent:#dff8ff; --theme-secondary:#a9d8ec; --theme-glow:#d8f3ff;
   --theme-page-background:
-    radial-gradient(circle at 16% 10%,rgba(255,255,255,.18),transparent 24%),
-    radial-gradient(circle at 84% 70%,rgba(159,210,230,.15),transparent 30%),
-    linear-gradient(145deg,#081b2b 0%,#183c53 50%,#0a2334 100%);
-  --theme-card-bg: linear-gradient(145deg,rgba(36,69,91,.98),rgba(14,38,57,.99));
-  --theme-panel-bg: linear-gradient(145deg,rgba(49,84,106,.98),rgba(19,47,68,.99));
-  --theme-prize-bg: linear-gradient(135deg,rgba(62,101,124,.98),rgba(22,53,74,.99));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(77,117,139,.98),rgba(28,62,82,.99));
-  --theme-section-bg: linear-gradient(145deg,rgba(36,69,91,.88),rgba(14,38,57,.94));
-  --theme-card-border: 1px solid rgba(216,243,255,.48);
-  --theme-section-border: 1px solid rgba(216,243,255,.44);
-  --theme-panel-border: 1px solid rgba(216,243,255,.62);
-  --theme-card-shadow: 0 18px 44px rgba(3,24,40,.28),inset 0 1px 0 rgba(255,255,255,.12);
-  --theme-section-shadow: 0 14px 34px rgba(3,24,40,.25),inset 0 1px 0 rgba(255,255,255,.10);
-  --theme-hero-bg: rgba(24,52,72,.88);
-  --theme-hero-border: rgba(216,243,255,.64);
-  --theme-input-bg: #f7fcff;
-  --theme-input-text: #142b3b;
-  --theme-input-radius: 12px;
-  --theme-button-radius: 12px;
-  --theme-primary-button: linear-gradient(135deg,#6fa8c3,#dff8ff);
-  --theme-button-text: #102536;
-  --theme-primary-border: 1px solid #b8ddec;
-  --theme-secondary-border: 1px solid rgba(216,243,255,.48);
-  --theme-button-shadow: 0 10px 24px rgba(100,160,190,.20);
-  --theme-status-live: linear-gradient(135deg,#0f766e,#115e59);
-  --theme-status-ended: linear-gradient(135deg,#64748b,#475569);
-  --theme-status-upcoming: linear-gradient(135deg,#0369a1,#075985);
-  --theme-hero-art: radial-gradient(circle at 70% 22%,rgba(255,255,255,.92) 0 1.3%,transparent 1.7%),radial-gradient(circle at 80% 42%,rgba(255,255,255,.80) 0 1%,transparent 1.5%),radial-gradient(circle at 63% 58%,rgba(255,255,255,.70) 0 1.2%,transparent 1.7%),radial-gradient(circle at 87% 72%,rgba(255,255,255,.72) 0 1.4%,transparent 1.9%);
-  --theme-section-art: radial-gradient(circle at 88% 15%,rgba(255,255,255,.16) 0 1.2%,transparent 1.8%),radial-gradient(circle at 76% 34%,rgba(255,255,255,.12) 0 1%,transparent 1.6%),radial-gradient(circle at 92% 70%,rgba(255,255,255,.13) 0 1.4%,transparent 2%);
+    radial-gradient(circle at 18% 8%,rgba(223,248,255,.20),transparent 28%),
+    radial-gradient(circle at 84% 24%,rgba(255,255,255,.12),transparent 26%),
+    linear-gradient(145deg,#081d2c,#244b63 55%,#0a2233);
+  --theme-card-bg:linear-gradient(145deg,rgba(36,69,91,.98),rgba(14,38,57,.99));
+  --theme-panel-bg:linear-gradient(145deg,rgba(49,84,106,.98),rgba(19,47,68,.99));
+  --theme-prize-bg:linear-gradient(135deg,rgba(62,101,124,.98),rgba(22,53,74,.99));
+  --theme-secondary-bg:linear-gradient(135deg,rgba(77,117,139,.98),rgba(28,62,82,.99));
+  --theme-section-bg:linear-gradient(145deg,rgba(36,69,91,.88),rgba(14,38,57,.94));
+  --theme-card-border:1px solid rgba(216,243,255,.55);
+  --theme-section-border:1px solid rgba(216,243,255,.48);
+  --theme-panel-border:1px solid rgba(216,243,255,.65);
+  --theme-card-shadow:0 18px 44px rgba(3,24,40,.28),inset 0 1px 0 rgba(255,255,255,.12);
+  --theme-section-shadow:0 14px 34px rgba(3,24,40,.24),inset 0 1px 0 rgba(255,255,255,.10);
+  --theme-card-radius:22px; --theme-input-radius:12px; --theme-button-radius:12px;
+  --theme-primary-button:linear-gradient(135deg,#6fa8c3,#dff8ff);
+  --theme-button-text:#102536; --theme-primary-border:1px solid #8cc9e1;
+  --theme-secondary-border:1px solid rgba(216,243,255,.50);
+  --theme-button-shadow:0 10px 24px rgba(100,160,190,.20);
+  --theme-hero-bg:rgba(24,52,72,.84); --theme-hero-border:rgba(216,243,255,.72);
 }
 
 .tl-theme-summer {
-  --theme-bg: #07505a;
-  --theme-text: #fffdf7;
-  --theme-muted: #d9f1ed;
-  --theme-accent: #ffd166;
-  --theme-secondary: #62d3c9;
-  --theme-glow: #ffd166;
+  --theme-bg:#063d47; --theme-text:#fffdf7; --theme-muted:#d9f1ed;
+  --theme-accent:#ffd166; --theme-secondary:#6ed7cf; --theme-glow:#ffd166;
   --theme-page-background:
-    radial-gradient(circle at 12% 8%,rgba(255,209,102,.20),transparent 26%),
-    radial-gradient(circle at 88% 80%,rgba(98,211,201,.17),transparent 32%),
-    linear-gradient(145deg,#04353e 0%,#08717a 52%,#053b43 100%);
-  --theme-card-bg: linear-gradient(145deg,rgba(10,78,88,.98),rgba(3,47,56,.99));
-  --theme-panel-bg: linear-gradient(145deg,rgba(12,96,100,.98),rgba(5,57,65,.99));
-  --theme-prize-bg: linear-gradient(135deg,rgba(20,111,110,.98),rgba(7,65,70,.99));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(33,128,119,.98),rgba(8,77,79,.99));
-  --theme-section-bg: linear-gradient(145deg,rgba(10,78,88,.88),rgba(3,47,56,.94));
-  --theme-card-border: 1px solid rgba(255,209,102,.48);
-  --theme-section-border: 1px solid rgba(255,209,102,.42);
-  --theme-panel-border: 1px solid rgba(255,209,102,.62);
-  --theme-card-shadow: 0 18px 42px rgba(0,30,34,.28),0 0 18px rgba(255,209,102,.05);
-  --theme-section-shadow: 0 14px 34px rgba(0,30,34,.25),0 0 18px rgba(255,209,102,.04);
-  --theme-hero-bg: rgba(7,67,76,.88);
-  --theme-hero-border: rgba(255,209,102,.62);
-  --theme-input-bg: #fffdf6;
-  --theme-input-text: #17343a;
-  --theme-input-radius: 12px;
-  --theme-button-radius: 12px;
-  --theme-primary-button: linear-gradient(135deg,#f2a93b,#ffd166);
-  --theme-button-text: #38200b;
-  --theme-primary-border: 1px solid #ffd166;
-  --theme-secondary-border: 1px solid rgba(255,209,102,.48);
-  --theme-button-shadow: 0 10px 22px rgba(190,110,25,.22);
-  --theme-status-live: linear-gradient(135deg,#15803d,#166534);
-  --theme-status-ended: linear-gradient(135deg,#475569,#334155);
-  --theme-status-upcoming: linear-gradient(135deg,#b45309,#92400e);
-  --theme-hero-art: radial-gradient(circle at 78% 24%,rgba(255,209,102,.28),transparent 18%),radial-gradient(circle at 82% 28%,rgba(255,255,255,.18),transparent 3%),linear-gradient(125deg,transparent 48%,rgba(255,255,255,.08) 49% 51%,transparent 52%);
-  --theme-section-art: radial-gradient(circle at 88% 14%,rgba(255,209,102,.14),transparent 16%),linear-gradient(135deg,transparent 72%,rgba(98,211,201,.12) 73% 75%,transparent 76%);
+    radial-gradient(circle at 15% 8%,rgba(255,209,102,.18),transparent 28%),
+    radial-gradient(circle at 85% 82%,rgba(110,215,207,.16),transparent 30%),
+    linear-gradient(145deg,#032a32,#08707a 55%,#06363d);
+  --theme-card-bg:linear-gradient(145deg,rgba(10,78,88,.98),rgba(3,47,56,.99));
+  --theme-panel-bg:linear-gradient(145deg,rgba(12,96,100,.98),rgba(5,57,65,.99));
+  --theme-prize-bg:linear-gradient(135deg,rgba(20,111,110,.98),rgba(7,65,70,.99));
+  --theme-secondary-bg:linear-gradient(135deg,rgba(33,128,119,.98),rgba(8,77,79,.99));
+  --theme-section-bg:linear-gradient(145deg,rgba(10,78,88,.88),rgba(3,47,56,.94));
+  --theme-card-border:1px solid rgba(255,209,102,.55);
+  --theme-section-border:1px solid rgba(255,209,102,.45);
+  --theme-panel-border:1px solid rgba(255,209,102,.62);
+  --theme-card-shadow:0 18px 42px rgba(0,30,34,.28),0 0 20px rgba(255,209,102,.06);
+  --theme-section-shadow:0 14px 34px rgba(0,30,34,.24);
+  --theme-card-radius:20px; --theme-input-radius:12px; --theme-button-radius:12px;
+  --theme-primary-button:linear-gradient(135deg,#f2a93b,#ffd166);
+  --theme-button-text:#38200b; --theme-primary-border:1px solid #f2b84c;
+  --theme-secondary-border:1px solid rgba(255,209,102,.50);
+  --theme-button-shadow:0 10px 22px rgba(190,110,25,.22);
+  --theme-hero-bg:rgba(7,67,76,.84); --theme-hero-border:rgba(255,209,102,.68);
 }
 
 .tl-theme-spring {
-  --theme-bg: #174a37;
-  --theme-text: #f8fff9;
-  --theme-muted: #d4ebdb;
-  --theme-accent: #f5b7cf;
-  --theme-secondary: #9bcdb0;
-  --theme-glow: #f5b7cf;
+  --theme-bg:#103f2f; --theme-text:#fbfffc; --theme-muted:#d4ebdb;
+  --theme-accent:#f5b7cf; --theme-secondary:#9bd5b3; --theme-glow:#f5b7cf;
   --theme-page-background:
-    radial-gradient(circle at 14% 9%,rgba(245,183,207,.18),transparent 27%),
-    radial-gradient(circle at 86% 78%,rgba(155,205,176,.16),transparent 31%),
-    linear-gradient(145deg,#0a2a1d 0%,#1b5a41 52%,#0b3022 100%);
-  --theme-card-bg: linear-gradient(145deg,rgba(30,79,59,.98),rgba(12,48,35,.99));
-  --theme-panel-bg: linear-gradient(145deg,rgba(44,98,72,.98),rgba(18,58,43,.99));
-  --theme-prize-bg: linear-gradient(135deg,rgba(58,116,82,.98),rgba(20,64,46,.99));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(76,132,96,.98),rgba(28,74,53,.99));
-  --theme-section-bg: linear-gradient(145deg,rgba(30,79,59,.88),rgba(12,48,35,.94));
-  --theme-card-border: 1px solid rgba(245,183,207,.46);
-  --theme-section-border: 1px solid rgba(245,183,207,.40);
-  --theme-panel-border: 1px solid rgba(245,183,207,.58);
-  --theme-card-shadow: 0 18px 42px rgba(7,38,25,.26),inset 0 1px 0 rgba(255,255,255,.08);
-  --theme-section-shadow: 0 14px 34px rgba(7,38,25,.24),inset 0 1px 0 rgba(255,255,255,.06);
-  --theme-hero-bg: rgba(23,73,54,.88);
-  --theme-hero-border: rgba(245,183,207,.58);
-  --theme-input-bg: #fbfffc;
-  --theme-input-text: #18352a;
-  --theme-input-radius: 13px;
-  --theme-button-radius: 13px;
-  --theme-primary-button: linear-gradient(135deg,#d77fa5,#f5b7cf);
-  --theme-button-text: #351727;
-  --theme-primary-border: 1px solid #f5b7cf;
-  --theme-secondary-border: 1px solid rgba(245,183,207,.46);
-  --theme-button-shadow: 0 10px 24px rgba(120,55,90,.18);
-  --theme-status-live: linear-gradient(135deg,#15803d,#166534);
-  --theme-status-ended: linear-gradient(135deg,#64748b,#475569);
-  --theme-status-upcoming: linear-gradient(135deg,#be185d,#9d174d);
-  --theme-hero-art: radial-gradient(circle at 76% 24%,rgba(245,183,207,.32) 0 3%,transparent 3.6%),radial-gradient(circle at 86% 42%,rgba(155,205,176,.28) 0 3.5%,transparent 4.2%),radial-gradient(circle at 70% 66%,rgba(255,255,255,.16) 0 2%,transparent 2.8%);
-  --theme-section-art: radial-gradient(circle at 90% 16%,rgba(245,183,207,.14) 0 2.5%,transparent 3.2%),radial-gradient(circle at 82% 38%,rgba(155,205,176,.12) 0 2%,transparent 2.8%);
+    radial-gradient(circle at 12% 8%,rgba(245,183,207,.17),transparent 28%),
+    radial-gradient(circle at 88% 78%,rgba(155,213,179,.14),transparent 30%),
+    linear-gradient(145deg,#08291f,#205b42 55%,#0b3327);
+  --theme-card-bg:linear-gradient(145deg,rgba(30,79,59,.98),rgba(12,48,35,.99));
+  --theme-panel-bg:linear-gradient(145deg,rgba(44,98,72,.98),rgba(18,58,43,.99));
+  --theme-prize-bg:linear-gradient(135deg,rgba(58,116,82,.98),rgba(20,64,46,.99));
+  --theme-secondary-bg:linear-gradient(135deg,rgba(76,132,96,.98),rgba(28,74,53,.99));
+  --theme-section-bg:linear-gradient(145deg,rgba(30,79,59,.88),rgba(12,48,35,.94));
+  --theme-card-border:1px solid rgba(245,183,207,.54);
+  --theme-section-border:1px solid rgba(245,183,207,.45);
+  --theme-panel-border:1px solid rgba(245,183,207,.60);
+  --theme-card-shadow:0 18px 42px rgba(7,38,25,.26),inset 0 1px 0 rgba(255,255,255,.08);
+  --theme-section-shadow:0 14px 34px rgba(7,38,25,.22);
+  --theme-card-radius:22px; --theme-input-radius:13px; --theme-button-radius:13px;
+  --theme-primary-button:linear-gradient(135deg,#d77fa5,#f5b7cf);
+  --theme-button-text:#351727; --theme-primary-border:1px solid #d77fa5;
+  --theme-secondary-border:1px solid rgba(245,183,207,.50);
+  --theme-button-shadow:0 10px 24px rgba(120,55,90,.18);
+  --theme-hero-bg:rgba(23,73,54,.84); --theme-hero-border:rgba(245,183,207,.65);
 }
 
 .tl-theme-resort {
-  --theme-bg: #093b3f;
-  --theme-text: #f8fffd;
-  --theme-muted: #c8dfda;
-  --theme-accent: #e7c77a;
-  --theme-secondary: #72c8b6;
-  --theme-glow: #e7c77a;
+  --theme-bg:#073f42; --theme-text:#fbfffe; --theme-muted:#c8dfda;
+  --theme-accent:#e7c77a; --theme-secondary:#7fd0c2; --theme-glow:#e7c77a;
   --theme-page-background:
-    radial-gradient(circle at 10% 8%,rgba(231,199,122,.16),transparent 27%),
-    radial-gradient(circle at 88% 78%,rgba(114,200,182,.16),transparent 31%),
-    linear-gradient(145deg,#042a2d 0%,#0d5656 52%,#062f32 100%);
-  --theme-card-bg: linear-gradient(145deg,rgba(14,69,70,.98),rgba(6,40,43,.99));
-  --theme-panel-bg: linear-gradient(145deg,rgba(24,88,84,.98),rgba(10,53,56,.99));
-  --theme-prize-bg: linear-gradient(135deg,rgba(36,105,97,.98),rgba(12,60,62,.99));
-  --theme-secondary-bg: linear-gradient(135deg,rgba(52,119,105,.98),rgba(15,68,66,.99));
-  --theme-section-bg: linear-gradient(145deg,rgba(14,69,70,.88),rgba(6,40,43,.94));
-  --theme-card-border: 1px solid rgba(214,179,106,.50);
-  --theme-section-border: 1px solid rgba(214,179,106,.44);
-  --theme-panel-border: 1px solid rgba(214,179,106,.64);
-  --theme-card-shadow: 0 18px 44px rgba(0,27,29,.32),inset 0 1px 0 rgba(255,255,255,.07);
-  --theme-section-shadow: 0 14px 34px rgba(0,27,29,.28),inset 0 1px 0 rgba(255,255,255,.06);
-  --theme-hero-bg: rgba(9,57,61,.88);
-  --theme-hero-border: rgba(214,179,106,.62);
-  --theme-input-bg: #f8fffd;
-  --theme-input-text: #153536;
-  --theme-input-radius: 11px;
-  --theme-button-radius: 11px;
-  --theme-primary-button: linear-gradient(135deg,#c89d4a,#e7c77a);
-  --theme-button-text: #251b0c;
-  --theme-primary-border: 1px solid #d6b36a;
-  --theme-secondary-border: 1px solid rgba(214,179,106,.50);
-  --theme-button-shadow: 0 10px 24px rgba(120,85,25,.22);
-  --theme-status-live: linear-gradient(135deg,#15803d,#166534);
-  --theme-status-ended: linear-gradient(135deg,#475569,#334155);
-  --theme-status-upcoming: linear-gradient(135deg,#a16207,#854d0e);
-  --theme-hero-art: radial-gradient(ellipse at 82% 18%,rgba(231,199,122,.20),transparent 18%),linear-gradient(118deg,transparent 42%,rgba(114,200,182,.13) 43% 48%,transparent 49%),radial-gradient(ellipse at 78% 78%,rgba(114,200,182,.14),transparent 22%);
-  --theme-section-art: radial-gradient(ellipse at 90% 12%,rgba(231,199,122,.12),transparent 18%),linear-gradient(125deg,transparent 74%,rgba(114,200,182,.11) 75% 78%,transparent 79%);
+    radial-gradient(circle at 12% 8%,rgba(231,199,122,.15),transparent 28%),
+    radial-gradient(circle at 88% 80%,rgba(127,208,194,.15),transparent 30%),
+    linear-gradient(145deg,#052c30,#0b5b5c 55%,#06383b);
+  --theme-card-bg:linear-gradient(145deg,rgba(14,69,70,.98),rgba(6,40,43,.99));
+  --theme-panel-bg:linear-gradient(145deg,rgba(24,88,84,.98),rgba(10,53,56,.99));
+  --theme-prize-bg:linear-gradient(135deg,rgba(36,105,97,.98),rgba(12,60,62,.99));
+  --theme-secondary-bg:linear-gradient(135deg,rgba(52,119,105,.98),rgba(15,68,66,.99));
+  --theme-section-bg:linear-gradient(145deg,rgba(14,69,70,.88),rgba(6,40,43,.94));
+  --theme-card-border:1px solid rgba(214,179,106,.55);
+  --theme-section-border:1px solid rgba(214,179,106,.45);
+  --theme-panel-border:1px solid rgba(214,179,106,.62);
+  --theme-card-shadow:0 18px 44px rgba(0,27,29,.30),inset 0 1px 0 rgba(255,255,255,.08);
+  --theme-section-shadow:0 14px 34px rgba(0,27,29,.24);
+  --theme-card-radius:18px; --theme-input-radius:11px; --theme-button-radius:11px;
+  --theme-primary-button:linear-gradient(135deg,#c89d4a,#e7c77a);
+  --theme-button-text:#251b0c; --theme-primary-border:1px solid #c89d4a;
+  --theme-secondary-border:1px solid rgba(214,179,106,.50);
+  --theme-button-shadow:0 10px 24px rgba(120,85,25,.22);
+  --theme-hero-bg:rgba(9,57,61,.86); --theme-hero-border:rgba(214,179,106,.68);
 }
 
-/* New-theme shared finishing pass. */
-.tl-theme-diamond .tl-theme-hero,
-.tl-theme-winter-snow .tl-theme-hero,
-.tl-theme-summer .tl-theme-hero,
-.tl-theme-spring .tl-theme-hero,
-.tl-theme-resort .tl-theme-hero {
-  border-radius: var(--theme-card-radius) !important;
-}
-
-.tl-theme-diamond .tl-theme-hero-art,
-.tl-theme-winter-snow .tl-theme-hero-art,
-.tl-theme-summer .tl-theme-hero-art,
-.tl-theme-spring .tl-theme-hero-art,
-.tl-theme-resort .tl-theme-hero-art {
-  background-repeat: no-repeat;
-  background-position: right center;
-  background-size: contain;
-  opacity: .82;
+/* Shared additional-theme atmospheric details. */
+.tl-theme-diamond .tl-theme-hero::before,
+.tl-theme-winter-snow .tl-theme-hero::before,
+.tl-theme-summer .tl-theme-hero::before,
+.tl-theme-spring .tl-theme-hero::before,
+.tl-theme-resort .tl-theme-hero::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 82% 18%,rgba(255,255,255,.10),transparent 18%),
+    radial-gradient(circle at 92% 82%,rgba(255,255,255,.06),transparent 22%);
+  z-index:0;
 }
 
 .tl-theme-diamond main > section,
@@ -3624,42 +3548,8 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"] {
 .tl-theme-resort main > section,
 .tl-theme-resort main [data-host-section],
 .tl-theme-resort main [data-live-section] {
-  background: var(--theme-section-bg) !important;
-  background-image: var(--theme-section-art) !important;
-  background-repeat: no-repeat !important;
-  background-position: right bottom !important;
-  background-size: 280px auto !important;
-  border-color: var(--theme-section-border) !important;
-  box-shadow: var(--theme-section-shadow) !important;
-}
-
-@media (max-width: 600px) {
-  .tl-theme-diamond .tl-theme-hero-art,
-  .tl-theme-winter-snow .tl-theme-hero-art,
-  .tl-theme-summer .tl-theme-hero-art,
-  .tl-theme-spring .tl-theme-hero-art,
-  .tl-theme-resort .tl-theme-hero-art {
-    width: 52%;
-    opacity: .56;
-    background-size: contain;
-    background-position: right bottom;
-  }
-
-  .tl-theme-diamond main > section,
-  .tl-theme-diamond main [data-host-section],
-  .tl-theme-diamond main [data-live-section],
-  .tl-theme-winter-snow main > section,
-  .tl-theme-winter-snow main [data-host-section],
-  .tl-theme-winter-snow main [data-live-section],
-  .tl-theme-summer main > section,
-  .tl-theme-summer main [data-host-section],
-  .tl-theme-summer main [data-live-section],
-  .tl-theme-spring main > section,
-  .tl-theme-spring main [data-host-section],
-  .tl-theme-spring main [data-live-section],
-  .tl-theme-resort main > section,
-  .tl-theme-resort main [data-host-section],
-  .tl-theme-resort main [data-live-section] {
-    background-size: 190px auto !important;
-  }
+  background:var(--theme-section-bg) !important;
+  background-image:var(--theme-section-bg) !important;
+  border-color:var(--theme-section-border) !important;
+  box-shadow:var(--theme-section-shadow) !important;
 }
