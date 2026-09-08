@@ -3385,3 +3385,276 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"] {
   font-weight: 800;
   text-rendering: optimizeLegibility;
 }
+
+
+/* =========================================================
+   NEW THEMES â€” WINTER SNOW / SUMMER / SPRING / RESORT
+   ---------------------------------------------------------
+   Existing six themes above are intentionally untouched.
+   These four use their own palette, surface language and uploaded
+   transparent hero artwork.
+========================================================= */
+
+.tl-theme-winter-snow {
+  --theme-bg: #dfeef7;
+  --theme-text: #17324d;
+  --theme-muted: #55718a;
+  --theme-accent: #3b82b6;
+  --theme-secondary: #78b9d8;
+  --theme-glow: #78b9d8;
+  --theme-page-background:
+    radial-gradient(circle at 12% 8%, rgba(255,255,255,.92), transparent 28%),
+    radial-gradient(circle at 88% 82%, rgba(120,185,216,.20), transparent 32%),
+    linear-gradient(145deg,#d8eaf4,#f4f9fc 56%,#d6e8f3);
+  --theme-card-bg: linear-gradient(145deg,rgba(250,253,255,.98),rgba(229,241,249,.98));
+  --theme-panel-bg: linear-gradient(145deg,rgba(250,253,255,.99),rgba(231,242,250,.97));
+  --theme-prize-bg: linear-gradient(135deg,rgba(245,251,255,.99),rgba(218,235,246,.98));
+  --theme-secondary-bg: linear-gradient(135deg,rgba(239,248,253,.99),rgba(215,235,246,.98));
+  --theme-section-bg: linear-gradient(145deg,rgba(248,252,255,.94),rgba(227,240,249,.94));
+  --theme-card-border: 1px solid rgba(94,151,190,.48);
+  --theme-section-border: 1px solid rgba(94,151,190,.40);
+  --theme-panel-border: 1px solid rgba(94,151,190,.52);
+  --theme-card-shadow: 0 16px 36px rgba(48,82,108,.14),inset 0 1px 0 rgba(255,255,255,.90);
+  --theme-section-shadow: 0 12px 30px rgba(48,82,108,.12),inset 0 1px 0 rgba(255,255,255,.84);
+  --theme-panel-shadow: 0 14px 32px rgba(48,82,108,.14),inset 0 1px 0 rgba(255,255,255,.90);
+  --theme-input-bg: #fff;
+  --theme-input-text: #18344d;
+  --theme-input-border: 1px solid #8db8d5;
+  --theme-primary-button: linear-gradient(135deg,#3478a8,#78b9d8);
+  --theme-button-text: #fff;
+  --theme-primary-border: 1px solid #3478a8;
+  --theme-secondary-border: 1px solid rgba(94,151,190,.45);
+  --theme-hero-bg: rgba(246,251,255,.90);
+  --theme-hero-border: rgba(94,151,190,.52);
+  --theme-ticket-text: #18344d;
+  --theme-hero-art: url("/assets/winter-snow-hero-artwork.png");
+}
+
+.tl-theme-summer {
+  --theme-bg: #f6e7b8;
+  --theme-text: #173b42;
+  --theme-muted: #5d7475;
+  --theme-accent: #df7d22;
+  --theme-secondary: #4aa6a0;
+  --theme-glow: #f2b84b;
+  --theme-page-background:
+    radial-gradient(circle at 12% 8%, rgba(255,255,255,.82), transparent 28%),
+    radial-gradient(circle at 88% 78%, rgba(74,166,160,.18), transparent 32%),
+    linear-gradient(145deg,#f4e1a9,#fff8e4 54%,#d9eee8);
+  --theme-card-bg: linear-gradient(145deg,rgba(255,253,245,.98),rgba(237,248,244,.98));
+  --theme-panel-bg: linear-gradient(145deg,rgba(255,254,248,.99),rgba(231,247,242,.98));
+  --theme-prize-bg: linear-gradient(135deg,rgba(255,251,235,.99),rgba(231,246,241,.98));
+  --theme-secondary-bg: linear-gradient(135deg,rgba(255,247,224,.99),rgba(218,241,237,.98));
+  --theme-section-bg: linear-gradient(145deg,rgba(255,252,239,.95),rgba(229,245,240,.95));
+  --theme-card-border: 1px solid rgba(223,125,34,.45);
+  --theme-section-border: 1px solid rgba(74,166,160,.40);
+  --theme-panel-border: 1px solid rgba(223,125,34,.50);
+  --theme-card-shadow: 0 16px 36px rgba(112,83,39,.14),inset 0 1px 0 rgba(255,255,255,.90);
+  --theme-section-shadow: 0 12px 30px rgba(112,83,39,.12),inset 0 1px 0 rgba(255,255,255,.84);
+  --theme-panel-shadow: 0 14px 34px rgba(112,83,39,.14),inset 0 1px 0 rgba(255,255,255,.90);
+  --theme-input-bg: #fff;
+  --theme-input-text: #173b42;
+  --theme-input-border: 1px solid #4aa6a0;
+  --theme-primary-button: linear-gradient(135deg,#df7d22,#f2b84b);
+  --theme-button-text: #fff;
+  --theme-primary-border: 1px solid #df7d22;
+  --theme-secondary-border: 1px solid rgba(74,166,160,.45);
+  --theme-hero-bg: rgba(255,251,237,.92);
+  --theme-hero-border: rgba(223,125,34,.48);
+  --theme-ticket-text: #173b42;
+  --theme-hero-art: url("/assets/summer-hero-artwork.png");
+}
+
+.tl-theme-spring {
+  --theme-bg: #e8f0df;
+  --theme-text: #304437;
+  --theme-muted: #667a6b;
+  --theme-accent: #6e9560;
+  --theme-secondary: #b58e9e;
+  --theme-glow: #b58e9e;
+  --theme-page-background:
+    radial-gradient(circle at 10% 8%, rgba(255,255,255,.84), transparent 28%),
+    radial-gradient(circle at 88% 78%, rgba(181,142,158,.14), transparent 30%),
+    linear-gradient(145deg,#e2ecd8,#faf8ef 55%,#e7ddd7);
+  --theme-card-bg: linear-gradient(145deg,rgba(253,252,246,.98),rgba(235,244,228,.98));
+  --theme-panel-bg: linear-gradient(145deg,rgba(255,254,248,.99),rgba(237,245,231,.98));
+  --theme-prize-bg: linear-gradient(135deg,rgba(253,251,241,.99),rgba(231,241,224,.98));
+  --theme-secondary-bg: linear-gradient(135deg,rgba(250,246,241,.99),rgba(228,240,224,.98));
+  --theme-section-bg: linear-gradient(145deg,rgba(252,250,242,.95),rgba(232,242,226,.95));
+  --theme-card-border: 1px solid rgba(110,149,96,.43);
+  --theme-section-border: 1px solid rgba(110,149,96,.38);
+  --theme-panel-border: 1px solid rgba(110,149,96,.50);
+  --theme-card-shadow: 0 16px 35px rgba(65,84,56,.13),inset 0 1px 0 rgba(255,255,255,.92);
+  --theme-section-shadow: 0 12px 29px rgba(65,84,56,.11),inset 0 1px 0 rgba(255,255,255,.86);
+  --theme-panel-shadow: 0 14px 32px rgba(65,84,56,.13),inset 0 1px 0 rgba(255,255,255,.90);
+  --theme-input-bg: #fff;
+  --theme-input-text: #304437;
+  --theme-input-border: 1px solid #9ab18c;
+  --theme-primary-button: linear-gradient(135deg,#6e9560,#b58e9e);
+  --theme-button-text: #fff;
+  --theme-primary-border: 1px solid #6e9560;
+  --theme-secondary-border: 1px solid rgba(110,149,96,.42);
+  --theme-hero-bg: rgba(251,249,241,.93);
+  --theme-hero-border: rgba(110,149,96,.48);
+  --theme-ticket-text: #304437;
+  --theme-hero-art: url("/assets/spring-hero-artwork.png");
+}
+
+.tl-theme-resort {
+  --theme-bg: #d9eee9;
+  --theme-text: #214248;
+  --theme-muted: #617779;
+  --theme-accent: #138a8b;
+  --theme-secondary: #d0ad69;
+  --theme-glow: #d0ad69;
+  --theme-page-background:
+    radial-gradient(circle at 10% 8%, rgba(255,255,255,.86), transparent 28%),
+    radial-gradient(circle at 90% 80%, rgba(208,173,105,.14), transparent 30%),
+    linear-gradient(145deg,#d3ebe5,#f8f9ed 54%,#e9ddc5);
+  --theme-card-bg: linear-gradient(145deg,rgba(252,253,247,.98),rgba(231,245,241,.98));
+  --theme-panel-bg: linear-gradient(145deg,rgba(255,254,248,.99),rgba(229,244,240,.98));
+  --theme-prize-bg: linear-gradient(135deg,rgba(250,251,243,.99),rgba(224,242,237,.98));
+  --theme-secondary-bg: linear-gradient(135deg,rgba(248,247,235,.99),rgba(222,240,235,.98));
+  --theme-section-bg: linear-gradient(145deg,rgba(251,251,244,.95),rgba(226,243,239,.95));
+  --theme-card-border: 1px solid rgba(19,138,139,.40);
+  --theme-section-border: 1px solid rgba(19,138,139,.36);
+  --theme-panel-border: 1px solid rgba(19,138,139,.46);
+  --theme-card-shadow: 0 16px 36px rgba(45,86,81,.14),inset 0 1px 0 rgba(255,255,255,.92);
+  --theme-section-shadow: 0 12px 30px rgba(45,86,81,.11),inset 0 1px 0 rgba(255,255,255,.86);
+  --theme-panel-shadow: 0 14px 34px rgba(45,86,81,.14),inset 0 1px 0 rgba(255,255,255,.90);
+  --theme-input-bg: #fff;
+  --theme-input-text: #214248;
+  --theme-input-border: 1px solid #7ab5ae;
+  --theme-primary-button: linear-gradient(135deg,#138a8b,#d0ad69);
+  --theme-button-text: #fff;
+  --theme-primary-border: 1px solid #138a8b;
+  --theme-secondary-border: 1px solid rgba(19,138,139,.42);
+  --theme-hero-bg: rgba(248,250,241,.92);
+  --theme-hero-border: rgba(19,138,139,.44);
+  --theme-ticket-text: #214248;
+  --theme-hero-art: url("/assets/resort-hero-artwork.png");
+}
+
+/* New-theme page canvas: deliberately light and theme-specific, with no navy fallback. */
+.tl-theme-page.tl-theme-winter-snow,
+.tl-theme-page.tl-theme-summer,
+.tl-theme-page.tl-theme-spring,
+.tl-theme-page.tl-theme-resort {
+  background: var(--theme-page-background) !important;
+  background-image: var(--theme-page-background) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Inputs, selects and textareas follow the new theme palette. */
+.tl-theme-page.tl-theme-winter-snow input,
+.tl-theme-page.tl-theme-winter-snow select,
+.tl-theme-page.tl-theme-winter-snow textarea,
+.tl-theme-page.tl-theme-summer input,
+.tl-theme-page.tl-theme-summer select,
+.tl-theme-page.tl-theme-summer textarea,
+.tl-theme-page.tl-theme-spring input,
+.tl-theme-page.tl-theme-spring select,
+.tl-theme-page.tl-theme-spring textarea,
+.tl-theme-page.tl-theme-resort input,
+.tl-theme-page.tl-theme-resort select,
+.tl-theme-page.tl-theme-resort textarea {
+  background: var(--theme-input-bg) !important;
+  color: var(--theme-input-text) !important;
+  border-color: var(--theme-accent) !important;
+}
+
+/* New-theme sections/cards: light, premium surfaces instead of the old navy surfaces. */
+.tl-theme-page.tl-theme-winter-snow main > section,
+.tl-theme-page.tl-theme-winter-snow main [data-host-section],
+.tl-theme-page.tl-theme-winter-snow main [data-live-section],
+.tl-theme-page.tl-theme-winter-snow .tl-theme-section,
+.tl-theme-page.tl-theme-summer main > section,
+.tl-theme-page.tl-theme-summer main [data-host-section],
+.tl-theme-page.tl-theme-summer main [data-live-section],
+.tl-theme-page.tl-theme-summer .tl-theme-section,
+.tl-theme-page.tl-theme-spring main > section,
+.tl-theme-page.tl-theme-spring main [data-host-section],
+.tl-theme-page.tl-theme-spring main [data-live-section],
+.tl-theme-page.tl-theme-spring .tl-theme-section,
+.tl-theme-page.tl-theme-resort main > section,
+.tl-theme-page.tl-theme-resort main [data-host-section],
+.tl-theme-page.tl-theme-resort main [data-live-section],
+.tl-theme-page.tl-theme-resort .tl-theme-section {
+  background: var(--theme-section-bg) !important;
+  background-image: none !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-section-border) !important;
+  box-shadow: var(--theme-section-shadow) !important;
+}
+
+/* Hero artwork is a transparent layer integrated into the hero â€” never a contained rectangle. */
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero-art,
+.tl-theme-page.tl-theme-summer .tl-theme-hero-art,
+.tl-theme-page.tl-theme-spring .tl-theme-hero-art,
+.tl-theme-page.tl-theme-resort .tl-theme-hero-art {
+  top: -10% !important;
+  right: -4% !important;
+  width: 66% !important;
+  height: 120% !important;
+  background-size: contain !important;
+  background-position: right center !important;
+  background-repeat: no-repeat !important;
+  opacity: .98 !important;
+  filter: none !important;
+  -webkit-mask-image: linear-gradient(90deg,transparent 0%,rgba(0,0,0,.08) 12%,rgba(0,0,0,.72) 32%,#000 55%,#000 88%,rgba(0,0,0,.78) 100%) !important;
+  mask-image: linear-gradient(90deg,transparent 0%,rgba(0,0,0,.08) 12%,rgba(0,0,0,.72) 32%,#000 55%,#000 88%,rgba(0,0,0,.78) 100%) !important;
+}
+
+/* A very light content-side veil preserves readability without washing out the artwork. */
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero::before,
+.tl-theme-page.tl-theme-summer .tl-theme-hero::before,
+.tl-theme-page.tl-theme-spring .tl-theme-hero::before,
+.tl-theme-page.tl-theme-resort .tl-theme-hero::before {
+  background: linear-gradient(90deg,
+    color-mix(in srgb,var(--theme-hero-bg) 98%,transparent) 0%,
+    color-mix(in srgb,var(--theme-hero-bg) 90%,transparent) 30%,
+    color-mix(in srgb,var(--theme-hero-bg) 45%,transparent) 52%,
+    transparent 78%) !important;
+}
+
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero::after,
+.tl-theme-page.tl-theme-summer .tl-theme-hero::after,
+.tl-theme-page.tl-theme-spring .tl-theme-hero::after,
+.tl-theme-page.tl-theme-resort .tl-theme-hero::after {
+  background: linear-gradient(180deg,transparent 58%,rgba(255,255,255,.10) 100%) !important;
+}
+
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero-copy,
+.tl-theme-page.tl-theme-summer .tl-theme-hero-copy,
+.tl-theme-page.tl-theme-spring .tl-theme-hero-copy,
+.tl-theme-page.tl-theme-resort .tl-theme-hero-copy {
+  max-width: 55% !important;
+  color: var(--theme-text) !important;
+  text-shadow: 0 1px 1px rgba(255,255,255,.38);
+}
+
+/* Theme-specific hero edge treatments. */
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero { box-shadow: 0 16px 42px rgba(48,82,108,.14), inset 0 1px 0 rgba(255,255,255,.95) !important; }
+.tl-theme-page.tl-theme-summer .tl-theme-hero { box-shadow: 0 16px 42px rgba(112,83,39,.15), inset 0 1px 0 rgba(255,255,255,.95) !important; }
+.tl-theme-page.tl-theme-spring .tl-theme-hero { box-shadow: 0 16px 42px rgba(65,84,56,.14), inset 0 1px 0 rgba(255,255,255,.95) !important; }
+.tl-theme-page.tl-theme-resort .tl-theme-hero { box-shadow: 0 16px 42px rgba(45,86,81,.15), inset 0 1px 0 rgba(255,255,255,.95) !important; }
+
+@media (max-width: 600px) {
+  .tl-theme-page.tl-theme-winter-snow .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-summer .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-spring .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-resort .tl-theme-hero-art {
+    top: -2% !important;
+    right: -10% !important;
+    width: 68% !important;
+    height: 104% !important;
+    opacity: .96 !important;
+  }
+
+  .tl-theme-page.tl-theme-winter-snow .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-summer .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-spring .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-resort .tl-theme-hero-copy {
+    max-width: 66% !important;
+  }
+}
