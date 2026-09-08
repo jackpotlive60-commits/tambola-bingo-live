@@ -5249,7 +5249,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${game.getThemeClass(theme)}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${getThemeClass(theme)}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -7315,7 +7315,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${liveGame.getThemeClass(theme)}`} style={themedPageStyle}>
+      <main className={`tl-theme-page tl-theme-${getThemeClass(theme)}`} style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -7657,7 +7657,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${liveGame.getThemeClass(theme)}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${getThemeClass(theme)}`} style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
@@ -10329,7 +10329,7 @@ function HostControlPage({
 
   return (
     <main
-      className={`tl-theme-page tl-theme-${game.getThemeClass(theme)}`}
+      className={`tl-theme-page tl-theme-${getThemeClass(theme)}`}
       style={
         themedPageStyle
       }
