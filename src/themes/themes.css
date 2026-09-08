@@ -3658,3 +3658,102 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"] {
     max-width: 66% !important;
   }
 }
+
+/* =========================================================
+   NEW-THEME HERO ARTWORK â€” VISIBILITY / POSITION PASS v2
+   Only Winter Snow / Summer / Spring / Resort are changed here.
+   Existing six theme hero treatments remain untouched.
+========================================================= */
+
+/* Give the artwork a real visual presence on the light heroes.
+   The previous light veil was washing the transparent artwork out. */
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero-art,
+.tl-theme-page.tl-theme-summer .tl-theme-hero-art,
+.tl-theme-page.tl-theme-spring .tl-theme-hero-art,
+.tl-theme-page.tl-theme-resort .tl-theme-hero-art {
+  top: -3% !important;
+  right: -7% !important;
+  width: 74% !important;
+  height: 112% !important;
+  opacity: 1 !important;
+  background-size: 100% auto !important;
+  background-position: right center !important;
+  background-repeat: no-repeat !important;
+  filter: saturate(1.08) contrast(1.06) drop-shadow(0 10px 18px rgba(20,50,70,.10)) !important;
+  -webkit-mask-image: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0,0,0,.12) 10%,
+    rgba(0,0,0,.70) 25%,
+    #000 42%,
+    #000 92%,
+    rgba(0,0,0,.92) 100%) !important;
+  mask-image: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0,0,0,.12) 10%,
+    rgba(0,0,0,.70) 25%,
+    #000 42%,
+    #000 92%,
+    rgba(0,0,0,.92) 100%) !important;
+}
+
+/* Keep the text side clean, but stop bleaching the artwork. */
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero::before,
+.tl-theme-page.tl-theme-summer .tl-theme-hero::before,
+.tl-theme-page.tl-theme-spring .tl-theme-hero::before,
+.tl-theme-page.tl-theme-resort .tl-theme-hero::before {
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb,var(--theme-hero-bg) 100%,transparent) 0%,
+      color-mix(in srgb,var(--theme-hero-bg) 96%,transparent) 27%,
+      color-mix(in srgb,var(--theme-hero-bg) 54%,transparent) 46%,
+      color-mix(in srgb,var(--theme-hero-bg) 12%,transparent) 62%,
+      transparent 78%) !important;
+}
+
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero::after,
+.tl-theme-page.tl-theme-summer .tl-theme-hero::after,
+.tl-theme-page.tl-theme-spring .tl-theme-hero::after,
+.tl-theme-page.tl-theme-resort .tl-theme-hero::after {
+  background:
+    linear-gradient(180deg,
+      transparent 55%,
+      rgba(255,255,255,.025) 76%,
+      rgba(0,0,0,.06) 100%) !important;
+}
+
+/* Mobile: enlarge the artwork and push it toward the right/bottom so
+   the main visual is visible beside the copy instead of sitting behind it. */
+@media (max-width: 600px) {
+  .tl-theme-page.tl-theme-winter-snow .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-summer .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-spring .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-resort .tl-theme-hero-art {
+    top: 5% !important;
+    right: -16% !important;
+    width: 82% !important;
+    height: 106% !important;
+    opacity: 1 !important;
+    background-size: 100% auto !important;
+    background-position: right 58% !important;
+    filter: saturate(1.12) contrast(1.08) drop-shadow(0 9px 16px rgba(20,50,70,.10)) !important;
+    -webkit-mask-image: linear-gradient(90deg,
+      transparent 0%,
+      rgba(0,0,0,.16) 8%,
+      rgba(0,0,0,.74) 27%,
+      #000 45%,
+      #000 100%) !important;
+    mask-image: linear-gradient(90deg,
+      transparent 0%,
+      rgba(0,0,0,.16) 8%,
+      rgba(0,0,0,.74) 27%,
+      #000 45%,
+      #000 100%) !important;
+  }
+
+  .tl-theme-page.tl-theme-winter-snow .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-summer .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-spring .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-resort .tl-theme-hero-copy {
+    max-width: 62% !important;
+  }
+}
