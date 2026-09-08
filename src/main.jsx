@@ -4589,6 +4589,54 @@ function TicketGridComponent({
           selected: "linear-gradient(145deg, #28534d, #0b201e)",
           glow: "rgba(212,175,55,.34)"
         };
+      case "Winter Snow":
+        return {
+          shell: "linear-gradient(145deg, #d8edf8 0%, #9bcce3 100%)",
+          grid: "linear-gradient(145deg, #4e9fd0 0%, #176a9f 100%)",
+          empty: "#d9edf7",
+          line: "#8bc4e2",
+          text: "#12324a",
+          muted: "#176a9f",
+          player: "rgba(23,106,159,.12)",
+          selected: "linear-gradient(145deg, #216d9e, #0c3858)",
+          glow: "rgba(23,106,159,.28)"
+        };
+      case "Summer":
+        return {
+          shell: "linear-gradient(145deg, #fff0bd 0%, #f7cf72 100%)",
+          grid: "linear-gradient(145deg, #45aaa5 0%, #167b7b 100%)",
+          empty: "#e9f3e7",
+          line: "#66b8b2",
+          text: "#173b42",
+          muted: "#df7d22",
+          player: "rgba(223,125,34,.12)",
+          selected: "linear-gradient(145deg, #15807e, #0c4e52)",
+          glow: "rgba(223,125,34,.28)"
+        };
+      case "Spring":
+        return {
+          shell: "linear-gradient(145deg, #eef3df 0%, #c9ddbc 100%)",
+          grid: "linear-gradient(145deg, #82a96f 0%, #587e4f 100%)",
+          empty: "#edf3e7",
+          line: "#a6bf98",
+          text: "#304437",
+          muted: "#a35f79",
+          player: "rgba(163,95,121,.12)",
+          selected: "linear-gradient(145deg, #6f965f, #3f6240)",
+          glow: "rgba(163,95,121,.24)"
+        };
+      case "Resort":
+        return {
+          shell: "linear-gradient(145deg, #dff2ed 0%, #9ed6cb 100%)",
+          grid: "linear-gradient(145deg, #2bada8 0%, #137d7f 100%)",
+          empty: "#e7f2ed",
+          line: "#73bdb4",
+          text: "#214248",
+          muted: "#c0934e",
+          player: "rgba(192,147,78,.13)",
+          selected: "linear-gradient(145deg, #168b89, #0c575d)",
+          glow: "rgba(192,147,78,.26)"
+        };
       default:
         return {
           shell: "linear-gradient(145deg, #285a8d 0%, #122b49 100%)",
