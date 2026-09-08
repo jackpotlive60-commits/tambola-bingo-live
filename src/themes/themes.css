@@ -3782,3 +3782,210 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"] {
   .tl-theme-spring .tl-theme-hero::before { font-size:48px;letter-spacing:6px;bottom:-8px; }
   .tl-theme-resort .tl-theme-hero::before { font-size:125px;left:-18px;bottom:-42px; }
 }
+
+/* =========================================================
+   NEW THEME HERO ARTWORK â€” FINAL ASSET INTEGRATION
+   ---------------------------------------------------------
+   Uses the uploaded artwork files directly from public/assets.
+   Diamond is intentionally not included.
+
+   The artwork is treated as a visual layer inside the hero:
+   - no layout height is created by the image
+   - text remains above the artwork
+   - left side is softened so the artwork merges into the theme
+   - right side keeps the theme artwork recognizable
+========================================================= */
+
+.tl-theme-winter-snow,
+.tl-theme-winter-snow .tl-theme-page {
+  --theme-hero-art: url("/assets/winter-snow-hero-artwork.png");
+}
+
+.tl-theme-summer,
+.tl-theme-summer .tl-theme-page {
+  --theme-hero-art: url("/assets/summer-hero-artwork.png");
+}
+
+.tl-theme-spring,
+.tl-theme-spring .tl-theme-page {
+  --theme-hero-art: url("/assets/spring-hero-artwork.png");
+}
+
+.tl-theme-resort,
+.tl-theme-resort .tl-theme-page {
+  --theme-hero-art: url("/assets/resort-hero-artwork.png");
+}
+
+/* One consistent hero structure, with each theme receiving its own
+   colour veil below. */
+.tl-theme-winter-snow .tl-theme-hero,
+.tl-theme-summer .tl-theme-hero,
+.tl-theme-spring .tl-theme-hero,
+.tl-theme-resort .tl-theme-hero {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+.tl-theme-winter-snow .tl-theme-hero-art,
+.tl-theme-summer .tl-theme-hero-art,
+.tl-theme-spring .tl-theme-hero-art,
+.tl-theme-resort .tl-theme-hero-art {
+  position: absolute !important;
+  z-index: 1 !important;
+  top: -7% !important;
+  right: -9% !important;
+  width: 78% !important;
+  height: 114% !important;
+  background-image: var(--theme-hero-art) !important;
+  background-repeat: no-repeat !important;
+  background-position: right center !important;
+  background-size: contain !important;
+  pointer-events: none !important;
+  opacity: .88 !important;
+  filter: saturate(.98) contrast(1.01) brightness(.98) !important;
+  transform: none !important;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,.12) 12%,
+    rgba(0,0,0,.55) 28%,
+    rgba(0,0,0,.92) 45%,
+    #000 72%,
+    rgba(0,0,0,.94) 100%
+  ) !important;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,.12) 12%,
+    rgba(0,0,0,.55) 28%,
+    rgba(0,0,0,.92) 45%,
+    #000 72%,
+    rgba(0,0,0,.94) 100%
+  ) !important;
+}
+
+/* Text is always the top layer. */
+.tl-theme-winter-snow .tl-theme-hero-copy,
+.tl-theme-summer .tl-theme-hero-copy,
+.tl-theme-spring .tl-theme-hero-copy,
+.tl-theme-resort .tl-theme-hero-copy {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* ---------------------------------------------------------
+   WINTER SNOW â€” cool white veil
+--------------------------------------------------------- */
+.tl-theme-winter-snow .tl-theme-hero::before {
+  z-index: 2 !important;
+  background:
+    linear-gradient(90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb, var(--theme-hero-bg) 96%, transparent) 24%,
+      color-mix(in srgb, var(--theme-hero-bg) 72%, transparent) 43%,
+      color-mix(in srgb, var(--theme-hero-bg) 18%, transparent) 68%,
+      transparent 100%) !important;
+}
+.tl-theme-winter-snow .tl-theme-hero::after {
+  z-index: 3 !important;
+  background: radial-gradient(ellipse at 92% 52%, transparent 0%, transparent 48%, rgba(255,255,255,.10) 76%, rgba(220,240,249,.20) 100%) !important;
+}
+
+/* ---------------------------------------------------------
+   SUMMER â€” warm sunlight + turquoise merge
+--------------------------------------------------------- */
+.tl-theme-summer .tl-theme-hero-art {
+  filter: saturate(1.08) contrast(1.02) brightness(1.01) !important;
+}
+.tl-theme-summer .tl-theme-hero::before {
+  z-index: 2 !important;
+  background:
+    linear-gradient(90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb, var(--theme-hero-bg) 94%, transparent) 22%,
+      color-mix(in srgb, var(--theme-hero-bg) 66%, transparent) 43%,
+      color-mix(in srgb, var(--theme-hero-bg) 12%, transparent) 69%,
+      transparent 100%) !important;
+}
+.tl-theme-summer .tl-theme-hero::after {
+  z-index: 3 !important;
+  background: radial-gradient(ellipse at 88% 35%, rgba(255,214,92,.10), transparent 42%, rgba(13,137,133,.12) 100%) !important;
+}
+
+/* ---------------------------------------------------------
+   SPRING â€” soft garden-light merge
+--------------------------------------------------------- */
+.tl-theme-spring .tl-theme-hero-art {
+  filter: saturate(1.02) contrast(.98) brightness(1.01) !important;
+}
+.tl-theme-spring .tl-theme-hero::before {
+  z-index: 2 !important;
+  background:
+    linear-gradient(90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb, var(--theme-hero-bg) 95%, transparent) 24%,
+      color-mix(in srgb, var(--theme-hero-bg) 70%, transparent) 44%,
+      color-mix(in srgb, var(--theme-hero-bg) 14%, transparent) 70%,
+      transparent 100%) !important;
+}
+.tl-theme-spring .tl-theme-hero::after {
+  z-index: 3 !important;
+  background: radial-gradient(ellipse at 90% 48%, rgba(255,255,255,.16), transparent 45%, rgba(201,111,145,.07) 100%) !important;
+}
+
+/* ---------------------------------------------------------
+   RESORT â€” champagne sunlight + teal merge
+--------------------------------------------------------- */
+.tl-theme-resort .tl-theme-hero-art {
+  filter: saturate(1.03) contrast(1.01) brightness(1.01) !important;
+}
+.tl-theme-resort .tl-theme-hero::before {
+  z-index: 2 !important;
+  background:
+    linear-gradient(90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb, var(--theme-hero-bg) 95%, transparent) 24%,
+      color-mix(in srgb, var(--theme-hero-bg) 68%, transparent) 43%,
+      color-mix(in srgb, var(--theme-hero-bg) 12%, transparent) 69%,
+      transparent 100%) !important;
+}
+.tl-theme-resort .tl-theme-hero::after {
+  z-index: 3 !important;
+  background: radial-gradient(ellipse at 90% 36%, rgba(255,220,140,.13), transparent 43%, rgba(22,127,123,.10) 100%) !important;
+}
+
+/* Mobile: keep the hero compact while making the artwork large enough
+   to remain recognizable. */
+@media (max-width: 600px) {
+  .tl-theme-winter-snow .tl-theme-hero-art,
+  .tl-theme-summer .tl-theme-hero-art,
+  .tl-theme-spring .tl-theme-hero-art,
+  .tl-theme-resort .tl-theme-hero-art {
+    top: -2% !important;
+    right: -18% !important;
+    width: 88% !important;
+    height: 112% !important;
+    background-position: right center !important;
+    background-size: contain !important;
+    opacity: .86 !important;
+  }
+
+  .tl-theme-winter-snow .tl-theme-hero-copy,
+  .tl-theme-summer .tl-theme-hero-copy,
+  .tl-theme-spring .tl-theme-hero-copy,
+  .tl-theme-resort .tl-theme-hero-copy {
+    max-width: 61% !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .tl-theme-winter-snow .tl-theme-hero-art,
+  .tl-theme-summer .tl-theme-hero-art,
+  .tl-theme-spring .tl-theme-hero-art,
+  .tl-theme-resort .tl-theme-hero-art {
+    right: -24% !important;
+    width: 96% !important;
+    opacity: .84 !important;
+  }
+}
