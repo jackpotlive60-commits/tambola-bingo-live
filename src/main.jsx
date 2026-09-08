@@ -28,7 +28,11 @@ const THEMES = [
   "Party",
   "Bollywood",
   "Neon",
-  "Elegant"
+  "Elegant",
+  "Winter Snow",
+  "Summer",
+  "Spring",
+  "Resort"
 ];
 
 const THEME_LOGOS = {
@@ -42,6 +46,14 @@ const THEME_LOGOS = {
 
 function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
+}
+
+function getThemeClass(theme) {
+  return String(theme || "Classic")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 /*
@@ -287,6 +299,146 @@ const THEME_DESIGNS = {
       "primaryAlt": "#d1b56a",
       "text": "#ffffff",
       "radius": 12
+    }
+  },
+  "Winter Snow": {
+    "backgroundImage": "",
+    "identity": "Luxury winter lodge, ice and fresh snowfall",
+    "page": {
+      "overlay": "rgba(229, 239, 248, 0.04)",
+      "text": "#17324d",
+      "muted": "#55718a"
+    },
+    "hero": {
+      "surface": "rgba(246, 251, 255, 0.90)",
+      "border": "#9fc7e5",
+      "accent": "#3b82b6",
+      "text": "#16324b",
+      "decoration": "winter-snow"
+    },
+    "card": {
+      "surface": "rgba(247, 251, 255, 0.94)",
+      "surfaceAlt": "rgba(232, 242, 250, 0.88)",
+      "border": "rgba(126, 174, 207, 0.55)",
+      "radius": 18,
+      "shadow": "0 18px 45px rgba(48, 82, 108, 0.16)"
+    },
+    "input": {
+      "background": "#ffffff",
+      "text": "#18344d",
+      "border": "#8db8d5",
+      "radius": 10
+    },
+    "button": {
+      "primary": "#3478a8",
+      "primaryAlt": "#78b9d8",
+      "text": "#ffffff",
+      "radius": 10
+    }
+  },
+  "Summer": {
+    "backgroundImage": "",
+    "identity": "Sunlit tropical escape, sea breeze and holiday color",
+    "page": {
+      "overlay": "rgba(255, 247, 222, 0.03)",
+      "text": "#193b42",
+      "muted": "#5d7475"
+    },
+    "hero": {
+      "surface": "rgba(255, 251, 237, 0.92)",
+      "border": "#e7a33a",
+      "accent": "#e38b24",
+      "text": "#173b42",
+      "decoration": "summer-sun"
+    },
+    "card": {
+      "surface": "rgba(255, 252, 241, 0.95)",
+      "surfaceAlt": "rgba(235, 248, 244, 0.92)",
+      "border": "rgba(221, 151, 51, 0.48)",
+      "radius": 20,
+      "shadow": "0 18px 45px rgba(112, 83, 39, 0.16)"
+    },
+    "input": {
+      "background": "#ffffff",
+      "text": "#173b42",
+      "border": "#4aa6a0",
+      "radius": 11
+    },
+    "button": {
+      "primary": "#df7d22",
+      "primaryAlt": "#f2b84b",
+      "text": "#ffffff",
+      "radius": 11
+    }
+  },
+  "Spring": {
+    "backgroundImage": "",
+    "identity": "Fresh botanical garden, blossoms and soft morning light",
+    "page": {
+      "overlay": "rgba(247, 242, 234, 0.03)",
+      "text": "#304437",
+      "muted": "#667a6b"
+    },
+    "hero": {
+      "surface": "rgba(251, 249, 241, 0.93)",
+      "border": "#9fb58b",
+      "accent": "#6e9560",
+      "text": "#304437",
+      "decoration": "spring-bloom"
+    },
+    "card": {
+      "surface": "rgba(251, 249, 241, 0.96)",
+      "surfaceAlt": "rgba(237, 244, 229, 0.93)",
+      "border": "rgba(133, 166, 111, 0.48)",
+      "radius": 19,
+      "shadow": "0 18px 44px rgba(65, 84, 56, 0.14)"
+    },
+    "input": {
+      "background": "#ffffff",
+      "text": "#304437",
+      "border": "#9ab18c",
+      "radius": 10
+    },
+    "button": {
+      "primary": "#6e9560",
+      "primaryAlt": "#b58e9e",
+      "text": "#ffffff",
+      "radius": 10
+    }
+  },
+  "Resort": {
+    "backgroundImage": "",
+    "identity": "Premium island resort, lagoon water and warm sand",
+    "page": {
+      "overlay": "rgba(239, 247, 242, 0.03)",
+      "text": "#214248",
+      "muted": "#617779"
+    },
+    "hero": {
+      "surface": "rgba(248, 250, 241, 0.92)",
+      "border": "#c7a66a",
+      "accent": "#138a8b",
+      "text": "#214248",
+      "decoration": "resort-lagoon"
+    },
+    "card": {
+      "surface": "rgba(249, 250, 243, 0.95)",
+      "surfaceAlt": "rgba(231, 245, 241, 0.92)",
+      "border": "rgba(19, 138, 139, 0.40)",
+      "radius": 20,
+      "shadow": "0 18px 45px rgba(45, 86, 81, 0.15)"
+    },
+    "input": {
+      "background": "#ffffff",
+      "text": "#214248",
+      "border": "#7ab5ae",
+      "radius": 11
+    },
+    "button": {
+      "primary": "#138a8b",
+      "primaryAlt": "#d0ad69",
+      "text": "#ffffff",
+      "radius": 11
     }
   }
 };
@@ -1899,6 +2051,38 @@ function posterTheme(theme) {
         ticketText: "#101722"
       };
 
+    case "Winter Snow":
+      return {
+        background: "#dfeef7", accent: "#3b82b6", secondary: "#78b9d8",
+        text: "#17324d", muted: "#55718a", surface: "#edf6fb", surface2: "#d8eaf4",
+        inputBg: "#ffffff", inputText: "#18344d", panelBg: "#f7fbff", panelText: "#18344d",
+        panelMuted: "#55718a", ticketBg: "#ffffff", ticketText: "#18344d"
+      };
+
+    case "Summer":
+      return {
+        background: "#f6e7b8", accent: "#df7d22", secondary: "#4aa6a0",
+        text: "#173b42", muted: "#5d7475", surface: "#fff8e7", surface2: "#e3f3ef",
+        inputBg: "#ffffff", inputText: "#173b42", panelBg: "#fffdf5", panelText: "#173b42",
+        panelMuted: "#5d7475", ticketBg: "#ffffff", ticketText: "#173b42"
+      };
+
+    case "Spring":
+      return {
+        background: "#e8f0df", accent: "#6e9560", secondary: "#b58e9e",
+        text: "#304437", muted: "#667a6b", surface: "#faf8ef", surface2: "#e8f1e1",
+        inputBg: "#ffffff", inputText: "#304437", panelBg: "#fcfbf5", panelText: "#304437",
+        panelMuted: "#667a6b", ticketBg: "#ffffff", ticketText: "#304437"
+      };
+
+    case "Resort":
+      return {
+        background: "#d9eee9", accent: "#138a8b", secondary: "#d0ad69",
+        text: "#214248", muted: "#617779", surface: "#f7faf3", surface2: "#e1f2ef",
+        inputBg: "#ffffff", inputText: "#214248", panelBg: "#fbfcf6", panelText: "#214248",
+        panelMuted: "#617779", ticketBg: "#ffffff", ticketText: "#214248"
+      };
+
     default:
       return {
         background: "#172554",
@@ -2022,6 +2206,43 @@ function getThemeUI(theme) {
       cardPadding: 25,
       inputPadding: "11px 13px",
       buttonPadding: "11px 19px"
+    },
+
+    "Winter Snow": {
+      cardRadius: 18, inputRadius: 10, buttonRadius: 10,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 14px 34px rgba(48,82,108,.14), inset 0 1px 0 rgba(255,255,255,.85)",
+      cardBackdrop: "blur(10px)",
+      buttonShadow: "0 9px 22px rgba(48,82,108,.16)",
+      buttonFontWeight: 800, letterSpacing: ".015em", cardPadding: 22,
+      inputPadding: "11px 13px", buttonPadding: "11px 18px"
+    },
+    "Summer": {
+      cardRadius: 20, inputRadius: 11, buttonRadius: 11,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 15px 34px rgba(112,83,39,.14), inset 0 1px 0 rgba(255,255,255,.86)",
+      cardBackdrop: "blur(10px)",
+      buttonShadow: "0 9px 22px rgba(223,125,34,.18)",
+      buttonFontWeight: 850, letterSpacing: ".01em", cardPadding: 23,
+      inputPadding: "11px 14px", buttonPadding: "11px 18px"
+    },
+    "Spring": {
+      cardRadius: 19, inputRadius: 10, buttonRadius: 10,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 14px 32px rgba(65,84,56,.13), inset 0 1px 0 rgba(255,255,255,.88)",
+      cardBackdrop: "blur(10px)",
+      buttonShadow: "0 9px 21px rgba(110,149,96,.18)",
+      buttonFontWeight: 800, letterSpacing: ".012em", cardPadding: 22,
+      inputPadding: "11px 13px", buttonPadding: "11px 18px"
+    },
+    "Resort": {
+      cardRadius: 20, inputRadius: 11, buttonRadius: 11,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 15px 35px rgba(45,86,81,.14), inset 0 1px 0 rgba(255,255,255,.88)",
+      cardBackdrop: "blur(10px)",
+      buttonShadow: "0 9px 22px rgba(19,138,139,.18)",
+      buttonFontWeight: 800, letterSpacing: ".012em", cardPadding: 23,
+      inputPadding: "11px 14px", buttonPadding: "11px 18px"
     }
   };
 
@@ -2099,6 +2320,50 @@ function getThemeUI(theme) {
       statusLive: `linear-gradient(135deg, #166534, #15803d)`,
       statusEnded: `linear-gradient(135deg, #475569, #334155)`,
       statusUpcoming: `linear-gradient(135deg, #a16207, #854d0e)`
+    },
+    "Winter Snow": {
+      cardBackground: `linear-gradient(145deg, rgba(250,253,255,.98), rgba(229,241,249,.98)), radial-gradient(circle at 86% 12%, rgba(59,130,182,.10), transparent 30%)`,
+      panelBackground: `linear-gradient(145deg, rgba(250,253,255,.99), rgba(231,242,250,.97))`,
+      prizeBackground: `linear-gradient(135deg, rgba(245,251,255,.99), rgba(218,235,246,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(239,248,253,.99), rgba(215,235,246,.98))`,
+      panelBorder: `1px solid rgba(94,151,190,.52)`,
+      panelShadow: `0 14px 32px rgba(48,82,108,.14), inset 0 1px 0 rgba(255,255,255,.88)`,
+      statusLive: `linear-gradient(135deg, #2f855a, #276749)`,
+      statusEnded: `linear-gradient(135deg, #64748b, #475569)`,
+      statusUpcoming: `linear-gradient(135deg, #3b82b6, #2563eb)`
+    },
+    "Summer": {
+      cardBackground: `linear-gradient(145deg, rgba(255,253,245,.98), rgba(237,248,244,.98)), radial-gradient(circle at 12% 10%, rgba(242,184,75,.12), transparent 30%)`,
+      panelBackground: `linear-gradient(145deg, rgba(255,254,248,.99), rgba(231,247,242,.98))`,
+      prizeBackground: `linear-gradient(135deg, rgba(255,251,235,.99), rgba(231,246,241,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(255,247,224,.99), rgba(218,241,237,.98))`,
+      panelBorder: `1px solid rgba(223,125,34,.48)`,
+      panelShadow: `0 14px 34px rgba(112,83,39,.14), inset 0 1px 0 rgba(255,255,255,.90)`,
+      statusLive: `linear-gradient(135deg, #15803d, #0f766e)`,
+      statusEnded: `linear-gradient(135deg, #64748b, #475569)`,
+      statusUpcoming: `linear-gradient(135deg, #df7d22, #c45f12)`
+    },
+    "Spring": {
+      cardBackground: `linear-gradient(145deg, rgba(253,252,246,.98), rgba(235,244,228,.98)), radial-gradient(circle at 86% 10%, rgba(181,142,158,.11), transparent 30%)`,
+      panelBackground: `linear-gradient(145deg, rgba(255,254,248,.99), rgba(237,245,231,.98))`,
+      prizeBackground: `linear-gradient(135deg, rgba(253,251,241,.99), rgba(231,241,224,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(250,246,241,.99), rgba(228,240,224,.98))`,
+      panelBorder: `1px solid rgba(110,149,96,.48)`,
+      panelShadow: `0 14px 32px rgba(65,84,56,.13), inset 0 1px 0 rgba(255,255,255,.90)`,
+      statusLive: `linear-gradient(135deg, #3f7d4a, #2f6b3c)`,
+      statusEnded: `linear-gradient(135deg, #64748b, #475569)`,
+      statusUpcoming: `linear-gradient(135deg, #b58e9e, #9f7185)`
+    },
+    "Resort": {
+      cardBackground: `linear-gradient(145deg, rgba(252,253,247,.98), rgba(231,245,241,.98)), radial-gradient(circle at 88% 12%, rgba(208,173,105,.13), transparent 30%)`,
+      panelBackground: `linear-gradient(145deg, rgba(255,254,248,.99), rgba(229,244,240,.98))`,
+      prizeBackground: `linear-gradient(135deg, rgba(250,251,243,.99), rgba(224,242,237,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(248,247,235,.99), rgba(222,240,235,.98))`,
+      panelBorder: `1px solid rgba(19,138,139,.44)`,
+      panelShadow: `0 14px 34px rgba(45,86,81,.14), inset 0 1px 0 rgba(255,255,255,.90)`,
+      statusLive: `linear-gradient(135deg, #0f766e, #115e59)`,
+      statusEnded: `linear-gradient(135deg, #64748b, #475569)`,
+      statusUpcoming: `linear-gradient(135deg, #b48a4b, #92713e)`
     }
   };
 
@@ -3775,7 +4040,7 @@ const [
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${getThemeClass(theme)}`} style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -5190,7 +5455,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${getThemeClass(game.theme)}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -7256,7 +7521,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
+      <main className={`tl-theme-page tl-theme-${getThemeClass(liveGame.theme)}`} style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -7598,7 +7863,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${getThemeClass(liveGame.theme)}`} style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
@@ -10270,7 +10535,7 @@ function HostControlPage({
 
   return (
     <main
-      className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`}
+      className={`tl-theme-page tl-theme-${getThemeClass(game.theme)}`}
       style={
         themedPageStyle
       }
