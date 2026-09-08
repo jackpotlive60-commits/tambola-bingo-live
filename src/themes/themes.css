@@ -3989,3 +3989,224 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"] {
     opacity: .84 !important;
   }
 }
+
+/* =========================================================
+   FINAL NEW-THEME POLISH â€” HERO + FULL PAGE BACKGROUND
+   ---------------------------------------------------------
+   Uses the cleaned transparent 16:9-ish hero artwork as a true
+   transparent visual layer. No image card/box is created.
+   Also prevents the generic navy main/body canvas from overriding
+   the four new theme backgrounds.
+   Diamond intentionally excluded.
+========================================================= */
+
+/* ---- WINTER SNOW: full frosted page ---- */
+body:has(.tl-theme-winter-snow) {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255,255,255,.98), transparent 30%),
+    linear-gradient(145deg, #eaf6fb 0%, #c9e2ee 48%, #f8fcfe 100%) !important;
+}
+.tl-theme-winter-snow,
+.tl-theme-winter-snow main {
+  background:
+    radial-gradient(circle at 12% 3%, rgba(255,255,255,.98), transparent 28%),
+    radial-gradient(circle at 90% 80%, rgba(153,211,232,.25), transparent 30%),
+    linear-gradient(145deg, #eaf6fb 0%, #c9e2ee 48%, #f7fcfe 100%) !important;
+  background-image:
+    radial-gradient(circle at 12% 3%, rgba(255,255,255,.98), transparent 28%),
+    radial-gradient(circle at 90% 80%, rgba(153,211,232,.25), transparent 30%),
+    linear-gradient(145deg, #eaf6fb 0%, #c9e2ee 48%, #f7fcfe 100%) !important;
+}
+
+/* ---- SUMMER: turquoise ocean + warm sun ---- */
+body:has(.tl-theme-summer) {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255,221,111,.78), transparent 27%),
+    linear-gradient(145deg, #fff3d0 0%, #b7eee5 48%, #65caca 100%) !important;
+}
+.tl-theme-summer,
+.tl-theme-summer main {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255,221,111,.78), transparent 27%),
+    radial-gradient(circle at 92% 80%, rgba(239,125,85,.18), transparent 27%),
+    linear-gradient(145deg, #fff3d0 0%, #b7eee5 48%, #65caca 100%) !important;
+  background-image:
+    radial-gradient(circle at 12% 0%, rgba(255,221,111,.78), transparent 27%),
+    radial-gradient(circle at 92% 80%, rgba(239,125,85,.18), transparent 27%),
+    linear-gradient(145deg, #fff3d0 0%, #b7eee5 48%, #65caca 100%) !important;
+}
+
+/* ---- SPRING: cream garden + sage + blossom ---- */
+body:has(.tl-theme-spring) {
+  background:
+    radial-gradient(circle at 8% 2%, rgba(255,244,248,.95), transparent 28%),
+    linear-gradient(145deg, #fbf4e8 0%, #e3efd9 48%, #f5e5eb 100%) !important;
+}
+.tl-theme-spring,
+.tl-theme-spring main {
+  background:
+    radial-gradient(circle at 8% 2%, rgba(255,244,248,.95), transparent 28%),
+    radial-gradient(circle at 90% 78%, rgba(201,111,145,.14), transparent 27%),
+    linear-gradient(145deg, #fbf4e8 0%, #e3efd9 48%, #f5e5eb 100%) !important;
+  background-image:
+    radial-gradient(circle at 8% 2%, rgba(255,244,248,.95), transparent 28%),
+    radial-gradient(circle at 90% 78%, rgba(201,111,145,.14), transparent 27%),
+    linear-gradient(145deg, #fbf4e8 0%, #e3efd9 48%, #f5e5eb 100%) !important;
+}
+
+/* ---- RESORT: sand + lagoon + champagne ---- */
+body:has(.tl-theme-resort) {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,225,158,.72), transparent 26%),
+    linear-gradient(145deg, #f6e8cb 0%, #d7e9df 46%, #73b8ac 100%) !important;
+}
+.tl-theme-resort,
+.tl-theme-resort main {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,225,158,.72), transparent 26%),
+    radial-gradient(circle at 8% 82%, rgba(22,127,123,.16), transparent 27%),
+    linear-gradient(145deg, #f6e8cb 0%, #d7e9df 46%, #73b8ac 100%) !important;
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(255,225,158,.72), transparent 26%),
+    radial-gradient(circle at 8% 82%, rgba(22,127,123,.16), transparent 27%),
+    linear-gradient(145deg, #f6e8cb 0%, #d7e9df 46%, #73b8ac 100%) !important;
+}
+
+/* ---------------------------------------------------------
+   HERO ARTWORK â€” USE THE ARTWORK'S REAL TRANSPARENT CANVAS
+   ---------------------------------------------------------
+   The cleaned assets are approximately 16:9. They are therefore
+   sized to the hero itself, not placed as a contained thumbnail.
+   Since the PNG outside the artwork is transparent, there is no
+   rectangular image panel.
+--------------------------------------------------------- */
+.tl-theme-winter-snow .tl-theme-hero-art,
+.tl-theme-summer .tl-theme-hero-art,
+.tl-theme-spring .tl-theme-hero-art,
+.tl-theme-resort .tl-theme-hero-art {
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  background-size: 100% 100% !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+/* Keep the artwork behind the readable hero copy, but do not wash a
+   large opaque colour block over it. */
+.tl-theme-winter-snow .tl-theme-hero-copy,
+.tl-theme-summer .tl-theme-hero-copy,
+.tl-theme-spring .tl-theme-hero-copy,
+.tl-theme-resort .tl-theme-hero-copy {
+  z-index: 6 !important;
+}
+
+.tl-theme-winter-snow .tl-theme-hero::before,
+.tl-theme-summer .tl-theme-hero::before,
+.tl-theme-spring .tl-theme-hero::before,
+.tl-theme-resort .tl-theme-hero::before {
+  z-index: 2 !important;
+  pointer-events: none !important;
+}
+
+.tl-theme-winter-snow .tl-theme-hero::after,
+.tl-theme-summer .tl-theme-hero::after,
+.tl-theme-spring .tl-theme-hero::after,
+.tl-theme-resort .tl-theme-hero::after {
+  z-index: 3 !important;
+  pointer-events: none !important;
+}
+
+/* Theme-specific readable copy treatment over the artwork. */
+.tl-theme-winter-snow .tl-theme-hero-copy {
+  text-shadow: 0 2px 12px rgba(32,72,91,.20);
+}
+.tl-theme-summer .tl-theme-hero-copy {
+  text-shadow: 0 2px 12px rgba(70,55,24,.22);
+}
+.tl-theme-spring .tl-theme-hero-copy {
+  text-shadow: 0 2px 12px rgba(73,63,68,.18);
+}
+.tl-theme-resort .tl-theme-hero-copy {
+  text-shadow: 0 2px 12px rgba(55,53,30,.22);
+}
+
+/* ---------------------------------------------------------
+   HERO COLOUR VEILS â€” VERY LIGHT, ONLY WHERE TEXT NEEDS HELP
+--------------------------------------------------------- */
+.tl-theme-winter-snow .tl-theme-hero::before {
+  background:
+    linear-gradient(90deg,
+      rgba(225,241,249,.92) 0%,
+      rgba(225,241,249,.72) 23%,
+      rgba(225,241,249,.24) 43%,
+      rgba(225,241,249,.02) 63%,
+      transparent 100%) !important;
+}
+.tl-theme-winter-snow .tl-theme-hero::after {
+  background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 45%, rgba(111,170,195,.10) 100%) !important;
+}
+
+.tl-theme-summer .tl-theme-hero::before {
+  background:
+    linear-gradient(90deg,
+      rgba(255,244,214,.93) 0%,
+      rgba(255,244,214,.70) 23%,
+      rgba(255,244,214,.22) 43%,
+      rgba(255,244,214,.02) 63%,
+      transparent 100%) !important;
+}
+.tl-theme-summer .tl-theme-hero::after {
+  background: linear-gradient(180deg, rgba(255,225,120,.08), transparent 45%, rgba(18,132,129,.10) 100%) !important;
+}
+
+.tl-theme-spring .tl-theme-hero::before {
+  background:
+    linear-gradient(90deg,
+      rgba(251,245,235,.94) 0%,
+      rgba(251,245,235,.72) 23%,
+      rgba(251,245,235,.24) 43%,
+      rgba(251,245,235,.02) 63%,
+      transparent 100%) !important;
+}
+.tl-theme-spring .tl-theme-hero::after {
+  background: linear-gradient(180deg, rgba(255,255,255,.06), transparent 45%, rgba(180,121,145,.08) 100%) !important;
+}
+
+.tl-theme-resort .tl-theme-hero::before {
+  background:
+    linear-gradient(90deg,
+      rgba(248,237,213,.94) 0%,
+      rgba(248,237,213,.70) 23%,
+      rgba(248,237,213,.22) 43%,
+      rgba(248,237,213,.02) 63%,
+      transparent 100%) !important;
+}
+.tl-theme-resort .tl-theme-hero::after {
+  background: linear-gradient(180deg, rgba(255,220,137,.08), transparent 45%, rgba(17,115,111,.10) 100%) !important;
+}
+
+/* Mobile: preserve the complete artwork composition rather than making
+   it a small contained thumbnail. */
+@media (max-width: 600px) {
+  .tl-theme-winter-snow .tl-theme-hero-art,
+  .tl-theme-summer .tl-theme-hero-art,
+  .tl-theme-spring .tl-theme-hero-art,
+  .tl-theme-resort .tl-theme-hero-art {
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-size: 100% 100% !important;
+    background-position: center center !important;
+    opacity: 1 !important;
+  }
+}
