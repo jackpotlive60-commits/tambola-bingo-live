@@ -28,12 +28,7 @@ const THEMES = [
   "Party",
   "Bollywood",
   "Neon",
-  "Elegant",
-  "Diamond",
-  "Winter Snow",
-  "Summer",
-  "Spring",
-  "Resort"
+  "Elegant"
 ];
 
 const THEME_LOGOS = {
@@ -47,14 +42,6 @@ const THEME_LOGOS = {
 
 function getThemeLogo(theme) {
   return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
-}
-
-function getThemeClass(theme) {
-  return String(theme || "Classic")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 /*
@@ -301,51 +288,6 @@ const THEME_DESIGNS = {
       "text": "#ffffff",
       "radius": 12
     }
-  },
-  "Diamond": {
-    "backgroundImage": "",
-    "identity": "Crystal luxury, icy silver and diamond light",
-    "page": { "overlay": "rgba(5, 18, 30, 0.10)", "text": "#eef9ff", "muted": "#b9d7e8" },
-    "hero": { "surface": "rgba(10, 35, 52, 0.86)", "border": "#8fe8ff", "accent": "#bdf5ff", "text": "#f5fcff", "decoration": "diamond-shimmer" },
-    "card": { "surface": "rgba(12, 36, 53, 0.90)", "surfaceAlt": "rgba(25, 62, 82, 0.78)", "border": "rgba(143,232,255,0.52)", "radius": 18, "shadow": "0 18px 48px rgba(0,18,32,0.40), 0 0 24px rgba(143,232,255,0.08)" },
-    "input": { "background": "#f5fcff", "text": "#10212b", "border": "#8fdbea", "radius": 10 },
-    "button": { "primary": "#4aaed0", "primaryAlt": "#b7f3ff", "text": "#09202b", "radius": 10 }
-  },
-  "Winter Snow": {
-    "backgroundImage": "",
-    "identity": "Winter resort, snow and frosted glass",
-    "page": { "overlay": "rgba(214, 237, 249, 0.06)", "text": "#f4fbff", "muted": "#c6dbe8" },
-    "hero": { "surface": "rgba(24, 52, 72, 0.84)", "border": "#d8f3ff", "accent": "#dff8ff", "text": "#f7fcff", "decoration": "snowfall" },
-    "card": { "surface": "rgba(28, 57, 78, 0.88)", "surfaceAlt": "rgba(53, 86, 108, 0.76)", "border": "rgba(216,243,255,0.48)", "radius": 22, "shadow": "0 18px 45px rgba(3,24,40,0.34), inset 0 1px 0 rgba(255,255,255,0.12)" },
-    "input": { "background": "#f7fcff", "text": "#142b3b", "border": "#b8ddec", "radius": 12 },
-    "button": { "primary": "#6fa8c3", "primaryAlt": "#dff8ff", "text": "#102536", "radius": 12 }
-  },
-  "Summer": {
-    "backgroundImage": "",
-    "identity": "Sunlit escape, turquoise water and warm sunset",
-    "page": { "overlay": "rgba(9, 47, 55, 0.10)", "text": "#fffdf5", "muted": "#d9f1ed" },
-    "hero": { "surface": "rgba(7, 67, 76, 0.84)", "border": "#ffd36a", "accent": "#ffd166", "text": "#fffdf7", "decoration": "sunset-glow" },
-    "card": { "surface": "rgba(7, 57, 66, 0.88)", "surfaceAlt": "rgba(12, 83, 88, 0.78)", "border": "rgba(255,209,102,0.48)", "radius": 20, "shadow": "0 18px 45px rgba(0,30,34,0.34)" },
-    "input": { "background": "#fffdf6", "text": "#17343a", "border": "#7ed6d0", "radius": 12 },
-    "button": { "primary": "#f2a93b", "primaryAlt": "#ffd166", "text": "#38200b", "radius": 12 }
-  },
-  "Spring": {
-    "backgroundImage": "",
-    "identity": "Botanical garden, fresh blooms and soft luxury",
-    "page": { "overlay": "rgba(16, 53, 39, 0.08)", "text": "#f8fff9", "muted": "#d4ebdb" },
-    "hero": { "surface": "rgba(23, 73, 54, 0.84)", "border": "#f4c7d8", "accent": "#f5b7cf", "text": "#fbfffc", "decoration": "petal-bloom" },
-    "card": { "surface": "rgba(22, 67, 50, 0.88)", "surfaceAlt": "rgba(38, 91, 68, 0.76)", "border": "rgba(245,183,207,0.46)", "radius": 22, "shadow": "0 18px 45px rgba(7,38,25,0.32)" },
-    "input": { "background": "#fbfffc", "text": "#18352a", "border": "#9bcdb0", "radius": 13 },
-    "button": { "primary": "#d77fa5", "primaryAlt": "#f5b7cf", "text": "#351727", "radius": 13 }
-  },
-  "Resort": {
-    "backgroundImage": "",
-    "identity": "Five-star tropical resort, teak, ocean and gold",
-    "page": { "overlay": "rgba(4, 33, 39, 0.08)", "text": "#f8fffd", "muted": "#c8dfda" },
-    "hero": { "surface": "rgba(9, 57, 61, 0.86)", "border": "#d6b36a", "accent": "#e7c77a", "text": "#fbfffe", "decoration": "resort-palm" },
-    "card": { "surface": "rgba(12, 58, 61, 0.90)", "surfaceAlt": "rgba(24, 79, 78, 0.78)", "border": "rgba(214,179,106,0.50)", "radius": 18, "shadow": "0 18px 46px rgba(0,27,29,0.38)" },
-    "input": { "background": "#f8fffd", "text": "#153536", "border": "#9ac9bd", "radius": 11 },
-    "button": { "primary": "#c89d4a", "primaryAlt": "#e7c77a", "text": "#251b0c", "radius": 11 }
   }
 };
 
@@ -2080,46 +2022,6 @@ function getThemeUI(theme) {
       cardPadding: 25,
       inputPadding: "11px 13px",
       buttonPadding: "11px 19px"
-    },
-    Diamond: {
-      cardRadius: 18, inputRadius: 10, buttonRadius: 10,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 18px 44px rgba(0,18,32,.34), inset 0 1px 0 rgba(255,255,255,.10)",
-      cardBackdrop: "blur(12px)", buttonShadow: "0 10px 24px rgba(0,80,110,.22)",
-      buttonFontWeight: 800, letterSpacing: ".025em", cardPadding: 22,
-      inputPadding: "11px 14px", buttonPadding: "11px 18px"
-    },
-    "Winter Snow": {
-      cardRadius: 22, inputRadius: 12, buttonRadius: 12,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 18px 44px rgba(3,24,40,.28), inset 0 1px 0 rgba(255,255,255,.12)",
-      cardBackdrop: "blur(14px)", buttonShadow: "0 10px 24px rgba(100,160,190,.20)",
-      buttonFontWeight: 800, letterSpacing: ".02em", cardPadding: 24,
-      inputPadding: "12px 15px", buttonPadding: "12px 19px"
-    },
-    Summer: {
-      cardRadius: 20, inputRadius: 12, buttonRadius: 12,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 18px 42px rgba(0,30,34,.28)", cardBackdrop: "blur(10px)",
-      buttonShadow: "0 10px 22px rgba(190,110,25,.22)", buttonFontWeight: 800,
-      letterSpacing: ".015em", cardPadding: 22, inputPadding: "11px 14px",
-      buttonPadding: "11px 19px"
-    },
-    Spring: {
-      cardRadius: 22, inputRadius: 13, buttonRadius: 13,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 18px 42px rgba(7,38,25,.26)", cardBackdrop: "blur(12px)",
-      buttonShadow: "0 10px 24px rgba(120,55,90,.18)", buttonFontWeight: 800,
-      letterSpacing: ".02em", cardPadding: 24, inputPadding: "12px 15px",
-      buttonPadding: "12px 19px"
-    },
-    Resort: {
-      cardRadius: 18, inputRadius: 11, buttonRadius: 11,
-      cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 18px 44px rgba(0,27,29,.32), inset 0 1px 0 rgba(255,255,255,.08)",
-      cardBackdrop: "blur(11px)", buttonShadow: "0 10px 24px rgba(120,85,25,.22)",
-      buttonFontWeight: 800, letterSpacing: ".02em", cardPadding: 23,
-      inputPadding: "11px 14px", buttonPadding: "11px 19px"
     }
   };
 
@@ -2197,61 +2099,6 @@ function getThemeUI(theme) {
       statusLive: `linear-gradient(135deg, #166534, #15803d)`,
       statusEnded: `linear-gradient(135deg, #475569, #334155)`,
       statusUpcoming: `linear-gradient(135deg, #a16207, #854d0e)`
-    },
-    Diamond: {
-      cardBackground: `linear-gradient(145deg,rgba(18,55,76,.98),rgba(5,25,40,.99)), radial-gradient(circle at 82% 12%,rgba(189,245,255,.18),transparent 30%)`,
-      panelBackground: `linear-gradient(145deg,rgba(24,67,88,.98),rgba(8,34,52,.99))`,
-      prizeBackground: `linear-gradient(135deg,rgba(34,83,104,.98),rgba(8,37,54,.99))`,
-      secondaryBackground: `linear-gradient(135deg,rgba(41,96,117,.98),rgba(12,47,65,.99))`,
-      panelBorder: `1px solid rgba(143,232,255,.68)`,
-      panelShadow: `0 14px 34px rgba(0,30,45,.34),0 0 20px rgba(143,232,255,.08)`,
-      statusLive: `linear-gradient(135deg,#0e7490,#155e75)`,
-      statusEnded: `linear-gradient(135deg,#475569,#334155)`,
-      statusUpcoming: `linear-gradient(135deg,#64748b,#475569)`
-    },
-    "Winter Snow": {
-      cardBackground: `linear-gradient(145deg,rgba(36,69,91,.98),rgba(14,38,57,.99)), radial-gradient(circle at 80% 10%,rgba(223,248,255,.18),transparent 32%)`,
-      panelBackground: `linear-gradient(145deg,rgba(49,84,106,.98),rgba(19,47,68,.99))`,
-      prizeBackground: `linear-gradient(135deg,rgba(62,101,124,.98),rgba(22,53,74,.99))`,
-      secondaryBackground: `linear-gradient(135deg,rgba(77,117,139,.98),rgba(28,62,82,.99))`,
-      panelBorder: `1px solid rgba(216,243,255,.62)`,
-      panelShadow: `0 14px 34px rgba(3,24,40,.30),inset 0 1px 0 rgba(255,255,255,.10)`,
-      statusLive: `linear-gradient(135deg,#0f766e,#115e59)`,
-      statusEnded: `linear-gradient(135deg,#64748b,#475569)`,
-      statusUpcoming: `linear-gradient(135deg,#0369a1,#075985)`
-    },
-    Summer: {
-      cardBackground: `linear-gradient(145deg,rgba(10,78,88,.98),rgba(3,47,56,.99)), radial-gradient(circle at 85% 10%,rgba(255,209,102,.18),transparent 30%)`,
-      panelBackground: `linear-gradient(145deg,rgba(12,96,100,.98),rgba(5,57,65,.99))`,
-      prizeBackground: `linear-gradient(135deg,rgba(20,111,110,.98),rgba(7,65,70,.99))`,
-      secondaryBackground: `linear-gradient(135deg,rgba(33,128,119,.98),rgba(8,77,79,.99))`,
-      panelBorder: `1px solid rgba(255,209,102,.62)`,
-      panelShadow: `0 14px 34px rgba(0,30,34,.30),0 0 18px rgba(255,209,102,.06)`,
-      statusLive: `linear-gradient(135deg,#15803d,#166534)`,
-      statusEnded: `linear-gradient(135deg,#475569,#334155)`,
-      statusUpcoming: `linear-gradient(135deg,#b45309,#92400e)`
-    },
-    Spring: {
-      cardBackground: `linear-gradient(145deg,rgba(30,79,59,.98),rgba(12,48,35,.99)), radial-gradient(circle at 85% 10%,rgba(245,183,207,.16),transparent 30%)`,
-      panelBackground: `linear-gradient(145deg,rgba(44,98,72,.98),rgba(18,58,43,.99))`,
-      prizeBackground: `linear-gradient(135deg,rgba(58,116,82,.98),rgba(20,64,46,.99))`,
-      secondaryBackground: `linear-gradient(135deg,rgba(76,132,96,.98),rgba(28,74,53,.99))`,
-      panelBorder: `1px solid rgba(245,183,207,.58)`,
-      panelShadow: `0 14px 34px rgba(7,38,25,.28),inset 0 1px 0 rgba(255,255,255,.08)`,
-      statusLive: `linear-gradient(135deg,#15803d,#166534)`,
-      statusEnded: `linear-gradient(135deg,#64748b,#475569)`,
-      statusUpcoming: `linear-gradient(135deg,#be185d,#9d174d)`
-    },
-    Resort: {
-      cardBackground: `linear-gradient(145deg,rgba(14,69,70,.98),rgba(6,40,43,.99)), radial-gradient(circle at 85% 10%,rgba(231,199,122,.15),transparent 30%)`,
-      panelBackground: `linear-gradient(145deg,rgba(24,88,84,.98),rgba(10,53,56,.99))`,
-      prizeBackground: `linear-gradient(135deg,rgba(36,105,97,.98),rgba(12,60,62,.99))`,
-      secondaryBackground: `linear-gradient(135deg,rgba(52,119,105,.98),rgba(15,68,66,.99))`,
-      panelBorder: `1px solid rgba(214,179,106,.64)`,
-      panelShadow: `0 14px 34px rgba(0,27,29,.32),inset 0 1px 0 rgba(255,255,255,.07)`,
-      statusLive: `linear-gradient(135deg,#15803d,#166534)`,
-      statusEnded: `linear-gradient(135deg,#475569,#334155)`,
-      statusUpcoming: `linear-gradient(135deg,#a16207,#854d0e)`
     }
   };
 
@@ -3928,7 +3775,7 @@ const [
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${getThemeClass(theme)}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${theme.toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={theme}
         title="Create your next premium game"
@@ -5343,7 +5190,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${getThemeClass(game.theme)}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -10423,7 +10270,7 @@ function HostControlPage({
 
   return (
     <main
-      className={`tl-theme-page tl-theme-${getThemeClass(game.theme)}`}
+      className={`tl-theme-page tl-theme-${game.theme.toLowerCase()}`}
       style={
         themedPageStyle
       }
