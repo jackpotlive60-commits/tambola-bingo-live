@@ -45,17 +45,16 @@ const THEME_LOGOS = {
   Elegant: "/assets/elegant-logo.png"
 };
 
-// Converts display names such as "Winter Snow" into safe CSS class names.
+function getThemeLogo(theme) {
+  return THEME_LOGOS[theme] || THEME_LOGOS.Classic;
+}
+
 function getThemeClass(theme) {
   return String(theme || "Classic")
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-function getThemeLogo(theme) {
-  return THEME_LOGOS[theme] || null;
 }
 
 /*
@@ -1942,25 +1941,21 @@ function posterTheme(theme) {
 
     case "Elegant":
       return {
-        background: "#172033", accent: "#d4af37", secondary: "#94a3b8", text: "#ffffff", muted: "#c4ceda",
-        surface: "#101722", surface2: "#182232", inputBg: "#fbfcfd", inputText: "#101722",
-        panelBg: "#f6f8fb", panelText: "#101722", panelMuted: "#53606f", ticketBg: "#fbfcfd", ticketText: "#101722"
+        background: "#172033",
+        accent: "#d4af37",
+        secondary: "#94a3b8",
+        text: "#ffffff",
+        muted: "#c4ceda",
+        surface: "#101722",
+        surface2: "#182232",
+        inputBg: "#fbfcfd",
+        inputText: "#101722",
+        panelBg: "#f6f8fb",
+        panelText: "#101722",
+        panelMuted: "#53606f",
+        ticketBg: "#fbfcfd",
+        ticketText: "#101722"
       };
-
-    case "Diamond":
-      return { background: "#071c2b", accent: "#bdf5ff", secondary: "#68cbe5", text: "#ffffff", muted: "#b9d7e8", surface: "#0c2435", surface2: "#143b50", inputBg: "#f5fcff", inputText: "#10212b", panelBg: "#f5fcff", panelText: "#10212b", panelMuted: "#526b78", ticketBg: "#f5fcff", ticketText: "#10212b" };
-
-    case "Winter Snow":
-      return { background: "#102b3d", accent: "#dff8ff", secondary: "#9fd2e6", text: "#ffffff", muted: "#c6dbe8", surface: "#1c394e", surface2: "#2e5268", inputBg: "#f7fcff", inputText: "#142b3b", panelBg: "#f7fcff", panelText: "#142b3b", panelMuted: "#536a78", ticketBg: "#f7fcff", ticketText: "#142b3b" };
-
-    case "Summer":
-      return { background: "#07505a", accent: "#ffd166", secondary: "#62d3c9", text: "#ffffff", muted: "#d9f1ed", surface: "#073942", surface2: "#0b555b", inputBg: "#fffdf6", inputText: "#17343a", panelBg: "#fffdf6", panelText: "#17343a", panelMuted: "#587274", ticketBg: "#fffdf6", ticketText: "#17343a" };
-
-    case "Spring":
-      return { background: "#174a37", accent: "#f5b7cf", secondary: "#9bcdb0", text: "#ffffff", muted: "#d4ebdb", surface: "#164332", surface2: "#245c46", inputBg: "#fbfffc", inputText: "#18352a", panelBg: "#fbfffc", panelText: "#18352a", panelMuted: "#587166", ticketBg: "#fbfffc", ticketText: "#18352a" };
-
-    case "Resort":
-      return { background: "#093b3f", accent: "#e7c77a", secondary: "#72c8b6", text: "#ffffff", muted: "#c8dfda", surface: "#0c3a3d", surface2: "#184f4e", inputBg: "#f8fffd", inputText: "#153536", panelBg: "#f8fffd", panelText: "#153536", panelMuted: "#55706d", ticketBg: "#f8fffd", ticketText: "#153536" };
 
     default:
       return {
@@ -2073,16 +2068,59 @@ function getThemeUI(theme) {
     },
 
     Elegant: {
-      cardRadius: 11, inputRadius: 6, buttonRadius: 6, cardBorder: `1px solid ${design.card.border}`,
-      cardShadow: "0 13px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07)", cardBackdrop: "blur(13px)",
-      buttonShadow: "0 8px 20px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.08)", buttonFontWeight: 700, letterSpacing: ".035em", cardPadding: 25, inputPadding: "11px 13px", buttonPadding: "11px 19px"
+      cardRadius: 11,
+      inputRadius: 6,
+      buttonRadius: 6,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 13px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07)",
+      cardBackdrop: "blur(13px)",
+      buttonShadow: "0 8px 20px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.08)",
+      buttonFontWeight: 700,
+      letterSpacing: ".035em",
+      cardPadding: 25,
+      inputPadding: "11px 13px",
+      buttonPadding: "11px 19px"
     },
-
-    Diamond: { cardRadius: 18, inputRadius: 10, buttonRadius: 10, cardBorder: `1px solid ${design.card.border}`, cardShadow: "0 18px 44px rgba(0,18,32,.34), inset 0 1px 0 rgba(255,255,255,.10)", cardBackdrop: "blur(12px)", buttonShadow: "0 10px 24px rgba(0,80,110,.22)", buttonFontWeight: 800, letterSpacing: ".025em", cardPadding: 22, inputPadding: "11px 14px", buttonPadding: "11px 18px" },
-    "Winter Snow": { cardRadius: 22, inputRadius: 12, buttonRadius: 12, cardBorder: `1px solid ${design.card.border}`, cardShadow: "0 18px 44px rgba(3,24,40,.28), inset 0 1px 0 rgba(255,255,255,.12)", cardBackdrop: "blur(14px)", buttonShadow: "0 10px 24px rgba(100,160,190,.20)", buttonFontWeight: 800, letterSpacing: ".02em", cardPadding: 24, inputPadding: "12px 15px", buttonPadding: "12px 19px" },
-    Summer: { cardRadius: 20, inputRadius: 12, buttonRadius: 12, cardBorder: `1px solid ${design.card.border}`, cardShadow: "0 18px 42px rgba(0,30,34,.28)", cardBackdrop: "blur(10px)", buttonShadow: "0 10px 22px rgba(190,110,25,.22)", buttonFontWeight: 850, letterSpacing: ".015em", cardPadding: 22, inputPadding: "11px 14px", buttonPadding: "11px 19px" },
-    Spring: { cardRadius: 22, inputRadius: 13, buttonRadius: 13, cardBorder: `1px solid ${design.card.border}`, cardShadow: "0 18px 42px rgba(7,38,25,.26)", cardBackdrop: "blur(12px)", buttonShadow: "0 10px 24px rgba(120,55,90,.18)", buttonFontWeight: 800, letterSpacing: ".02em", cardPadding: 24, inputPadding: "12px 15px", buttonPadding: "12px 19px" },
-    Resort: { cardRadius: 18, inputRadius: 11, buttonRadius: 11, cardBorder: `1px solid ${design.card.border}`, cardShadow: "0 18px 44px rgba(0,27,29,.32), inset 0 1px 0 rgba(255,255,255,.08)", cardBackdrop: "blur(11px)", buttonShadow: "0 10px 24px rgba(120,85,25,.22)", buttonFontWeight: 800, letterSpacing: ".02em", cardPadding: 23, inputPadding: "11px 14px", buttonPadding: "11px 19px" }
+    Diamond: {
+      cardRadius: 18, inputRadius: 10, buttonRadius: 10,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 18px 44px rgba(0,18,32,.34), inset 0 1px 0 rgba(255,255,255,.10)",
+      cardBackdrop: "blur(12px)", buttonShadow: "0 10px 24px rgba(0,80,110,.22)",
+      buttonFontWeight: 800, letterSpacing: ".025em", cardPadding: 22,
+      inputPadding: "11px 14px", buttonPadding: "11px 18px"
+    },
+    "Winter Snow": {
+      cardRadius: 22, inputRadius: 12, buttonRadius: 12,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 18px 44px rgba(3,24,40,.28), inset 0 1px 0 rgba(255,255,255,.12)",
+      cardBackdrop: "blur(14px)", buttonShadow: "0 10px 24px rgba(100,160,190,.20)",
+      buttonFontWeight: 800, letterSpacing: ".02em", cardPadding: 24,
+      inputPadding: "12px 15px", buttonPadding: "12px 19px"
+    },
+    Summer: {
+      cardRadius: 20, inputRadius: 12, buttonRadius: 12,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 18px 42px rgba(0,30,34,.28)", cardBackdrop: "blur(10px)",
+      buttonShadow: "0 10px 22px rgba(190,110,25,.22)", buttonFontWeight: 800,
+      letterSpacing: ".015em", cardPadding: 22, inputPadding: "11px 14px",
+      buttonPadding: "11px 19px"
+    },
+    Spring: {
+      cardRadius: 22, inputRadius: 13, buttonRadius: 13,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 18px 42px rgba(7,38,25,.26)", cardBackdrop: "blur(12px)",
+      buttonShadow: "0 10px 24px rgba(120,55,90,.18)", buttonFontWeight: 800,
+      letterSpacing: ".02em", cardPadding: 24, inputPadding: "12px 15px",
+      buttonPadding: "12px 19px"
+    },
+    Resort: {
+      cardRadius: 18, inputRadius: 11, buttonRadius: 11,
+      cardBorder: `1px solid ${design.card.border}`,
+      cardShadow: "0 18px 44px rgba(0,27,29,.32), inset 0 1px 0 rgba(255,255,255,.08)",
+      cardBackdrop: "blur(11px)", buttonShadow: "0 10px 24px rgba(120,85,25,.22)",
+      buttonFontWeight: 800, letterSpacing: ".02em", cardPadding: 23,
+      inputPadding: "11px 14px", buttonPadding: "11px 19px"
+    }
   };
 
   const v = variants[theme] || variants.Classic;
@@ -2150,13 +2188,71 @@ function getThemeUI(theme) {
       statusUpcoming: `linear-gradient(135deg, #0f766e, #115e59)`
     },
     Elegant: {
-      cardBackground: `linear-gradient(145deg, rgba(250,248,243,.96), rgba(235,231,221,.96)), radial-gradient(circle at 85% 10%, rgba(169,139,67,.10), transparent 30%)`, panelBackground: `linear-gradient(145deg, rgba(255,253,248,.98), rgba(238,234,224,.96))`, prizeBackground: `linear-gradient(135deg, rgba(255,253,248,.99), rgba(239,235,226,.98))`, secondaryBackground: `linear-gradient(135deg, rgba(255,253,248,.98), rgba(231,225,211,.98))`, panelBorder: `1px solid rgba(169,139,67,.55)`, panelShadow: `0 14px 30px rgba(48,43,34,.16), inset 0 1px 0 rgba(255,255,255,.80)`, statusLive: `linear-gradient(135deg, #166534, #15803d)`, statusEnded: `linear-gradient(135deg, #475569, #334155)`, statusUpcoming: `linear-gradient(135deg, #a16207, #854d0e)`
+      cardBackground: `linear-gradient(145deg, rgba(250,248,243,.96), rgba(235,231,221,.96)), radial-gradient(circle at 85% 10%, rgba(169,139,67,.10), transparent 30%)`,
+      panelBackground: `linear-gradient(145deg, rgba(255,253,248,.98), rgba(238,234,224,.96))`,
+      prizeBackground: `linear-gradient(135deg, rgba(255,253,248,.99), rgba(239,235,226,.98))`,
+      secondaryBackground: `linear-gradient(135deg, rgba(255,253,248,.98), rgba(231,225,211,.98))`,
+      panelBorder: `1px solid rgba(169,139,67,.55)`,
+      panelShadow: `0 14px 30px rgba(48,43,34,.16), inset 0 1px 0 rgba(255,255,255,.80)`,
+      statusLive: `linear-gradient(135deg, #166534, #15803d)`,
+      statusEnded: `linear-gradient(135deg, #475569, #334155)`,
+      statusUpcoming: `linear-gradient(135deg, #a16207, #854d0e)`
     },
-    Diamond: { cardBackground: `linear-gradient(145deg,rgba(18,55,76,.98),rgba(5,25,40,.99)), radial-gradient(circle at 82% 12%,rgba(189,245,255,.18),transparent 30%)`, panelBackground: `linear-gradient(145deg,rgba(24,67,88,.98),rgba(8,34,52,.99))`, prizeBackground: `linear-gradient(135deg,rgba(34,83,104,.98),rgba(8,37,54,.99))`, secondaryBackground: `linear-gradient(135deg,rgba(41,96,117,.98),rgba(12,47,65,.99))`, panelBorder: `1px solid rgba(143,232,255,.68)`, panelShadow: `0 14px 34px rgba(0,30,45,.34),0 0 20px rgba(143,232,255,.08)`, statusLive: `linear-gradient(135deg,#0e7490,#155e75)`, statusEnded: `linear-gradient(135deg,#475569,#334155)`, statusUpcoming: `linear-gradient(135deg,#64748b,#475569)` },
-    "Winter Snow": { cardBackground: `linear-gradient(145deg,rgba(36,69,91,.98),rgba(14,38,57,.99)), radial-gradient(circle at 80% 10%,rgba(223,248,255,.18),transparent 32%)`, panelBackground: `linear-gradient(145deg,rgba(49,84,106,.98),rgba(19,47,68,.99))`, prizeBackground: `linear-gradient(135deg,rgba(62,101,124,.98),rgba(22,53,74,.99))`, secondaryBackground: `linear-gradient(135deg,rgba(77,117,139,.98),rgba(28,62,82,.99))`, panelBorder: `1px solid rgba(216,243,255,.62)`, panelShadow: `0 14px 34px rgba(3,24,40,.30),inset 0 1px 0 rgba(255,255,255,.10)`, statusLive: `linear-gradient(135deg,#0f766e,#115e59)`, statusEnded: `linear-gradient(135deg,#64748b,#475569)`, statusUpcoming: `linear-gradient(135deg,#0369a1,#075985)` },
-    Summer: { cardBackground: `linear-gradient(145deg,rgba(10,78,88,.98),rgba(3,47,56,.99)), radial-gradient(circle at 85% 10%,rgba(255,209,102,.18),transparent 30%)`, panelBackground: `linear-gradient(145deg,rgba(12,96,100,.98),rgba(5,57,65,.99))`, prizeBackground: `linear-gradient(135deg,rgba(20,111,110,.98),rgba(7,65,70,.99))`, secondaryBackground: `linear-gradient(135deg,rgba(33,128,119,.98),rgba(8,77,79,.99))`, panelBorder: `1px solid rgba(255,209,102,.62)`, panelShadow: `0 14px 34px rgba(0,30,34,.30),0 0 18px rgba(255,209,102,.06)`, statusLive: `linear-gradient(135deg,#15803d,#166534)`, statusEnded: `linear-gradient(135deg,#475569,#334155)`, statusUpcoming: `linear-gradient(135deg,#b45309,#92400e)` },
-    Spring: { cardBackground: `linear-gradient(145deg,rgba(30,79,59,.98),rgba(12,48,35,.99)), radial-gradient(circle at 85% 10%,rgba(245,183,207,.16),transparent 30%)`, panelBackground: `linear-gradient(145deg,rgba(44,98,72,.98),rgba(18,58,43,.99))`, prizeBackground: `linear-gradient(135deg,rgba(58,116,82,.98),rgba(20,64,46,.99))`, secondaryBackground: `linear-gradient(135deg,rgba(76,132,96,.98),rgba(28,74,53,.99))`, panelBorder: `1px solid rgba(245,183,207,.58)`, panelShadow: `0 14px 34px rgba(7,38,25,.28),inset 0 1px 0 rgba(255,255,255,.08)`, statusLive: `linear-gradient(135deg,#15803d,#166534)`, statusEnded: `linear-gradient(135deg,#64748b,#475569)`, statusUpcoming: `linear-gradient(135deg,#be185d,#9d174d)` },
-    Resort: { cardBackground: `linear-gradient(145deg,rgba(14,69,70,.98),rgba(6,40,43,.99)), radial-gradient(circle at 85% 10%,rgba(231,199,122,.15),transparent 30%)`, panelBackground: `linear-gradient(145deg,rgba(24,88,84,.98),rgba(10,53,56,.99))`, prizeBackground: `linear-gradient(135deg,rgba(36,105,97,.98),rgba(12,60,62,.99))`, secondaryBackground: `linear-gradient(135deg,rgba(52,119,105,.98),rgba(15,68,66,.99))`, panelBorder: `1px solid rgba(214,179,106,.64)`, panelShadow: `0 14px 34px rgba(0,27,29,.32),inset 0 1px 0 rgba(255,255,255,.07)`, statusLive: `linear-gradient(135deg,#15803d,#166534)`, statusEnded: `linear-gradient(135deg,#475569,#334155)`, statusUpcoming: `linear-gradient(135deg,#a16207,#854d0e)` }
+    Diamond: {
+      cardBackground: `linear-gradient(145deg,rgba(18,55,76,.98),rgba(5,25,40,.99)), radial-gradient(circle at 82% 12%,rgba(189,245,255,.18),transparent 30%)`,
+      panelBackground: `linear-gradient(145deg,rgba(24,67,88,.98),rgba(8,34,52,.99))`,
+      prizeBackground: `linear-gradient(135deg,rgba(34,83,104,.98),rgba(8,37,54,.99))`,
+      secondaryBackground: `linear-gradient(135deg,rgba(41,96,117,.98),rgba(12,47,65,.99))`,
+      panelBorder: `1px solid rgba(143,232,255,.68)`,
+      panelShadow: `0 14px 34px rgba(0,30,45,.34),0 0 20px rgba(143,232,255,.08)`,
+      statusLive: `linear-gradient(135deg,#0e7490,#155e75)`,
+      statusEnded: `linear-gradient(135deg,#475569,#334155)`,
+      statusUpcoming: `linear-gradient(135deg,#64748b,#475569)`
+    },
+    "Winter Snow": {
+      cardBackground: `linear-gradient(145deg,rgba(36,69,91,.98),rgba(14,38,57,.99)), radial-gradient(circle at 80% 10%,rgba(223,248,255,.18),transparent 32%)`,
+      panelBackground: `linear-gradient(145deg,rgba(49,84,106,.98),rgba(19,47,68,.99))`,
+      prizeBackground: `linear-gradient(135deg,rgba(62,101,124,.98),rgba(22,53,74,.99))`,
+      secondaryBackground: `linear-gradient(135deg,rgba(77,117,139,.98),rgba(28,62,82,.99))`,
+      panelBorder: `1px solid rgba(216,243,255,.62)`,
+      panelShadow: `0 14px 34px rgba(3,24,40,.30),inset 0 1px 0 rgba(255,255,255,.10)`,
+      statusLive: `linear-gradient(135deg,#0f766e,#115e59)`,
+      statusEnded: `linear-gradient(135deg,#64748b,#475569)`,
+      statusUpcoming: `linear-gradient(135deg,#0369a1,#075985)`
+    },
+    Summer: {
+      cardBackground: `linear-gradient(145deg,rgba(10,78,88,.98),rgba(3,47,56,.99)), radial-gradient(circle at 85% 10%,rgba(255,209,102,.18),transparent 30%)`,
+      panelBackground: `linear-gradient(145deg,rgba(12,96,100,.98),rgba(5,57,65,.99))`,
+      prizeBackground: `linear-gradient(135deg,rgba(20,111,110,.98),rgba(7,65,70,.99))`,
+      secondaryBackground: `linear-gradient(135deg,rgba(33,128,119,.98),rgba(8,77,79,.99))`,
+      panelBorder: `1px solid rgba(255,209,102,.62)`,
+      panelShadow: `0 14px 34px rgba(0,30,34,.30),0 0 18px rgba(255,209,102,.06)`,
+      statusLive: `linear-gradient(135deg,#15803d,#166534)`,
+      statusEnded: `linear-gradient(135deg,#475569,#334155)`,
+      statusUpcoming: `linear-gradient(135deg,#b45309,#92400e)`
+    },
+    Spring: {
+      cardBackground: `linear-gradient(145deg,rgba(30,79,59,.98),rgba(12,48,35,.99)), radial-gradient(circle at 85% 10%,rgba(245,183,207,.16),transparent 30%)`,
+      panelBackground: `linear-gradient(145deg,rgba(44,98,72,.98),rgba(18,58,43,.99))`,
+      prizeBackground: `linear-gradient(135deg,rgba(58,116,82,.98),rgba(20,64,46,.99))`,
+      secondaryBackground: `linear-gradient(135deg,rgba(76,132,96,.98),rgba(28,74,53,.99))`,
+      panelBorder: `1px solid rgba(245,183,207,.58)`,
+      panelShadow: `0 14px 34px rgba(7,38,25,.28),inset 0 1px 0 rgba(255,255,255,.08)`,
+      statusLive: `linear-gradient(135deg,#15803d,#166534)`,
+      statusEnded: `linear-gradient(135deg,#64748b,#475569)`,
+      statusUpcoming: `linear-gradient(135deg,#be185d,#9d174d)`
+    },
+    Resort: {
+      cardBackground: `linear-gradient(145deg,rgba(14,69,70,.98),rgba(6,40,43,.99)), radial-gradient(circle at 85% 10%,rgba(231,199,122,.15),transparent 30%)`,
+      panelBackground: `linear-gradient(145deg,rgba(24,88,84,.98),rgba(10,53,56,.99))`,
+      prizeBackground: `linear-gradient(135deg,rgba(36,105,97,.98),rgba(12,60,62,.99))`,
+      secondaryBackground: `linear-gradient(135deg,rgba(52,119,105,.98),rgba(15,68,66,.99))`,
+      panelBorder: `1px solid rgba(214,179,106,.64)`,
+      panelShadow: `0 14px 34px rgba(0,27,29,.32),inset 0 1px 0 rgba(255,255,255,.07)`,
+      statusLive: `linear-gradient(135deg,#15803d,#166534)`,
+      statusEnded: `linear-gradient(135deg,#475569,#334155)`,
+      statusUpcoming: `linear-gradient(135deg,#a16207,#854d0e)`
+    }
   };
 
   const visual = visuals[theme] || visuals.Classic;
@@ -3853,23 +3949,21 @@ const [
               25
           }}
         >
-          {getThemeLogo(theme) && (
-            <img
-              src={getThemeLogo(theme)}
-              alt={`${theme || "Classic"} Tambola Live`}
-              onError={(event) => {
-                event.currentTarget.style.display = "none";
-              }}
-              style={{
-                width: "min(190px, 58vw)",
-                maxHeight: 58,
-                objectFit: "contain",
-                display: "block",
-                margin: "0 auto 6px",
-                filter: `drop-shadow(0 4px 10px ${themeUI.colors.secondary}44)`
-              }}
-            />
-          )}
+          <img
+            src={getThemeLogo(theme)}
+            alt={`${theme || "Classic"} Tambola Live`}
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+            style={{
+              width: "min(190px, 58vw)",
+              maxHeight: 58,
+              objectFit: "contain",
+              display: "block",
+              margin: "0 auto 6px",
+              filter: `drop-shadow(0 4px 10px ${themeUI.colors.secondary}44)`
+            }}
+          />
 
           <p
             style={{
@@ -5249,7 +5343,7 @@ function PlayerBookingPage({
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${getThemeClass(theme)}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${getThemeClass(game.theme)}`} style={themedPageStyle}>
       <ThemeHero
         theme={game.theme}
         title={game.game_name}
@@ -7315,7 +7409,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
     );
 
     return (
-      <main className={`tl-theme-page tl-theme-${getThemeClass(theme)}`} style={themedPageStyle}>
+      <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
         <ThemeHero
           theme={liveGame.theme}
           title="Game complete"
@@ -7657,7 +7751,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
   }
 
   return (
-    <main className={`tl-theme-page tl-theme-${getThemeClass(theme)}`} style={themedPageStyle}>
+    <main className={`tl-theme-page tl-theme-${liveGame.theme.toLowerCase()}`} style={themedPageStyle}>
       {liveGame.status === "ended" && viewFinishedLive && (
         <div
           style={{
@@ -10329,7 +10423,7 @@ function HostControlPage({
 
   return (
     <main
-      className={`tl-theme-page tl-theme-${getThemeClass(theme)}`}
+      className={`tl-theme-page tl-theme-${getThemeClass(game.theme)}`}
       style={
         themedPageStyle
       }
