@@ -3757,3 +3757,191 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"] {
     max-width: 62% !important;
   }
 }
+
+
+/* =========================================================
+   NEW THEMES â€” FINAL HERO COMPOSITION + TICKET COLOUR PASS
+   ---------------------------------------------------------
+   Only Winter Snow / Summer / Spring / Resort are changed here.
+   Existing six themes are deliberately untouched.
+========================================================= */
+
+/*
+ * The uploaded artwork is already transparent. Treat it as a large
+ * decorative layer that occupies the right side of the hero rather
+ * than a small contained picture. The left side stays clean for copy.
+ */
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero-art,
+.tl-theme-page.tl-theme-summer .tl-theme-hero-art,
+.tl-theme-page.tl-theme-spring .tl-theme-hero-art,
+.tl-theme-page.tl-theme-resort .tl-theme-hero-art {
+  top: -7% !important;
+  right: -9% !important;
+  width: 82% !important;
+  height: 122% !important;
+  background-size: 100% auto !important;
+  background-position: right center !important;
+  background-repeat: no-repeat !important;
+  opacity: 1 !important;
+  filter: saturate(1.18) contrast(1.20) brightness(.98) drop-shadow(0 12px 22px rgba(20,50,70,.16)) !important;
+  -webkit-mask-image: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0,0,0,.04) 10%,
+    rgba(0,0,0,.32) 22%,
+    rgba(0,0,0,.78) 38%,
+    #000 54%,
+    #000 100%) !important;
+  mask-image: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0,0,0,.04) 10%,
+    rgba(0,0,0,.32) 22%,
+    rgba(0,0,0,.78) 38%,
+    #000 54%,
+    #000 100%) !important;
+}
+
+/* Preserve the copy area while allowing the artwork to show strongly
+   from the middle of the hero toward the right edge. */
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero::before,
+.tl-theme-page.tl-theme-summer .tl-theme-hero::before,
+.tl-theme-page.tl-theme-spring .tl-theme-hero::before,
+.tl-theme-page.tl-theme-resort .tl-theme-hero::before {
+  background: linear-gradient(90deg,
+    var(--theme-hero-bg) 0%,
+    color-mix(in srgb,var(--theme-hero-bg) 98%,transparent) 25%,
+    color-mix(in srgb,var(--theme-hero-bg) 72%,transparent) 42%,
+    color-mix(in srgb,var(--theme-hero-bg) 24%,transparent) 57%,
+    transparent 72%) !important;
+}
+
+.tl-theme-page.tl-theme-winter-snow .tl-theme-hero-copy,
+.tl-theme-page.tl-theme-summer .tl-theme-hero-copy,
+.tl-theme-page.tl-theme-spring .tl-theme-hero-copy,
+.tl-theme-page.tl-theme-resort .tl-theme-hero-copy {
+  max-width: 54% !important;
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+@media (max-width: 600px) {
+  .tl-theme-page.tl-theme-winter-snow .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-summer .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-spring .tl-theme-hero-art,
+  .tl-theme-page.tl-theme-resort .tl-theme-hero-art {
+    top: -4% !important;
+    right: -18% !important;
+    width: 96% !important;
+    height: 116% !important;
+    background-size: 100% auto !important;
+    background-position: right 54% !important;
+    opacity: 1 !important;
+    filter: saturate(1.22) contrast(1.24) brightness(.98) drop-shadow(0 10px 18px rgba(20,50,70,.16)) !important;
+    -webkit-mask-image: linear-gradient(90deg,
+      transparent 0%,
+      rgba(0,0,0,.03) 9%,
+      rgba(0,0,0,.28) 22%,
+      rgba(0,0,0,.76) 39%,
+      #000 55%,
+      #000 100%) !important;
+    mask-image: linear-gradient(90deg,
+      transparent 0%,
+      rgba(0,0,0,.03) 9%,
+      rgba(0,0,0,.28) 22%,
+      rgba(0,0,0,.76) 39%,
+      #000 55%,
+      #000 100%) !important;
+  }
+
+  .tl-theme-page.tl-theme-winter-snow .tl-theme-hero::before,
+  .tl-theme-page.tl-theme-summer .tl-theme-hero::before,
+  .tl-theme-page.tl-theme-spring .tl-theme-hero::before,
+  .tl-theme-page.tl-theme-resort .tl-theme-hero::before {
+    background: linear-gradient(90deg,
+      var(--theme-hero-bg) 0%,
+      color-mix(in srgb,var(--theme-hero-bg) 98%,transparent) 28%,
+      color-mix(in srgb,var(--theme-hero-bg) 64%,transparent) 45%,
+      color-mix(in srgb,var(--theme-hero-bg) 16%,transparent) 59%,
+      transparent 74%) !important;
+  }
+
+  .tl-theme-page.tl-theme-winter-snow .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-summer .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-spring .tl-theme-hero-copy,
+  .tl-theme-page.tl-theme-resort .tl-theme-hero-copy {
+    max-width: 61% !important;
+  }
+}
+
+/* Ticket cells are themed in main.jsx. These CSS rules provide a final
+   visual safety net for the four new themes and do not affect the old six. */
+.tl-theme-page.tl-theme-winter-snow [data-ticket-cell="true"] {
+  color: #12324a !important;
+  border-color: #8bc4e2 !important;
+}
+.tl-theme-page.tl-theme-winter-snow [data-ticket-cell="true"][data-called="false"] {
+  background: linear-gradient(145deg,#4e9fd0,#176a9f) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.tl-theme-page.tl-theme-winter-snow [data-ticket-cell="true"][data-called="true"] {
+  background: linear-gradient(145deg,#fde68a,#fbbf24) !important;
+  color: #78350f !important;
+  -webkit-text-fill-color: #78350f !important;
+}
+.tl-theme-page.tl-theme-winter-snow [data-ticket-cell="true"]:empty {
+  background: #d9edf7 !important;
+}
+
+.tl-theme-page.tl-theme-summer [data-ticket-cell="true"] {
+  color: #173b42 !important;
+  border-color: #66b8b2 !important;
+}
+.tl-theme-page.tl-theme-summer [data-ticket-cell="true"][data-called="false"] {
+  background: linear-gradient(145deg,#45aaa5,#167b7b) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.tl-theme-page.tl-theme-summer [data-ticket-cell="true"][data-called="true"] {
+  background: linear-gradient(145deg,#ffe28a,#f3b83f) !important;
+  color: #6f3d05 !important;
+  -webkit-text-fill-color: #6f3d05 !important;
+}
+.tl-theme-page.tl-theme-summer [data-ticket-cell="true"]:empty {
+  background: #e9f3e7 !important;
+}
+
+.tl-theme-page.tl-theme-spring [data-ticket-cell="true"] {
+  color: #304437 !important;
+  border-color: #a6bf98 !important;
+}
+.tl-theme-page.tl-theme-spring [data-ticket-cell="true"][data-called="false"] {
+  background: linear-gradient(145deg,#82a96f,#587e4f) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.tl-theme-page.tl-theme-spring [data-ticket-cell="true"][data-called="true"] {
+  background: linear-gradient(145deg,#f4d6df,#c98aa1) !important;
+  color: #5f2940 !important;
+  -webkit-text-fill-color: #5f2940 !important;
+}
+.tl-theme-page.tl-theme-spring [data-ticket-cell="true"]:empty {
+  background: #edf3e7 !important;
+}
+
+.tl-theme-page.tl-theme-resort [data-ticket-cell="true"] {
+  color: #214248 !important;
+  border-color: #73bdb4 !important;
+}
+.tl-theme-page.tl-theme-resort [data-ticket-cell="true"][data-called="false"] {
+  background: linear-gradient(145deg,#2bada8,#137d7f) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.tl-theme-page.tl-theme-resort [data-ticket-cell="true"][data-called="true"] {
+  background: linear-gradient(145deg,#f3d58d,#c4934f) !important;
+  color: #5a3b12 !important;
+  -webkit-text-fill-color: #5a3b12 !important;
+}
+.tl-theme-page.tl-theme-resort [data-ticket-cell="true"]:empty {
+  background: #e7f2ed !important;
+}
