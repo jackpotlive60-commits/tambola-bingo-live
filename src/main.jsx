@@ -6192,6 +6192,8 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
   if (theme === "Classic") {
     return (
       <div
+        key={`tambola-draw-${theme}-${value}`}
+        className="tl-number-draw-stage"
         style={{
           position: "relative",
           width: 300,
@@ -6274,7 +6276,7 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
             justifyContent: "center"
           }}
         >
-          <div
+          <div className="tl-number-draw-value"
             style={{
               width: 112,
               height: 112,
@@ -6314,6 +6316,8 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
   if (theme === "Royal") {
     return (
       <div
+        key={`tambola-draw-${theme}-${value}`}
+        className="tl-number-draw-stage"
         style={{
           width: 300,
           height: 190,
@@ -6350,7 +6354,7 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
             justifyContent: "center"
           }}
         >
-          <div
+          <div className="tl-number-draw-value"
             style={{
               width: 104,
               height: 104,
@@ -6401,6 +6405,8 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
   if (theme === "Party") {
     return (
       <div
+        key={`tambola-draw-${theme}-${value}`}
+        className="tl-number-draw-stage"
         style={{
           width: 310,
           height: 190,
@@ -6433,7 +6439,7 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
           />
         ))}
 
-        <div
+        <div className="tl-number-draw-value"
           style={{
             position: "relative",
             zIndex: 2,
@@ -6473,6 +6479,8 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
   if (theme === "Bollywood") {
     return (
       <div
+        key={`tambola-draw-${theme}-${value}`}
+        className="tl-number-draw-stage"
         style={{
           width: 320,
           height: 190,
@@ -6533,7 +6541,7 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
         >
           &#9733;
         </div>
-        <div
+        <div className="tl-number-draw-value"
           style={{
             position: "relative",
             zIndex: 2,
@@ -6571,6 +6579,8 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
   if (theme === "Neon") {
     return (
       <div
+        key={`tambola-draw-${theme}-${value}`}
+        className="tl-number-draw-stage"
         style={{
           width: 300,
           height: 190,
@@ -6605,7 +6615,7 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
             opacity: .7
           }}
         />
-        <div
+        <div className="tl-number-draw-value"
           style={{
             position: "relative",
             zIndex: 2,
@@ -6646,6 +6656,8 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
   // Elegant
   return (
     <div
+      key={`tambola-draw-${theme}-${value}`}
+      className="tl-number-draw-stage"
       style={{
         width: 310,
         height: 185,
@@ -6668,7 +6680,7 @@ function ThemeCurrentNumberVisual({ theme, number, themeUI }) {
           transform: "rotate(-2deg)"
         }}
       />
-      <div
+      <div className="tl-number-draw-value"
         style={{
           position: "relative",
           zIndex: 2,
@@ -8052,7 +8064,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             themeUI={themeUI}
           />
 
-          <div style={{ color: themeUI.colors.muted, fontWeight: "bold" }}>
+          <div className="tl-current-number-count" style={{ color: themeUI.colors.muted, fontWeight: "bold" }}>
             Total Called: {calledNumbers.length}/90
           </div>
         </section>
@@ -8085,7 +8097,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                 flexWrap: "wrap"
               }}
             >
-              <div style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
+              <div className="tl-called-board-count" style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
                 {calledNumbers.length}/90 called
               </div>
               <button
@@ -8214,7 +8226,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
             }}
           >
             <h2 style={{ margin: 0 }}>Call History</h2>
-            <div style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
+            <div className="tl-call-history-count" style={{ color: "var(--theme-muted, #64748b)", fontWeight: "bold" }}>
               {calledNumbers.length} calls
             </div>
           </div>
