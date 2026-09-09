@@ -3945,3 +3945,119 @@ body:has(.tl-theme-elegant) .tl-theme-page [data-ticket-cell="true"] {
 .tl-theme-page.tl-theme-resort [data-ticket-cell="true"]:empty {
   background: #e7f2ed !important;
 }
+
+
+/* =========================================================
+   LIVE GAME â€” REAL TAMBOOLA NUMBER DRAW ANIMATION
+   The React current-number visual is keyed by the called number,
+   so this animation restarts exactly when a new number arrives.
+   ========================================================= */
+.tl-number-draw-stage {
+  position: relative;
+  transform-origin: 50% 55%;
+  animation: tlTambolaDrawIn 900ms cubic-bezier(.18,.89,.32,1.28) both;
+  will-change: transform, opacity, filter;
+}
+
+.tl-number-draw-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  height: 150px;
+  margin: -75px 0 0 -75px;
+  border-radius: 50%;
+  border: 2px solid var(--theme-accent, currentColor);
+  opacity: 0;
+  pointer-events: none;
+  animation: tlTambolaDrawPulse 900ms ease-out both;
+}
+
+.tl-number-draw-value {
+  animation: tlTambolaNumberReveal 900ms cubic-bezier(.2,.9,.25,1.15) both;
+  transform-origin: 50% 55%;
+  will-change: transform, opacity, filter;
+}
+
+.tl-current-number-count,
+.tl-called-board-count,
+.tl-call-history-count {
+  color: var(--theme-text, #17202a) !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.18);
+}
+
+@keyframes tlTambolaDrawIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-26px) scale(.72) rotate(-7deg);
+    filter: blur(7px);
+  }
+  22% {
+    opacity: 1;
+    transform: translateY(10px) scale(1.08) rotate(5deg);
+    filter: blur(1px);
+  }
+  42% {
+    transform: translateY(-7px) scale(.96) rotate(-3deg);
+    filter: blur(0);
+  }
+  65% {
+    transform: translateY(3px) scale(1.025) rotate(1.5deg);
+  }
+  82% {
+    transform: translateY(-1px) scale(.995) rotate(-.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes tlTambolaNumberReveal {
+  0% {
+    opacity: 0;
+    transform: scale(.35) rotateX(70deg);
+    filter: blur(8px);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.18) rotateX(0);
+    filter: blur(0);
+  }
+  60% {
+    transform: scale(.92);
+  }
+  78% {
+    transform: scale(1.045);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tlTambolaDrawPulse {
+  0% {
+    opacity: .7;
+    transform: scale(.45);
+  }
+  55% {
+    opacity: .18;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-number-draw-stage,
+  .tl-number-draw-stage::before,
+  .tl-number-draw-value {
+    animation: none !important;
+  }
+}
