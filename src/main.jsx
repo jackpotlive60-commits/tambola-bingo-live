@@ -7659,19 +7659,33 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                     <h2 style={{ margin: "5px 0 0" }}>FINAL GAME SUMMARY</h2>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowFinalResults(false);
-                      setViewFinishedLive(true);
-                    }}
-                    style={{
-                      ...themedSecondaryButton,
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    VIEW GAME HISTORY
-                  </button>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowFinalResults(false);
+                        setViewFinishedLive(true);
+                      }}
+                      style={{
+                        ...themedSecondaryButton,
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      VIEW GAME HISTORY
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowFinalResults(false)}
+                      aria-label="Close final game summary"
+                      style={{
+                        ...themedSecondaryButton,
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      CLOSE âœ•
+                    </button>
+                  </div>
                 </div>
 
                 <div
