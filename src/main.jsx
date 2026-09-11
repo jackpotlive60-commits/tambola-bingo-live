@@ -1267,7 +1267,7 @@ function getWinningNumbersForPattern(grid, pattern, calledSet) {
   return [];
 }
 
-function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber, gameCode, fixedWinningTicketNumber = null) {
+function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber, gameCode, fixedWinningTicketNumber = null, excludedTicketNumbers = []) {
   const pattern = getPrizePattern(prize);
   if (!pattern || prize?.locked) {
     return [];
@@ -1280,6 +1280,11 @@ function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber,
   );
 
   const winners = [];
+  const excludedSet = new Set(
+    Array.isArray(excludedTicketNumbers)
+      ? excludedTicketNumbers.map(Number).filter((number) => Number.isInteger(number))
+      : []
+  );
 
   acceptedBookings.forEach((booking) => {
     const ticketNumbers = Array.isArray(booking.ticket_numbers)
@@ -1289,6 +1294,12 @@ function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber,
     ticketNumbers.forEach((ticketValue) => {
       const ticketNumber = Number(ticketValue);
       if (!Number.isInteger(ticketNumber) || ticketNumber < 1 || ticketNumber > 100) {
+        return;
+      }
+
+      // A later Full House prize (for example Second Full House) must be
+      // won by a different ticket from an earlier Full House prize.
+      if (excludedSet.has(ticketNumber)) {
         return;
       }
 
@@ -7813,7 +7824,7 @@ function LiveGamePage({ game, playerVoiceEnabled, onTogglePlayerVoice }) {
                         whiteSpace: "nowrap"
                       }}
                     >
-                      CLOSE âœ•
+                      CLOSE
                     </button>
                   </div>
                 </div>
@@ -10235,6 +10246,24 @@ function HostControlPage({
     const fixedAssignments = getFixedWinningAssignments(game);
     const events = [];
 
+    // Keep track of tickets that have already won a Full House. This is used
+    // by Second Full House so it can only be awarded to a different ticket.
+    const fullHouseWinnerTickets = new Set();
+    currentPrizes.forEach((prize) => {
+      const pattern = getPrizePattern(prize);
+      if (
+        pattern === "full_house" ||
+        pattern === "second_full_house"
+      ) {
+        (Array.isArray(prize?.winners) ? prize.winners : []).forEach((winner) => {
+          const ticketNumber = Number(winner?.ticketNumber);
+          if (Number.isInteger(ticketNumber)) {
+            fullHouseWinnerTickets.add(ticketNumber);
+          }
+        });
+      }
+    });
+
     currentPrizes.forEach((prize, prizeIndex) => {
       if (prize?.locked) return;
 
@@ -10249,13 +10278,19 @@ function HostControlPage({
           ? fixedAssignment?.ticketNumber ?? null
           : null;
 
+      const excludedTicketNumbers =
+        prizePattern === "second_full_house"
+          ? Array.from(fullHouseWinnerTickets)
+          : [];
+
       const winners = findPrizeWinners(
         prize,
         acceptedBookings,
         nextCalledNumbers,
         nextNumber,
         game.game_code,
-        fixedTicketForThisPrize
+        fixedTicketForThisPrize,
+        excludedTicketNumbers
       );
 
       if (winners.length) {
@@ -10283,6 +10318,17 @@ function HostControlPage({
           winnerCount: winnersWithShares.length,
           winners: winnersWithShares
         });
+
+        // If Full House is detected on this same call, reserve those tickets
+        // for the first Full House prize so Second Full House cannot reuse them.
+        if (prizePattern === "full_house") {
+          winnersWithShares.forEach((winner) => {
+            const ticketNumber = Number(winner?.ticketNumber);
+            if (Number.isInteger(ticketNumber)) {
+              fullHouseWinnerTickets.add(ticketNumber);
+            }
+          });
+        }
       }
     });
 
