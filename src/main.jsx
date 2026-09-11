@@ -448,16 +448,13 @@ function getThemeDesign(theme) {
 }
 
 const DEFAULT_PRIZES = [
-  "First Five",
-  "Four Corners",
-  "Top Line",
-  "Middle Line",
-  "Bottom Line",
-  "Full House"
-].map((name) => ({
-  name,
-  amount: ""
-}));
+  { name: "First Five", rule: "first_five", amount: "" },
+  { name: "Four Corners", rule: "four_corners", amount: "" },
+  { name: "Top Line", rule: "top_line", amount: "" },
+  { name: "Middle Line", rule: "middle_line", amount: "" },
+  { name: "Bottom Line", rule: "bottom_line", amount: "" },
+  { name: "Full House", rule: "full_house", amount: "" }
+];
 
 // Fixed/Test Game: each newly-created game gets a different, deterministic
 // set of winning ticket numbers. The game code is used as the seed, so the
@@ -1011,11 +1008,34 @@ function normalizePrizeKey(name) {
   return String(name || "")
     .trim()
     .toLowerCase()
+    .replace(/['â€™]/g, "")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 }
 
-function getPrizePattern(name) {
+/*
+ * Prize rules are inferred from the prize name so prizes added by the host
+ * are not limited to the original DEFAULT_PRIZES list.
+ *
+ * The optional rule/pattern field is also supported. This lets an already
+ * stored prize keep its explicit rule if one is present, while old games
+ * continue to work from their prize name.
+ */
+function getPrizePattern(prizeOrName) {
+  const explicitRule =
+    prizeOrName && typeof prizeOrName === "object"
+      ? prizeOrName.rule || prizeOrName.pattern
+      : null;
+
+  if (explicitRule) {
+    return String(explicitRule).trim().toLowerCase();
+  }
+
+  const name =
+    prizeOrName && typeof prizeOrName === "object"
+      ? prizeOrName.name
+      : prizeOrName;
+
   const key = normalizePrizeKey(name);
 
   if (
@@ -1027,8 +1047,34 @@ function getPrizePattern(name) {
     return "first_five";
   }
 
-  if (key === "four corners" || key === "4 corners") {
+  /* First N / Early N prizes, e.g. First 6, First 7, First 8, First 10. */
+  const firstNMatch = key.match(/^(?:first|early)\s+(\d+)$/);
+  if (firstNMatch) {
+    const count = Number(firstNMatch[1]);
+    if (Number.isInteger(count) && count >= 1 && count <= 15) {
+      return `first_n_${count}`;
+    }
+  }
+
+  if (
+    key === "four corners" ||
+    key === "4 corners" ||
+    key === "four corner"
+  ) {
     return "four_corners";
+  }
+
+  if (
+    key === "six corners" ||
+    key === "6 corners" ||
+    key === "six corner" ||
+    key === "6 corner"
+  ) {
+    return "six_corners";
+  }
+
+  if (key === "bulls eye" || key === "bulls eye prize" || key === "bullseye") {
+    return "bulls_eye";
   }
 
   if (key === "top line" || key === "top row") {
@@ -1051,7 +1097,77 @@ function getPrizePattern(name) {
     return "full_house";
   }
 
+  if (
+    key === "second full house" ||
+    key === "second house" ||
+    key === "2nd full house" ||
+    key === "2nd house"
+  ) {
+    return "second_full_house";
+  }
+
+  /*
+   * Snowball is a commonly used custom Tambola label, but it does not have
+   * one universal rule across all organisers. For this app we treat it as a
+   * Full House-style completion so it is never silently ignored. If a future
+   * Snowball variant needs a different rule, the explicit prize.rule field
+   * can override this mapping without changing the winner engine.
+   */
+  if (key === "snowball" || key === "snow ball") {
+    return "snowball";
+  }
+
   return null;
+}
+
+function getFirstNWinningNumbers(occupied, calledSet, count) {
+  const called = occupied.filter((cell) => calledSet.has(cell.number));
+  return called.length >= count
+    ? called.slice(0, count).map((cell) => cell.number)
+    : [];
+}
+
+function getSixCorners(occupied) {
+  const rows = [0, 1, 2].map((rowIndex) =>
+    occupied
+      .filter((cell) => cell.row === rowIndex)
+      .sort((a, b) => a.column - b.column)
+  );
+
+  if (rows.some((row) => row.length < 2)) {
+    return [];
+  }
+
+  return rows.flatMap((row) => [row[0], row[row.length - 1]]);
+}
+
+function getFourCorners(occupied) {
+  const top = occupied
+    .filter((cell) => cell.row === 0)
+    .sort((a, b) => a.column - b.column);
+  const bottom = occupied
+    .filter((cell) => cell.row === 2)
+    .sort((a, b) => a.column - b.column);
+
+  if (top.length < 2 || bottom.length < 2) {
+    return [];
+  }
+
+  return [
+    top[0],
+    top[top.length - 1],
+    bottom[0],
+    bottom[bottom.length - 1]
+  ];
+}
+
+function getBullseyeCell(occupied) {
+  if (occupied.length !== 15) {
+    return null;
+  }
+
+  /* The middle of the ticket's 15 occupied numbers (the 8th number). */
+  return occupied[7] || null;
 }
 
 function getOccupiedCells(grid) {
@@ -1089,13 +1205,17 @@ function getWinningNumbersForPattern(grid, pattern, calledSet) {
   const isCalled = (number) => calledSet.has(number);
 
   if (pattern === "first_five") {
-    const called = occupied.filter((cell) => isCalled(cell.number));
-    return called.length >= 5
-      ? called.slice(0, 5).map((cell) => cell.number)
-      : [];
+    return getFirstNWinningNumbers(occupied, calledSet, 5);
   }
 
-  if (pattern === "full_house") {
+  if (pattern.startsWith("first_n_")) {
+    const count = Number(pattern.replace("first_n_", ""));
+    if (Number.isInteger(count) && count >= 1 && count <= 15) {
+      return getFirstNWinningNumbers(occupied, calledSet, count);
+    }
+  }
+
+  if (pattern === "full_house" || pattern === "snowball" || pattern === "second_full_house") {
     return occupied.every((cell) => isCalled(cell.number))
       ? occupied.map((cell) => cell.number)
       : [];
@@ -1121,26 +1241,26 @@ function getWinningNumbersForPattern(grid, pattern, calledSet) {
   }
 
   if (pattern === "four_corners") {
-    const top = occupied
-      .filter((cell) => cell.row === 0)
-      .sort((a, b) => a.column - b.column);
-    const bottom = occupied
-      .filter((cell) => cell.row === 2)
-      .sort((a, b) => a.column - b.column);
+    const corners = getFourCorners(occupied);
 
-    if (top.length < 2 || bottom.length < 2) {
-      return [];
-    }
-
-    const corners = [
-      top[0],
-      top[top.length - 1],
-      bottom[0],
-      bottom[bottom.length - 1]
-    ];
-
-    return corners.every((cell) => isCalled(cell.number))
+    return corners.length && corners.every((cell) => isCalled(cell.number))
       ? corners.map((cell) => cell.number)
+      : [];
+  }
+
+  if (pattern === "six_corners") {
+    const corners = getSixCorners(occupied);
+
+    return corners.length === 6 && corners.every((cell) => isCalled(cell.number))
+      ? corners.map((cell) => cell.number)
+      : [];
+  }
+
+  if (pattern === "bulls_eye") {
+    const bullseye = getBullseyeCell(occupied);
+
+    return bullseye && isCalled(bullseye.number)
+      ? [bullseye.number]
       : [];
   }
 
@@ -1148,7 +1268,7 @@ function getWinningNumbersForPattern(grid, pattern, calledSet) {
 }
 
 function findPrizeWinners(prize, acceptedBookings, calledNumbers, winningNumber, gameCode, fixedWinningTicketNumber = null) {
-  const pattern = getPrizePattern(prize?.name);
+  const pattern = getPrizePattern(prize);
   if (!pattern || prize?.locked) {
     return [];
   }
@@ -1244,11 +1364,19 @@ function getPrizeVoiceName(name) {
   const pattern = getPrizePattern(name);
 
   if (pattern === "first_five") return "Early Five";
+  if (pattern?.startsWith("first_n_")) {
+    const count = pattern.replace("first_n_", "");
+    return `First ${count}`;
+  }
   if (pattern === "four_corners") return "Four Corners";
+  if (pattern === "six_corners") return "Six Corners";
+  if (pattern === "bulls_eye") return "Bull's Eye";
   if (pattern === "top_line") return "Top Line";
   if (pattern === "middle_line") return "Middle Line";
   if (pattern === "bottom_line") return "Bottom Line";
   if (pattern === "full_house") return "Full House";
+  if (pattern === "second_full_house") return "Second Full House";
+  if (pattern === "snowball") return "Snowball";
 
   return String(name || "Prize");
 }
@@ -3855,6 +3983,7 @@ const [
         ...current,
         {
           name,
+          rule: getPrizePattern(name),
           amount: "",
           selected: true
         }
@@ -3929,6 +4058,7 @@ const [
           .filter((p) => p.selected !== false)
           .map((p) => ({
             name: p.name,
+            rule: p.rule || getPrizePattern(p.name),
             amount: ""
           }));
 
